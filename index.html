@@ -416,7 +416,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
-let user=null,expenses=[],selCat=null;
+let user=null,expenses=[],selectedCat=null;
 let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:''};
 let step=1;
 const CATS=[
@@ -584,21 +584,21 @@ function renderDash(){
 
 // ── Expense sheet ─────────────────────────────────────────────
 function openSheet(){
-  document.getElementById('cat-row').innerHTML=CATS.map(c=>`<div class="cat-p" data-id="${c.id}" data-e="${c.e}" data-n="${c.l}" data-c="${c.c}" onclick="selCat(this)"><div class="cat-p-e">${c.e}</div><div class="cat-p-l">${c.l}</div></div>`).join('');
-  selCat=null;document.getElementById('ea').value='';document.getElementById('en').value='';document.getElementById('save-btn').disabled=true;
+  document.getElementById('cat-row').innerHTML=CATS.map(c=>`<div class="cat-p" data-id="${c.id}" data-e="${c.e}" data-n="${c.l}" data-c="${c.c}" onclick="selectCat(this)"><div class="cat-p-e">${c.e}</div><div class="cat-p-l">${c.l}</div></div>`).join('');
+  selectedCat=null;document.getElementById('ea').value='';document.getElementById('en').value='';document.getElementById('save-btn').disabled=true;
   document.getElementById('ov').classList.add('open');document.getElementById('sheet').classList.add('open');
   setTimeout(()=>document.getElementById('ea').focus(),400);
 }
 function closeSheet(){document.getElementById('ov').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
-function selCat(el){document.querySelectorAll('.cat-p').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selCat={id:el.dataset.id,e:el.dataset.e,n:el.dataset.n,c:el.dataset.c};chkSave();}
+function selectCat(el){document.querySelectorAll('.cat-p').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selectedCat={id:el.dataset.id,e:el.dataset.e,n:el.dataset.n,c:el.dataset.c};chkSave();}
 function setAmt(v){document.getElementById('ea').value=v;chkSave();}
-function chkSave(){const a=parseFloat(document.getElementById('ea').value);document.getElementById('save-btn').disabled=!selCat||!a||a<=0;}
+function chkSave(){const a=parseFloat(document.getElementById('ea').value);document.getElementById('save-btn').disabled=!selectedCat||!a||a<=0;}
 async function saveExp(){
-  if(!selCat)return;
+  if(!selectedCat)return;
   const a=parseFloat(document.getElementById('ea').value);
   const note=document.getElementById('en').value.trim();
   if(!a||a<=0)return;
-  const d={tester_id:user?.id||null,category_id:selCat.id,category:selCat.n,emoji:selCat.e,amount:a,note:note||''};
+  const d={tester_id:user?.id||null,category_id:selectedCat.id,category:selectedCat.n,emoji:selectedCat.e,amount:a,note:note||''};
   const tid='tmp-'+Date.now();
   expenses.unshift({id:tid,...d,logged_at:new Date().toISOString()});
   renderDash();closeSheet();showToast(`✅ R${a.toLocaleString('en-ZA')} logged`);
