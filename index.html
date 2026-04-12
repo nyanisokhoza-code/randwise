@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RandWise — Your money, your rules 🇿🇦</title>
+<meta name="description" content="The South African personal finance app built for real life. Track spending, crush debt, grow savings. Free beta access now open.">
+<meta property="og:title" content="RandWise — Built for South Africa 🇿🇦">
+<meta property="og:description" content="Finally a money app that gets South African life. Free beta access — limited spots.">
+<meta property="og:image" content="https://via.placeholder.com/1200x630/1a7a4a/ffffff?text=RandWise+🇿🇦">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --green: #1a7a4a; --greenLight: #eaf3de; --greenDark: #27500a; --greenMid: #639922;
+    --red: #a32d2d; --purple: #534ab7; --amber: #ba7517;
+    --white: #ffffff; --bg: #f7f6f2; --text: #2c2c2a; --muted: #888780;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+
+  /* Hero */
+  .hero { background: linear-gradient(160deg, #0d4a2a 0%, #1a7a4a 60%, #2d9e5f 100%); padding: 60px 24px 80px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); }
+  .logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 32px; }
+  .logo-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .logo-text { font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .beta-badge { display: inline-block; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.2); }
+  .hero h1 { font-size: 36px; font-weight: 900; color: white; line-height: 1.15; margin-bottom: 16px; letter-spacing: -1px; }
+  .hero h1 span { color: #a8d96e; }
+  .hero p { font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6; max-width: 340px; margin: 0 auto 32px; }
+  .hero-cta { background: white; color: var(--green); font-size: 16px; font-weight: 800; padding: 16px 32px; border-radius: 14px; border: none; cursor: pointer; display: inline-block; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.15s; }
+  .hero-cta:active { transform: scale(0.97); }
+  .hero-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 12px; }
+  .spots-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 14px; margin-top: 20px; }
+  .spots-dot { width: 8px; height: 8px; border-radius: 50%; background: #a8d96e; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .spots-text { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 500; }
+
+  /* Stats bar */
+  .stats-bar { background: white; padding: 20px 24px; display: flex; justify-content: space-around; border-bottom: 1px solid #e8e6de; }
+  .stat { text-align: center; }
+  .stat-val { font-size: 22px; font-weight: 800; color: var(--green); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* Section */
+  section { padding: 48px 24px; }
+  section h2 { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
+  section .sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+  /* Problem section */
+  .problem { background: white; }
+  .problem-list { display: flex; flex-direction: column; gap: 14px; }
+  .problem-item { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--bg); border-radius: 12px; }
+  .problem-emoji { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .problem-text { font-size: 14px; color: var(--text); line-height: 1.5; }
+  .problem-text strong { color: var(--red); }
+
+  /* Features */
+  .features { background: var(--bg); }
+  .feature-grid { display: flex; flex-direction: column; gap: 14px; }
+  .feature-card { background: white; border-radius: 16px; padding: 20px; border: 0.5px solid #e8e6de; }
+  .feature-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .feature-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .feature-title { font-size: 15px; font-weight: 700; }
+  .feature-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .feature-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 8px; }
+
+  /* For who */
+  .for-who { background: white; }
+  .life-stages { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .life-stage { background: var(--bg); border-radius: 12px; padding: 14px; text-align: center; }
+  .life-stage-emoji { font-size: 28px; margin-bottom: 6px; }
+  .life-stage-name { font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* Testimonials */
+  .testimonials { background: var(--greenLight); }
+  .testimonials h2 { color: var(--greenDark); }
+  .testimonials .sub { color: var(--green); }
+  .testimonial-list { display: flex; flex-direction: column; gap: 14px; }
+  .testimonial { background: white; border-radius: 14px; padding: 16px; border-left: 3px solid var(--green); }
+  .testimonial-text { font-size: 14px; color: var(--text); line-height: 1.6; font-style: italic; margin-bottom: 8px; }
+  .testimonial-author { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+  /* Pricing */
+  .pricing { background: var(--bg); }
+  .price-cards { display: flex; flex-direction: column; gap: 12px; }
+  .price-card { background: white; border-radius: 16px; padding: 20px; border: 1.5px solid #e8e6de; }
+  .price-card.featured { border-color: var(--green); background: var(--greenLight); }
+  .price-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .price-amount { font-size: 32px; font-weight: 800; color: var(--green); }
+  .price-period { font-size: 13px; color: var(--muted); }
+  .price-features { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .price-feature { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
+  .price-feature::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* Signup form */
+  .signup { background: linear-gradient(160deg, #0d4a2a, #1a7a4a); padding: 48px 24px 60px; }
+  .signup h2 { color: white; font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+  .signup .sub { color: rgba(255,255,255,0.8); margin-bottom: 28px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-size: 15px; outline: none; transition: border-color 0.2s; }
+  .form-input::placeholder { color: rgba(255,255,255,0.4); }
+  .form-input:focus { border-color: rgba(255,255,255,0.6); }
+  .form-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-size: 15px; outline: none; appearance: none; }
+  .form-select option { background: #1a7a4a; color: white; }
+  .submit-btn { width: 100%; padding: 16px; background: white; color: var(--green); font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; margin-top: 8px; transition: transform 0.15s; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  .submit-btn:active { transform: scale(0.97); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .form-note { font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+  /* Success state */
+  .success-state { display: none; text-align: center; padding: 20px; }
+  .success-state.show { display: block; }
+  .success-icon { font-size: 56px; margin-bottom: 16px; }
+  .success-title { font-size: 24px; font-weight: 800; color: white; margin-bottom: 8px; }
+  .success-sub { font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.5; }
+
+  /* Footer */
+  footer { background: #0d4a2a; padding: 24px; text-align: center; }
+  footer p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.8; }
+  footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
+
+  /* Sticky CTA */
+  .sticky-cta { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 24px 24px; border-top: 1px solid #e8e6de; display: flex; gap: 10px; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
+  .sticky-cta button { flex: 1; padding: 14px; background: var(--green); color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; }
+  .sticky-cta-hide { display: none; }
+
+  @media (min-width: 600px) {
+    .hero h1 { font-size: 44px; }
+    .life-stages { grid-template-columns: repeat(3, 1fr); }
+    .price-cards { flex-direction: row; }
+    .price-card { flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="logo">
+    <div class="logo-icon">🌱</div>
+    <div class="logo-text">RandWise</div>
+  </div>
+  <div class="beta-badge">🇿🇦 BETA — FREE ACCESS</div>
+  <h1>Your money,<br><span>your rules.</span></h1>
+  <p>The first personal finance app built specifically for South African life. Not American. Not European. <strong style="color:white">Ours.</strong></p>
+  <a href="#join" class="hero-cta">Get free beta access →</a>
+  <div class="hero-sub">No credit card. No catch. Cancel anytime.</div>
+  <div class="spots-badge">
+    <div class="spots-dot"></div>
+    <div class="spots-text">Beta spots filling up — join free today</div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val">Free</div><div class="stat-label">During beta</div></div>
+  <div class="stat"><div class="stat-val">2 min</div><div class="stat-label">To set up</div></div>
+  <div class="stat"><div class="stat-val">🔒</div><div class="stat-label">POPIA compliant</div></div>
+  <div class="stat"><div class="stat-val">🇿🇦</div><div class="stat-label">Built local</div></div>
+</div>
+
+<!-- Problem -->
+<section class="problem">
+  <h2>Sound familiar?</h2>
+  <p class="sub">Most South Africans face these money problems every month.</p>
+  <div class="problem-list">
+    <div class="problem-item"><div class="problem-emoji">💸</div><div class="problem-text">Payday comes and <strong>you don't know where it all went</strong> — the money just disappears.</div></div>
+    <div class="problem-item"><div class="problem-emoji">😰</div><div class="problem-text">You have <strong>multiple debts</strong> — credit card, store card, personal loan — and no plan to clear them.</div></div>
+    <div class="problem-item"><div class="problem-emoji">📱</div><div class="problem-text">The money apps you've tried were <strong>built for Americans</strong> — they don't understand stokvel, mashonisa, or domestic worker life.</div></div>
+    <div class="problem-item"><div class="problem-emoji">🎯</div><div class="problem-text">You want to save for something — a home, a car, your child's education — but <strong>can't seem to make it happen.</strong></div></div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+  <h2>RandWise fixes this.</h2>
+  <p class="sub">Built for South African life. All the tools you need, none of the noise.</p>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#eaf3de">💰</div>
+        <div class="feature-title">Income ring & spending tracker</div>
+      </div>
+      <div class="feature-desc">See exactly how much you have left to spend this month. Real-time. No spreadsheets.</div>
+      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#faeeda">📊</div>
+        <div class="feature-title">Weekly envelope budgeting</div>
+      </div>
+      <div class="feature-desc">Split your money into envelopes — Groceries, Transport, Airtime, Kids, Eating out. Know when an envelope is almost empty.</div>
+      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#eeedfe">💳</div>
+        <div class="feature-title">Debt Freedom Score</div>
+      </div>
+      <div class="feature-desc">Track every debt. See your Debt Freedom Score. Choose Avalanche or Snowball strategy and watch your score improve.</div>
+      <span class="feature-tag" style="background:#eeedfe;color:#534ab7">PRO</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#eaf3de">🌱</div>
+        <div class="feature-title">Savings goals</div>
+      </div>
+      <div class="feature-desc">Set a goal, set a monthly contribution, watch the progress bar grow. Home deposit, holiday, phone, education — you name it.</div>
+      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#faeeda">📈</div>
+        <div class="feature-title">Grow your money</div>
+      </div>
+      <div class="feature-desc">Learn about TFSA, ETFs, Stokvel, Retirement Annuities, and 32-Day Notice accounts — explained simply for SA life.</div>
+      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
+    </div>
+    <div class="feature-card">
+      <div class="feature-header">
+        <div class="feature-icon" style="background:#eaf3de">🤝</div>
+        <div class="feature-title">Earn with referrals</div>
+      </div>
+      <div class="feature-desc">Refer friends and earn real money. R10 when they go Pro, up to R70 per person over 5 months. Paid monthly via Capitec Pay.</div>
+      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE TO JOIN</span>
+    </div>
+  </div>
+</section>
+
+<!-- For who -->
+<section class="for-who">
+  <h2>Built for real SA life.</h2>
+  <p class="sub">Whatever your life stage — RandWise was built with you in mind.</p>
+  <div class="life-stages">
+    <div class="life-stage"><div class="life-stage-emoji">🎓</div><div class="life-stage-name">Students</div></div>
+    <div class="life-stage"><div class="life-stage-emoji">🏠</div><div class="life-stage-name">Domestic workers</div></div>
+    <div class="life-stage"><div class="life-stage-emoji">💼</div><div class="life-stage-name">Employed</div></div>
+    <div class="life-stage"><div class="life-stage-emoji">🏪</div><div class="life-stage-name">Self-employed</div></div>
+    <div class="life-stage"><div class="life-stage-emoji">👨‍👩‍👧</div><div class="life-stage-name">Parents</div></div>
+    <div class="life-stage"><div class="life-stage-emoji">👴</div><div class="life-stage-name">Pensioners</div></div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials">
+  <h2>What beta testers say.</h2>
+  <p class="sub">Real feedback from real South Africans during testing.</p>
+  <div class="testimonial-list">
+    <div class="testimonial">
+      <div class="testimonial-text">"RandWise helped me see where my money was actually going for the first time. Worth every cent."</div>
+      <div class="testimonial-author">— Beta tester, Domestic worker, Johannesburg</div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">"I finally have a debt plan. The Debt Freedom Score showed me exactly which debt to tackle first. I'm R8,000 closer to being debt-free."</div>
+      <div class="testimonial-author">— Beta tester, Employed, Soweto</div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-text">"As a student I never had a budget app that understood my life. RandWise just gets it."</div>
+      <div class="testimonial-author">— Beta tester, Student, Cape Town</div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing -->
+<section class="pricing">
+  <h2>Simple pricing.</h2>
+  <p class="sub">Free during beta. Upgrade anytime — cancel anytime.</p>
+  <div class="price-cards">
+    <div class="price-card featured">
+      <div class="price-name">Free</div>
+      <div class="price-amount">R0</div>
+      <div class="price-period">forever during beta</div>
+      <div class="price-features">
+        <div class="price-feature">Income tracker</div>
+        <div class="price-feature">Weekly envelopes</div>
+        <div class="price-feature">Savings goals</div>
+        <div class="price-feature">Grow money education</div>
+        <div class="price-feature">Referral programme</div>
+      </div>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Pro</div>
+      <div class="price-amount">R49</div>
+      <div class="price-period">/month or R470/year</div>
+      <div class="price-features">
+        <div class="price-feature">Everything in Free</div>
+        <div class="price-feature">Debt Freedom Score</div>
+        <div class="price-feature">AI spending insights</div>
+        <div class="price-feature">Electricity tracker</div>
+        <div class="price-feature">Smart nudge alerts</div>
+      </div>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Premium</div>
+      <div class="price-amount">R129</div>
+      <div class="price-period">/month or R1,238/year</div>
+      <div class="price-features">
+        <div class="price-feature">Everything in Pro</div>
+        <div class="price-feature">Household/Family view</div>
+        <div class="price-feature">Bond readiness score</div>
+        <div class="price-feature">Investment recommendations</div>
+        <div class="price-feature">Stokvel management</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Join form -->
+<div class="signup" id="join">
+  <div id="form-container">
+    <h2>Join the beta. It's free.</h2>
+    <p class="sub">Limited spots available. We'll WhatsApp you personally with access instructions.</p>
+
+    <div class="form-group">
+      <label class="form-label">Your full name</label>
+      <input type="text" id="input-name" class="form-input" placeholder="e.g. Thandi Dlamini" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">WhatsApp number</label>
+      <input type="tel" id="input-phone" class="form-input" placeholder="+27 XX XXX XXXX" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your life stage</label>
+      <select id="input-stage" class="form-select">
+        <option value="">Select your life stage...</option>
+        <option>Student / Learner</option>
+        <option>Domestic worker</option>
+        <option>Employed full-time</option>
+        <option>Employed part-time</option>
+        <option>Self-employed / Freelancer</option>
+        <option>Business owner</option>
+        <option>Parent / Caregiver</option>
+        <option>Pensioner / Retired</option>
+        <option>Unemployed / Job seeking</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">How did you hear about us?</label>
+      <select id="input-source" class="form-select">
+        <option value="">Select...</option>
+        <option>WhatsApp</option>
+        <option>Friend / Family</option>
+        <option>Facebook</option>
+        <option>Instagram</option>
+        <option>TikTok</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitWaitlist()">
+      Join free beta →
+    </button>
+    <div class="form-note">🔒 Your info is private and protected under POPIA. We'll only contact you via WhatsApp to share your access link. No spam, ever.</div>
+  </div>
+
+  <div class="success-state" id="success-state">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">You're on the list!</div>
+    <div class="success-sub">We'll WhatsApp you within 24 hours with your personal access link.<br><br>In the meantime, share this page with a friend — earn R10 when they go Pro. 💚</div>
+    <br>
+    <button onclick="shareApp()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;width:100%">
+      📤 Share with a friend
+    </button>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>
+    🌱 <strong style="color:rgba(255,255,255,0.8)">RandWise</strong><br>
+    Your money, your rules. Built for South Africa 🇿🇦<br><br>
+    <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a><br><br>
+    © 2026 RandWise · Nyaniso Khoza · POPIA Compliant
+  </p>
+</footer>
+
+<!-- Sticky CTA -->
+<div class="sticky-cta" id="sticky-cta">
+  <button onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">
+    🎁 Join free beta →
+  </button>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+
+// Hide sticky CTA when form is visible
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    document.getElementById('sticky-cta').style.display = e.isIntersecting ? 'none' : 'flex';
+  });
+});
+observer.observe(document.getElementById('join'));
+
+async function submitWaitlist() {
+  const name = document.getElementById('input-name').value.trim();
+  const phone = document.getElementById('input-phone').value.trim();
+  const stage = document.getElementById('input-stage').value;
+  const source = document.getElementById('input-source').value;
+
+  if (!name || !phone) { alert('Please enter your name and WhatsApp number.'); return; }
+  if (!stage) { alert('Please select your life stage.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Joining...';
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ name, phone, life_stage: stage, source, status: 'pending' }),
+    });
+    document.getElementById('form-container').style.display = 'none';
+    document.getElementById('success-state').classList.add('show');
+  } catch {
+    btn.disabled = false;
+    btn.textContent = 'Join free beta →';
+    alert('Something went wrong. Please try again or WhatsApp us directly.');
+  }
+}
+
+function shareApp() {
+  const text = `Hey! I just joined the RandWise beta — a free money app built specifically for South Africans 🇿🇦\n\nIt tracks spending, helps with debt, and teaches you how to grow your money.\n\nJoin free here 👇\nhttps://randwise.app`;
+  if (navigator.share) {
+    navigator.share({ title: 'RandWise — Built for SA', text, url: 'https://randwise.app' });
+  } else {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
+  }
+}
+</script>
+</body>
+</html>
