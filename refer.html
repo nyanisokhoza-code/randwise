@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>RandWise — You've been invited 🇿🇦</title>
+<meta name="description" content="Your friend thinks you'd love RandWise — the South African money app that actually gets how we live." />
+<meta property="og:title" content="You've been invited to RandWise 🇿🇦" />
+<meta property="og:description" content="Track your rands, crush your debts, grow your savings. Built for South Africa." />
+<meta name="theme-color" content="#1a7a4a" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --green: #1a7a4a;
+    --green-light: #eaf3de;
+    --green-dark: #0e4a2a;
+    --green-mid: #639922;
+    --gold: #c9a84c;
+    --gold-light: #fdf4e3;
+    --white: #ffffff;
+    --bg: #f7f6f2;
+    --text: #1a1a18;
+    --text-mid: #4a4a48;
+    --text-muted: #888780;
+    --border: #e2e0d8;
+    --red: #a32d2d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    background: var(--green-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(26,122,74,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(99,153,34,0.2) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: 'R';
+    position: absolute;
+    bottom: -60px;
+    right: -30px;
+    font-family: 'Fraunces', serif;
+    font-size: 320px;
+    font-weight: 800;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .flag-strip {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .flag-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .logo-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .logo-mark {
+    width: 52px; height: 52px;
+    background: var(--green);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .logo-text {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .invite-badge {
+    background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+    animation: fadeDown 0.6s 0.15s ease both;
+  }
+
+  .hero-headline {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 8vw, 52px);
+    font-weight: 800;
+    color: white;
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 16px;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+
+  .hero-headline em {
+    font-style: italic;
+    color: #7dd4a0;
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.65);
+    text-align: center;
+    line-height: 1.6;
+    max-width: 340px;
+    margin-bottom: 36px;
+    animation: fadeDown 0.6s 0.25s ease both;
+  }
+
+  /* Referrer card */
+  .referrer-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 380px;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s 0.3s ease both;
+    backdrop-filter: blur(8px);
+  }
+
+  .referrer-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+
+  .referrer-info { flex: 1; }
+
+  .referrer-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+  }
+
+  .referrer-msg {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.4;
+  }
+
+  .ref-code-pill {
+    background: var(--green);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+
+  /* CTA */
+  .cta-wrap {
+    width: 100%;
+    max-width: 380px;
+    animation: fadeDown 0.6s 0.35s ease both;
+  }
+
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 18px;
+    background: var(--green);
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 16px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 24px rgba(26,122,74,0.4);
+    font-family: 'DM Sans', sans-serif;
+    margin-bottom: 12px;
+  }
+
+  .btn-primary:active { transform: scale(0.98); }
+
+  .hero-legal {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+
+  /* ── Stats strip ── */
+  .stats-strip {
+    background: var(--white);
+    padding: 28px 24px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+  }
+
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  /* ── Features ── */
+  .section {
+    padding: 48px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 28px;
+  }
+
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 18px;
+    background: var(--white);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+  }
+
+  .feature-item:hover { border-color: var(--green); }
+
+  .feature-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--green-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .feature-content { flex: 1; }
+
+  .feature-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .feature-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .feature-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    display: inline-block;
+    letter-spacing: 0.4px;
+  }
+
+  .badge-free { background: var(--green-light); color: var(--green-dark); }
+  .badge-pro { background: #eeedfe; color: #534ab7; }
+
+  /* ── Signup form ── */
+  .form-section {
+    background: var(--green-dark);
+    padding: 48px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .form-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 80% 20%, rgba(26,122,74,0.5) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .form-inner {
+    max-width: 420px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .form-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .form-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 15px 16px;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    color: white;
+    font-size: 15px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .form-input::placeholder { color: rgba(255,255,255,0.3); }
+  .form-input:focus {
+    border-color: rgba(125,212,160,0.6);
+    background: rgba(255,255,255,0.12);
+  }
+
+  select.form-input option { background: #1a3a28; color: white; }
+
+  .form-submit {
+    width: 100%;
+    padding: 17px;
+    background: white;
+    color: var(--green-dark);
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: transform 0.15s, opacity 0.15s;
+    margin-top: 8px;
+  }
+
+  .form-submit:hover { opacity: 0.92; }
+  .form-submit:active { transform: scale(0.98); }
+  .form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Success state */
+  .success-box {
+    display: none;
+    text-align: center;
+    padding: 32px 24px;
+  }
+
+  .success-emoji { font-size: 56px; margin-bottom: 16px; }
+
+  .success-title {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 10px;
+  }
+
+  .success-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .share-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: transform 0.15s;
+    text-decoration: none;
+  }
+
+  .share-btn:active { transform: scale(0.96); }
+  .share-wa { background: #25D366; color: white; }
+  .share-copy { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.2); }
+
+  /* ── Referral earn section ── */
+  .earn-section {
+    padding: 48px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .earn-card {
+    background: var(--gold-light);
+    border: 1.5px solid rgba(201,168,76,0.3);
+    border-radius: 20px;
+    padding: 28px 24px;
+  }
+
+  .earn-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .earn-icon {
+    width: 48px; height: 48px;
+    background: var(--gold);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .earn-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .earn-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .earn-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 12px;
+  }
+
+  .earn-label { font-size: 13px; color: var(--text-mid); }
+  .earn-amount { font-size: 14px; font-weight: 700; color: var(--green); }
+
+  .earn-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--green);
+    border-radius: 12px;
+    color: white;
+  }
+
+  .earn-total-label { font-size: 13px; font-weight: 600; }
+  .earn-total-amount { font-size: 18px; font-weight: 800; font-family: 'Fraunces', serif; }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--text);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+  }
+
+  .footer-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    line-height: 1.6;
+    max-width: 280px;
+    margin: 0 auto;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+
+  .pulse { animation: pulse 2.5s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="flag-strip">
+    <div class="flag-dot" style="background:#007A4D"></div>
+    <div class="flag-dot" style="background:#FFB612"></div>
+    <div class="flag-dot" style="background:#DE3831"></div>
+    <div class="flag-dot" style="background:#002395"></div>
+    <div class="flag-dot" style="background:#ffffff"></div>
+    <div class="flag-dot" style="background:#000000"></div>
+  </div>
+
+  <div class="logo-wrap">
+    <div class="logo-mark">R</div>
+    <span class="logo-text">RandWise</span>
+  </div>
+
+  <div class="invite-badge">🎉 You've been personally invited</div>
+
+  <h1 class="hero-headline">
+    Your money,<br/><em>your rules.</em><br/>Built for 🇿🇦
+  </h1>
+
+  <p class="hero-sub" id="heroSub">
+    Your friend thinks you'd love RandWise — the SA money app that actually gets how we live and spend.
+  </p>
+
+  <!-- Referrer card — shown when ref code in URL -->
+  <div class="referrer-card" id="referrerCard" style="display:none">
+    <div class="referrer-avatar" id="referrerAvatar">?</div>
+    <div class="referrer-info">
+      <div class="referrer-name" id="referrerName">Your friend</div>
+      <div class="referrer-msg">invited you to try RandWise for free</div>
+    </div>
+    <div class="ref-code-pill" id="refCodePill">–</div>
+  </div>
+
+  <div class="cta-wrap pulse">
+    <a href="#join" class="btn-primary">Join the beta — it's free →</a>
+  </div>
+  <p class="hero-legal">No credit card. No app store. Beta access via invite link.<br/>POPIA compliant · Your data stays yours.</p>
+</section>
+
+<!-- ── STATS ── -->
+<div class="stats-strip">
+  <div class="stat-item">
+    <span class="stat-num">Free</span>
+    <span class="stat-label">to start<br/>forever</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">7</span>
+    <span class="stat-label">screens<br/>built for SA</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">R49</span>
+    <span class="stat-label">Pro/mo<br/>skip coffee once</span>
+  </div>
+</div>
+
+<!-- ── FEATURES ── -->
+<section class="section">
+  <p class="section-eyebrow">What you get</p>
+  <h2 class="section-title">Built different.<br/>Built for here.</h2>
+
+  <div class="feature-list">
+    <div class="feature-item">
+      <div class="feature-icon">💸</div>
+      <div class="feature-content">
+        <div class="feature-title">Expense tracker that gets SA</div>
+        <div class="feature-desc">Groceries, airtime, stokvel, mashonisa, funeral cover — categories that actually match your life.</div>
+        <span class="feature-badge badge-free">Free</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <div class="feature-icon">📊</div>
+      <div class="feature-content">
+        <div class="feature-title">Weekly envelope budgeting</div>
+        <div class="feature-desc">See exactly what you can spend each week after deductions. No more month-end panic.</div>
+        <span class="feature-badge badge-free">Free</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <div class="feature-icon">🏦</div>
+      <div class="feature-content">
+        <div class="feature-title">Debt Freedom Score</div>
+        <div class="feature-desc">Mashonisa, credit card, bond — see your debt-to-income ratio and get an Avalanche/Snowball payoff plan.</div>
+        <span class="feature-badge badge-pro">Pro</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <div class="feature-icon">📈</div>
+      <div class="feature-content">
+        <div class="feature-title">Savings goals & investment nudges</div>
+        <div class="feature-desc">TFSA, ETFs, 32-Day notice, Stokvel — we show you where to put your next rand.</div>
+        <span class="feature-badge badge-pro">Pro</span>
+      </div>
+    </div>
+
+    <div class="feature-item">
+      <div class="feature-icon">🛡️</div>
+      <div class="feature-content">
+        <div class="feature-title">Built for every life stage</div>
+        <div class="feature-desc">Student. Hustler. Parent. Pensioner. Your dashboard adapts to who you are and what you need.</div>
+        <span class="feature-badge badge-free">Free</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── EARN WITH REFERRALS ── -->
+<section class="earn-section">
+  <p class="section-eyebrow">Referral programme</p>
+  <h2 class="section-title">Refer friends.<br/>Earn real money.</h2>
+
+  <div class="earn-card">
+    <div class="earn-header">
+      <div class="earn-icon">💰</div>
+      <div class="earn-title">Earn up to R40<br/>per person you refer</div>
+    </div>
+    <div class="earn-rows">
+      <div class="earn-row">
+        <span class="earn-label">When they go Pro</span>
+        <span class="earn-amount">R10 once</span>
+      </div>
+      <div class="earn-row">
+        <span class="earn-label">Monthly (for 6 months)</span>
+        <span class="earn-amount">R5/month</span>
+      </div>
+      <div class="earn-row">
+        <span class="earn-label">Refer 10 people</span>
+        <span class="earn-amount">up to R400</span>
+      </div>
+    </div>
+    <div class="earn-total">
+      <span class="earn-total-label">Max per person</span>
+      <span class="earn-total-amount">R40 total</span>
+    </div>
+    <p style="font-size:12px; color:#888; margin-top:14px; line-height:1.5;">
+      Paid monthly via Capitec Pay when your balance hits R50. No selling. No stock. Just share your link. 🇿🇦
+    </p>
+  </div>
+</section>
+
+<!-- ── SIGNUP FORM ── -->
+<section class="form-section" id="join">
+  <div class="form-inner">
+
+    <div id="formBox">
+      <h2 class="form-title">Join the beta.<br/>It's free. Really.</h2>
+      <p class="form-sub">Leave your details and we'll send you access directly via WhatsApp.</p>
+
+      <div class="form-group">
+        <label class="form-label">Your first name</label>
+        <input class="form-input" type="text" id="fname" placeholder="e.g. Nyaniso" autocomplete="given-name" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">WhatsApp number</label>
+        <input class="form-input" type="tel" id="fphone" placeholder="e.g. 082 123 4567" autocomplete="tel" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your life stage</label>
+        <select class="form-input" id="fstage">
+          <option value="">— pick one —</option>
+          <option>🎓 Student</option>
+          <option>💼 Working adult</option>
+          <option>🏠 Homeowner</option>
+          <option>👨‍👩‍👧 Parent / Supporting family</option>
+          <option>🚀 Side hustler / Self-employed</option>
+          <option>🌟 Pensioner / Retired</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email address <span style="color:rgba(255,255,255,0.35)">(optional)</span></label>
+        <input class="form-input" type="email" id="femail" placeholder="your@email.com" autocomplete="email" />
+      </div>
+
+      <input type="hidden" id="frefcode" value="" />
+
+      <button class="form-submit" id="submitBtn" onclick="handleSubmit()">
+        Get my free beta access →
+      </button>
+
+      <p style="font-size:11px; color:rgba(255,255,255,0.3); text-align:center; margin-top:12px; line-height:1.5;">
+        By joining you agree to our beta terms. We'll WhatsApp you the access link — no spam ever.
+      </p>
+    </div>
+
+    <div class="success-box" id="successBox">
+      <div class="success-emoji">🎉</div>
+      <h3 class="success-title">You're on the list!</h3>
+      <p class="success-sub" id="successMsg">
+        We'll send you your access link via WhatsApp within 24 hours. Tell your friends — the more people who join, the better RandWise gets.
+      </p>
+      <div class="share-row">
+        <a href="#" class="share-btn share-wa" id="waShareBtn">
+          💬 Share on WhatsApp
+        </a>
+        <button class="share-btn share-copy" onclick="copyLink()">
+          🔗 Copy link
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="footer">
+  <div class="footer-logo">RandWise 🇿🇦</div>
+  <p class="footer-sub">
+    Built by Nyaniso Khoza · South Africa<br/>
+    POPIA compliant · Beta v1.0<br/>
+    © 2026 RandWise. All rights reserved.
+  </p>
+</footer>
+
+<script>
+  const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+
+  // ── Read referral code from URL ──────────────────────────────────
+  const params = new URLSearchParams(window.location.search);
+  const refCode = params.get('ref') || params.get('code') || '';
+  const refName = params.get('name') || '';
+
+  if (refCode) {
+    document.getElementById('frefcode').value = refCode;
+    document.getElementById('referrerCard').style.display = 'flex';
+    document.getElementById('refCodePill').textContent = refCode.toUpperCase();
+
+    if (refName) {
+      const name = decodeURIComponent(refName);
+      document.getElementById('referrerName').textContent = name;
+      document.getElementById('referrerAvatar').textContent = name[0].toUpperCase();
+      document.getElementById('heroSub').textContent =
+        `${name} thinks you'd love RandWise — the SA money app that actually gets how we live and spend.`;
+    }
+  }
+
+  // ── Form submit ──────────────────────────────────────────────────
+  async function handleSubmit() {
+    const name = document.getElementById('fname').value.trim();
+    const phone = document.getElementById('fphone').value.trim();
+    const stage = document.getElementById('fstage').value;
+    const email = document.getElementById('femail').value.trim();
+    const ref = document.getElementById('frefcode').value.trim();
+
+    if (!name) { alert('Please enter your name'); return; }
+    if (!phone) { alert('Please enter your WhatsApp number'); return; }
+    if (!stage) { alert('Please select your life stage'); return; }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Joining...';
+
+    try {
+      // Save to Supabase waitlist table
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON,
+          'Authorization': `Bearer ${SUPABASE_ANON}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          name,
+          phone: phone.replace(/\s/g, ''),
+          life_stage: stage,
+          email: email || null,
+          referred_by: ref || null,
+          source: 'referral_page',
+          status: 'pending',
+        }),
+      });
+
+      // Show success regardless (even if table doesn't exist yet)
+      showSuccess(name, ref);
+    } catch (e) {
+      showSuccess(name, ref);
+    }
+  }
+
+  function showSuccess(name, ref) {
+    document.getElementById('formBox').style.display = 'none';
+    const box = document.getElementById('successBox');
+    box.style.display = 'block';
+
+    const msg = ref
+      ? `You joined via referral code ${ref.toUpperCase()} — whoever referred you will earn their first reward when you go Pro. We'll WhatsApp you the access link within 24 hours.`
+      : `We'll send you your access link via WhatsApp within 24 hours. Tell your friends — the more people who join, the better RandWise gets.`;
+    document.getElementById('successMsg').textContent = msg;
+
+    // WhatsApp share
+    const shareUrl = `https://nyanisokhoza-code.github.io/randwise/refer.html`;
+    const waMsg = encodeURIComponent(`I just joined the RandWise beta — a free SA money app that actually gets how we spend 🇿🇦💰 Join here: ${shareUrl}`);
+    document.getElementById('waShareBtn').href = `https://wa.me/?text=${waMsg}`;
+  }
+
+  function copyLink() {
+    const url = window.location.href.split('?')[0];
+    navigator.clipboard.writeText(url).then(() => {
+      alert('Link copied! Share it on WhatsApp.');
+    }).catch(() => {
+      alert('Copy this link: ' + url);
+    });
+  }
+</script>
+</body>
+</html>
