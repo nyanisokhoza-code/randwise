@@ -2,439 +2,633 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>RandWise — Your money, your rules 🇿🇦</title>
-<meta name="description" content="The South African personal finance app built for real life. Track spending, crush debt, grow savings. Free beta access now open.">
-<meta property="og:title" content="RandWise — Built for South Africa 🇿🇦">
-<meta property="og:description" content="Finally a money app that gets South African life. Free beta access — limited spots.">
-<meta property="og:image" content="https://via.placeholder.com/1200x630/1a7a4a/ffffff?text=RandWise+🇿🇦">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a7a4a">
+<title>RandWise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  :root {
-    --green: #1a7a4a; --greenLight: #eaf3de; --greenDark: #27500a; --greenMid: #639922;
-    --red: #a32d2d; --purple: #534ab7; --amber: #ba7517;
-    --white: #ffffff; --bg: #f7f6f2; --text: #2c2c2a; --muted: #888780;
-  }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); }
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --g:#1a7a4a;--gl:#eaf3de;--gd:#27500a;--gm:#639922;
+  --r:#a32d2d;--rl:#fdecea;--p:#534ab7;--pl:#eeedfe;
+  --a:#ba7517;--al:#faeeda;--w:#fff;--bg:#f7f6f2;--bg2:#f0efe9;
+  --bd:#e8e6de;--t:#2c2c2a;--m:#5f5e5a;--mu:#888780;--h:#b4b2a9;
+  --st:env(safe-area-inset-top,44px);--sb:env(safe-area-inset-bottom,20px)
+}
+html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t)}
+#app{height:100%;display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
 
-  /* Hero */
-  .hero { background: linear-gradient(160deg, #0d4a2a 0%, #1a7a4a 60%, #2d9e5f 100%); padding: 60px 24px 80px; text-align: center; position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 60%); }
-  .logo { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 32px; }
-  .logo-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.15); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-  .logo-text { font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.5px; }
-  .beta-badge { display: inline-block; background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 20px; letter-spacing: 1px; border: 1px solid rgba(255,255,255,0.2); }
-  .hero h1 { font-size: 36px; font-weight: 900; color: white; line-height: 1.15; margin-bottom: 16px; letter-spacing: -1px; }
-  .hero h1 span { color: #a8d96e; }
-  .hero p { font-size: 16px; color: rgba(255,255,255,0.85); line-height: 1.6; max-width: 340px; margin: 0 auto 32px; }
-  .hero-cta { background: white; color: var(--green); font-size: 16px; font-weight: 800; padding: 16px 32px; border-radius: 14px; border: none; cursor: pointer; display: inline-block; text-decoration: none; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.15s; }
-  .hero-cta:active { transform: scale(0.97); }
-  .hero-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 12px; }
-  .spots-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 14px; margin-top: 20px; }
-  .spots-dot { width: 8px; height: 8px; border-radius: 50%; background: #a8d96e; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-  .spots-text { font-size: 12px; color: rgba(255,255,255,0.8); font-weight: 500; }
+/* SPLASH */
+#splash{background:linear-gradient(160deg,#0a3d20 0%,#1a7a4a 55%,#2d9e5f 100%);align-items:center;justify-content:center;text-align:center;padding:40px 28px;position:relative;overflow:hidden}
+#splash::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(168,217,110,.15) 0%,transparent 60%)}
+.s-logo{font-size:60px;margin-bottom:16px;position:relative}
+.s-title{font-size:40px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1.1;margin-bottom:10px;position:relative}
+.s-title span{color:#a8d96e}
+.s-sub{font-size:15px;color:rgba(255,255,255,.75);line-height:1.6;max-width:280px;margin:0 auto 16px;position:relative}
+.s-flag{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:36px;position:relative}
+.btn-p{background:#fff;color:var(--g);font-size:16px;font-weight:800;padding:16px 32px;border-radius:16px;border:none;cursor:pointer;width:100%;max-width:320px;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.2);transition:transform .1s}
+.btn-p:active{transform:scale(.97)}
+.btn-g{background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:14px;font-weight:600;padding:14px 32px;border-radius:16px;border:1px solid rgba(255,255,255,.2);cursor:pointer;width:100%;max-width:320px;margin-top:12px;position:relative}
 
-  /* Stats bar */
-  .stats-bar { background: white; padding: 20px 24px; display: flex; justify-content: space-around; border-bottom: 1px solid #e8e6de; }
-  .stat { text-align: center; }
-  .stat-val { font-size: 22px; font-weight: 800; color: var(--green); }
-  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* ONBOARDING */
+#onboarding{background:var(--w);position:relative}
+.ob-hdr{padding:calc(var(--st) + 8px) 20px 12px;background:var(--w);border-bottom:.5px solid var(--bd);flex-shrink:0}
+.ob-back{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--mu);font-weight:500;background:none;border:none;cursor:pointer;padding:4px 0}
+.ob-prog{height:3px;background:var(--bg2);border-radius:2px;margin-top:10px;overflow:hidden}
+.ob-prog-fill{height:3px;background:var(--g);border-radius:2px;transition:width .4s ease}
+.ob-body{flex:1;overflow-y:auto;padding:24px 20px 130px}
+.ob-q{font-size:22px;font-weight:800;color:var(--t);line-height:1.25;margin-bottom:6px;letter-spacing:-.5px}
+.ob-hint{font-size:13px;color:var(--mu);margin-bottom:22px;line-height:1.5}
+.ob-foot{position:absolute;bottom:0;left:0;right:0;padding:14px 20px calc(var(--sb) + 14px);background:var(--w);border-top:.5px solid var(--bd)}
+.ob-foot .btn-p{color:#fff;background:var(--g);box-shadow:0 4px 16px rgba(26,122,74,.3)}
+.ob-foot .btn-p:disabled{background:var(--bg2);color:var(--h);box-shadow:none}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:14px;border:2px solid transparent;cursor:pointer;transition:all .15s}
+.opt.sel{background:var(--gl);border-color:var(--g)}
+.opt-e{font-size:26px;flex-shrink:0}
+.opt-n{font-size:14px;font-weight:700;color:var(--t)}
+.opt-d{font-size:12px;color:var(--mu);margin-top:1px}
+.opt-r{width:20px;height:20px;border-radius:50%;border:2px solid var(--bd);flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.opt.sel .opt-r{background:var(--g);border-color:var(--g)}
+.opt.sel .opt-r::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+.inc-wrap{display:flex;align-items:center;background:var(--bg);border-radius:16px;border:2px solid var(--bd);overflow:hidden;margin-bottom:12px}
+.inc-r{font-size:24px;font-weight:700;color:var(--mu);padding:0 16px}
+.inc-in{flex:1;padding:18px 16px 18px 0;font-size:32px;font-weight:800;color:var(--t);background:none;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}
+.freq-row{display:flex;gap:8px;margin-bottom:16px}
+.freq{flex:1;padding:10px 6px;background:var(--bg);border-radius:10px;border:1.5px solid var(--bd);font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;text-align:center;transition:all .15s}
+.freq.act{background:var(--gl);border-color:var(--g);color:var(--g)}
+.goals{display:flex;flex-direction:column;gap:8px}
+.goal{display:flex;align-items:center;gap:12px;padding:13px;background:var(--bg);border-radius:12px;border:2px solid transparent;cursor:pointer;transition:all .15s}
+.goal.sel{background:var(--gl);border-color:var(--g)}
+.goal-chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;transition:all .15s}
+.goal.sel .goal-chk{background:var(--g);border-color:var(--g);color:#fff}
+.name-in{width:100%;padding:18px 20px;font-size:18px;font-weight:700;background:var(--bg);border:2px solid var(--bd);border-radius:16px;outline:none;color:var(--t);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:14px;transition:border-color .2s}
+.name-in:focus{border-color:var(--g)}
+.auth-row{display:flex;align-items:center;background:var(--bg);border-radius:14px;border:2px solid var(--bd);overflow:hidden;margin-bottom:10px}
+.auth-in{flex:1;padding:15px 16px;font-size:15px;color:var(--t);background:none;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}
+.auth-toggle{padding:12px 16px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--mu);font-weight:500}
 
-  /* Section */
-  section { padding: 48px 24px; }
-  section h2 { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 8px; letter-spacing: -0.5px; }
-  section .sub { font-size: 15px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+/* SAVING */
+#saving{background:var(--w);align-items:center;justify-content:center;gap:14px}
+.spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Problem section */
-  .problem { background: white; }
-  .problem-list { display: flex; flex-direction: column; gap: 14px; }
-  .problem-item { display: flex; align-items: flex-start; gap: 14px; padding: 16px; background: var(--bg); border-radius: 12px; }
-  .problem-emoji { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-  .problem-text { font-size: 14px; color: var(--text); line-height: 1.5; }
-  .problem-text strong { color: var(--red); }
+/* DONE */
+#done{background:linear-gradient(160deg,#0a3d20,#1a7a4a);align-items:center;justify-content:center;text-align:center;padding:40px 28px}
+.done-ring{width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:44px;margin:0 auto 20px;border:3px solid rgba(255,255,255,.3)}
+.done-title{font-size:26px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:-.5px}
+.done-sub{font-size:14px;color:rgba(255,255,255,.75);line-height:1.6;margin-bottom:28px}
+.done-feats{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;width:100%;max-width:300px}
+.done-feat{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.1);border-radius:12px;padding:12px 14px}
+.done-feat-t{font-size:13px;color:rgba(255,255,255,.9);text-align:left;font-weight:500}
 
-  /* Features */
-  .features { background: var(--bg); }
-  .feature-grid { display: flex; flex-direction: column; gap: 14px; }
-  .feature-card { background: white; border-radius: 16px; padding: 20px; border: 0.5px solid #e8e6de; }
-  .feature-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-  .feature-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-  .feature-title { font-size: 15px; font-weight: 700; }
-  .feature-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
-  .feature-tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 8px; }
+/* LOGIN */
+#login{background:var(--w)}
+.login-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;overflow-y:auto}
 
-  /* For who */
-  .for-who { background: white; }
-  .life-stages { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .life-stage { background: var(--bg); border-radius: 12px; padding: 14px; text-align: center; }
-  .life-stage-emoji { font-size: 28px; margin-bottom: 6px; }
-  .life-stage-name { font-size: 12px; font-weight: 600; color: var(--text); }
-
-  /* Testimonials */
-  .testimonials { background: var(--greenLight); }
-  .testimonials h2 { color: var(--greenDark); }
-  .testimonials .sub { color: var(--green); }
-  .testimonial-list { display: flex; flex-direction: column; gap: 14px; }
-  .testimonial { background: white; border-radius: 14px; padding: 16px; border-left: 3px solid var(--green); }
-  .testimonial-text { font-size: 14px; color: var(--text); line-height: 1.6; font-style: italic; margin-bottom: 8px; }
-  .testimonial-author { font-size: 12px; color: var(--muted); font-weight: 500; }
-
-  /* Pricing */
-  .pricing { background: var(--bg); }
-  .price-cards { display: flex; flex-direction: column; gap: 12px; }
-  .price-card { background: white; border-radius: 16px; padding: 20px; border: 1.5px solid #e8e6de; }
-  .price-card.featured { border-color: var(--green); background: var(--greenLight); }
-  .price-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-  .price-amount { font-size: 32px; font-weight: 800; color: var(--green); }
-  .price-period { font-size: 13px; color: var(--muted); }
-  .price-features { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
-  .price-feature { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .price-feature::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
-
-  /* Signup form */
-  .signup { background: linear-gradient(160deg, #0d4a2a, #1a7a4a); padding: 48px 24px 60px; }
-  .signup h2 { color: white; font-size: 28px; font-weight: 900; margin-bottom: 8px; }
-  .signup .sub { color: rgba(255,255,255,0.8); margin-bottom: 28px; }
-  .form-group { margin-bottom: 14px; }
-  .form-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 6px; display: block; }
-  .form-input { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-size: 15px; outline: none; transition: border-color 0.2s; }
-  .form-input::placeholder { color: rgba(255,255,255,0.4); }
-  .form-input:focus { border-color: rgba(255,255,255,0.6); }
-  .form-select { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; font-size: 15px; outline: none; appearance: none; }
-  .form-select option { background: #1a7a4a; color: white; }
-  .submit-btn { width: 100%; padding: 16px; background: white; color: var(--green); font-size: 16px; font-weight: 800; border: none; border-radius: 14px; cursor: pointer; margin-top: 8px; transition: transform 0.15s; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-  .submit-btn:active { transform: scale(0.97); }
-  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-  .form-note { font-size: 11px; color: rgba(255,255,255,0.5); text-align: center; margin-top: 12px; line-height: 1.5; }
-
-  /* Success state */
-  .success-state { display: none; text-align: center; padding: 20px; }
-  .success-state.show { display: block; }
-  .success-icon { font-size: 56px; margin-bottom: 16px; }
-  .success-title { font-size: 24px; font-weight: 800; color: white; margin-bottom: 8px; }
-  .success-sub { font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.5; }
-
-  /* Footer */
-  footer { background: #0d4a2a; padding: 24px; text-align: center; }
-  footer p { font-size: 12px; color: rgba(255,255,255,0.5); line-height: 1.8; }
-  footer a { color: rgba(255,255,255,0.6); text-decoration: none; }
-
-  /* Sticky CTA */
-  .sticky-cta { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 12px 24px 24px; border-top: 1px solid #e8e6de; display: flex; gap: 10px; z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.08); }
-  .sticky-cta button { flex: 1; padding: 14px; background: var(--green); color: white; font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; }
-  .sticky-cta-hide { display: none; }
-
-  @media (min-width: 600px) {
-    .hero h1 { font-size: 44px; }
-    .life-stages { grid-template-columns: repeat(3, 1fr); }
-    .price-cards { flex-direction: row; }
-    .price-card { flex: 1; }
-  }
+/* MAIN APP */
+#main{background:var(--bg)}
+.tab-content{flex:1;overflow-y:auto}
+.tab-pane{display:none;height:100%}
+.tab-pane.active{display:block}
+.tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;cursor:pointer;border:none;background:none}
+.tab-icon{font-size:20px;line-height:1}
+.tab-lbl{font-size:10px;color:var(--h);font-weight:500}
+.tab-btn.act .tab-lbl{color:var(--g);font-weight:700}
+.add-btn{width:48px;height:48px;border-radius:14px;background:var(--g);display:flex;align-items:center;justify-content:center;margin-top:-8px;box-shadow:0 4px 16px rgba(26,122,74,.35);border:none;cursor:pointer}
+.add-btn span{font-size:26px;color:#fff;font-weight:300;line-height:1}
+.dash-hdr{padding:calc(var(--st) + 4px) 20px 12px;background:var(--w);border-bottom:.5px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.dash-g{font-size:16px;font-weight:700;color:var(--t)}
+.dash-s{font-size:12px;color:var(--mu);margin-top:2px}
+.avatar{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
+.dash-scroll{overflow-y:auto;padding:0 0 32px}
+.ring-card{background:var(--w);margin:16px;border-radius:18px;border:.5px solid var(--bd);padding:20px;display:flex;flex-direction:column;align-items:center}
+.ring-wrap{position:relative;width:180px;height:180px;margin-bottom:16px}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-lbl{font-size:11px;color:var(--mu);margin-bottom:2px}
+.ring-amt{font-size:28px;font-weight:800;line-height:1}
+.ring-tot{font-size:11px;color:var(--mu);margin-top:3px}
+.pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.pill{padding:7px 14px;border-radius:20px;border:1px solid;text-align:center}
+.pill-v{font-size:14px;font-weight:700}
+.pill-l{font-size:10px;color:var(--mu);margin-top:1px}
+.sec{padding:0 16px;margin-bottom:12px}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.sec-t{font-size:15px;font-weight:700;color:var(--t)}
+.sec-s{font-size:12px;color:var(--mu)}
+.wbars{display:flex;gap:8px;background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:16px 16px 12px}
+.wbw{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.wbt{width:100%;height:72px;background:var(--bg2);border-radius:6px;position:relative;overflow:hidden}
+.wbf{position:absolute;bottom:0;left:0;right:0;border-radius:6px;transition:height .5s ease}
+.wbl{font-size:11px;color:var(--mu)}
+.wbl.cur{color:var(--g);font-weight:700}
+.exp-row{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:.5px solid var(--bg2)}
+.exp-row:last-child{border-bottom:none}
+.exp-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.exp-n{font-size:13px;font-weight:600;color:var(--t)}
+.exp-nt{font-size:11px;color:var(--mu);margin-top:1px}
+.exp-amt{font-size:14px;font-weight:700;color:var(--r);margin-left:auto;flex-shrink:0}
+.exp-del{background:none;border:none;font-size:16px;color:var(--h);cursor:pointer;padding:4px 8px;flex-shrink:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none}
+.overlay.open{display:block}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--w);border-radius:24px 24px 0 0;padding:16px 20px calc(var(--sb) + 20px);z-index:101;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto}
+.sheet.open{transform:translateY(0)}
+.sh-handle{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px}
+.sh-title{font-size:17px;font-weight:800;color:var(--t);margin-bottom:16px}
+.cat-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;scrollbar-width:none}
+.cat-row::-webkit-scrollbar{display:none}
+.cat-p{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;background:var(--bg);border-radius:14px;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:all .15s}
+.cat-p.sel{background:var(--gl);border-color:var(--g)}
+.cat-p-e{font-size:22px}
+.cat-p-l{font-size:10px;font-weight:600;color:var(--mu);white-space:nowrap}
+.cat-p.sel .cat-p-l{color:var(--g)}
+.amt-wrap{display:flex;align-items:center;background:var(--bg);border-radius:14px;border:2px solid var(--bd);overflow:hidden;margin-bottom:10px}
+.amt-r{font-size:22px;font-weight:700;color:var(--mu);padding:0 14px}
+.amt-in{flex:1;padding:18px 14px 18px 0;font-size:28px;font-weight:800;color:var(--t);background:none;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}
+.quick-row{display:flex;gap:8px;margin-bottom:14px}
+.qbtn{flex:1;padding:9px 4px;background:var(--bg2);border-radius:10px;border:none;font-size:12px;font-weight:600;color:var(--m);cursor:pointer}
+.qbtn:active{background:var(--gl);color:var(--g)}
+.note-in{width:100%;padding:13px 16px;background:var(--bg);border:1.5px solid var(--bd);border-radius:12px;font-size:14px;color:var(--t);font-family:'Plus Jakarta Sans',sans-serif;outline:none;margin-bottom:16px}
+.save-btn{width:100%;padding:16px;background:var(--g);color:#fff;font-size:15px;font-weight:800;border:none;border-radius:14px;cursor:pointer;box-shadow:0 4px 16px rgba(26,122,74,.3)}
+.save-btn:disabled{background:var(--bg2);color:var(--h);box-shadow:none}
+.trial{display:flex;align-items:center;justify-content:space-between;background:var(--gl);padding:10px 16px;border-bottom:.5px solid var(--bd)}
+.trial-t{font-size:13px;font-weight:500;color:var(--gd)}
+.trial-c{font-size:13px;font-weight:800;color:var(--g)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center}
+.empty-e{font-size:44px;margin-bottom:14px}
+.empty-t{font-size:17px;font-weight:800;color:var(--t);margin-bottom:8px}
+.empty-s{font-size:13px;color:var(--mu);line-height:1.6}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gd);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.err-msg{font-size:12px;color:var(--r);margin-bottom:10px;line-height:1.5;display:none}
+.reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
 </style>
 </head>
 <body>
+<div id="app">
 
-<!-- Hero -->
-<div class="hero">
-  <div class="logo">
-    <div class="logo-icon">🌱</div>
-    <div class="logo-text">RandWise</div>
+<!-- SPLASH -->
+<div class="screen active" id="splash">
+  <div class="s-logo">🌱</div>
+  <div class="s-title">Your money,<br><span>your rules.</span></div>
+  <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
+  <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
+  <button class="btn-p" onclick="show('onboarding');startOB()">Get started — it's free</button>
+  <button class="btn-g" onclick="show('login')">I already have an account</button>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="login">
+  <div style="padding:calc(var(--st) + 8px) 20px 12px;background:var(--w);border-bottom:.5px solid var(--bd);flex-shrink:0">
+    <button class="ob-back" onclick="show('splash')">‹ Back</button>
   </div>
-  <div class="beta-badge">🇿🇦 BETA — FREE ACCESS</div>
-  <h1>Your money,<br><span>your rules.</span></h1>
-  <p>The first personal finance app built specifically for South African life. Not American. Not European. <strong style="color:white">Ours.</strong></p>
-  <a href="#join" class="hero-cta">Get free beta access →</a>
-  <div class="hero-sub">No credit card. No catch. Cancel anytime.</div>
-  <div class="spots-badge">
-    <div class="spots-dot"></div>
-    <div class="spots-text">Beta spots filling up — join free today</div>
+  <div class="login-body">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:40px;margin-bottom:12px">👋</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:6px">Welcome back</div>
+      <div style="font-size:14px;color:var(--mu);line-height:1.6">Sign in with your email and password.</div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Email address</div>
+    <div class="auth-row" style="margin-bottom:12px">
+      <input type="email" id="l-email" class="auth-in" placeholder="your@email.com" autocapitalize="none">
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Password</div>
+    <div class="auth-row">
+      <input type="password" id="l-pass" class="auth-in" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="auth-toggle" onclick="togglePass('l-pass',this)">Show</button>
+    </div>
+    <div class="err-msg" id="l-err"></div>
+    <button onclick="handleForgot()" style="background:none;border:none;color:var(--g);font-size:13px;font-weight:600;cursor:pointer;text-align:right;width:100%;margin:8px 0 16px">Forgot your password?</button>
+    <div class="reset-sent" id="reset-sent"></div>
+    <button class="save-btn" id="l-btn" onclick="doLogin()">Sign in →</button>
+    <div style="margin-top:16px;background:var(--bg);border-radius:12px;padding:14px;font-size:12px;color:var(--mu);line-height:1.7;text-align:center">
+      🔒 Your password is securely encrypted.<br>New to RandWise? Go back and tap Get Started.
+    </div>
   </div>
 </div>
 
-<!-- Stats -->
-<div class="stats-bar">
-  <div class="stat"><div class="stat-val">Free</div><div class="stat-label">During beta</div></div>
-  <div class="stat"><div class="stat-val">2 min</div><div class="stat-label">To set up</div></div>
-  <div class="stat"><div class="stat-val">🔒</div><div class="stat-label">POPIA compliant</div></div>
-  <div class="stat"><div class="stat-val">🇿🇦</div><div class="stat-label">Built local</div></div>
-</div>
-
-<!-- Problem -->
-<section class="problem">
-  <h2>Sound familiar?</h2>
-  <p class="sub">Most South Africans face these money problems every month.</p>
-  <div class="problem-list">
-    <div class="problem-item"><div class="problem-emoji">💸</div><div class="problem-text">Payday comes and <strong>you don't know where it all went</strong> — the money just disappears.</div></div>
-    <div class="problem-item"><div class="problem-emoji">😰</div><div class="problem-text">You have <strong>multiple debts</strong> — credit card, store card, personal loan — and no plan to clear them.</div></div>
-    <div class="problem-item"><div class="problem-emoji">📱</div><div class="problem-text">The money apps you've tried were <strong>built for Americans</strong> — they don't understand stokvel, mashonisa, or domestic worker life.</div></div>
-    <div class="problem-item"><div class="problem-emoji">🎯</div><div class="problem-text">You want to save for something — a home, a car, your child's education — but <strong>can't seem to make it happen.</strong></div></div>
+<!-- ONBOARDING -->
+<div class="screen" id="onboarding">
+  <div class="ob-hdr">
+    <button class="ob-back" id="ob-bk" onclick="obBack()">‹ Back</button>
+    <div id="ob-lbl" style="font-size:11px;color:var(--mu);font-weight:600;margin-top:6px">Step 1 of 5</div>
+    <div class="ob-prog"><div class="ob-prog-fill" id="ob-prog" style="width:20%"></div></div>
   </div>
-</section>
-
-<!-- Features -->
-<section class="features">
-  <h2>RandWise fixes this.</h2>
-  <p class="sub">Built for South African life. All the tools you need, none of the noise.</p>
-  <div class="feature-grid">
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#eaf3de">💰</div>
-        <div class="feature-title">Income ring & spending tracker</div>
+  <div class="ob-body" id="ob-body">
+    <!-- Step 1 -->
+    <div id="ob-1">
+      <div class="ob-q">What best describes you?</div>
+      <div class="ob-hint">Helps us personalise your experience.</div>
+      <div class="opts" id="stage-opts">
+        <div class="opt" data-s="Student / Learner" data-e="🎓" onclick="selStage(this)"><div class="opt-e">🎓</div><div><div class="opt-n">Student / Learner</div><div class="opt-d">Studying full-time or part-time</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-s="Domestic worker" data-e="🏠" onclick="selStage(this)"><div class="opt-e">🏠</div><div><div class="opt-n">Domestic worker</div><div class="opt-d">Housekeeper, gardener, nanny</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-s="Employed full-time" data-e="💼" onclick="selStage(this)"><div class="opt-e">💼</div><div><div class="opt-n">Employed full-time</div><div class="opt-d">Salaried or permanent position</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-s="Self-employed" data-e="🏪" onclick="selStage(this)"><div class="opt-e">🏪</div><div><div class="opt-n">Self-employed / Freelancer</div><div class="opt-d">Running your own business</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-s="Parent / Caregiver" data-e="👨‍👩‍👧" onclick="selStage(this)"><div class="opt-e">👨‍👩‍👧</div><div><div class="opt-n">Parent / Caregiver</div><div class="opt-d">Supporting a family</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-s="Pensioner / Retired" data-e="👴" onclick="selStage(this)"><div class="opt-e">👴</div><div><div class="opt-n">Pensioner / Retired</div><div class="opt-d">Living on pension</div></div><div class="opt-r"></div></div>
       </div>
-      <div class="feature-desc">See exactly how much you have left to spend this month. Real-time. No spreadsheets.</div>
-      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#faeeda">📊</div>
-        <div class="feature-title">Weekly envelope budgeting</div>
+    <!-- Step 2 -->
+    <div id="ob-2" style="display:none">
+      <div class="ob-q">How do you earn?</div>
+      <div class="ob-hint">We'll tailor your budget setup.</div>
+      <div class="opts" id="itype-opts">
+        <div class="opt" data-t="Monthly salary" onclick="selIType(this)"><div class="opt-e">📅</div><div><div class="opt-n">Monthly salary</div><div class="opt-d">Paid on a set date every month</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-t="Weekly pay" onclick="selIType(this)"><div class="opt-e">📆</div><div><div class="opt-n">Weekly pay</div><div class="opt-d">Paid every week</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-t="Irregular income" onclick="selIType(this)"><div class="opt-e">🌊</div><div><div class="opt-n">Irregular / Freelance</div><div class="opt-d">Income varies month to month</div></div><div class="opt-r"></div></div>
+        <div class="opt" data-t="Government grant" onclick="selIType(this)"><div class="opt-e">🏛️</div><div><div class="opt-n">Government grant / SASSA</div><div class="opt-d">Child support, disability, pension grant</div></div><div class="opt-r"></div></div>
       </div>
-      <div class="feature-desc">Split your money into envelopes — Groceries, Transport, Airtime, Kids, Eating out. Know when an envelope is almost empty.</div>
-      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#eeedfe">💳</div>
-        <div class="feature-title">Debt Freedom Score</div>
+    <!-- Step 3 -->
+    <div id="ob-3" style="display:none">
+      <div class="ob-q">What's your take-home pay?</div>
+      <div class="ob-hint">After tax. Private — only you can see it.</div>
+      <div class="inc-wrap"><div class="inc-r">R</div><input type="number" id="inc-in" class="inc-in" placeholder="0" oninput="updInc()"></div>
+      <div class="freq-row">
+        <div class="freq act" onclick="selFreq(this,'Monthly')">Monthly</div>
+        <div class="freq" onclick="selFreq(this,'Weekly')">Weekly</div>
+        <div class="freq" onclick="selFreq(this,'Daily')">Daily</div>
       </div>
-      <div class="feature-desc">Track every debt. See your Debt Freedom Score. Choose Avalanche or Snowball strategy and watch your score improve.</div>
-      <span class="feature-tag" style="background:#eeedfe;color:#534ab7">PRO</span>
+      <div id="inc-sum" style="display:none;background:var(--gl);border-radius:12px;padding:14px;font-size:13px;color:var(--gd);line-height:1.8"></div>
     </div>
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#eaf3de">🌱</div>
-        <div class="feature-title">Savings goals</div>
+    <!-- Step 4 -->
+    <div id="ob-4" style="display:none">
+      <div class="ob-q">What are your money goals?</div>
+      <div class="ob-hint">Pick all that apply.</div>
+      <div class="goals">
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">💳</span><span style="flex:1;font-size:13px;font-weight:600">Pay off my debt</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">🏠</span><span style="flex:1;font-size:13px;font-weight:600">Save for a home</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">🛡️</span><span style="flex:1;font-size:13px;font-weight:600">Build emergency fund</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">📊</span><span style="flex:1;font-size:13px;font-weight:600">Know where my money goes</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">📈</span><span style="flex:1;font-size:13px;font-weight:600">Start investing</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">🎓</span><span style="flex:1;font-size:13px;font-weight:600">Save for education</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">✈️</span><span style="flex:1;font-size:13px;font-weight:600">Save for a holiday</span><div class="goal-chk"></div></div>
+        <div class="goal" onclick="togGoal(this)"><span style="font-size:20px">👨‍👩‍👧</span><span style="flex:1;font-size:13px;font-weight:600">Provide for my family</span><div class="goal-chk"></div></div>
       </div>
-      <div class="feature-desc">Set a goal, set a monthly contribution, watch the progress bar grow. Home deposit, holiday, phone, education — you name it.</div>
-      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#faeeda">📈</div>
-        <div class="feature-title">Grow your money</div>
+    <!-- Step 5 -->
+    <div id="ob-5" style="display:none">
+      <div class="ob-q">Almost done!</div>
+      <div class="ob-hint">Create your account to save your progress.</div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Your name</div>
+      <input type="text" id="name-in" class="name-in" placeholder="First name or nickname" oninput="valStep()">
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Email address</div>
+      <div class="auth-row" style="margin-bottom:10px">
+        <input type="email" id="r-email" class="auth-in" placeholder="your@email.com" autocapitalize="none" oninput="valStep()">
       </div>
-      <div class="feature-desc">Learn about TFSA, ETFs, Stokvel, Retirement Annuities, and 32-Day Notice accounts — explained simply for SA life.</div>
-      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE</span>
-    </div>
-    <div class="feature-card">
-      <div class="feature-header">
-        <div class="feature-icon" style="background:#eaf3de">🤝</div>
-        <div class="feature-title">Earn with referrals</div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Create a password</div>
+      <div class="auth-row" style="margin-bottom:6px">
+        <input type="password" id="r-pass" class="auth-in" placeholder="Minimum 8 characters" oninput="valStep()">
+        <button class="auth-toggle" onclick="togglePass('r-pass',this)">Show</button>
       </div>
-      <div class="feature-desc">Refer friends and earn real money. R10 when they go Pro, up to R70 per person over 5 months. Paid monthly via Capitec Pay.</div>
-      <span class="feature-tag" style="background:#eaf3de;color:#1a7a4a">FREE TO JOIN</span>
-    </div>
-  </div>
-</section>
-
-<!-- For who -->
-<section class="for-who">
-  <h2>Built for real SA life.</h2>
-  <p class="sub">Whatever your life stage — RandWise was built with you in mind.</p>
-  <div class="life-stages">
-    <div class="life-stage"><div class="life-stage-emoji">🎓</div><div class="life-stage-name">Students</div></div>
-    <div class="life-stage"><div class="life-stage-emoji">🏠</div><div class="life-stage-name">Domestic workers</div></div>
-    <div class="life-stage"><div class="life-stage-emoji">💼</div><div class="life-stage-name">Employed</div></div>
-    <div class="life-stage"><div class="life-stage-emoji">🏪</div><div class="life-stage-name">Self-employed</div></div>
-    <div class="life-stage"><div class="life-stage-emoji">👨‍👩‍👧</div><div class="life-stage-name">Parents</div></div>
-    <div class="life-stage"><div class="life-stage-emoji">👴</div><div class="life-stage-name">Pensioners</div></div>
-  </div>
-</section>
-
-<!-- Testimonials -->
-<section class="testimonials">
-  <h2>What beta testers say.</h2>
-  <p class="sub">Real feedback from real South Africans during testing.</p>
-  <div class="testimonial-list">
-    <div class="testimonial">
-      <div class="testimonial-text">"RandWise helped me see where my money was actually going for the first time. Worth every cent."</div>
-      <div class="testimonial-author">— Beta tester, Domestic worker, Johannesburg</div>
-    </div>
-    <div class="testimonial">
-      <div class="testimonial-text">"I finally have a debt plan. The Debt Freedom Score showed me exactly which debt to tackle first. I'm R8,000 closer to being debt-free."</div>
-      <div class="testimonial-author">— Beta tester, Employed, Soweto</div>
-    </div>
-    <div class="testimonial">
-      <div class="testimonial-text">"As a student I never had a budget app that understood my life. RandWise just gets it."</div>
-      <div class="testimonial-author">— Beta tester, Student, Cape Town</div>
+      <div style="font-size:11px;color:var(--mu);margin-bottom:16px">At least 8 characters. You'll use this to sign back in.</div>
     </div>
   </div>
-</section>
-
-<!-- Pricing -->
-<section class="pricing">
-  <h2>Simple pricing.</h2>
-  <p class="sub">Free during beta. Upgrade anytime — cancel anytime.</p>
-  <div class="price-cards">
-    <div class="price-card featured">
-      <div class="price-name">Free</div>
-      <div class="price-amount">R0</div>
-      <div class="price-period">forever during beta</div>
-      <div class="price-features">
-        <div class="price-feature">Income tracker</div>
-        <div class="price-feature">Weekly envelopes</div>
-        <div class="price-feature">Savings goals</div>
-        <div class="price-feature">Grow money education</div>
-        <div class="price-feature">Referral programme</div>
-      </div>
-    </div>
-    <div class="price-card">
-      <div class="price-name">Pro</div>
-      <div class="price-amount">R49</div>
-      <div class="price-period">/month or R470/year</div>
-      <div class="price-features">
-        <div class="price-feature">Everything in Free</div>
-        <div class="price-feature">Debt Freedom Score</div>
-        <div class="price-feature">AI spending insights</div>
-        <div class="price-feature">Electricity tracker</div>
-        <div class="price-feature">Smart nudge alerts</div>
-      </div>
-    </div>
-    <div class="price-card">
-      <div class="price-name">Premium</div>
-      <div class="price-amount">R129</div>
-      <div class="price-period">/month or R1,238/year</div>
-      <div class="price-features">
-        <div class="price-feature">Everything in Pro</div>
-        <div class="price-feature">Household/Family view</div>
-        <div class="price-feature">Bond readiness score</div>
-        <div class="price-feature">Investment recommendations</div>
-        <div class="price-feature">Stokvel management</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Join form -->
-<div class="signup" id="join">
-  <div id="form-container">
-    <h2>Join the beta. It's free.</h2>
-    <p class="sub">Limited spots available. We'll WhatsApp you personally with access instructions.</p>
-
-    <div class="form-group">
-      <label class="form-label">Your full name</label>
-      <input type="text" id="input-name" class="form-input" placeholder="e.g. Thandi Dlamini" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">WhatsApp number</label>
-      <input type="tel" id="input-phone" class="form-input" placeholder="+27 XX XXX XXXX" />
-    </div>
-    <div class="form-group">
-      <label class="form-label">Your life stage</label>
-      <select id="input-stage" class="form-select">
-        <option value="">Select your life stage...</option>
-        <option>Student / Learner</option>
-        <option>Domestic worker</option>
-        <option>Employed full-time</option>
-        <option>Employed part-time</option>
-        <option>Self-employed / Freelancer</option>
-        <option>Business owner</option>
-        <option>Parent / Caregiver</option>
-        <option>Pensioner / Retired</option>
-        <option>Unemployed / Job seeking</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">How did you hear about us?</label>
-      <select id="input-source" class="form-select">
-        <option value="">Select...</option>
-        <option>WhatsApp</option>
-        <option>Friend / Family</option>
-        <option>Facebook</option>
-        <option>Instagram</option>
-        <option>TikTok</option>
-        <option>Other</option>
-      </select>
-    </div>
-
-    <button class="submit-btn" id="submit-btn" onclick="submitWaitlist()">
-      Join free beta →
-    </button>
-    <div class="form-note">🔒 Your info is private and protected under POPIA. We'll only contact you via WhatsApp to share your access link. No spam, ever.</div>
-  </div>
-
-  <div class="success-state" id="success-state">
-    <div class="success-icon">🎉</div>
-    <div class="success-title">You're on the list!</div>
-    <div class="success-sub">We'll WhatsApp you within 24 hours with your personal access link.<br><br>In the meantime, share this page with a friend — earn R10 when they go Pro. 💚</div>
-    <br>
-    <button onclick="shareApp()" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);padding:12px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;width:100%">
-      📤 Share with a friend
-    </button>
+  <div class="ob-foot">
+    <button class="btn-p" id="ob-next" onclick="obNext()" disabled>Continue →</button>
   </div>
 </div>
 
-<!-- Footer -->
-<footer>
-  <p>
-    🌱 <strong style="color:rgba(255,255,255,0.8)">RandWise</strong><br>
-    Your money, your rules. Built for South Africa 🇿🇦<br><br>
-    <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a><br><br>
-    © 2026 RandWise · Nyaniso Khoza · POPIA Compliant
-  </p>
-</footer>
-
-<!-- Sticky CTA -->
-<div class="sticky-cta" id="sticky-cta">
-  <button onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">
-    🎁 Join free beta →
-  </button>
+<!-- SAVING -->
+<div class="screen" id="saving">
+  <div class="spin"></div>
+  <div style="font-size:15px;font-weight:600">Setting up your account...</div>
+  <div style="font-size:13px;color:var(--mu)">This only takes a second</div>
 </div>
+
+<!-- DONE -->
+<div class="screen" id="done">
+  <div class="done-ring">🎉</div>
+  <div class="done-title" id="done-t">You're all set!</div>
+  <div class="done-sub" id="done-s">Your account is ready.</div>
+  <div class="done-feats">
+    <div class="done-feat"><span style="font-size:18px">📊</span><div class="done-feat-t">Weekly budget envelopes set up</div></div>
+    <div class="done-feat"><span style="font-size:18px">💰</span><div class="done-feat-t" id="done-inc">Income ring configured</div></div>
+    <div class="done-feat"><span style="font-size:18px">🎯</span><div class="done-feat-t" id="done-gls">Goals tracked</div></div>
+    <div class="done-feat"><span style="font-size:18px">🔒</span><div class="done-feat-t">Saved securely · POPIA compliant</div></div>
+  </div>
+  <button class="btn-p" style="max-width:300px" onclick="openDash()">Open my dashboard →</button>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="main">
+  <div class="trial" id="trial" style="display:none">
+    <span class="trial-t" id="trial-t">🎁 14 days left in your free trial</span>
+    <span class="trial-c">Upgrade →</span>
+  </div>
+  <div class="tab-content">
+    <div class="tab-pane active" id="tp-home">
+      <div style="display:flex;flex-direction:column;height:100%">
+        <div class="dash-hdr">
+          <div><div class="dash-g" id="dg"></div><div class="dash-s" id="ds"></div></div>
+          <div class="avatar" id="av">U</div>
+        </div>
+        <div class="dash-scroll">
+          <div class="ring-card">
+            <div class="ring-wrap">
+              <svg width="180" height="180" viewBox="0 0 180 180">
+                <circle cx="90" cy="90" r="76" stroke="#e8e6de" stroke-width="14" fill="none"/>
+                <circle id="rarc" cx="90" cy="90" r="76" stroke="#a32d2d" stroke-width="14" fill="none" stroke-dasharray="0 477" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-lbl">spendable</div>
+                <div class="ring-amt" id="ramt" style="color:var(--g)">R0</div>
+                <div class="ring-tot" id="rtot">of R0</div>
+              </div>
+            </div>
+            <div class="pills">
+              <div class="pill" style="border-color:#1a7a4a40;background:#1a7a4a12"><div class="pill-v" style="color:var(--g)" id="p-inc">R0</div><div class="pill-l">income</div></div>
+              <div class="pill" style="border-color:#a32d2d40;background:#a32d2d12"><div class="pill-v" style="color:var(--r)" id="p-sp">R0</div><div class="pill-l">spent</div></div>
+              <div class="pill" style="border-color:#b4b2a940;background:#b4b2a912"><div class="pill-v" style="color:var(--m)" id="p-wb">R0</div><div class="pill-l">week budget</div></div>
+            </div>
+          </div>
+          <div class="sec">
+            <div class="sec-hdr"><div class="sec-t">Weekly snapshot</div><div class="sec-s" id="wbl">R0/week</div></div>
+            <div class="wbars" id="wbars"></div>
+          </div>
+          <div class="sec">
+            <div class="sec-hdr"><div class="sec-t">Recent expenses</div><div class="sec-s">This month</div></div>
+            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden" id="exp-list">
+              <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No expenses yet</div><div class="empty-s">Tap + to log your first expense</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tp-profile">
+      <div style="padding:calc(var(--st) + 12px) 20px 40px;overflow-y:auto">
+        <div style="text-align:center;padding:20px 0 18px">
+          <div class="avatar" style="width:72px;height:72px;border-radius:50%;font-size:28px;margin:0 auto 12px" id="pav">U</div>
+          <div style="font-size:20px;font-weight:800" id="pname">—</div>
+          <div style="font-size:13px;color:var(--mu);margin-top:4px" id="pstage">—</div>
+          <div style="font-size:13px;color:var(--mu)" id="pinc">R0/monthly</div>
+        </div>
+        <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden;margin-bottom:14px">
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Account tier</span><span style="background:var(--bg2);color:var(--mu);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px" id="ptier">Free</span></div>
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Referral code</span><span style="font-size:13px;color:var(--g);font-weight:700;font-family:monospace" id="pref">—</span></div>
+          <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Member since</span><span style="font-size:13px;color:var(--mu)" id="psince">—</span></div>
+        </div>
+        <div style="background:var(--gl);border-radius:14px;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px">🤝 Earn with referrals</div>
+          <div style="font-size:12px;color:var(--g);line-height:1.6">Earn R10 when a friend goes Pro + R5/month for 6 months. Paid via Capitec Pay.</div>
+          <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share RandWise</button>
+        </div>
+        <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Sign out</button>
+      </div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
+    <button class="tab-btn" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
+    <button class="tab-btn" id="tb-profile" onclick="switchTab('profile')"><span class="tab-icon">○</span><span class="tab-lbl">Profile</span></button>
+  </div>
+</div>
+
+<!-- Add Expense Sheet -->
+<div class="overlay" id="ov" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Log an expense</div>
+  <div class="cat-row" id="cat-row"></div>
+  <div class="amt-wrap"><div class="amt-r">R</div><input type="number" id="ea" class="amt-in" placeholder="0.00" oninput="chkSave()"></div>
+  <div class="quick-row">
+    <button class="qbtn" onclick="setAmt(20)">R20</button>
+    <button class="qbtn" onclick="setAmt(50)">R50</button>
+    <button class="qbtn" onclick="setAmt(100)">R100</button>
+    <button class="qbtn" onclick="setAmt(200)">R200</button>
+    <button class="qbtn" onclick="setAmt(500)">R500</button>
+  </div>
+  <input type="text" id="en" class="note-in" placeholder="Add a note (optional)">
+  <button class="save-btn" id="save-btn" onclick="saveExp()" disabled>Save expense</button>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+const SB='https://mmezkseblafurjolkfkt.supabase.co';
+const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
+let user=null,expenses=[],selCat=null;
+let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:''};
+let step=1;
+const CATS=[
+  {id:'groceries',e:'🛒',l:'Groceries',c:'#1a7a4a'},{id:'transport',e:'🚌',l:'Transport',c:'#639922'},
+  {id:'airtime',e:'📱',l:'Airtime',c:'#ba7517'},{id:'eating',e:'🍽️',l:'Eating out',c:'#a32d2d'},
+  {id:'kids',e:'👶',l:'Kids',c:'#534ab7'},{id:'health',e:'💊',l:'Health',c:'#0f6e56'},
+  {id:'electricity',e:'⚡',l:'Electricity',c:'#ba7517'},{id:'clothing',e:'👗',l:'Clothing',c:'#993556'},
+  {id:'stokvel',e:'🤝',l:'Stokvel',c:'#1a7a4a'},{id:'hair',e:'💇',l:'Hair/Beauty',c:'#993556'},
+  {id:'other',e:'📦',l:'Other',c:'#5f5e5a'}
+];
+async function sbP(p,b){const r=await fetch(`${SB}/rest/v1/${p}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)});return r.json();}
+async function sbG(p){const r=await fetch(`${SB}/rest/v1/${p}`,{headers:H});return r.json();}
+async function sbD(p){await fetch(`${SB}/rest/v1/${p}`,{method:'DELETE',headers:H});}
+async function authPost(path,body){const r=await fetch(`${SB}/auth/v1/${path}`,{method:'POST',headers:{'apikey':AK,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
-// Hide sticky CTA when form is visible
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    document.getElementById('sticky-cta').style.display = e.isIntersecting ? 'none' : 'flex';
-  });
+// ── Onboarding ────────────────────────────────────────────────
+function startOB(){step=1;ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:''};renderStep();}
+function renderStep(){
+  [1,2,3,4,5].forEach(i=>document.getElementById('ob-'+i).style.display=i===step?'block':'none');
+  document.getElementById('ob-prog').style.width=(step/5*100)+'%';
+  document.getElementById('ob-lbl').textContent=`Step ${step} of 5`;
+  document.getElementById('ob-bk').style.visibility=step===1?'hidden':'visible';
+  valStep();
+  document.getElementById('ob-body').scrollTop=0;
+}
+function valStep(){
+  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8);
+  const btn=document.getElementById('ob-next');
+  btn.disabled=!v;
+  btn.textContent=step===5?"Let's go 🚀":'Continue →';
+}
+function obNext(){if(step<5){step++;renderStep();}else{doRegister();}}
+function obBack(){if(step>1){step--;renderStep();}else{show('splash');}}
+function selStage(el){document.querySelectorAll('#stage-opts .opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');ob.stage=el.dataset.s;ob.stageEmoji=el.dataset.e;valStep();}
+function selIType(el){document.querySelectorAll('#itype-opts .opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');ob.incomeType=el.dataset.t;valStep();}
+function selFreq(el,f){document.querySelectorAll('.freq').forEach(c=>c.classList.remove('act'));el.classList.add('act');ob.incomeFreq=f;updInc();}
+function updInc(){
+  ob.income=document.getElementById('inc-in').value;
+  const a=parseFloat(ob.income)||0,s=document.getElementById('inc-sum');
+  if(a>0){const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;s.style.display='block';s.innerHTML=`📊 Weekly budget: <strong>R${Math.round(m*.6/4).toLocaleString('en-ZA')}</strong><br>🛡️ Monthly savings: <strong>R${Math.round(m*.2).toLocaleString('en-ZA')}</strong>`;}
+  else s.style.display='none';
+  valStep();
+}
+function togGoal(el){
+  el.classList.toggle('sel');
+  const t=el.querySelectorAll('span')[1].textContent;
+  el.querySelector('.goal-chk').textContent=el.classList.contains('sel')?'✓':'';
+  if(el.classList.contains('sel'))ob.goals.push(t);else ob.goals=ob.goals.filter(g=>g!==t);
+  valStep();
+}
+document.getElementById('name-in')&&document.getElementById('name-in').addEventListener('input',()=>{ob.name=document.getElementById('name-in').value;valStep();});
+document.getElementById('r-email')&&document.getElementById('r-email').addEventListener('input',()=>{ob.email=document.getElementById('r-email').value;valStep();});
+document.getElementById('r-pass')&&document.getElementById('r-pass').addEventListener('input',()=>{ob.password=document.getElementById('r-pass').value;valStep();});
+
+async function doRegister(){
+  show('saving');
+  try{
+    // 1. Create Supabase Auth account
+    const auth=await authPost('signup',{email:ob.email.trim().toLowerCase(),password:ob.password,options:{data:{name:ob.name.trim()}}});
+    if(auth.error)throw new Error(auth.error.message||'Sign up failed');
+    const authId=auth.user?.id;
+    // 2. Create profile
+    const a=parseFloat(ob.income)||0;
+    const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;
+    const res=await sbP('beta_testers',{auth_id:authId,name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:false,status:'active'});
+    user=res?.[0];
+    if(user)localStorage.setItem('rw_user',JSON.stringify(user));
+    // Celebration
+    document.getElementById('done-t').textContent=`You're all set, ${ob.name.trim().split(' ')[0]}! 🎉`;
+    document.getElementById('done-s').textContent=`Your account is ready. R${m.toLocaleString('en-ZA')} income set up.`;
+    document.getElementById('done-inc').textContent=`Income: R${m.toLocaleString('en-ZA')}/month`;
+    document.getElementById('done-gls').textContent=`${ob.goals.length} goal${ob.goals.length!==1?'s':''} tracked`;
+    show('done');
+  }catch(e){
+    alert('Registration failed: '+(e.message||'Please try again'));
+    show('onboarding');
+  }
+}
+
+// ── Login ─────────────────────────────────────────────────────
+async function doLogin(){
+  const email=document.getElementById('l-email').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  if(!email||!pass){showErr('l-err','Please enter your email and password');return;}
+  const btn=document.getElementById('l-btn');
+  btn.disabled=true;btn.textContent='Signing in...';
+  hideErr('l-err');
+  try{
+    const auth=await authPost('token?grant_type=password',{email:email.toLowerCase(),password:pass});
+    if(!auth.access_token){showErr('l-err',auth.error_description||'Wrong email or password');btn.disabled=false;btn.textContent='Sign in →';return;}
+    const rows=await sbG(`beta_testers?auth_id=eq.${auth.user.id}&limit=1&select=*`);
+    if(!rows?.length){showErr('l-err','Account not found. Please register first.');btn.disabled=false;btn.textContent='Sign in →';return;}
+    user=rows[0];
+    localStorage.setItem('rw_user',JSON.stringify(user));
+    localStorage.setItem('rw_token',auth.access_token);
+    await loadExp();renderDash();show('main');
+  }catch(e){showErr('l-err','Connection error. Try again.');btn.disabled=false;btn.textContent='Sign in →';}
+}
+async function handleForgot(){
+  const email=document.getElementById('l-email').value.trim();
+  if(!email){showErr('l-err','Enter your email first, then tap Forgot your password?');return;}
+  await authPost('recover',{email:email.toLowerCase()});
+  const el=document.getElementById('reset-sent');
+  el.style.display='block';
+  el.textContent=`✅ Reset link sent to ${email}. Check your email.`;
+}
+function showErr(id,msg){const el=document.getElementById(id);el.style.display='block';el.textContent=msg;}
+function hideErr(id){document.getElementById(id).style.display='none';}
+
+// ── Dashboard ─────────────────────────────────────────────────
+async function openDash(){show('main');await loadExp();renderDash();}
+async function loadExp(){
+  if(!user?.id)return;
+  try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
+}
+function renderDash(){
+  if(!user)return;
+  const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
+  const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  const mo=new Date().toLocaleString('en-ZA',{month:'long',year:'numeric'});
+  document.getElementById('dg').textContent=`${gr}, ${name} 👋`;
+  document.getElementById('ds').textContent=mo;
+  document.getElementById('av').textContent=init;
+  document.getElementById('pav').textContent=init;
+  document.getElementById('pname').textContent=name;
+  document.getElementById('pstage').textContent=(user.life_stage_emoji||'')+' '+(user.life_stage||'—');
+  document.getElementById('pinc').textContent=`R${inc.toLocaleString('en-ZA')}/monthly`;
+  document.getElementById('ptier').textContent=user.tier||'free';
+  document.getElementById('pref').textContent=user.referral_code||'—';
+  document.getElementById('psince').textContent=user.created_at?new Date(user.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):'—';
+  if((user.tier||'free')==='free'&&user.created_at){
+    const days=Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000),left=Math.max(0,14-days);
+    if(left>0){const b=document.getElementById('trial');b.style.display='flex';document.getElementById('trial-t').textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;}
+  }
+  const now=new Date(),ms=new Date(now.getFullYear(),now.getMonth(),1);
+  const me=expenses.filter(e=>new Date(e.logged_at)>=ms);
+  const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent),wb=inc>0?Math.round(inc*.6/4):0;
+  const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
+  const circ=2*Math.PI*76,pct=inc>0?Math.min(spent/inc,1):0;
+  document.getElementById('rarc').setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
+  document.getElementById('ramt').textContent='R'+sp.toLocaleString('en-ZA');
+  document.getElementById('ramt').style.color=sc;
+  document.getElementById('rtot').textContent='of R'+inc.toLocaleString('en-ZA');
+  document.getElementById('p-inc').textContent='R'+inc.toLocaleString('en-ZA');
+  document.getElementById('p-sp').textContent='R'+spent.toLocaleString('en-ZA');
+  document.getElementById('p-wb').textContent='R'+wb.toLocaleString('en-ZA');
+  document.getElementById('wbl').textContent='R'+wb.toLocaleString('en-ZA')+'/week';
+  const cw=Math.ceil(now.getDate()/7);
+  document.getElementById('wbars').innerHTML=[1,2,3,4].map(w=>{
+    const ws=me.filter(e=>Math.ceil(new Date(e.logged_at).getDate()/7)===w).reduce((s,e)=>s+Number(e.amount),0);
+    const pp=wb>0?Math.min(ws/wb,1):0,hh=Math.round(pp*72),ov=ws>wb&&wb>0;
+    const col=ov?'#a32d2d':w===cw?'#1a7a4a':'#5aab7a';
+    const show=w<cw||(w===cw&&ws>0);
+    return`<div class="wbw"><div class="wbt">${show?`<div class="wbf" style="height:${hh}px;background:${col}"></div>`:''}</div><div class="wbl ${w===cw?'cur':''}">W${w}</div></div>`;
+  }).join('');
+  const el=document.getElementById('exp-list');
+  if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No expenses yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
+  const cm=CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
+  el.innerHTML=expenses.slice(0,10).map(e=>{const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
+    return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
+  }).join('');
+}
+
+// ── Expense sheet ─────────────────────────────────────────────
+function openSheet(){
+  document.getElementById('cat-row').innerHTML=CATS.map(c=>`<div class="cat-p" data-id="${c.id}" data-e="${c.e}" data-n="${c.l}" data-c="${c.c}" onclick="selCat(this)"><div class="cat-p-e">${c.e}</div><div class="cat-p-l">${c.l}</div></div>`).join('');
+  selCat=null;document.getElementById('ea').value='';document.getElementById('en').value='';document.getElementById('save-btn').disabled=true;
+  document.getElementById('ov').classList.add('open');document.getElementById('sheet').classList.add('open');
+  setTimeout(()=>document.getElementById('ea').focus(),400);
+}
+function closeSheet(){document.getElementById('ov').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+function selCat(el){document.querySelectorAll('.cat-p').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selCat={id:el.dataset.id,e:el.dataset.e,n:el.dataset.n,c:el.dataset.c};chkSave();}
+function setAmt(v){document.getElementById('ea').value=v;chkSave();}
+function chkSave(){const a=parseFloat(document.getElementById('ea').value);document.getElementById('save-btn').disabled=!selCat||!a||a<=0;}
+async function saveExp(){
+  if(!selCat)return;
+  const a=parseFloat(document.getElementById('ea').value);
+  const note=document.getElementById('en').value.trim();
+  if(!a||a<=0)return;
+  const d={tester_id:user?.id||null,category_id:selCat.id,category:selCat.n,emoji:selCat.e,amount:a,note:note||''};
+  const tid='tmp-'+Date.now();
+  expenses.unshift({id:tid,...d,logged_at:new Date().toISOString()});
+  renderDash();closeSheet();showToast(`✅ R${a.toLocaleString('en-ZA')} logged`);
+  if(user?.id){try{const s=await sbP('expenses',d);if(s?.[0])expenses=expenses.map(e=>e.id===tid?s[0]:e);}catch{}}
+}
+async function delExp(id){expenses=expenses.filter(e=>e.id!==id);renderDash();if(!id.startsWith('tmp-'))await sbD(`expenses?id=eq.${id}`);}
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(t){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
+  document.getElementById('tp-'+t).classList.add('active');
+  document.getElementById('tb-'+t).classList.add('act');
+}
+
+// ── Utils ─────────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function shareApp(){
+  const code=user?.referral_code||'';
+  const tx=`Hey! I'm using RandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\nhttps://nyanisokhoza-code.github.io/randwise${code?'\n\nUse my code: '+code:''}`;
+  if(navigator.share)navigator.share({title:'RandWise',text:tx,url:'https://nyanisokhoza-code.github.io/randwise'});
+  else window.open('https://wa.me/?text='+encodeURIComponent(tx));
+}
+function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');user=null;expenses=[];show('splash');}}
+
+// ── Auto-login ────────────────────────────────────────────────
+window.addEventListener('load',async()=>{
+  const s=localStorage.getItem('rw_user');
+  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');}catch{show('splash');}}
 });
-observer.observe(document.getElementById('join'));
-
-async function submitWaitlist() {
-  const name = document.getElementById('input-name').value.trim();
-  const phone = document.getElementById('input-phone').value.trim();
-  const stage = document.getElementById('input-stage').value;
-  const source = document.getElementById('input-source').value;
-
-  if (!name || !phone) { alert('Please enter your name and WhatsApp number.'); return; }
-  if (!stage) { alert('Please select your life stage.'); return; }
-
-  const btn = document.getElementById('submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'Joining...';
-
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify({ name, phone, life_stage: stage, source, status: 'pending' }),
-    });
-    document.getElementById('form-container').style.display = 'none';
-    document.getElementById('success-state').classList.add('show');
-  } catch {
-    btn.disabled = false;
-    btn.textContent = 'Join free beta →';
-    alert('Something went wrong. Please try again or WhatsApp us directly.');
-  }
-}
-
-function shareApp() {
-  const text = `Hey! I just joined the RandWise beta — a free money app built specifically for South Africans 🇿🇦\n\nIt tracks spending, helps with debt, and teaches you how to grow your money.\n\nJoin free here 👇\nhttps://randwise.app`;
-  if (navigator.share) {
-    navigator.share({ title: 'RandWise — Built for SA', text, url: 'https://randwise.app' });
-  } else {
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-  }
-}
 </script>
 </body>
 </html>
