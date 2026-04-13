@@ -583,7 +583,12 @@ async function doLogin(){
     localStorage.setItem('rw_token',auth.access_token);
     await loadExp();renderDash();show('main');
     setTimeout(showIntro,400);
-  }catch(e){showErr('l-err','Connection error. Try again.');btn.disabled=false;btn.textContent='Sign in →';}
+  }catch(e){
+    const msg=e?.message||'';
+    const isNetwork=msg.includes('fetch')||msg.includes('network')||msg.includes('Failed');
+    showErr('l-err',isNetwork?'No connection. Check your internet and try again.':'Sign in failed. Please try again.');
+    btn.disabled=false;btn.textContent='Sign in →';
+  }
 }
 async function handleForgot(){
   const email=document.getElementById('l-email').value.trim();
