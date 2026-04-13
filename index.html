@@ -666,6 +666,28 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 // Always use user JWT when available so RLS policies work correctly
+async function refreshTokenIfNeeded(){
+  const tok=localStorage.getItem('rw_token');
+  const ref=localStorage.getItem('rw_refresh');
+  if(!tok||!ref)return;
+  // Decode JWT expiry (middle segment is base64 payload)
+  try{
+    const payload=JSON.parse(atob(tok.split('.')[1]));
+    const expiresIn=(payload.exp*1000)-Date.now();
+    // Refresh if less than 10 minutes remaining
+    if(expiresIn>600000)return;
+    const res=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{
+      method:'POST',
+      headers:{'apikey':AK,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:ref})
+    });
+    const data=await res.json();
+    if(data.access_token){
+      localStorage.setItem('rw_token',data.access_token);
+      if(data.refresh_token)localStorage.setItem('rw_refresh',data.refresh_token);
+    }
+  }catch(e){console.warn('Token refresh failed:',e);}
+}
 function getH(){
   const tok=localStorage.getItem('rw_token');
   return{'apikey':AK,'Authorization':'Bearer '+(tok||AK),'Content-Type':'application/json'};
@@ -780,6 +802,7 @@ async function doLogin(){
     user=rows[0];
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
+    if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
     try{await loadExp();}catch(ex){expenses=[];}
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     show('main');
@@ -1056,10 +1079,11 @@ function shareApp(){
   if(navigator.share)navigator.share({title:'RandWise',text:tx,url:'https://nyanisokhoza-code.github.io/randwise'});
   else window.open('https://wa.me/?text='+encodeURIComponent(tx));
 }
-function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');user=null;expenses=[];show('splash');}}
+function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
 
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
+  await refreshTokenIfNeeded();
   const s=localStorage.getItem('rw_user');
   if(s){
     try{
