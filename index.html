@@ -669,13 +669,19 @@ const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6I
 async function refreshTokenIfNeeded(){
   const tok=localStorage.getItem('rw_token');
   const ref=localStorage.getItem('rw_refresh');
-  if(!tok||!ref)return;
-  // Decode JWT expiry (middle segment is base64 payload)
+  if(!tok)return;
   try{
     const payload=JSON.parse(atob(tok.split('.')[1]));
     const expiresIn=(payload.exp*1000)-Date.now();
-    // Refresh if less than 10 minutes remaining
+    // Token still valid with >10 min left — no action needed
     if(expiresIn>600000)return;
+    // Token expired or expiring — try to refresh
+    if(!ref){
+      // No refresh token — clear and force re-login
+      localStorage.removeItem('rw_token');
+      localStorage.removeItem('rw_user');
+      return;
+    }
     const res=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{
       method:'POST',
       headers:{'apikey':AK,'Content-Type':'application/json'},
@@ -685,6 +691,11 @@ async function refreshTokenIfNeeded(){
     if(data.access_token){
       localStorage.setItem('rw_token',data.access_token);
       if(data.refresh_token)localStorage.setItem('rw_refresh',data.refresh_token);
+    } else {
+      // Refresh failed — clear everything and force re-login
+      localStorage.removeItem('rw_token');
+      localStorage.removeItem('rw_refresh');
+      localStorage.removeItem('rw_user');
     }
   }catch(e){console.warn('Token refresh failed:',e);}
 }
@@ -768,6 +779,8 @@ async function doRegister(){
     const res=await sbP('beta_testers',{auth_id:authId,name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:ob.referralCode?true:false,referred_by:ob.referralCode||null,status:'active'});
     user=res?.[0];
     if(user)localStorage.setItem('rw_user',JSON.stringify(user));
+    // Fire alert email to owner (non-blocking)
+    sendOwnerAlert('new_user',{name:ob.name.trim(),email:ob.email.trim(),life_stage:ob.stage,income_amount:m,referred_by:ob.referralCode||null});
     // Celebration
     document.getElementById('done-t').textContent=`You're all set, ${ob.name.trim().split(' ')[0]}! 🎉`;
     document.getElementById('done-s').textContent=`Your account is ready. R${m.toLocaleString('en-ZA')} income set up.`;
@@ -869,11 +882,13 @@ function renderDash(){
   if((user.tier||'free')==='free'&&user.created_at){
     const days=Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000),left=Math.max(0,14-days);
     if(left>0){
-      const b=document.getElementById('trial');b.style.display='flex';
-      document.getElementById('trial-t').textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;
+      const tb=document.getElementById('trial');if(tb)tb.style.display='flex';
+      const trialT=document.getElementById('trial-t');
+      if(trialT)trialT.textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;
       const trialC=document.getElementById('trial-c');
       if(trialC)trialC.onclick=()=>showUpgradeWall(false);
     } else {
+      // Trial expired — hard block, no way past
       showUpgradeWall(true);
       return;
     }
@@ -949,6 +964,11 @@ async function delExp(id){expenses=expenses.filter(e=>e.id!==id);renderDash();if
 
 // ── Tabs ──────────────────────────────────────────────────────
 function switchTab(t){
+  // Guard: if trial expired, keep showing upgrade wall
+  if(user&&(user.tier||'free')==='free'&&user.created_at){
+    const days=Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000);
+    if(days>=14){showUpgradeWall(true);return;}
+  }
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
   document.getElementById('tp-'+t).classList.add('active');
@@ -1084,15 +1104,14 @@ function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeIte
 window.addEventListener('load',async()=>{
   await refreshTokenIfNeeded();
   const s=localStorage.getItem('rw_user');
-  if(s){
+  const tok=localStorage.getItem('rw_token');
+  if(s && tok){
     try{
       user=JSON.parse(s);
-      // Show main immediately with cached data while we refresh
       if(user?.id){
         try{renderDash();}catch{}
         show('main');
       }
-      // Then refresh from Supabase in background
       if(user?.id){
         try{
           const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
@@ -1105,6 +1124,10 @@ window.addEventListener('load',async()=>{
     }catch{
       show('splash');
     }
+  } else if(s && !tok){
+    // Token expired and refresh failed — clear stale data, force re-login
+    localStorage.removeItem('rw_user');
+    show('splash');
   } else {
     show('splash');
   }
@@ -1241,23 +1264,36 @@ document.getElementById('splash')?.addEventListener('click', (e)=>{
 });
 
 // ══ REPORT ISSUE ════════════════════════════════════════════
+async function sendOwnerAlert(type, data){
+  try{
+    await fetch(`${SB}/functions/v1/send-alert`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':AK,'Authorization':'Bearer '+AK},
+      body:JSON.stringify({type, data})
+    });
+  }catch(e){console.warn('Alert send failed:',e);}
+}
+
 async function reportIssue(){
   const msg = prompt('Describe what happened (optional):') || 'User reported issue from splash screen';
+  const reportData = {
+    user_id: user?.id || null,
+    user_name: user?.name || 'unknown',
+    error_message: msg,
+    error_source: 'user_report',
+    error_line: 0,
+    page_url: window.location.href,
+    user_agent: navigator.userAgent,
+    created_at: new Date().toISOString()
+  };
   try{
     await fetch(`${SB}/rest/v1/bug_reports`,{
       method:'POST',
       headers:{...H,'Prefer':'return=minimal'},
-      body:JSON.stringify({
-        user_id: user?.id || null,
-        user_name: user?.name || 'unknown',
-        error_message: msg,
-        error_source: 'user_report',
-        error_line: 0,
-        page_url: window.location.href,
-        user_agent: navigator.userAgent,
-        created_at: new Date().toISOString()
-      })
+      body:JSON.stringify(reportData)
     });
+    // Fire alert email to owner
+    sendOwnerAlert('bug_report', reportData);
     alert('✅ Report sent. Thank you! The RandWise team will look into this.');
   }catch{
     alert('Could not send report. Please try refreshing the page.');
@@ -1341,6 +1377,9 @@ function showUpgradeWall(hardBlock){
     document.getElementById('uw-title').textContent='Your free trial has ended';
     document.getElementById('uw-sub').textContent='You\'ve experienced what RandWise can do. Don\'t lose your data — upgrade to keep going.';
     document.getElementById('uw-continue').style.display='none';
+    // Intercept back button so users can't navigate away
+    history.pushState(null,'',location.href);
+    window.onpopstate=()=>{history.pushState(null,'',location.href);};
   }
 }
 function doUpgrade(plan){
@@ -1353,7 +1392,7 @@ function doUpgrade(plan){
   window.open(`${base}?${params.toString()}`,'_blank');
 }
 // Check if returning from PayFast payment
-(()=>{const p=new URLSearchParams(window.location.search);if(p.get('paid')==='1'){showToast('🎉 Payment received! Your tier will update shortly.');}})();
+(()=>{const p=new URLSearchParams(window.location.search);if(p.get('paid')==='1'){showToast('🎉 Payment received! Your tier will update shortly.');sendOwnerAlert('upgrade',{name:user?.name||'Unknown',tier:p.get('plan')||'pro'});}})();
 
 // ══ EDIT EXPENSE ════════════════════════════════════════════
 function editExp(id){
@@ -1392,7 +1431,7 @@ async function saveEdit(){
 })();
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v5';
+const APP_VERSION = '2026-04-13-v7';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
