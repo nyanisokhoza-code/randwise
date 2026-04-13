@@ -213,8 +213,21 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .err-msg{font-size:12px;color:var(--r);margin-bottom:10px;line-height:1.5;display:none}
 .reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
 </style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
+<link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
 </head>
 <body>
+<!-- ══ UPDATE BANNER ══════════════════════════════════════════ -->
+<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a7a4a;color:#fff;padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3)">
+  <div style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:18px">🌱</span>
+    <div>
+      <div style="font-size:13px;font-weight:700">New version available</div>
+      <div style="font-size:11px;opacity:.8">Tap to get the latest update</div>
+    </div>
+  </div>
+  <button onclick="doAppUpdate()" style="background:#fff;color:#1a7a4a;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Update now →</button>
+</div>
 <div id="app">
 
 <!-- SPLASH -->
@@ -652,6 +665,11 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 <script>
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+// Always use user JWT when available so RLS policies work correctly
+function getH(){
+  const tok=localStorage.getItem('rw_token');
+  return{'apikey':AK,'Authorization':'Bearer '+(tok||AK),'Content-Type':'application/json'};
+}
 const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
 let user=null,expenses=[],selectedCat=null;
 let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:''};
@@ -666,9 +684,10 @@ const CATS=[
   {id:'stokvel',e:'🤝',l:'Stokvel',c:'#1a7a4a'},{id:'hair',e:'💇',l:'Hair/Beauty',c:'#993556'},
   {id:'other',e:'📦',l:'Other',c:'#5f5e5a'}
 ];
-async function sbP(p,b){const r=await fetch(`${SB}/rest/v1/${p}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(b)});return r.json();}
-async function sbG(p){const r=await fetch(`${SB}/rest/v1/${p}`,{headers:H});return r.json();}
-async function sbD(p){await fetch(`${SB}/rest/v1/${p}`,{method:'DELETE',headers:H});}
+async function sbP(p,b){const r=await fetch(`${SB}/rest/v1/${p}`,{method:'POST',headers:{...getH(),'Prefer':'return=representation'},body:JSON.stringify(b)});return r.json();}
+async function sbG(p){const r=await fetch(`${SB}/rest/v1/${p}`,{headers:getH()});return r.json();}
+async function sbD(p){await fetch(`${SB}/rest/v1/${p}`,{method:'DELETE',headers:getH()});}
+async function sbPatch(p,b){await fetch(`${SB}/rest/v1/${p}`,{method:'PATCH',headers:{...getH(),'Prefer':'return=minimal'},body:JSON.stringify(b)});}
 async function authPost(path,body){const r=await fetch(`${SB}/auth/v1/${path}`,{method:'POST',headers:{'apikey':AK,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
 function show(id){document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});const el=document.getElementById(id);el.classList.add('active');}
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
@@ -1341,13 +1360,33 @@ async function saveEdit(){
 
 // ══ PWA MANIFEST ════════════════════════════════════════════
 (()=>{
-  const manifest={name:'RandWise',short_name:'RandWise',description:'Your money, your rules.',start_url:'/randwise/',display:'standalone',background_color:'#0d3d22',theme_color:'#1a7a4a',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'192x192',type:'image/svg+xml'},{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+  const manifest={name:'RandWise',short_name:'RandWise',description:'Your money, your rules.',start_url:'https://nyaniso-code.github.io/randwise/',scope:'https://nyaniso-code.github.io/randwise/',display:'standalone',background_color:'#0d3d22',theme_color:'#1a7a4a',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'192x192',type:'image/svg+xml'},{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
   const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const link=document.createElement('link');
   link.rel='manifest';link.href=url;
   document.head.appendChild(link);
 })();
+
+// ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
+const APP_VERSION = '2026-04-13-v3';
+(()=>{
+  try {
+    const stored = localStorage.getItem('rw_app_version');
+    if(!stored){ localStorage.setItem('rw_app_version', APP_VERSION); return; }
+    if(stored !== APP_VERSION){
+      const banner = document.getElementById('update-banner');
+      if(banner){ banner.style.display='flex'; document.body.style.paddingTop='56px'; }
+    }
+  } catch(e){}
+})();
+function doAppUpdate(){
+  localStorage.setItem('rw_app_version', APP_VERSION);
+  if('caches' in window){
+    caches.keys().then(keys=>Promise.all(keys.map(k=>caches.delete(k)))).then(()=>location.reload(true));
+  } else { location.reload(true); }
+}
+
 let ownerTapCount=0,ownerTapTimer=null;
 function ownerTap(){
   ownerTapCount++;
@@ -1361,9 +1400,13 @@ function ownerTap(){
     setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
   }
 }
-function checkOwnerPin(){
+async function checkOwnerPin(){
   const pin=document.getElementById('owner-pin-input').value;
-  if(pin==='0826'){
+  // SHA-256 of '0826' — change this hash if you change your PIN
+  const VALID_HASH='625b43807ec2899fc6365fe066a44035c92c57f6e46a4363fc15d9181e587af1';
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin));
+  const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash===VALID_HASH){
     document.getElementById('owner-pin-modal').style.display='none';
     openOwnerPanel();
   } else {
@@ -1750,39 +1793,32 @@ Respond with ONLY valid JSON, no markdown, no explanation:
   "transaction_count": 23
 }`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  // Route through Supabase Edge Function to keep API key server-side
+  const EDGE_URL = `${SB}/functions/v1/parse-statement`;
+  const response = await fetch(EDGE_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'apikey': AK, 'Authorization': 'Bearer '+(localStorage.getItem('rw_token')||AK) },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: { type: 'base64', media_type: 'application/pdf', data: base64Pdf }
-          },
-          { type: 'text', text: prompt }
-        ]
-      }]
+      pdf: base64Pdf,
+      prompt: prompt
     })
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'AI service error — try again');
+    throw new Error(err.error || err.message || 'AI service error — try again');
   }
 
   const data = await response.json();
-  const rawText = (data.content || []).map(c => c.text || '').join('');
+  // Edge Function returns parsed result directly
+  if(data.transactions) return data;
 
-  // Strip any markdown fences and parse JSON
+  // Fallback: handle raw Anthropic response if ever called directly
+  const rawText = (data.content || []).map(c => c.text || '').join('');
   const clean = rawText.replace(/```json|```/g, '').trim();
   let parsed;
   try { parsed = JSON.parse(clean); }
   catch { throw new Error('Could not read the statement format — try a different month'); }
-
   return parsed;
 }
 
