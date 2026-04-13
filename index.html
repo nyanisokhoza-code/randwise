@@ -143,7 +143,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none}
 .overlay.open{display:block}
 /* ── Welcome intro ── */
-#rw-intro{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:flex-start;background:#0d3d22;padding:32px 24px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px}
+#rw-intro{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:flex-start;background:#0d3d22;padding:env(safe-area-inset-top,32px) 24px 60px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #rw-intro.show{display:flex}
 .intro-logo{font-size:64px;margin-bottom:8px}
 .intro-tagline{font-size:28px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px}
@@ -1098,7 +1098,10 @@ function showIntro(){
 
 function closeIntroStartTour(){
   document.getElementById('rw-intro').classList.remove('show');
-  setTimeout(startTour,300);
+  // Only show tour on mobile — desktop layout is different
+  if(window.innerWidth <= 768){
+    setTimeout(startTour,300);
+  }
 }
 
 // ── Tour ─────────────────────────────────────────────────────
