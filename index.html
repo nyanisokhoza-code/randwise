@@ -482,7 +482,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
     <!-- GROW TAB -->
     <div class="tab-pane" id="tp-grow">
-      <div style="padding:calc(var(--st) + 12px) 20px 100px;overflow-y:auto">
+      <div style="padding:calc(var(--st) + 12px) 20px 100px;overflow-y:auto;height:100%">
         <div style="font-size:18px;font-weight:800;margin-bottom:4px">Grow your money</div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Savings goals and investment guidance</div>
         <div id="goals-list-pwa"><div style="text-align:center;padding:40px 0;color:var(--mu);font-size:13px">Loading...</div></div>
@@ -1422,7 +1422,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v10';
+const APP_VERSION = '2026-04-13-v11';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
