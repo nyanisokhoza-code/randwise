@@ -10,6 +10,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a7a4a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='75' x='12'>🌱</text></svg>">
 <title>RandWise</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -213,7 +215,6 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .err-msg{font-size:12px;color:var(--r);margin-bottom:10px;line-height:1.5;display:none}
 .reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
 </style>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
 </head>
 <body>
@@ -1420,18 +1421,8 @@ async function saveEdit(){
   }
 }
 
-// ══ PWA MANIFEST ════════════════════════════════════════════
-(()=>{
-  const manifest={name:'RandWise',short_name:'RandWise',description:'Your money, your rules.',start_url:'https://nyaniso-code.github.io/randwise/',scope:'https://nyaniso-code.github.io/randwise/',display:'standalone',background_color:'#0d3d22',theme_color:'#1a7a4a',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'192x192',type:'image/svg+xml'},{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
-  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('link');
-  link.rel='manifest';link.href=url;
-  document.head.appendChild(link);
-})();
-
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v7';
+const APP_VERSION = '2026-04-13-v8';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
