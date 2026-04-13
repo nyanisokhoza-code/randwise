@@ -22,7 +22,7 @@
   --bd:#e8e6de;--t:#2c2c2a;--m:#5f5e5a;--mu:#888780;--h:#b4b2a9;
   --st:env(safe-area-inset-top,44px);--sb:env(safe-area-inset-bottom,20px)
 }
-html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t)}
+html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t);overscroll-behavior-y:auto}
 #app{height:100%;display:flex;flex-direction:column}
 .screen{display:none;flex:1;flex-direction:column;overflow:hidden}
 .screen.active{display:flex}
@@ -499,7 +499,8 @@ function renderStep(){
   [1,2,3,4,5].forEach(i=>document.getElementById('ob-'+i).style.display=i===step?'block':'none');
   document.getElementById('ob-prog').style.width=(step/5*100)+'%';
   document.getElementById('ob-lbl').textContent=`Step ${step} of 5`;
-  document.getElementById('ob-bk').style.visibility=step===1?'hidden':'visible';
+  document.getElementById('ob-bk').style.visibility='visible';
+  document.getElementById('ob-bk').textContent=step===1?'‹ Home':'‹ Back';
   valStep();
   document.getElementById('ob-body').scrollTop=0;
 }
