@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RandWise</title>
+<script>
+// GitHub Pages 404 redirect handler
+// Catches Supabase auth callbacks that land on root domain
+const hash = window.location.hash;
+const search = window.location.search;
+const path = window.location.pathname;
+
+// If it's a Supabase auth callback (has access_token in hash)
+if (hash && hash.includes('access_token')) {
+  const params = new URLSearchParams(hash.slice(1));
+  const type = params.get('type');
+  const token = params.get('access_token');
+  
+  if (type === 'recovery') {
+    // Password reset — redirect to reset page with token
+    window.location.replace(
+      'https://nyanisokhoza-code.github.io/randwise/reset-password.html' + hash
+    );
+  } else {
+    // Other auth (email confirm etc) — redirect to app
+    window.location.replace(
+      'https://nyanisokhoza-code.github.io/randwise/' + hash
+    );
+  }
+} else {
+  // Regular 404 — redirect to app home
+  window.location.replace('https://nyanisokhoza-code.github.io/randwise/');
+}
+</script>
+<noscript>
+  <meta http-equiv="refresh" content="0;url=https://nyanisokhoza-code.github.io/randwise/">
+</noscript>
+</head>
+<body></body>
+</html>
