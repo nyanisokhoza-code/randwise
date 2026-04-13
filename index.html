@@ -1392,7 +1392,7 @@ async function saveEdit(){
 })();
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v4';
+const APP_VERSION = '2026-04-13-v5';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -1820,7 +1820,7 @@ Respond with ONLY valid JSON, no markdown, no explanation:
   const EDGE_URL = `${SB}/functions/v1/parse-statement`;
   const response = await fetch(EDGE_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': AK, 'Authorization': 'Bearer '+(localStorage.getItem('rw_token')||AK) },
+    headers: { 'Content-Type': 'application/json', 'apikey': AK, 'Authorization': 'Bearer '+AK },
     body: JSON.stringify({
       pdf: base64Pdf,
       prompt: prompt
