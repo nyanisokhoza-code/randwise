@@ -224,6 +224,14 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
   <button class="btn-p" onclick="show('onboarding');startOB()">Get started — it's free</button>
   <button class="btn-g" onclick="show('login')">I already have an account</button>
   <button onclick="hardRefresh()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;margin-top:20px;cursor:pointer;padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.15)">🔄 Refresh app</button>
+  <div id="splash-error" style="display:none;margin-top:16px;background:rgba(255,0,0,.15);border:1px solid rgba(255,100,100,.3);border-radius:12px;padding:12px 16px;max-width:300px;text-align:center">
+    <div style="font-size:13px;color:#ffaaaa;margin-bottom:8px">⚠️ Something's not loading correctly</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button onclick="hardRefresh()" style="background:#fff;color:#c00;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer">Refresh</button>
+      <button onclick="reportIssue()" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">Report issue</button>
+    </div>
+  </div>
+  <button onclick="reportIssue()" style="background:none;border:none;color:rgba(255,255,255,.2);font-size:11px;margin-top:24px;cursor:pointer;text-decoration:underline">⚠️ Report a problem</button>
 </div>
 
 <!-- LOGIN -->
@@ -896,11 +904,6 @@ async function saveGoalPWA(){
   }catch(e){showToast('Could not save. Try again.');}
   btn.disabled=false;btn.textContent='Save goal';
 }
-  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
-  document.getElementById('tp-'+t).classList.add('active');
-  document.getElementById('tb-'+t).classList.add('act');
-}
 
 // ── Utils ─────────────────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -939,7 +942,6 @@ window.addEventListener('load',async()=>{
   } else {
     show('splash');
   }
-});
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
@@ -1055,6 +1057,47 @@ async function refreshApp(){
     }catch{showToast('⚠️ Could not refresh — check connection');}
   }
   if(btn){btn.style.animation='';}
+}
+
+// ══ FROZEN SCREEN DETECTION ══════════════════════════════════
+// Only show error if user TAPS a button and nothing happens within 3 seconds
+function armFrozenCheck(){
+  const timer = setTimeout(()=>{
+    // If still on splash after tapping - something is wrong
+    const splash = document.getElementById('splash');
+    if(splash && splash.classList.contains('active')){
+      document.getElementById('splash-error').style.display = 'block';
+    }
+  }, 3000);
+  // If we navigate away, cancel the timer
+  document.addEventListener('click', ()=> clearTimeout(timer), {once:true});
+}
+document.getElementById('splash')?.addEventListener('click', (e)=>{
+  if(e.target.tagName === 'BUTTON') armFrozenCheck();
+});
+
+// ══ REPORT ISSUE ════════════════════════════════════════════
+async function reportIssue(){
+  const msg = prompt('Describe what happened (optional):') || 'User reported issue from splash screen';
+  try{
+    await fetch(`${SB}/rest/v1/bug_reports`,{
+      method:'POST',
+      headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        user_id: user?.id || null,
+        user_name: user?.name || 'unknown',
+        error_message: msg,
+        error_source: 'user_report',
+        error_line: 0,
+        page_url: window.location.href,
+        user_agent: navigator.userAgent,
+        created_at: new Date().toISOString()
+      })
+    });
+    alert('✅ Report sent. Thank you! The RandWise team will look into this.');
+  }catch{
+    alert('Could not send report. Please try refreshing the page.');
+  }
 }
 
 // ══ HARD REFRESH ════════════════════════════════════════════
@@ -1404,14 +1447,6 @@ function endTour(){
   document.getElementById('tour-mask').style.display='none';
 }
 
-// ── Hook into app flows ───────────────────────────────────────
-const _origOpenDash=window.openDash;
-async function openDash(){
-  show('main');await loadExp();renderDash();
-  setTimeout(showIntro,400);
-}
-// Also hook login
-const _origDoLogin=window.doLogin;
 </script>
 </body>
 </html>
