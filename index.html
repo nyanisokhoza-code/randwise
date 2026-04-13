@@ -1054,6 +1054,9 @@ window.addEventListener('load',async()=>{
       if(user?.id){
         try{
           const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
+          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
+        }catch{}
+        try{await loadExp();}catch{expenses=[];}
         try{renderDash();}catch{}
         setTimeout(()=>{try{showIntro();}catch{}},400);
       }
