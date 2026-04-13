@@ -581,8 +581,11 @@ async function doLogin(){
     user=rows[0];
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
-    await loadExp();renderDash();show('main');
-    setTimeout(showIntro,400);
+    try{await loadExp();}catch(ex){expenses=[];}
+    try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
+    show('main');
+    try{setTimeout(showIntro,400);}catch(ex){}
+    btn.disabled=false;btn.textContent='Sign in →';
   }catch(e){
     const msg=e?.message||'';
     const isNetwork=msg.includes('fetch')||msg.includes('network')||msg.includes('Failed');
