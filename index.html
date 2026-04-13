@@ -139,6 +139,43 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .exp-del{background:none;border:none;font-size:16px;color:var(--h);cursor:pointer;padding:4px 8px;flex-shrink:0}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none}
 .overlay.open{display:block}
+/* ── Welcome intro ── */
+#rw-intro{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;background:#0d3d22;padding:32px 24px;text-align:center}
+#rw-intro.show{display:flex}
+.intro-logo{font-size:64px;margin-bottom:8px}
+.intro-tagline{font-size:28px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px}
+.intro-tagline span{color:#4ade80}
+.intro-sub{font-size:15px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:32px;max-width:300px}
+.intro-tier{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:30px;padding:8px 20px;margin-bottom:28px}
+.intro-tier-badge{font-size:11px;font-weight:800;letter-spacing:.5px;padding:3px 10px;border-radius:20px}
+.intro-tier-badge.free{background:#4ade80;color:#0d3d22}
+.intro-tier-badge.pro{background:#fbbf24;color:#78350f}
+.intro-tier-badge.premium{background:#a78bfa;color:#2e1065}
+.intro-tier-name{font-size:13px;color:rgba(255,255,255,.85);font-weight:600}
+.intro-perks{width:100%;max-width:320px;margin-bottom:32px;text-align:left}
+.intro-perk{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;color:rgba(255,255,255,.85)}
+.intro-perk:last-child{border-bottom:none}
+.intro-perk-ico{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.intro-perk-lock{font-size:11px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:2px 8px;border-radius:10px;margin-left:auto;flex-shrink:0}
+.intro-cta{background:#4ade80;color:#0d3d22;border:none;border-radius:14px;padding:16px 40px;font-size:16px;font-weight:800;cursor:pointer;width:100%;max-width:320px}
+/* ── Tour overlay ── */
+#tour-mask{position:fixed;inset:0;z-index:200;display:none;pointer-events:none}
+#tour-mask.show{display:block}
+#tour-top{position:absolute;top:0;left:0;right:0;background:rgba(0,0,0,.72)}
+#tour-bot{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.72)}
+#tour-left{position:absolute;background:rgba(0,0,0,.72)}
+#tour-right{position:absolute;background:rgba(0,0,0,.72)}
+#tour-border{position:absolute;border:2.5px solid #4ade80;border-radius:14px;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1)}
+#tour-card{position:absolute;left:50%;transform:translateX(-50%);background:#fff;border-radius:18px;padding:18px 20px;width:min(300px,90vw);pointer-events:all;transition:top .35s cubic-bezier(.4,0,.2,1)}
+.tour-step-lbl{font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.tour-skip{font-size:11px;color:#888;cursor:pointer;text-decoration:underline;font-weight:400}
+.tour-title{font-size:17px;font-weight:800;color:#111;margin-bottom:6px}
+.tour-body{font-size:13px;color:#555;line-height:1.55;margin-bottom:14px}
+.tour-footer{display:flex;justify-content:space-between;align-items:center}
+.tour-dots{display:flex;gap:5px}
+.tour-dot{width:7px;height:7px;border-radius:50%;background:#ddd;transition:background .2s}
+.tour-dot.on{background:#1a7a4a}
+.tour-next{background:#1a7a4a;color:#fff;border:none;border-radius:10px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer}
 .sheet{position:fixed;bottom:0;left:0;right:0;background:var(--w);border-radius:24px 24px 0 0;padding:16px 20px calc(var(--sb) + 20px);z-index:101;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto}
 .sheet.open{transform:translateY(0)}
 .sh-handle{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 16px}
@@ -290,6 +327,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
         <button class="auth-toggle" onclick="togglePass('r-pass',this)">Show</button>
       </div>
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">At least 8 characters. You'll use this to sign back in.</div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Referral code <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
+      <input type="text" id="r-ref" class="auth-in" placeholder="e.g. KHO-245D" autocapitalize="characters" style="margin-bottom:4px">
+      <div style="font-size:11px;color:var(--mu);margin-bottom:16px">Got a code from a friend? Enter it here.</div>
     </div>
   </div>
   <div class="ob-foot">
@@ -329,7 +369,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
       <div style="display:flex;flex-direction:column;height:100%">
         <div class="dash-hdr">
           <div><div class="dash-g" id="dg"></div><div class="dash-s" id="ds"></div></div>
-          <div class="avatar" id="av">U</div>
+          <div class="avatar" id="av" onclick="ownerTap()">U</div>
         </div>
         <div class="dash-scroll">
           <div class="ring-card">
@@ -352,7 +392,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
           </div>
           <div class="sec">
             <div class="sec-hdr"><div class="sec-t">Weekly snapshot</div><div class="sec-s" id="wbl">R0/week</div></div>
-            <div class="wbars" id="wbars"></div>
+            <div class="wbars" id="wk-snap"></div>
           </div>
           <div class="sec">
             <div class="sec-hdr"><div class="sec-t">Recent expenses</div><div class="sec-s">This month</div></div>
@@ -387,7 +427,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
   </div>
   <div class="tab-bar">
     <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
-    <button class="tab-btn" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
+    <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
     <button class="tab-btn" id="tb-profile" onclick="switchTab('profile')"><span class="tab-icon">○</span><span class="tab-lbl">Profile</span></button>
   </div>
 </div>
@@ -417,7 +457,9 @@ const SB='https://mmezkseblafurjolkfkt.supabase.co';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
 let user=null,expenses=[],selectedCat=null;
-let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:''};
+let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:''};
+// Auto-fill referral code from URL ?ref=
+(()=>{const p=new URLSearchParams(window.location.search);const rc=p.get('ref');if(rc){ob.referralCode=rc;const el=document.getElementById('r-ref');if(el)el.value=rc;}})();
 let step=1;
 const CATS=[
   {id:'groceries',e:'🛒',l:'Groceries',c:'#1a7a4a'},{id:'transport',e:'🚌',l:'Transport',c:'#639922'},
@@ -470,6 +512,7 @@ function togGoal(el){
   valStep();
 }
 document.getElementById('name-in')&&document.getElementById('name-in').addEventListener('input',()=>{ob.name=document.getElementById('name-in').value;valStep();});
+document.getElementById('r-ref')&&document.getElementById('r-ref').addEventListener('input',()=>{ob.referralCode=document.getElementById('r-ref').value.trim().toUpperCase();});
 document.getElementById('r-email')&&document.getElementById('r-email').addEventListener('input',()=>{ob.email=document.getElementById('r-email').value;valStep();});
 document.getElementById('r-pass')&&document.getElementById('r-pass').addEventListener('input',()=>{ob.password=document.getElementById('r-pass').value;valStep();});
 
@@ -483,7 +526,7 @@ async function doRegister(){
     // 2. Create profile
     const a=parseFloat(ob.income)||0;
     const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;
-    const res=await sbP('beta_testers',{auth_id:authId,name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:false,status:'active'});
+    const res=await sbP('beta_testers',{auth_id:authId,name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:ob.referralCode?true:false,referred_by:ob.referralCode||null,status:'active'});
     user=res?.[0];
     if(user)localStorage.setItem('rw_user',JSON.stringify(user));
     // Celebration
@@ -515,6 +558,7 @@ async function doLogin(){
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
     await loadExp();renderDash();show('main');
+    setTimeout(showIntro,400);
   }catch(e){showErr('l-err','Connection error. Try again.');btn.disabled=false;btn.textContent='Sign in →';}
 }
 async function handleForgot(){
@@ -551,7 +595,14 @@ function renderDash(){
   document.getElementById('psince').textContent=user.created_at?new Date(user.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):'—';
   if((user.tier||'free')==='free'&&user.created_at){
     const days=Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000),left=Math.max(0,14-days);
-    if(left>0){const b=document.getElementById('trial');b.style.display='flex';document.getElementById('trial-t').textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;}
+    if(left>0){
+      const b=document.getElementById('trial');b.style.display='flex';
+      document.getElementById('trial-t').textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;
+      document.getElementById('trial-c').onclick=()=>showUpgradeWall(false);
+    } else {
+      showUpgradeWall(true);
+      return;
+    }
   }
   const now=new Date(),ms=new Date(now.getFullYear(),now.getMonth(),1);
   const me=expenses.filter(e=>new Date(e.logged_at)>=ms);
@@ -567,7 +618,7 @@ function renderDash(){
   document.getElementById('p-wb').textContent='R'+wb.toLocaleString('en-ZA');
   document.getElementById('wbl').textContent='R'+wb.toLocaleString('en-ZA')+'/week';
   const cw=Math.ceil(now.getDate()/7);
-  document.getElementById('wbars').innerHTML=[1,2,3,4].map(w=>{
+  document.getElementById('wk-snap').innerHTML=[1,2,3,4].map(w=>{
     const ws=me.filter(e=>Math.ceil(new Date(e.logged_at).getDate()/7)===w).reduce((s,e)=>s+Number(e.amount),0);
     const pp=wb>0?Math.min(ws/wb,1):0,hh=Math.round(pp*72),ov=ws>wb&&wb>0;
     const col=ov?'#a32d2d':w===cw?'#1a7a4a':'#5aab7a';
@@ -578,7 +629,7 @@ function renderDash(){
   if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No expenses yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
   const cm=CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
   el.innerHTML=expenses.slice(0,10).map(e=>{const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
-    return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
+    return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
   }).join('');
 }
 
@@ -627,8 +678,397 @@ function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeIte
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
   const s=localStorage.getItem('rw_user');
-  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');}catch{show('splash');}}
+  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');setTimeout(showIntro,400);}catch{show('splash');}}
 });
+</script>
+<!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
+<div id="upgrade-wall" style="display:none;position:fixed;inset:0;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
+  <div style="font-size:56px;margin-bottom:12px" id="uw-icon">⏰</div>
+  <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px" id="uw-title">Your free trial has ended</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:28px;max-width:300px" id="uw-sub">You've experienced what RandWise can do. Don't lose your data — upgrade to keep going.</div>
+  <div style="width:100%;max-width:320px;margin-bottom:24px">
+    <div style="background:rgba(255,255,255,.1);border-radius:16px;padding:20px;margin-bottom:12px;border:2px solid #4ade80">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:800;color:#fff">Pro</div>
+        <div style="font-size:20px;font-weight:800;color:#4ade80">R49<span style="font-size:13px;font-weight:500;color:rgba(255,255,255,.6)">/month</span></div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.8;text-align:left">✓ Weekly budget envelopes<br>✓ Debt payoff strategy<br>✓ Savings goals<br>✓ Bank statement parser<br>✓ AI money nudges</div>
+      <button onclick="doUpgrade('pro')" style="width:100%;background:#4ade80;color:#0d3d22;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:14px">Upgrade to Pro →</button>
+    </div>
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:16px;font-weight:800;color:#fff">Premium</div>
+        <div style="font-size:20px;font-weight:800;color:#a78bfa">R99<span style="font-size:13px;font-weight:500;color:rgba(255,255,255,.6)">/month</span></div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.8;text-align:left">✓ Everything in Pro<br>✓ Family / household view<br>✓ Priority support<br>✓ Early access to new features</div>
+      <button onclick="doUpgrade('premium')" style="width:100%;background:#a78bfa;color:#2e1065;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:14px">Upgrade to Premium →</button>
+    </div>
+  </div>
+  <button id="uw-continue" onclick="document.getElementById('upgrade-wall').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:none">Continue with limited access</button>
+</div>
+
+<!-- ══ EDIT EXPENSE SHEET ═════════════════════════════════════ -->
+<div class="overlay" id="edit-ov" onclick="closeEditSheet()"></div>
+<div class="sheet" id="edit-sheet">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Edit expense</div>
+  <input type="hidden" id="edit-id">
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Amount (R)</div>
+  <input type="number" id="edit-amt" class="inc-in" placeholder="0" style="margin-bottom:14px;border:1.5px solid var(--bd);border-radius:12px;padding:14px;width:100%;box-sizing:border-box;font-size:18px">
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Note (optional)</div>
+  <input type="text" id="edit-note" class="auth-in" placeholder="What was this for?" style="margin-bottom:20px">
+  <button onclick="saveEdit()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save changes</button>
+  <button onclick="closeEditSheet()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
+</div>
+<div id="owner-pin-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.8);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;width:min(300px,88vw);text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">🔒</div>
+    <div style="font-size:17px;font-weight:800;color:#111;margin-bottom:4px">Owner Access</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px">Enter PIN to continue</div>
+    <input id="owner-pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••" style="width:100%;text-align:center;font-size:28px;letter-spacing:12px;border:2px solid #ddd;border-radius:12px;padding:12px;margin-bottom:16px;box-sizing:border-box">
+    <div id="owner-pin-err" style="color:#a32d2d;font-size:12px;margin-bottom:10px;display:none">Wrong PIN</div>
+    <button onclick="checkOwnerPin()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer">Enter</button>
+    <button onclick="closeOwnerPin()" style="width:100%;background:none;border:none;color:#888;font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
+  </div>
+</div>
+
+<div id="owner-panel" style="display:none;position:fixed;inset:0;z-index:490;background:#0d1f13;overflow-y:auto;">
+  <div style="padding:calc(env(safe-area-inset-top,16px) + 16px) 20px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1)">
+    <div>
+      <div style="font-size:11px;color:#4ade80;font-weight:700;letter-spacing:1px">RANDWISE INSIDER</div>
+      <div style="font-size:18px;font-weight:800;color:#fff">Owner Panel</div>
+    </div>
+    <button onclick="document.getElementById('owner-panel').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:10px;padding:8px 14px;font-size:13px;cursor:pointer">Close ✕</button>
+  </div>
+
+  <div style="padding:20px">
+    <!-- Tier switcher -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#4ade80;font-weight:700;letter-spacing:.5px;margin-bottom:12px">🎛️ TEST TIER VIEW</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-bottom:12px">Switch your account tier to see exactly how each tier feels. Resets on next login.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="switchTestTier('free')" id="tier-btn-free" style="flex:1;min-width:80px;background:#4ade80;color:#0d3d22;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer">FREE</button>
+        <button onclick="switchTestTier('pro')" id="tier-btn-pro" style="flex:1;min-width:80px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer">PRO R49</button>
+        <button onclick="switchTestTier('premium')" id="tier-btn-premium" style="flex:1;min-width:80px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer">PREMIUM R99</button>
+      </div>
+      <div id="tier-test-info" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.5);min-height:16px"></div>
+    </div>
+
+    <!-- Live stats -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#4ade80;font-weight:700;letter-spacing:.5px;margin-bottom:12px">📊 LIVE STATS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="owner-stats">
+        <div style="background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#fff" id="stat-total">—</div><div style="font-size:11px;color:rgba(255,255,255,.5)">Total users</div></div>
+        <div style="background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#fbbf24" id="stat-paid">—</div><div style="font-size:11px;color:rgba(255,255,255,.5)">Paid users</div></div>
+        <div style="background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#4ade80" id="stat-mrr">—</div><div style="font-size:11px;color:rgba(255,255,255,.5)">Est. MRR</div></div>
+        <div style="background:rgba(255,255,255,.05);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:#a78bfa" id="stat-exp">—</div><div style="font-size:11px;color:rgba(255,255,255,.5)">Expenses logged</div></div>
+      </div>
+    </div>
+
+    <!-- Recent users -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#4ade80;font-weight:700;letter-spacing:.5px;margin-bottom:12px">👥 RECENT REGISTRATIONS</div>
+      <div id="owner-users" style="font-size:13px;color:rgba(255,255,255,.7)">Loading...</div>
+    </div>
+
+    <!-- Build info -->
+    <div style="text-align:center;padding:16px;font-size:11px;color:rgba(255,255,255,.3)">
+      RandWise PWA · Built by Nyaniso Khoza 🇿🇦<br>
+      <span id="owner-date"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ UPGRADE WALL ════════════════════════════════════════════
+function showUpgradeWall(hardBlock){
+  const wall=document.getElementById('upgrade-wall');
+  wall.style.display='flex';
+  if(!hardBlock){
+    document.getElementById('uw-icon').textContent='⭐';
+    document.getElementById('uw-title').textContent='Unlock the full RandWise';
+    document.getElementById('uw-sub').textContent='You\'re on the free plan. Upgrade to Pro for bank imports, AI nudges, and more.';
+    document.getElementById('uw-continue').style.display='block';
+  } else {
+    document.getElementById('uw-icon').textContent='⏰';
+    document.getElementById('uw-title').textContent='Your free trial has ended';
+    document.getElementById('uw-sub').textContent='You\'ve experienced what RandWise can do. Don\'t lose your data — upgrade to keep going.';
+    document.getElementById('uw-continue').style.display='none';
+  }
+}
+function doUpgrade(plan){
+  const mid='17641839',mkey='ggvw6iyb2c213';
+  const sandbox=true;
+  const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
+  const amt=plan==='premium'?'99.00':'49.00';
+  const name=plan==='premium'?'RandWise Premium':'RandWise Pro';
+  const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:'https://nyanisokhoza-code.github.io/randwise?paid=1',cancel_url:'https://nyanisokhoza-code.github.io/randwise',notify_url:'https://nyanisokhoza-code.github.io/randwise',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
+  window.open(`${base}?${params.toString()}`,'_blank');
+}
+// Check if returning from PayFast payment
+(()=>{const p=new URLSearchParams(window.location.search);if(p.get('paid')==='1'){showToast('🎉 Payment received! Your tier will update shortly.');}})();
+
+// ══ EDIT EXPENSE ════════════════════════════════════════════
+function editExp(id){
+  const e=expenses.find(x=>x.id===id);
+  if(!e)return;
+  document.getElementById('edit-id').value=id;
+  document.getElementById('edit-amt').value=e.amount;
+  document.getElementById('edit-note').value=e.note||'';
+  document.getElementById('edit-sheet').classList.add('open');
+  document.getElementById('edit-ov').classList.add('open');
+}
+function closeEditSheet(){
+  document.getElementById('edit-sheet').classList.remove('open');
+  document.getElementById('edit-ov').classList.remove('open');
+}
+async function saveEdit(){
+  const id=document.getElementById('edit-id').value;
+  const amt=parseFloat(document.getElementById('edit-amt').value);
+  const note=document.getElementById('edit-note').value.trim();
+  if(!amt||amt<=0){showToast('Enter a valid amount');return;}
+  expenses=expenses.map(e=>e.id===id?{...e,amount:amt,note}:e);
+  renderDash();closeEditSheet();showToast('✅ Expense updated');
+  if(!id.startsWith('tmp-')){
+    try{await fetch(`${SB}/rest/v1/expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({amount:amt,note})});}catch{}
+  }
+}
+
+// ══ PWA MANIFEST ════════════════════════════════════════════
+(()=>{
+  const manifest={name:'RandWise',short_name:'RandWise',description:'Your money, your rules.',start_url:'/randwise/',display:'standalone',background_color:'#0d3d22',theme_color:'#1a7a4a',orientation:'portrait',icons:[{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'192x192',type:'image/svg+xml'},{src:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',sizes:'512x512',type:'image/svg+xml'}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('link');
+  link.rel='manifest';link.href=url;
+  document.head.appendChild(link);
+})();
+let ownerTapCount=0,ownerTapTimer=null;
+function ownerTap(){
+  ownerTapCount++;
+  clearTimeout(ownerTapTimer);
+  ownerTapTimer=setTimeout(()=>{ownerTapCount=0;},2000);
+  if(ownerTapCount>=5){
+    ownerTapCount=0;
+    document.getElementById('owner-pin-modal').style.display='flex';
+    document.getElementById('owner-pin-input').value='';
+    document.getElementById('owner-pin-err').style.display='none';
+    setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
+  }
+}
+function checkOwnerPin(){
+  const pin=document.getElementById('owner-pin-input').value;
+  if(pin==='0826'){
+    document.getElementById('owner-pin-modal').style.display='none';
+    openOwnerPanel();
+  } else {
+    document.getElementById('owner-pin-err').style.display='block';
+    document.getElementById('owner-pin-input').value='';
+  }
+}
+function closeOwnerPin(){document.getElementById('owner-pin-modal').style.display='none';}
+document.getElementById('owner-pin-input').addEventListener('keydown',e=>{if(e.key==='Enter')checkOwnerPin();});
+
+async function openOwnerPanel(){
+  document.getElementById('owner-panel').style.display='block';
+  document.getElementById('owner-date').textContent='Session: '+new Date().toLocaleString('en-ZA');
+  highlightTierBtn(user?.tier||'free');
+  try{
+    const users=await sbG('beta_testers?select=id,name,tier,created_at&order=created_at.desc&limit=50');
+    const exps=await sbG('expenses?select=id');
+    const total=users?.length||0;
+    const paid=(users||[]).filter(u=>u.tier==='pro'||u.tier==='premium').length;
+    const mrr=paid*49;
+    document.getElementById('stat-total').textContent=total;
+    document.getElementById('stat-paid').textContent=paid;
+    document.getElementById('stat-mrr').textContent='R'+mrr.toLocaleString('en-ZA');
+    document.getElementById('stat-exp').textContent=exps?.length||0;
+    localStorage.setItem('rw_total_users',total);
+    const list=(users||[]).slice(0,8).map(u=>{
+      const tierCol=u.tier==='premium'?'#a78bfa':u.tier==='pro'?'#fbbf24':'#4ade80';
+      const d=new Date(u.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <span>${u.name||'—'}</span>
+        <span style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;background:${tierCol}22;color:${tierCol};padding:2px 8px;border-radius:10px;font-weight:700">${(u.tier||'free').toUpperCase()}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.4)">${d}</span>
+        </span>
+      </div>`;
+    }).join('');
+    document.getElementById('owner-users').innerHTML=list||'<span style="color:rgba(255,255,255,.4)">No users yet</span>';
+  }catch(e){document.getElementById('owner-users').innerHTML='<span style="color:#f87171">Could not load — check Supabase</span>';}
+}
+
+function switchTestTier(tier){
+  if(!user)return;
+  user.tier=tier;
+  localStorage.setItem('rw_user',JSON.stringify(user));
+  renderDash();
+  highlightTierBtn(tier);
+  const msgs={free:'👆 Now viewing FREE experience — trial banner shows, Pro features locked after trial',pro:'⭐ Now viewing PRO experience — full access, R49/month badge',premium:'👑 Now viewing PREMIUM experience — everything unlocked, R99/month'};
+  document.getElementById('tier-test-info').textContent=msgs[tier]||'';
+  document.getElementById('owner-panel').style.display='none';
+  show('main');
+}
+function highlightTierBtn(tier){
+  ['free','pro','premium'].forEach(t=>{
+    const b=document.getElementById('tier-btn-'+t);
+    if(!b)return;
+    b.style.background=t===tier?'#4ade80':'rgba(255,255,255,.1)';
+    b.style.color=t===tier?'#0d3d22':'#fff';
+  });
+}
+</script>
+<div id="rw-intro">
+  <div class="intro-logo">🌱</div>
+  <div class="intro-tagline">Your money,<br><span>your rules.</span></div>
+  <div class="intro-sub">The personal finance app built for real South African life — not American, not European. <strong style="color:#fff">Ours.</strong></div>
+  <div class="intro-tier" id="intro-tier-badge">
+    <span class="intro-tier-badge free" id="intro-badge-pill">FREE TRIAL</span>
+    <span class="intro-tier-name" id="intro-tier-name">14 days of full Pro access — free</span>
+  </div>
+  <div class="intro-perks" id="intro-perks">
+    <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
+    <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy</span></div>
+    <div class="intro-perk"><span class="intro-perk-ico">🌱</span><span>Savings goals tracker</span></div>
+    <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement parser</span><span class="intro-perk-lock">PRO</span></div>
+    <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges</span><span class="intro-perk-lock">PRO</span></div>
+    <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings</span></div>
+  </div>
+  <button class="intro-cta" id="intro-cta-btn" onclick="closeIntroStartTour()">Let's go 🚀</button>
+</div>
+
+<!-- ══ TOUR MASK ═══════════════════════════════════════════════ -->
+<div id="tour-mask">
+  <div id="tour-top"></div>
+  <div id="tour-bot"></div>
+  <div id="tour-left"></div>
+  <div id="tour-right"></div>
+  <div id="tour-border"></div>
+  <div id="tour-card">
+    <div class="tour-step-lbl"><span>STEP <span id="t-num">1</span> OF 4</span><span class="tour-skip" onclick="endTour()">Skip tour</span></div>
+    <div class="tour-title" id="t-title"></div>
+    <div class="tour-body" id="t-body"></div>
+    <div class="tour-footer">
+      <div class="tour-dots" id="t-dots"></div>
+      <button class="tour-next" id="t-next" onclick="tourNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ INTRO + TOUR LOGIC ════════════════════════════════════════
+const TOUR_STEPS=[
+  {title:"Your money ring 💚",body:"This circle shows how much you have left to spend this month. Green means you're doing well. Red means slow down.",target:'ring-card'},
+  {title:"Log an expense ➕",body:"Tap the green + button anytime to record what you spent. Pick a category, enter the amount — done in 5 seconds.",target:'fab'},
+  {title:"Your weekly snapshot 📊",body:"Each bar is one week. Tap any bar to see exactly what you spent that week. Stay under the line and you're winning.",target:'wk-snap'},
+  {title:"Explore your tabs 🗂️",body:"Debt tracks what you owe and builds your payoff plan. Grow sets your savings goals. Profile manages your account.",target:'tab-bar'}
+];
+
+function showIntro(){
+  const tier=user?.tier||'free';
+  const pill=document.getElementById('intro-badge-pill');
+  const tname=document.getElementById('intro-tier-name');
+  const perks=document.getElementById('intro-perks');
+  const cta=document.getElementById('intro-cta-btn');
+  if(tier==='premium'){
+    pill.className='intro-tier-badge premium';pill.textContent='PREMIUM';
+    tname.textContent='Full unlimited access — everything unlocked';
+    cta.textContent='Enter RandWise 👑';
+    perks.innerHTML=`
+      <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy — Avalanche & Snowball</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement auto-import</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges — personalised</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">👨‍👩‍👧</span><span>Family / household view</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings — earn up to R40/person</span></div>`;
+  } else if(tier==='pro'){
+    pill.className='intro-tier-badge pro';pill.textContent='PRO';
+    tname.textContent='Pro access — your full financial picture';
+    cta.textContent='Open my dashboard →';
+    perks.innerHTML=`
+      <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement auto-import</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings</span></div>
+      <div class="intro-perk"><span class="intro-perk-ico">🌱</span><span>Savings goals tracker</span></div>`;
+  } else {
+    const days=user?.created_at?Math.max(0,14-Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000)):14;
+    pill.className='intro-tier-badge free';pill.textContent='FREE TRIAL';
+    tname.textContent=`${days} day${days!==1?'s':''} of full Pro access — free`;
+    cta.textContent="Let's go 🚀";
+  }
+  document.getElementById('rw-intro').classList.add('show');
+}
+
+function closeIntroStartTour(){
+  document.getElementById('rw-intro').classList.remove('show');
+  setTimeout(startTour,300);
+}
+
+// ── Tour ─────────────────────────────────────────────────────
+let tourStep=0;
+function startTour(){
+  const key='rw_tour_'+( user?.id||'x');
+  const seen=parseInt(localStorage.getItem(key)||'0');
+  const totalUsers=parseInt(localStorage.getItem('rw_total_users')||'0');
+  const maxShows=totalUsers<20?2:1;
+  if(seen>=maxShows)return;
+  localStorage.setItem(key,seen+1);
+  tourStep=0;
+  document.getElementById('tour-mask').classList.add('show');
+  renderTourStep();
+}
+
+function getTargetRect(targetId){
+  let el=document.querySelector('.'+targetId)||document.getElementById(targetId);
+  if(!el)return null;
+  return el.getBoundingClientRect();
+}
+
+function renderTourStep(){
+  const s=TOUR_STEPS[tourStep];
+  document.getElementById('t-num').textContent=tourStep+1;
+  document.getElementById('t-title').textContent=s.title;
+  document.getElementById('t-body').textContent=s.body;
+  document.getElementById('t-next').textContent=tourStep===TOUR_STEPS.length-1?'Done ✓':'Next →';
+  const dots=document.getElementById('t-dots');
+  dots.innerHTML=TOUR_STEPS.map((_,i)=>`<div class="tour-dot${i===tourStep?' on':''}"></div>`).join('');
+  const r=getTargetRect(s.target);
+  if(!r){endTour();return;}
+  const pad=10;
+  const top=r.top-pad,left=r.left-pad,w=r.width+pad*2,h=r.height+pad*2;
+  document.getElementById('tour-top').style.cssText=`top:0;left:0;right:0;height:${top}px`;
+  document.getElementById('tour-bot').style.cssText=`top:${top+h}px;left:0;right:0;bottom:0`;
+  document.getElementById('tour-left').style.cssText=`top:${top}px;left:0;width:${left}px;height:${h}px`;
+  document.getElementById('tour-right').style.cssText=`top:${top}px;left:${left+w}px;right:0;height:${h}px`;
+  document.getElementById('tour-border').style.cssText=`top:${top}px;left:${left}px;width:${w}px;height:${h}px;border:2.5px solid #4ade80;border-radius:14px;position:absolute`;
+  const card=document.getElementById('tour-card');
+  const cardH=180,spacing=16;
+  const showAbove=top+h+cardH+spacing>window.innerHeight;
+  card.style.cssText=`position:absolute;left:50%;transform:translateX(-50%);background:#fff;border-radius:18px;padding:18px 20px;width:min(300px,90vw);pointer-events:all;top:${showAbove?top-cardH-spacing:top+h+spacing}px`;
+}
+
+function tourNext(){
+  tourStep++;
+  if(tourStep>=TOUR_STEPS.length){endTour();return;}
+  renderTourStep();
+}
+
+function endTour(){
+  document.getElementById('tour-mask').classList.remove('show');
+  document.getElementById('tour-mask').style.display='none';
+}
+
+// ── Hook into app flows ───────────────────────────────────────
+const _origOpenDash=window.openDash;
+async function openDash(){
+  show('main');await loadExp();renderDash();
+  setTimeout(showIntro,400);
+}
+// Also hook login
+const _origDoLogin=window.doLogin;
 </script>
 </body>
 </html>
