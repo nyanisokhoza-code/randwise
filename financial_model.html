@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandWise — Financial Runway Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0f0d;--surface:#111811;--card:#162018;--border:#1e2d20;
+  --green:#2ecc71;--green-dim:#1a7a4a;--green-muted:#0d3d22;
+  --gold:#f0b429;--gold-dim:#92400e;--red:#e53e3e;--red-dim:#63171b;
+  --blue:#4299e1;--text:#e8f5e9;--muted:#5a7a5e;--subtle:#2d4a30;
+  --serif:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;--body:'Lato',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden}
+
+/* LOCK */
+#lock{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;padding:40px}
+.lock-logo{font-family:var(--serif);font-size:42px;font-weight:800;color:var(--green);letter-spacing:-2px;margin-bottom:6px}
+.lock-sub{font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin-bottom:48px;font-family:var(--mono)}
+.lock-input{width:100%;max-width:300px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:20px;letter-spacing:8px;color:var(--green);font-family:var(--mono);text-align:center;outline:none;margin-bottom:12px}
+.lock-input:focus{border-color:var(--green-dim)}
+.lock-btn{width:100%;max-width:300px;background:var(--green);color:#000;border:none;border-radius:8px;padding:14px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--serif);letter-spacing:1px}
+.lock-err{color:var(--red);font-size:12px;margin-top:8px;font-family:var(--mono);min-height:16px}
+.lock-nda{font-size:10px;color:var(--muted);margin-top:32px;text-align:center;max-width:260px;line-height:1.7;font-family:var(--mono)}
+
+/* APP */
+#app{display:none}
+
+/* HEADER */
+.hdr{background:linear-gradient(135deg,#0d1f10 0%,#0a0f0d 100%);border-bottom:1px solid var(--border);padding:24px 32px;display:flex;justify-content:space-between;align-items:center}
+.hdr-brand{font-family:var(--serif);font-size:22px;font-weight:800;color:var(--green);letter-spacing:-0.5px}
+.hdr-brand span{color:var(--muted);font-weight:400;font-size:13px;display:block;margin-top:2px;font-family:var(--mono);letter-spacing:2px}
+.hdr-status{display:flex;gap:12px;align-items:center}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-label{font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:1px}
+
+/* NAV */
+.nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;overflow-x:auto}
+.nav-btn{padding:14px 20px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:var(--serif);letter-spacing:.5px;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.nav-btn.act{color:var(--green);border-bottom-color:var(--green)}
+
+/* CONTENT */
+.content{max-width:1100px;margin:0 auto;padding:32px 24px 80px}
+.page{display:none}.page.act{display:block}
+
+/* CARDS */
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-family:var(--serif);font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}
+
+/* BIG NUMBERS */
+.big-num{font-family:var(--mono);font-size:32px;font-weight:600;line-height:1}
+.big-num.green{color:var(--green)}
+.big-num.gold{color:var(--gold)}
+.big-num.red{color:var(--red)}
+.big-num.muted{color:var(--muted)}
+.big-label{font-size:11px;color:var(--muted);margin-top:6px;font-family:var(--mono);letter-spacing:1px}
+
+/* INPUTS */
+.inp-group{margin-bottom:14px}
+.inp-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:block;font-family:var(--mono);letter-spacing:.5px}
+.inp{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(--text);font-family:var(--mono);outline:none;transition:border-color .2s}
+.inp:focus{border-color:var(--green-dim)}
+.inp-prefix{display:flex;align-items:center;gap:0}
+.inp-prefix span{background:var(--subtle);border:1px solid var(--border);border-right:none;border-radius:8px 0 0 8px;padding:10px 12px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+.inp-prefix .inp{border-radius:0 8px 8px 0;border-left:none}
+
+/* RUNWAY BAR */
+.runway-bar{height:12px;background:var(--surface);border-radius:6px;overflow:hidden;margin:8px 0}
+.runway-fill{height:100%;border-radius:6px;transition:width .5s ease}
+.runway-fill.safe{background:linear-gradient(90deg,var(--green-dim),var(--green))}
+.runway-fill.warn{background:linear-gradient(90deg,var(--gold-dim),var(--gold))}
+.runway-fill.danger{background:linear-gradient(90deg,var(--red-dim),var(--red))}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 12px;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:1.5px;font-weight:500;border-bottom:1px solid var(--border)}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--border);font-family:var(--mono)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(46,204,113,.04)}
+.tbl .amt{text-align:right;color:var(--green)}
+.tbl .amt.cost{color:var(--red)}
+.tbl .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-family:var(--mono)}
+.badge-fixed{background:#1a2a3a;color:var(--blue)}
+.badge-var{background:#1a2a1a;color:var(--green)}
+
+/* SCENARIO */
+.scenario-card{border:1px solid var(--border);border-radius:10px;padding:16px;background:var(--surface);transition:border-color .2s;cursor:pointer}
+.scenario-card.act{border-color:var(--green);background:var(--card)}
+.scenario-card:hover{border-color:var(--green-dim)}
+.scenario-name{font-family:var(--serif);font-size:14px;font-weight:700;margin-bottom:4px}
+.scenario-desc{font-size:11px;color:var(--muted);line-height:1.6;font-family:var(--mono)}
+
+/* MONTH FORECAST */
+.month-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.month-row:last-child{border-bottom:none}
+.month-label{font-family:var(--mono);font-size:12px;color:var(--muted);width:80px;flex-shrink:0}
+.month-bar-wrap{flex:1;height:6px;background:var(--surface);border-radius:3px;overflow:hidden}
+.month-bar{height:100%;border-radius:3px;transition:width .4s ease}
+.month-bar.pos{background:var(--green)}
+.month-bar.neg{background:var(--red)}
+.month-mrr{font-family:var(--mono);font-size:12px;width:90px;text-align:right;flex-shrink:0}
+.month-status{font-size:10px;font-family:var(--mono);width:70px;text-align:right;flex-shrink:0}
+
+/* STRESS TEST */
+.stress-result{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:12px}
+.stress-verdict{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:4px}
+.stress-detail{font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.7}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* SEC TITLE */
+.sec-title{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* TOOLTIP */
+.tooltip{position:relative;display:inline-block;margin-left:6px;cursor:help}
+.tooltip-ico{font-size:11px;color:var(--muted);background:var(--subtle);border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.tooltip-text{display:none;position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#1a2a1a;color:var(--text);font-size:11px;padding:8px 12px;border-radius:6px;width:200px;line-height:1.6;z-index:10;font-family:var(--body);border:1px solid var(--border)}
+.tooltip:hover .tooltip-text{display:block}
+
+/* SAVE BTN */
+.save-btn{background:var(--green);color:#000;border:none;border-radius:8px;padding:10px 20px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--serif);letter-spacing:.5px;transition:opacity .15s}
+.save-btn:hover{opacity:.85}
+
+@media(max-width:700px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .hdr{padding:16px 20px}
+  .content{padding:20px 16px 60px}
+  .nav{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOCK -->
+<div id="lock">
+  <div class="lock-logo">RandWise</div>
+  <div class="lock-sub">Financial Runway Model</div>
+  <input class="lock-input" type="password" id="lock-pw" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')unlock()">
+  <button class="lock-btn" onclick="unlock()">Access model →</button>
+  <div class="lock-err" id="lock-err"></div>
+  <div class="lock-nda">Confidential · NDA protected · For founder and investors only</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-brand">RandWise Financial Model<span>RUNWAY · BURN · BREAK-EVEN · FORECAST</span></div>
+    <div class="hdr-status">
+      <div class="status-dot"></div>
+      <div class="status-label" id="hdr-date">—</div>
+    </div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn act" onclick="showPage('overview')">Overview</button>
+    <button class="nav-btn" onclick="showPage('costs')">Monthly Costs</button>
+    <button class="nav-btn" onclick="showPage('breakeven')">Break-Even</button>
+    <button class="nav-btn" onclick="showPage('runway')">Runway</button>
+    <button class="nav-btn" onclick="showPage('forecast')">12-Month Forecast</button>
+    <button class="nav-btn" onclick="showPage('stress')">Stress Test</button>
+    <button class="nav-btn" onclick="showPage('personal')">Personal Runway</button>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="page act" id="page-overview">
+      <div class="sec-title">🟢 Live snapshot</div>
+      <div class="grid grid-4" style="margin-bottom:24px">
+        <div class="card">
+          <div class="big-num green" id="ov-mrr">R0</div>
+          <div class="big-label">MRR (Monthly Recurring Revenue)</div>
+        </div>
+        <div class="card">
+          <div class="big-num gold" id="ov-burn">R0</div>
+          <div class="big-label">Monthly Burn Rate</div>
+        </div>
+        <div class="card">
+          <div class="big-num" id="ov-runway" style="color:var(--blue)">0 mo</div>
+          <div class="big-label">Runway Remaining</div>
+        </div>
+        <div class="card">
+          <div class="big-num" id="ov-breakeven" style="color:var(--gold)">0 users</div>
+          <div class="big-label">Users to Break Even</div>
+        </div>
+      </div>
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Runway meter</div>
+          <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:8px" id="ov-runway-label">—</div>
+          <div class="runway-bar"><div class="runway-fill" id="ov-runway-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:6px"><span>Now</span><span id="ov-runway-end">—</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Default status</div>
+          <div style="font-size:28px;font-weight:800;font-family:var(--serif);margin-bottom:6px" id="ov-default-status">—</div>
+          <div style="font-size:12px;color:var(--muted);font-family:var(--mono);line-height:1.6" id="ov-default-desc">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Key metrics</div>
+        <div class="grid grid-4">
+          <div><div class="big-num muted" id="ov-cac">R0</div><div class="big-label">CAC (est.)</div></div>
+          <div><div class="big-num muted" id="ov-ltv">R0</div><div class="big-label">LTV (Pro avg)</div></div>
+          <div><div class="big-num muted" id="ov-ltv-ratio">0×</div><div class="big-label">LTV:CAC ratio</div></div>
+          <div><div class="big-num muted" id="ov-margin">0%</div><div class="big-label">Gross margin</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COSTS -->
+    <div class="page" id="page-costs">
+      <div class="sec-title">💸 Monthly costs</div>
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Fixed costs (always pay these)</div>
+          <table class="tbl">
+            <thead><tr><th>Item</th><th>Type</th><th style="text-align:right">R/mo</th></tr></thead>
+            <tbody id="fixed-costs-rows"></tbody>
+            <tfoot><tr><td colspan="2" style="padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--muted)">TOTAL FIXED</td><td class="amt cost" id="fixed-total" style="padding:10px 12px;font-weight:700">R0</td></tr></tfoot>
+          </table>
+          <button class="save-btn" style="margin-top:12px;width:100%" onclick="addCostRow('fixed')">+ Add fixed cost</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Variable costs (scale with users)</div>
+          <table class="tbl">
+            <thead><tr><th>Item</th><th>Type</th><th style="text-align:right">R/mo</th></tr></thead>
+            <tbody id="variable-costs-rows"></tbody>
+            <tfoot><tr><td colspan="2" style="padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--muted)">TOTAL VARIABLE</td><td class="amt cost" id="variable-total" style="padding:10px 12px;font-weight:700">R0</td></tr></tfoot>
+          </table>
+          <button class="save-btn" style="margin-top:12px;width:100%" onclick="addCostRow('variable')">+ Add variable cost</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-family:var(--serif);font-size:22px;font-weight:700;color:var(--red)" id="total-burn-display">R0/mo</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">Total monthly burn</div></div>
+          <div style="text-align:right"><div style="font-family:var(--mono);font-size:14px;color:var(--gold)" id="annual-burn-display">R0/yr</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">Annual burn</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BREAK-EVEN -->
+    <div class="page" id="page-breakeven">
+      <div class="sec-title">⚖️ Break-even calculator</div>
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Revenue inputs</div>
+          <div class="inp-group"><label class="inp-label">Pro subscribers (R49/mo)</label><div class="inp-prefix"><span>#</span><input class="inp" type="number" id="be-pro" value="0" oninput="recalc()"></div></div>
+          <div class="inp-group"><label class="inp-label">Premium subscribers (R129/mo)</label><div class="inp-prefix"><span>#</span><input class="inp" type="number" id="be-premium" value="0" oninput="recalc()"></div></div>
+          <div class="inp-group"><label class="inp-label">PayFast fee % (deducted)</label><div class="inp-prefix"><span>%</span><input class="inp" type="number" id="be-payfast-fee" value="5.5" oninput="recalc()"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Break-even result</div>
+          <div style="margin-bottom:16px">
+            <div class="big-num" id="be-revenue" style="color:var(--green)">R0</div>
+            <div class="big-label">Gross revenue this month</div>
+          </div>
+          <div style="margin-bottom:16px">
+            <div class="big-num" id="be-net" style="color:var(--green)">R0</div>
+            <div class="big-label">Net after PayFast fees</div>
+          </div>
+          <div style="background:var(--surface);border-radius:8px;padding:14px">
+            <div style="font-family:var(--mono);font-size:13px;color:var(--muted);margin-bottom:6px">To break even you need:</div>
+            <div style="font-family:var(--serif);font-size:20px;font-weight:700;color:var(--gold)" id="be-need">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Break-even combinations</div>
+        <table class="tbl">
+          <thead><tr><th>Scenario</th><th>Pro users</th><th>Premium users</th><th>Monthly revenue</th><th>vs burn</th></tr></thead>
+          <tbody id="be-combos"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- RUNWAY -->
+    <div class="page" id="page-runway">
+      <div class="sec-title">🛫 Runway calculator</div>
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Cash position</div>
+          <div class="inp-group"><label class="inp-label">Cash in business account (R)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="rw-cash" value="0" oninput="recalc()"></div></div>
+          <div class="inp-group"><label class="inp-label">Monthly growth rate (%)</label><div class="inp-prefix"><span>%</span><input class="inp" type="number" id="rw-growth" value="20" oninput="recalc()"></div></div>
+          <div class="inp-group"><label class="inp-label">Current MRR (R)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="rw-mrr" value="0" oninput="recalc()"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Runway result</div>
+          <div style="margin-bottom:20px">
+            <div class="big-num" id="rw-months" style="color:var(--blue)">0</div>
+            <div class="big-label">Months of runway</div>
+          </div>
+          <div class="runway-bar" style="height:16px"><div class="runway-fill safe" id="rw-bar" style="width:0%"></div></div>
+          <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:8px" id="rw-verdict">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monthly cash flow projection</div>
+        <div id="rw-monthly-table"></div>
+      </div>
+    </div>
+
+    <!-- FORECAST -->
+    <div class="page" id="page-forecast">
+      <div class="sec-title">📈 12-month forecast</div>
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Assumptions</div>
+        <div class="grid grid-3">
+          <div class="inp-group"><label class="inp-label">Starting paid users</label><input class="inp" type="number" id="fc-start-users" value="0" oninput="recalc()"></div>
+          <div class="inp-group"><label class="inp-label">New paid users/month</label><input class="inp" type="number" id="fc-new-users" value="5" oninput="recalc()"></div>
+          <div class="inp-group"><label class="inp-label">Monthly churn (%)</label><input class="inp" type="number" id="fc-churn" value="5" oninput="recalc()"></div>
+          <div class="inp-group"><label class="inp-label">% on Pro vs Premium</label><input class="inp" type="number" id="fc-pro-pct" value="80" oninput="recalc()"></div>
+          <div class="inp-group"><label class="inp-label">Salary you draw (R/mo)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="fc-salary" value="0" oninput="recalc()"></div></div>
+          <div class="inp-group"><label class="inp-label">Starting cash (R)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="fc-cash" value="0" oninput="recalc()"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Month-by-month</div>
+        <div id="fc-rows"></div>
+      </div>
+    </div>
+
+    <!-- STRESS TEST -->
+    <div class="page" id="page-stress">
+      <div class="sec-title">🔥 Stress test</div>
+      <div class="grid grid-3" style="margin-bottom:20px" id="scenario-cards"></div>
+      <div id="stress-result-area"></div>
+    </div>
+
+    <!-- PERSONAL RUNWAY -->
+    <div class="page" id="page-personal">
+      <div class="sec-title">👤 Personal runway</div>
+      <div style="background:var(--card);border:1px solid #e53e3e33;border-radius:12px;padding:16px;margin-bottom:20px">
+        <div style="font-size:13px;color:#fc8181;font-family:var(--mono);line-height:1.7">⚠️ This is the most important number in your business. If your personal runway hits zero, RandWise dies — regardless of how good the product is. Know this number cold.</div>
+      </div>
+      <div class="grid grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-title">Your personal finances</div>
+          <div class="inp-group"><label class="inp-label">Personal savings (R)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="pr-savings" value="0" oninput="recalcPersonal()"></div></div>
+          <div class="inp-group"><label class="inp-label">Monthly personal expenses (R)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="pr-expenses" value="8000" oninput="recalcPersonal()"></div></div>
+          <div class="inp-group"><label class="inp-label">Other income (salary, freelance) (R/mo)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="pr-income" value="0" oninput="recalcPersonal()"></div></div>
+          <div class="inp-group"><label class="inp-label">RandWise salary drawn (R/mo)</label><div class="inp-prefix"><span>R</span><input class="inp" type="number" id="pr-rw-salary" value="0" oninput="recalcPersonal()"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Personal runway result</div>
+          <div style="margin-bottom:20px">
+            <div class="big-num" id="pr-months" style="color:var(--blue)">0</div>
+            <div class="big-label">Months until personal broke</div>
+          </div>
+          <div class="runway-bar" style="height:16px"><div class="runway-fill" id="pr-bar" style="width:0%"></div></div>
+          <div style="font-size:13px;font-family:var(--mono);margin-top:12px;line-height:1.7;color:var(--muted)" id="pr-verdict">—</div>
+          <div class="divider"></div>
+          <div style="font-size:12px;color:var(--muted);font-family:var(--mono);margin-bottom:6px">Monthly personal burn</div>
+          <div style="font-family:var(--mono);font-size:18px;color:var(--red)" id="pr-burn">R0</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Personal survival timeline</div>
+        <div id="pr-timeline"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'RandWise2026';
+const SAVE_KEY = 'rw_financial_model';
+
+// ── DEFAULT DATA ──────────────────────────────────────────────
+let model = {
+  fixedCosts: [
+    {name:'Supabase (database)', amount:0, note:'Free tier currently'},
+    {name:'Claude Pro (AI dev)', amount:350, note:'Monthly subscription'},
+    {name:'Resend (email)', amount:0, note:'Free tier'},
+    {name:'GitHub Pages (hosting)', amount:0, note:'Free'},
+    {name:'PayFast (gateway)', amount:0, note:'% per transaction'},
+    {name:'Other subscriptions', amount:650, note:'Tools & services'},
+  ],
+  variableCosts: [
+    {name:'Gemini API (bank parser)', amount:0, note:'Free tier'},
+    {name:'Support time (hrs × rate)', amount:0, note:'Variable'},
+  ],
+  beProUsers: 0,
+  bePremiumUsers: 0,
+  bePayfastFee: 5.5,
+  rwCash: 0,
+  rwGrowth: 20,
+  rwMrr: 0,
+  fcStartUsers: 0,
+  fcNewUsers: 5,
+  fcChurn: 5,
+  fcProPct: 80,
+  fcSalary: 0,
+  fcCash: 0,
+  prSavings: 0,
+  prExpenses: 8000,
+  prIncome: 0,
+  prRwSalary: 0,
+  cac: 20,
+};
+
+const SCENARIOS = [
+  {id:'base',name:'Base case',desc:'Growing 20%/mo, 5% churn, 5 new paid users/mo',users:5,growth:20,churn:5,lossMulti:1},
+  {id:'worst',name:'Worst case',desc:'Lose 30% of users overnight, growth stops for 2 months',users:0,growth:0,churn:30,lossMulti:0.7},
+  {id:'best',name:'Best case',desc:'Viral growth — 20 new paid users/mo, 2% churn',users:20,growth:50,churn:2,lossMulti:1},
+  {id:'stall',name:'Growth stall',desc:'0 new users for 3 months, normal churn continues',users:0,growth:0,churn:5,lossMulti:1},
+  {id:'competitor',name:'Competitor launches',desc:'50% of users switch, growth halves',users:2,growth:5,churn:15,lossMulti:0.5},
+  {id:'viral',name:'WhatsApp viral',desc:'50 new signups in a week, 40% convert to paid',users:20,growth:80,churn:3,lossMulti:1},
+];
+
+let activeScenario = 'base';
+
+// ── LOCK ──────────────────────────────────────────────────────
+function unlock(){
+  const pw=document.getElementById('lock-pw').value;
+  if(pw===PASSWORD){
+    document.getElementById('lock').style.opacity='0';
+    document.getElementById('lock').style.transition='opacity .3s';
+    setTimeout(()=>{document.getElementById('lock').style.display='none';document.getElementById('app').style.display='block';init();},300);
+  } else {
+    const err=document.getElementById('lock-err');
+    err.textContent='Wrong password';
+    setTimeout(()=>err.textContent='',2000);
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('lock-pw').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+});
+
+// ── INIT ──────────────────────────────────────────────────────
+function init(){
+  const saved=localStorage.getItem(SAVE_KEY);
+  if(saved)try{model=JSON.parse(saved);}catch{}
+  document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+  syncInputs();
+  renderCostRows();
+  renderScenarioCards();
+  recalc();
+}
+
+function save(){localStorage.setItem(SAVE_KEY,JSON.stringify(model));}
+
+function syncInputs(){
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+  set('be-pro',model.beProUsers);set('be-premium',model.bePremiumUsers);set('be-payfast-fee',model.bePayfastFee);
+  set('rw-cash',model.rwCash);set('rw-growth',model.rwGrowth);set('rw-mrr',model.rwMrr);
+  set('fc-start-users',model.fcStartUsers);set('fc-new-users',model.fcNewUsers);set('fc-churn',model.fcChurn);
+  set('fc-pro-pct',model.fcProPct);set('fc-salary',model.fcSalary);set('fc-cash',model.fcCash);
+  set('pr-savings',model.prSavings);set('pr-expenses',model.prExpenses);set('pr-income',model.prIncome);set('pr-rw-salary',model.prRwSalary);
+}
+
+function readInputs(){
+  const g=(id,def=0)=>{const el=document.getElementById(id);return el?parseFloat(el.value)||def:def;};
+  model.beProUsers=g('be-pro');model.bePremiumUsers=g('be-premium');model.bePayfastFee=g('be-payfast-fee',5.5);
+  model.rwCash=g('rw-cash');model.rwGrowth=g('rw-growth',20);model.rwMrr=g('rw-mrr');
+  model.fcStartUsers=g('fc-start-users');model.fcNewUsers=g('fc-new-users',5);model.fcChurn=g('fc-churn',5);
+  model.fcProPct=g('fc-pro-pct',80);model.fcSalary=g('fc-salary');model.fcCash=g('fc-cash');
+  model.prSavings=g('pr-savings');model.prExpenses=g('pr-expenses',8000);model.prIncome=g('pr-income');model.prRwSalary=g('pr-rw-salary');
+}
+
+// ── MAIN RECALC ───────────────────────────────────────────────
+function recalc(){
+  readInputs();
+  save();
+  const totalBurn=getTotalBurn();
+  const mrr=getMrr();
+  recalcOverview(totalBurn,mrr);
+  recalcBreakeven(totalBurn);
+  recalcRunway(totalBurn,mrr);
+  recalcForecast(totalBurn);
+  recalcPersonal();
+  updateCostTotals();
+}
+
+function getTotalBurn(){
+  const fixed=model.fixedCosts.reduce((s,c)=>s+c.amount,0);
+  const variable=model.variableCosts.reduce((s,c)=>s+c.amount,0);
+  return fixed+variable;
+}
+
+function getMrr(){
+  const pf=1-(model.bePayfastFee/100);
+  return (model.beProUsers*49+model.bePremiumUsers*129)*pf;
+}
+
+function fmt(n){return'R'+Math.round(n).toLocaleString('en-ZA');}
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function recalcOverview(burn,mrr){
+  const cash=model.rwCash;
+  const netMonthly=mrr-burn;
+  const months=burn>mrr?(cash/(burn-mrr)):99;
+  const runway=Math.min(Math.floor(months),99);
+  const breakEvenUsers=Math.ceil(burn/(49*(1-model.bePayfastFee/100)));
+  const totalUsers=model.beProUsers+model.bePremiumUsers;
+  const ltv=49*(1-model.bePayfastFee/100)*8;
+  const ltvRatio=model.cac>0?ltv/model.cac:0;
+  const margin=mrr>0?((mrr-burn)/mrr*100):0;
+
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('ov-mrr',fmt(mrr));
+  set('ov-burn',fmt(burn));
+  set('ov-runway',runway>=99?'∞':runway+' mo');
+  set('ov-breakeven',breakEvenUsers+' Pro');
+  set('ov-cac',fmt(model.cac));
+  set('ov-ltv',fmt(ltv));
+  set('ov-ltv-ratio',ltvRatio.toFixed(1)+'×');
+  set('ov-margin',(margin>0?'+':'')+Math.round(margin)+'%');
+
+  // Runway bar
+  const pct=Math.min((runway/24)*100,100);
+  const bar=document.getElementById('ov-runway-bar');
+  if(bar){bar.style.width=pct+'%';bar.className='runway-fill '+(runway>=12?'safe':runway>=6?'warn':'danger');}
+  set('ov-runway-label',runway>=99?'Profitable — runway is infinite':'~'+runway+' months remaining');
+  const endDate=new Date();endDate.setMonth(endDate.getMonth()+runway);
+  set('ov-runway-end',runway>=99?'Profitable':'Funds out: '+endDate.toLocaleDateString('en-ZA',{month:'short',year:'numeric'}));
+
+  // Default status
+  const isAlive=mrr>0&&(mrr*1.2>burn||cash>burn*6);
+  set('ov-default-status',isAlive?'🟢 Default Alive':'🔴 Default Dead');
+  set('ov-default-desc',isAlive?'Revenue growing fast enough to cover costs before cash runs out.':'You will run out of money before revenue covers costs. Increase users or cut costs.');
+}
+
+// ── COSTS ─────────────────────────────────────────────────────
+function renderCostRows(){
+  ['fixed','variable'].forEach(type=>{
+    const arr=type==='fixed'?model.fixedCosts:model.variableCosts;
+    const el=document.getElementById(type+'-costs-rows');
+    if(!el)return;
+    el.innerHTML=arr.map((c,i)=>`
+      <tr>
+        <td style="padding:8px 12px">
+          <input style="background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:13px;width:100%" value="${c.name}" onchange="updateCost('${type}',${i},'name',this.value)">
+        </td>
+        <td style="padding:8px 12px"><span class="badge badge-${type==='fixed'?'fixed':'var'}">${type==='fixed'?'FIXED':'VAR'}</span></td>
+        <td style="padding:8px 12px;text-align:right">
+          <input style="background:transparent;border:none;color:var(--red);font-family:var(--mono);font-size:13px;width:70px;text-align:right" type="number" value="${c.amount}" onchange="updateCost('${type}',${i},'amount',parseFloat(this.value)||0)">
+        </td>
+        <td style="padding:4px 8px"><button onclick="removeCost('${type}',${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button></td>
+      </tr>`).join('');
+  });
+  updateCostTotals();
+}
+
+function updateCost(type,i,field,val){
+  const arr=type==='fixed'?model.fixedCosts:model.variableCosts;
+  arr[i][field]=val;
+  save();recalc();
+}
+
+function removeCost(type,i){
+  const arr=type==='fixed'?model.fixedCosts:model.variableCosts;
+  arr.splice(i,1);
+  renderCostRows();save();recalc();
+}
+
+function addCostRow(type){
+  const name=prompt('Cost name:');if(!name)return;
+  const amount=parseFloat(prompt('Monthly amount (R):'))||0;
+  const arr=type==='fixed'?model.fixedCosts:model.variableCosts;
+  arr.push({name,amount});
+  renderCostRows();save();recalc();
+}
+
+function updateCostTotals(){
+  const fixed=model.fixedCosts.reduce((s,c)=>s+c.amount,0);
+  const variable=model.variableCosts.reduce((s,c)=>s+c.amount,0);
+  const total=fixed+variable;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('fixed-total',fmt(fixed));
+  set('variable-total',fmt(variable));
+  set('total-burn-display',fmt(total)+'/mo');
+  set('annual-burn-display',fmt(total*12)+'/yr');
+}
+
+// ── BREAK-EVEN ────────────────────────────────────────────────
+function recalcBreakeven(burn){
+  const pf=1-(model.bePayfastFee/100);
+  const proRev=model.beProUsers*49*pf;
+  const premRev=model.bePremiumUsers*129*pf;
+  const gross=model.beProUsers*49+model.bePremiumUsers*129;
+  const net=gross*pf;
+  const deficit=burn-net;
+
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('be-revenue',fmt(gross));
+  set('be-net',fmt(net));
+
+  if(deficit<=0){
+    set('be-need','✅ Already profitable by '+fmt(-deficit)+'/mo');
+  } else {
+    const moreProNeeded=Math.ceil(deficit/(49*pf));
+    const morePremNeeded=Math.ceil(deficit/(129*pf));
+    set('be-need',moreProNeeded+' more Pro OR '+morePremNeeded+' more Premium users');
+  }
+
+  // Combos table
+  const combos=[[0,Math.ceil(burn/(129*pf))],[Math.ceil(burn/(49*pf)),0],[10,Math.ceil(Math.max(0,burn-10*49*pf)/(129*pf))],[20,Math.ceil(Math.max(0,burn-20*49*pf)/(129*pf))],[50,0]];
+  const tbody=document.getElementById('be-combos');
+  if(tbody)tbody.innerHTML=combos.map((c,i)=>{
+    const rev=(c[0]*49+c[1]*129)*pf;
+    const diff=rev-burn;
+    const names=['All Premium','All Pro','Mixed (10 Pro)','Mixed (20 Pro)','50 Pro users'];
+    return`<tr><td style="padding:8px 12px;color:var(--muted)">${names[i]}</td><td style="padding:8px 12px;font-family:var(--mono)">${c[0]}</td><td style="padding:8px 12px;font-family:var(--mono)">${c[1]}</td><td class="amt" style="padding:8px 12px">${fmt(rev)}</td><td style="padding:8px 12px;font-family:var(--mono);color:${diff>=0?'var(--green)':'var(--red)'}">${diff>=0?'+':'-'}${fmt(Math.abs(diff))}</td></tr>`;
+  }).join('');
+}
+
+// ── RUNWAY ────────────────────────────────────────────────────
+function recalcRunway(burn,mrr){
+  const cash=model.rwCash;
+  const growth=model.rwGrowth/100;
+  let balance=cash,m=0,curMrr=mrr;
+  const rows=[];
+  for(let i=1;i<=24;i++){
+    const net=curMrr-burn;
+    balance+=net;
+    rows.push({month:i,mrr:curMrr,burn,net,balance});
+    if(balance<=0&&m===0)m=i;
+    curMrr*=(1+growth);
+    if(balance<=0&&i>1)break;
+  }
+  const runway=m===0?99:m;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('rw-months',runway>=99?'∞':runway+'');
+  const bar=document.getElementById('rw-bar');
+  if(bar){const pct=Math.min((runway/24)*100,100);bar.style.width=pct+'%';bar.className='runway-fill '+(runway>=12?'safe':runway>=6?'warn':'danger');}
+  set('rw-verdict',runway>=99?'🟢 Profitable — infinite runway with current growth':'⚠️ Cash runs out in '+runway+' months. Need more users or less burn.');
+
+  const el=document.getElementById('rw-monthly-table');
+  if(el)el.innerHTML=`<div>${rows.slice(0,12).map(r=>`
+    <div class="month-row">
+      <div class="month-label">Month ${r.month}</div>
+      <div class="month-bar-wrap"><div class="month-bar ${r.net>=0?'pos':'neg'}" style="width:${Math.min(Math.abs(r.net)/burn*100,100)}%"></div></div>
+      <div class="month-mrr" style="color:var(--green)">${fmt(r.mrr)}</div>
+      <div class="month-status" style="color:${r.balance>=0?'var(--green)':'var(--red)'}">${fmt(r.balance)}</div>
+    </div>`).join('')}</div>`;
+}
+
+// ── FORECAST ──────────────────────────────────────────────────
+function recalcForecast(burn){
+  const pf=1-(model.bePayfastFee/100);
+  const proPct=model.fcProPct/100;
+  let users=model.fcStartUsers,cash=model.fcCash;
+  const rows=[];
+  const now=new Date();
+  for(let i=1;i<=12;i++){
+    const lost=Math.floor(users*model.fcChurn/100);
+    users=Math.max(0,users-lost)+model.fcNewUsers;
+    const proU=Math.round(users*proPct);
+    const premU=users-proU;
+    const mrr=(proU*49+premU*129)*pf;
+    const totalBurn=burn+model.fcSalary;
+    const net=mrr-totalBurn;
+    cash+=net;
+    const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    const label=d.toLocaleDateString('en-ZA',{month:'short',year:'numeric'});
+    rows.push({label,users,mrr,burn:totalBurn,net,cash});
+  }
+  const el=document.getElementById('fc-rows');
+  if(!el)return;
+  const maxMrr=Math.max(...rows.map(r=>r.mrr),burn,1);
+  el.innerHTML=rows.map(r=>`
+    <div class="month-row">
+      <div class="month-label" style="width:90px">${r.label}</div>
+      <div style="width:60px;font-family:var(--mono);font-size:11px;color:var(--muted);flex-shrink:0">${r.users}u</div>
+      <div class="month-bar-wrap"><div class="month-bar ${r.net>=0?'pos':'neg'}" style="width:${(r.mrr/maxMrr*100).toFixed(0)}%"></div></div>
+      <div class="month-mrr" style="color:var(--green)">${fmt(r.mrr)}</div>
+      <div class="month-status" style="color:${r.cash>=0?'var(--muted)':'var(--red)'};">${fmt(r.cash)}</div>
+    </div>`).join('');
+}
+
+// ── STRESS TEST ───────────────────────────────────────────────
+function renderScenarioCards(){
+  const el=document.getElementById('scenario-cards');
+  if(!el)return;
+  el.innerHTML=SCENARIOS.map(s=>`
+    <div class="scenario-card ${s.id===activeScenario?'act':''}" onclick="runScenario('${s.id}')">
+      <div class="scenario-name">${s.name}</div>
+      <div class="scenario-desc">${s.desc}</div>
+    </div>`).join('');
+}
+
+function runScenario(id){
+  activeScenario=id;
+  renderScenarioCards();
+  const sc=SCENARIOS.find(s=>s.id===id);
+  const burn=getTotalBurn();
+  const pf=1-(model.bePayfastFee/100);
+  let users=(model.beProUsers+model.bePremiumUsers)*sc.lossMulti;
+  let cash=model.rwCash;
+  let runsOut=0;
+  for(let i=1;i<=24;i++){
+    users=Math.max(0,users*(1-sc.churn/100))+sc.users;
+    const mrr=users*49*pf*0.8;
+    cash+=mrr-burn;
+    if(cash<=0&&!runsOut)runsOut=i;
+  }
+  const el=document.getElementById('stress-result-area');
+  if(!el)return;
+  const survives=runsOut===0;
+  el.innerHTML=`
+    <div class="stress-result">
+      <div class="stress-verdict" style="color:${survives?'var(--green)':'var(--red)'}">${survives?'✅ RandWise survives this scenario':'⚠️ RandWise would fail in '+runsOut+' months'}</div>
+      <div class="stress-detail">
+        Scenario: ${sc.name}<br>
+        ${sc.churn}% monthly churn · ${sc.users} new paid users/mo · ${Math.round((1-sc.lossMulti)*100)}% immediate user loss<br><br>
+        ${survives?'Growing revenue covers burn rate before cash depletes. Keep executing.':'Action required: cut costs below R'+Math.round(burn*0.7).toLocaleString('en-ZA')+'/mo OR acquire '+Math.ceil(burn/(49*pf))+' paid users before month '+runsOut+'.'}
+      </div>
+    </div>`;
+}
+
+// ── PERSONAL RUNWAY ───────────────────────────────────────────
+function recalcPersonal(){
+  readInputs();
+  const monthlyBurn=Math.max(0,model.prExpenses-(model.prIncome+model.prRwSalary));
+  const months=monthlyBurn>0?Math.floor(model.prSavings/monthlyBurn):99;
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  set('pr-months',months>=99?'∞':months+'');
+  set('pr-burn',fmt(monthlyBurn)+'/mo');
+  const bar=document.getElementById('pr-bar');
+  if(bar){bar.style.width=Math.min((months/24)*100,100)+'%';bar.className='runway-fill '+(months>=12?'safe':months>=6?'warn':'danger');}
+
+  const verdict=months>=99?'🟢 Personal finances stable — income covers expenses':
+    months>=12?'🟡 '+months+' months — plan for RandWise to pay a salary within 12 months':
+    months>=6?'🟠 Only '+months+' months left — prioritise getting paid from RandWise urgently':
+    '🔴 CRITICAL — only '+months+' months before personal funds depleted. Consider freelance income immediately.';
+  set('pr-verdict',verdict);
+
+  const now=new Date();
+  let balance=model.prSavings;
+  const timelineRows=[];
+  for(let i=1;i<=Math.min(months+2,12);i++){
+    balance-=monthlyBurn;
+    const d=new Date(now.getFullYear(),now.getMonth()+i,1);
+    timelineRows.push({label:d.toLocaleDateString('en-ZA',{month:'short',year:'numeric'}),balance:Math.max(0,balance)});
+  }
+  const maxBal=model.prSavings||1;
+  const el=document.getElementById('pr-timeline');
+  if(el)el.innerHTML=timelineRows.map(r=>`
+    <div class="month-row">
+      <div class="month-label">${r.label}</div>
+      <div class="month-bar-wrap"><div class="month-bar ${r.balance>0?'pos':'neg'}" style="width:${(r.balance/maxBal*100).toFixed(0)}%"></div></div>
+      <div class="month-mrr" style="color:${r.balance>maxBal*0.3?'var(--green)':r.balance>0?'var(--gold)':'var(--red)'}">${fmt(r.balance)}</div>
+    </div>`).join('');
+}
+
+// ── NAV ───────────────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('act'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('act'));
+  const page=document.getElementById('page-'+id);
+  if(page)page.classList.add('act');
+  const btn=document.querySelector(`.nav-btn[onclick="showPage('${id}')"]`);
+  if(btn)btn.classList.add('act');
+  if(id==='stress')runScenario(activeScenario);
+}
+</script>
+</body>
+</html>
