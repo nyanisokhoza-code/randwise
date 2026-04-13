@@ -915,7 +915,31 @@ function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeIte
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
   const s=localStorage.getItem('rw_user');
-  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');setTimeout(showIntro,400);}catch{localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');show('splash');}}
+  if(s){
+    try{
+      user=JSON.parse(s);
+      // Show main immediately with cached data while we refresh
+      if(user?.id){
+        try{renderDash();}catch{}
+        show('main');
+      }
+      // Then refresh from Supabase in background
+      if(user?.id){
+        try{
+          const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);
+          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
+        }catch{}
+        try{await loadExp();}catch{expenses=[];}
+        try{renderDash();}catch{}
+        setTimeout(()=>{try{showIntro();}catch{}},400);
+      }
+    }catch{
+      show('splash');
+    }
+  } else {
+    show('splash');
+  }
+});
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
@@ -1035,8 +1059,7 @@ async function refreshApp(){
 
 // ══ HARD REFRESH ════════════════════════════════════════════
 function hardRefresh(){
-  const url=window.location.href.split('?')[0].split('#')[0];
-  window.location.replace(url+'?v='+Date.now());
+  window.location.reload();
 }
 
 // ══ PULL TO REFRESH ═════════════════════════════════════════
@@ -1050,16 +1073,41 @@ document.addEventListener('touchmove',e=>{
   const dy=e.touches[0].clientY-ptr_startY;
   if(dy>20&&window.scrollY===0){ptr_pulling=true;}
 },{ passive:true});
-document.addEventListener('touchend',async e=>{
+document.addEventListener('touchend',e=>{
   if(ptr_pulling&&ptr_startY>0){
     const dy=e.changedTouches[0].clientY-ptr_startY;
     if(dy>ptr_threshold){
-      showToast('🔄 Refreshing...');
-      if(user?.id){await loadExp();renderDash();}
-      showToast('✅ Up to date');
+      window.location.reload();
     }
   }
   ptr_startY=0;ptr_pulling=false;
+});
+
+// ══ GLOBAL ERROR HANDLER ═════════════════════════════════════
+let _errCount=0;
+window.addEventListener('error',async(e)=>{
+  _errCount++;
+  // Log to Supabase silently
+  try{
+    await fetch(`${SB}/rest/v1/bug_reports`,{
+      method:'POST',
+      headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        user_id:user?.id||null,
+        user_name:user?.name||'unknown',
+        error_message:e.message||'Unknown error',
+        error_source:e.filename||'',
+        error_line:e.lineno||0,
+        page_url:window.location.href,
+        user_agent:navigator.userAgent,
+        created_at:new Date().toISOString()
+      })
+    });
+  }catch{}
+  // After 3 errors, redirect to maintenance
+  if(_errCount>=3){
+    window.location.href='https://nyanisokhoza-code.github.io/randwise/maintenance.html';
+  }
 });
 
 // ══ MOBILE KEYBOARD FIX ═════════════════════════════════════
