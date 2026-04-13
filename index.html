@@ -223,7 +223,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
   <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
   <button class="btn-p" onclick="show('onboarding');startOB()">Get started — it's free</button>
   <button class="btn-g" onclick="show('login')">I already have an account</button>
-  <button onclick="location.reload(true)" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;margin-top:20px;cursor:pointer;padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.15)">🔄 Refresh app</button>
+  <button onclick="hardRefresh()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;margin-top:20px;cursor:pointer;padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.15)">🔄 Refresh app</button>
 </div>
 
 <!-- LOGIN -->
@@ -426,7 +426,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
           <div style="font-size:20px;font-weight:800" id="pname">—</div>
           <div style="font-size:13px;color:var(--mu);margin-top:4px" id="pstage">—</div>
           <div style="font-size:13px;color:var(--mu)" id="pinc">R0/monthly</div>
-          <button onclick="location.reload(true)" style="margin-top:12px;background:#f5f5f0;border:1px solid #e0e0e0;color:#888;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px;cursor:pointer">🔄 Refresh app</button>
+          <button onclick="hardRefresh()" style="margin-top:12px;background:#f5f5f0;border:1px solid #e0e0e0;color:#888;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px;cursor:pointer">🔄 Refresh app</button>
         </div>
         <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden;margin-bottom:14px">
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Account tier</span><span style="background:var(--bg2);color:var(--mu);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px" id="ptier">Free</span></div>
@@ -581,10 +581,17 @@ async function doLogin(){
 async function handleForgot(){
   const email=document.getElementById('l-email').value.trim();
   if(!email){showErr('l-err','Enter your email first, then tap Forgot your password?');return;}
-  await authPost('recover',{email:email.toLowerCase()});
-  const el=document.getElementById('reset-sent');
-  el.style.display='block';
-  el.textContent=`✅ Reset link sent to ${email}. Check your email.`;
+  try{
+    const res=await authPost('recover',{
+      email:email.toLowerCase(),
+      redirectTo:'https://nyanisokhoza-code.github.io/randwise/reset-password.html'
+    });
+    const el=document.getElementById('reset-sent');
+    el.style.display='block';
+    el.textContent=`✅ Reset link sent to ${email}. Check your inbox and spam folder.`;
+  }catch(e){
+    showErr('l-err','Could not send reset email. Please try again.');
+  }
 }
 function showErr(id,msg){const el=document.getElementById(id);el.style.display='block';el.textContent=msg;}
 function hideErr(id){document.getElementById(id).style.display='none';}
@@ -811,6 +818,12 @@ async function refreshApp(){
     }catch{showToast('⚠️ Could not refresh — check connection');}
   }
   if(btn){btn.style.animation='';}
+}
+
+// ══ HARD REFRESH ════════════════════════════════════════════
+function hardRefresh(){
+  const url=window.location.href.split('?')[0].split('#')[0];
+  window.location.replace(url+'?v='+Date.now());
 }
 
 // ══ PULL TO REFRESH ═════════════════════════════════════════
