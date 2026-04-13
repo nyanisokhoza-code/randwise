@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -223,30 +226,39 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 </div>
 
 <!-- LOGIN -->
-<div class="screen" id="login">
-  <div style="padding:calc(var(--st) + 8px) 20px 12px;background:var(--w);border-bottom:.5px solid var(--bd);flex-shrink:0">
+<div class="screen" id="login" style="overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="padding:calc(var(--st) + 8px) 20px 12px;background:#fff;border-bottom:.5px solid #eee;flex-shrink:0;position:sticky;top:0;z-index:10">
     <button class="ob-back" onclick="show('splash')">‹ Back</button>
   </div>
-  <div class="login-body">
-    <div style="text-align:center;margin-bottom:28px">
+  <div style="padding:32px 24px 120px;display:flex;flex-direction:column;">
+    <div style="text-align:center;margin-bottom:32px">
       <div style="font-size:40px;margin-bottom:12px">👋</div>
-      <div style="font-size:22px;font-weight:800;margin-bottom:6px">Welcome back</div>
-      <div style="font-size:14px;color:var(--mu);line-height:1.6">Sign in with your email and password.</div>
+      <div style="font-size:22px;font-weight:800;margin-bottom:6px;color:#111">Welcome back</div>
+      <div style="font-size:14px;color:#888;line-height:1.6">Sign in with your email and password.</div>
     </div>
-    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Email address</div>
-    <div style="display:flex;align-items:center;background:#f5f5f0;border-radius:14px;border:1.5px solid #ddd;overflow:hidden;margin-bottom:12px">
-      <input type="email" id="l-email" style="flex:1;padding:15px 16px;font-size:15px;background:#f5f5f0;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif;width:100%;box-sizing:border-box;color:#111" placeholder="your@email.com" autocapitalize="none">
+    <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px">Email address</div>
+    <input type="email" id="l-email" 
+      style="width:100%;padding:16px;font-size:16px;background:#f2f2f0;border:2px solid #e0e0e0;border-radius:14px;box-sizing:border-box;color:#111;margin-bottom:16px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;-webkit-appearance:none"
+      placeholder="your@email.com" autocapitalize="none" autocorrect="off">
+    <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px">Password</div>
+    <div style="position:relative;margin-bottom:8px">
+      <input type="password" id="l-pass"
+        style="width:100%;padding:16px;padding-right:70px;font-size:16px;background:#f2f2f0;border:2px solid #e0e0e0;border-radius:14px;box-sizing:border-box;color:#111;font-family:'Plus Jakarta Sans',sans-serif;outline:none;-webkit-appearance:none"
+        placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button onclick="togglePass('l-pass',this)" 
+        style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#1a7a4a;font-size:13px;font-weight:700;cursor:pointer;padding:4px 8px">Show</button>
     </div>
-    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Password</div>
-    <div style="display:flex;align-items:center;background:#f5f5f0;border-radius:14px;border:1.5px solid #ddd;overflow:hidden;margin-bottom:0">
-      <input type="password" id="l-pass" style="flex:1;padding:15px 16px;font-size:15px;background:#f5f5f0;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif;width:100%;box-sizing:border-box;color:#111" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="auth-toggle" onclick="togglePass('l-pass',this)" style="padding:0 14px;background:none;border:none;color:#1a7a4a;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0">Show</button>
-    </div>
-    <div class="err-msg" id="l-err"></div>
-    <button onclick="handleForgot()" style="background:none;border:none;color:var(--g);font-size:13px;font-weight:600;cursor:pointer;text-align:right;width:100%;margin:8px 0 16px">Forgot your password?</button>
-    <div class="reset-sent" id="reset-sent"></div>
-    <button class="save-btn" id="l-btn" onclick="doLogin()">Sign in →</button>
-    <div style="margin-top:16px;background:var(--bg);border-radius:12px;padding:14px;font-size:12px;color:var(--mu);line-height:1.7;text-align:center">
+    <div class="err-msg" id="l-err" style="margin-bottom:4px"></div>
+    <button onclick="handleForgot()" 
+      style="background:none;border:none;color:#1a7a4a;font-size:13px;font-weight:600;cursor:pointer;text-align:right;width:100%;padding:8px 0 16px">
+      Forgot your password?
+    </button>
+    <div id="reset-sent" style="display:none;font-size:13px;color:#1a7a4a;margin-bottom:12px;padding:12px;background:#e8f5ee;border-radius:10px"></div>
+    <button id="l-btn" onclick="doLogin()"
+      style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:17px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:16px">
+      Sign in →
+    </button>
+    <div style="background:#f5f5f0;border-radius:12px;padding:14px;font-size:12px;color:#888;line-height:1.7;text-align:center">
       🔒 Your password is securely encrypted.<br>New to RandWise? Go back and tap Get Started.
     </div>
   </div>
