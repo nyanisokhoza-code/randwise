@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandWise Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f6f2; color: #2c2c2a; }
+  .topbar { background: #1a7a4a; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar h1 { font-size: 18px; font-weight: 700; }
+  .topbar span { font-size: 12px; opacity: 0.8; }
+  .tabs { display: flex; background: white; border-bottom: 1px solid #e8e6de; padding: 0 24px; overflow-x: auto; }
+  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: #888780; white-space: nowrap; }
+  .tab.active { color: #1a7a4a; border-bottom-color: #1a7a4a; }
+  .page { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  .page.active { display: block; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .stat-card { background: white; border-radius: 14px; padding: 16px; border: 0.5px solid #e8e6de; }
+  .stat-val { font-size: 28px; font-weight: 800; }
+  .stat-label { font-size: 11px; color: #888780; margin-top: 4px; }
+  .card { background: white; border-radius: 14px; border: 0.5px solid #e8e6de; padding: 20px; margin-bottom: 16px; }
+  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: #2c2c2a; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 8px 12px; background: #f7f6f2; color: #888780; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  td { padding: 10px 12px; border-bottom: 0.5px solid #f0efe9; }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge.free { background: #f0efe9; color: #888780; }
+  .badge.pro { background: #eaf3de; color: #1a7a4a; }
+  .badge.premium { background: #eeedfe; color: #534ab7; }
+  .segment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .segment { background: #f7f6f2; border-radius: 12px; padding: 14px; border: 1px solid #e8e6de; cursor: pointer; transition: all 0.15s; }
+  .segment:hover { background: #eaf3de; border-color: #1a7a4a; }
+  .segment h4 { font-size: 13px; font-weight: 700; }
+  .segment p { font-size: 11px; color: #888780; margin-top: 3px; }
+  .segment .seg-count { font-size: 22px; font-weight: 800; color: #1a7a4a; margin-top: 6px; }
+  .milestone { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 0.5px solid #f0efe9; }
+  .milestone:last-child { border-bottom: none; }
+  .milestone-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .milestone-icon.done { background: #eaf3de; }
+  .milestone-icon.pending { background: #f0efe9; }
+  .milestone-icon.locked { background: #f7f6f2; opacity: 0.5; }
+  .milestone-body { flex: 1; }
+  .milestone-title { font-size: 13px; font-weight: 700; }
+  .milestone-desc { font-size: 12px; color: #888780; margin-top: 2px; }
+  .milestone-progress { margin-top: 6px; height: 4px; background: #f0efe9; border-radius: 2px; }
+  .milestone-fill { height: 4px; background: #1a7a4a; border-radius: 2px; transition: width 0.5s; }
+  .milestone-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+  .milestone-status.done { background: #eaf3de; color: #1a7a4a; }
+  .milestone-status.pending { background: #faeeda; color: #ba7517; }
+  .milestone-status.locked { background: #f0efe9; color: #888780; }
+  .referral-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid #f0efe9; }
+  .referral-row:last-child { border-bottom: none; }
+  .pay-btn { background: #1a7a4a; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .pay-btn:disabled { background: #f0efe9; color: #888780; cursor: not-allowed; }
+  .alert-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f0efe9; }
+  .alert-row:last-child { border-bottom: none; }
+  .toggle { position: relative; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e8e6de; border-radius: 24px; transition: 0.3s; }
+  .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  input:checked + .slider { background: #1a7a4a; }
+  input:checked + .slider:before { transform: translateX(20px); }
+  .bar-track { height: 8px; background: #f0efe9; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .bar-fill { height: 8px; border-radius: 4px; transition: width 0.5s; }
+  #lastUpdated { font-size: 11px; color: rgba(255,255,255,0.7); }
+  .easyequities-banner { background: linear-gradient(135deg, #1a7a4a, #639922); border-radius: 14px; padding: 20px; color: white; margin-bottom: 16px; }
+  .easyequities-banner h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+  .easyequities-banner p { font-size: 13px; opacity: 0.9; line-height: 1.5; }
+  .easyequities-banner .progress-info { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  .easyequities-banner .big-num { font-size: 32px; font-weight: 800; }
+  .easyequities-banner .big-label { font-size: 12px; opacity: 0.8; }
+  .reserves-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .reserve-card { background: #f7f6f2; border-radius: 12px; padding: 14px; }
+  .reserve-val { font-size: 20px; font-weight: 800; color: #1a7a4a; }
+  .reserve-label { font-size: 11px; color: #888780; margin-top: 2px; }
+  .reserve-target { font-size: 11px; color: #888780; margin-top: 6px; }
+  @media (max-width: 600px) { .page { padding: 16px; } .grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <h1>🌱 RandWise Admin</h1>
+    <div style="font-size:11px;opacity:0.7;margin-top:2px">Owner: Nyaniso Khoza</div>
+  </div>
+  <span id="lastUpdated">Loading...</span>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showPage('overview')">Overview</div>
+  <div class="tab" onclick="showPage('users')">Users</div>
+  <div class="tab" onclick="showPage('segments')">Segments</div>
+  <div class="tab" onclick="showPage('milestones')">Milestones</div>
+  <div class="tab" onclick="showPage('referrals')">Referrals</div>
+  <div class="tab" onclick="showPage('reserves')">Reserves</div>
+  <div class="tab" onclick="showPage('alerts')">Alerts</div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="grid" id="stats-grid">
+    <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total users</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="stat-paid">—</div><div class="stat-label">Paid users</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#534ab7" id="stat-premium">—</div><div class="stat-label">Premium</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#ba7517" id="stat-expenses">—</div><div class="stat-label">Expenses logged</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="stat-mrr">R0</div><div class="stat-label">Est. MRR</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-days">—</div><div class="stat-label">Days since launch</div></div>
+  </div>
+
+  <div class="card">
+    <h3>Recent registrations</h3>
+    <table>
+      <thead><tr><th>Name</th><th>Life stage</th><th>Tier</th><th>Referral code</th><th>Registered</th></tr></thead>
+      <tbody id="recent-tbody"><tr><td colspan="5" style="color:#888780;text-align:center;padding:20px">Loading...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Life stage breakdown</h3>
+    <div id="stage-breakdown"></div>
+  </div>
+</div>
+
+<!-- USERS -->
+<div class="page" id="page-users">
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <input id="search-input" type="text" placeholder="Search by name..." oninput="filterUsers()" style="flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2">
+    <select id="tier-filter" onchange="filterUsers()" style="padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2">
+      <option value="">All tiers</option>
+      <option value="free">Free</option>
+      <option value="pro">Pro</option>
+      <option value="premium">Premium</option>
+    </select>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden">
+    <table>
+      <thead><tr><th>Name</th><th>Stage</th><th>Income</th><th>Tier</th><th>Code</th><th>Joined</th></tr></thead>
+      <tbody id="users-tbody"><tr><td colspan="6" style="color:#888780;text-align:center;padding:20px">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SEGMENTS -->
+<div class="page" id="page-segments">
+  <div class="card">
+    <h3>User segments</h3>
+    <div class="segment-grid" id="segments-grid">
+      <div class="segment"><h4>🆕 New (last 7 days)</h4><p>Recently registered</p><div class="seg-count" id="seg-new">—</div></div>
+      <div class="segment"><h4>🎓 Students</h4><p>Student / Learner stage</p><div class="seg-count" id="seg-student">—</div></div>
+      <div class="segment"><h4>🏠 Domestic workers</h4><p>Domestic worker stage</p><div class="seg-count" id="seg-domestic">—</div></div>
+      <div class="segment"><h4>💼 Employed</h4><p>Full/Part-time employed</p><div class="seg-count" id="seg-employed">—</div></div>
+      <div class="segment"><h4>🏪 Self-employed</h4><p>Freelancer / Business owner</p><div class="seg-count" id="seg-self">—</div></div>
+      <div class="segment"><h4>👴 Pensioners</h4><p>Retired / Pensioner stage</p><div class="seg-count" id="seg-pensioner">—</div></div>
+      <div class="segment"><h4>💳 Pro users</h4><p>Paying Pro subscribers</p><div class="seg-count" id="seg-pro">—</div></div>
+      <div class="segment"><h4>👑 Premium users</h4><p>Premium subscribers</p><div class="seg-count" id="seg-prem">—</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tier distribution</h3>
+    <div id="tier-dist"></div>
+  </div>
+</div>
+
+<!-- MILESTONES -->
+<div class="page" id="page-milestones">
+
+  <!-- EasyEquities banner -->
+  <div class="easyequities-banner" id="easy-banner">
+    <h3>🎯 EasyEquities Partnership Opportunity</h3>
+    <p>Once you hit 500 users, contact EasyEquities to become an introducer partner. Earn R50–R150 per funded account your users open.</p>
+    <div class="progress-info">
+      <div>
+        <div class="big-num" id="easy-count">0</div>
+        <div class="big-label">of 500 users needed</div>
+      </div>
+      <div style="flex:1">
+        <div style="height:8px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden">
+          <div id="easy-fill" style="height:8px;background:white;border-radius:4px;width:0%;transition:width 0.5s"></div>
+        </div>
+        <div id="easy-label" style="font-size:11px;opacity:0.8;margin-top:4px">Building towards partnership...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Growth milestones</h3>
+    <div id="milestones-list"></div>
+  </div>
+
+  <div class="card">
+    <h3>Business milestones</h3>
+    <div id="biz-milestones"></div>
+  </div>
+</div>
+
+<!-- REFERRALS -->
+<div class="page" id="page-referrals">
+  <div class="grid">
+    <div class="stat-card"><div class="stat-val" id="ref-total">—</div><div class="stat-label">Total referrers</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="ref-owed">R0</div><div class="stat-label">Total owed</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#ba7517" id="ref-pending">0</div><div class="stat-label">Pending payouts</div></div>
+  </div>
+  <div class="card">
+    <h3>Referral leaderboard</h3>
+    <div id="referral-list"><p style="color:#888780;font-size:13px">Loading referral data...</p></div>
+    <h3 style="margin-top:24px">Who referred who</h3>
+    <div id="referral-tracking"><p style="color:#888780;font-size:13px">Loading...</p></div>
+  </div>
+  <div class="card" style="background:#faeeda;border-color:#ba751740">
+    <h3 style="color:#ba7517">💸 Payout rules</h3>
+    <p style="font-size:13px;color:#5f5e5a;line-height:1.6">
+      • Minimum payout: <strong>R50</strong><br>
+      • Payment day: <strong>Last day of each month</strong><br>
+      • Method: <strong>Capitec Pay (free)</strong> or EFT (R12 internal cost)<br>
+      • Pro referral: <strong>R10 once + R5/mo × 6 months = R40 max</strong><br>
+      • Premium referral: <strong>R10 once + R5/mo × 6 months = R40 max</strong><br>
+      • Bank verification: <strong>R2 test deposit before first payout</strong>
+    </p>
+  </div>
+</div>
+
+<!-- RESERVES -->
+<div class="page" id="page-reserves">
+  <div class="card">
+    <h3>Company reserves</h3>
+    <div class="reserves-grid">
+      <div class="reserve-card"><div class="reserve-val">R2,700</div><div class="reserve-label">Ops buffer (3 months)</div><div class="reserve-target">Target: R2,700 ✅</div></div>
+      <div class="reserve-card"><div class="reserve-val">R5,000</div><div class="reserve-label">Legal fund</div><div class="reserve-target">For T&Cs, disputes, CIPC</div></div>
+      <div class="reserve-card"><div class="reserve-val">R2,000</div><div class="reserve-label">Referral payout reserve</div><div class="reserve-target">Never owe more than you have</div></div>
+      <div class="reserve-card"><div class="reserve-val" style="color:#534ab7">R9,700</div><div class="reserve-label">Total minimum</div><div class="reserve-target">Keep this at all times</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Monthly running costs</h3>
+    <table>
+      <thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase</td><td>R0</td><td>Free tier (up to 50k users)</td></tr>
+        <tr><td>Claude API</td><td>~R400/mo</td><td>AI features</td></tr>
+        <tr><td>Claude subscription</td><td>~R350/mo</td><td>Development tool</td></tr>
+        <tr><td>Domain + hosting</td><td>~R150/mo</td><td>randwise.app</td></tr>
+        <tr><td>PayFast</td><td>R0</td><td>Pay per transaction only</td></tr>
+        <tr><td><strong>Total</strong></td><td><strong>~R900/mo</strong></td><td>Break-even: 19 Pro users</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Equity structure</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Nyaniso Khoza (Founder/CEO)</span><span style="font-weight:700;color:#1a7a4a">60%</span></div><div class="bar-track"><div class="bar-fill" style="width:60%;background:#1a7a4a"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Twin (Co-founder/Growth)</span><span style="font-weight:700;color:#534ab7">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#534ab7"></div></div></div>
+      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Reserved (investors/key hires)</span><span style="font-weight:700;color:#ba7517">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#ba7517"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS -->
+<div class="page" id="page-alerts">
+  <div class="card">
+    <h3>🐛 Bug reports from users</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px">Reports submitted by users via the "Report a problem" button or auto-captured JS errors. Yellow = user submitted, red = JS error.</p>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button onclick="loadBugReports()" style="background:#1a7a4a;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄 Refresh</button>
+      <button onclick="clearBugReports()" style="background:#fdecea;color:#a32d2d;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🗑 Clear all</button>
+    </div>
+    <div id="bug-reports-list"><div style="color:#888780;font-size:13px">Loading...</div></div>
+  </div>
+  <div class="card">
+    <h3>📡 Live health check</h3>
+    <div id="health-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-db" style="font-size:20px">⏳</div><div style="font-size:11px;color:#888780;margin-top:4px">Database</div></div>
+      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-users" style="font-size:18px;font-weight:700">—</div><div style="font-size:11px;color:#888780;margin-top:4px">Total users</div></div>
+      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-today" style="font-size:18px;font-weight:700;color:#1a7a4a">—</div><div style="font-size:11px;color:#888780;margin-top:4px">New today</div></div>
+      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-bugs" style="font-size:18px;font-weight:700">—</div><div style="font-size:11px;color:#888780;margin-top:4px">Bugs (24h)</div></div>
+    </div>
+    <div style="font-size:11px;color:#888780" id="hp-updated">Last checked: —</div>
+  </div>
+  <div class="card">
+    <h3>🔔 Notification settings</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px">Emails sent to your address when key events happen via the send-alert Edge Function.</p>
+    <div id="alerts-list">
+      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">New user registered</div><div style="font-size:11px;color:#888780">Get notified when someone new signs up</div></div><label class="toggle"><input type="checkbox" id="notif-new-user" checked><span class="slider"></span></label></div>
+      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">User upgrades to paid tier</div><div style="font-size:11px;color:#888780">Pro or Premium subscription started</div></div><label class="toggle"><input type="checkbox" id="notif-upgrade" checked><span class="slider"></span></label></div>
+      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Bug report submitted</div><div style="font-size:11px;color:#888780">User reports an issue in the app</div></div><label class="toggle"><input type="checkbox" id="notif-bug" checked><span class="slider"></span></label></div>
+      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Daily summary (9am)</div><div style="font-size:11px;color:#888780">Users, paid, MRR, bugs in last 24h</div></div><label class="toggle"><input type="checkbox" id="notif-daily"><span class="slider"></span></label></div>
+      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Milestone reached</div><div style="font-size:11px;color:#888780">10, 50, 100, 500 users</div></div><label class="toggle"><input type="checkbox" id="notif-milestone" checked><span class="slider"></span></label></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>📬 Your contact details</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div><label style="font-size:12px;color:#888780;display:block;margin-bottom:4px">Email address for alerts</label><input type="email" id="alert-email" value="nyanisokhoza@gmail.com" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2"></div>
+      <button onclick="saveAlertSettings()" style="background:#1a7a4a;color:white;border:none;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💾 Save settings</button>
+      <div id="alert-save-msg" style="font-size:12px;color:#1a7a4a;display:none">✅ Settings saved</div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0efe9">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px">Test alerts</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="testAlert('bug_report')" style="background:#fdecea;color:#a32d2d;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test bug alert</button>
+        <button onclick="testAlert('new_user')" style="background:#eaf3de;color:#1a7a4a;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test new user alert</button>
+        <button onclick="testAlert('daily_summary')" style="background:#f0efe9;color:#5f5e5a;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test daily summary</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+
+let allUsers = [];
+let totalExpenses = 0;
+
+async function sbGet(path) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+  });
+  return r.json();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderUsers(users) {
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:#888780;text-align:center;padding:20px">No users found</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td><strong>${u.name || '—'}</strong></td>
+      <td>${u.life_stage_emoji || ''} ${u.life_stage || '—'}</td>
+      <td>R${Number(u.income_amount || 0).toLocaleString('en-ZA')}</td>
+      <td><span class="badge ${u.tier || 'free'}">${u.tier || 'free'}</span></td>
+      <td style="font-family:monospace;font-size:12px">${u.referral_code || '—'}</td>
+      <td>${formatDate(u.created_at)}</td>
+    </tr>
+  `).join('');
+}
+
+function filterUsers() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const tier = document.getElementById('tier-filter').value;
+  const filtered = allUsers.filter(u =>
+    (!q || (u.name || '').toLowerCase().includes(q)) &&
+    (!tier || (u.tier || 'free') === tier)
+  );
+  renderUsers(filtered);
+}
+
+function renderMilestones(userCount) {
+  const GROWTH = [
+    { count: 10,   label: '10 users',   desc: 'First real users — test everything',       action: 'Fix bugs, improve onboarding' },
+    { count: 50,   label: '50 users',   desc: 'Beta launch milestone',                   action: 'Gather feedback, first ratings' },
+    { count: 100,  label: '100 users',  desc: 'Break-even on investment in ~5 months',   action: 'Start tracking NPS score' },
+    { count: 250,  label: '250 users',  desc: 'Growing community',                        action: 'Launch referral marketing push' },
+    { count: 500,  label: '500 users',  desc: 'Contact EasyEquities for partnership',     action: '→ Open EasyEquities affiliate account' },
+    { count: 1000, label: '1,000 users',desc: 'Serious traction — investor-ready',        action: 'Prepare pitch deck for investors' },
+    { count: 5000, label: '5,000 users',desc: 'Scale phase — hire first team member',     action: 'Community Manager role open' },
+  ];
+
+  const el = document.getElementById('milestones-list');
+  el.innerHTML = GROWTH.map(m => {
+    const done = userCount >= m.count;
+    const pct = Math.min((userCount / m.count) * 100, 100);
+    return `
+      <div class="milestone">
+        <div class="milestone-icon ${done ? 'done' : 'pending'}">${done ? '✅' : '🎯'}</div>
+        <div class="milestone-body">
+          <div class="milestone-title">${m.label}</div>
+          <div class="milestone-desc">${m.desc}</div>
+          ${!done ? `<div class="milestone-progress"><div class="milestone-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:11px;color:#888780;margin-top:3px">${userCount} / ${m.count} — ${m.action}</div>` : `<div style="font-size:11px;color:#1a7a4a;margin-top:3px">✅ ${m.action}</div>`}
+        </div>
+        <div class="milestone-status ${done ? 'done' : 'pending'}">${done ? 'Done' : Math.round(pct)+'%'}</div>
+      </div>`;
+  }).join('');
+
+  const BIZ = [
+    { done: true,  icon: '✅', label: 'PayFast sandbox', desc: 'Test payments working' },
+    { done: false, icon: '🔲', label: 'PayFast account verified', desc: 'Awaiting email from PayFast (1–2 days)' },
+    { done: false, icon: '🔲', label: 'CIPC registration', desc: 'Register trading name "RandWise" — R175' },
+    { done: false, icon: '🔲', label: 'Trademark filing', desc: 'Class 36 + 42 — R1,180 total' },
+    { done: false, icon: '🔲', label: 'Co-founder agreement signed', desc: 'Nyaniso + Twin — protect both parties' },
+    { done: false, icon: '🔲', label: 'SARS provisional tax registration', desc: 'Required once you earn income' },
+    { done: false, icon: '🔲', label: 'Business bank account', desc: 'After (Pty) Ltd registration' },
+    { done: false, icon: '🔲', label: 'Google Play Store submission', desc: 'After beta — requires R385 developer fee' },
+  ];
+
+  document.getElementById('biz-milestones').innerHTML = BIZ.map(m => `
+    <div class="milestone">
+      <div class="milestone-icon ${m.done ? 'done' : 'pending'}">${m.icon}</div>
+      <div class="milestone-body">
+        <div class="milestone-title">${m.label}</div>
+        <div class="milestone-desc">${m.desc}</div>
+      </div>
+      <div class="milestone-status ${m.done ? 'done' : 'pending'}">${m.done ? 'Done' : 'Todo'}</div>
+    </div>`).join('');
+}
+
+async function loadData() {
+  try {
+    const [users, expenses] = await Promise.all([
+      sbGet('beta_testers?select=*&order=created_at.desc&limit=200'),
+      sbGet('expenses?select=id&limit=2000'),
+    ]);
+
+    allUsers = Array.isArray(users) ? users : [];
+    totalExpenses = Array.isArray(expenses) ? expenses.length : 0;
+
+    const total = allUsers.length;
+    const pro = allUsers.filter(u => u.tier === 'pro').length;
+    const premium = allUsers.filter(u => u.tier === 'premium').length;
+    const paid = pro + premium;
+    const mrr = (pro * 49) + (premium * 129);
+    const daysSinceLaunch = Math.floor((Date.now() - new Date('2026-04-07').getTime()) / 86400000);
+
+    // Stats
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-paid').textContent = paid;
+    document.getElementById('stat-premium').textContent = premium;
+    document.getElementById('stat-expenses').textContent = totalExpenses;
+    document.getElementById('stat-mrr').textContent = 'R' + mrr.toLocaleString('en-ZA');
+    document.getElementById('stat-days').textContent = daysSinceLaunch;
+
+    // Recent users table
+    const recentTbody = document.getElementById('recent-tbody');
+    recentTbody.innerHTML = allUsers.slice(0, 10).map(u => `
+      <tr>
+        <td><strong>${u.name || '—'}</strong></td>
+        <td>${u.life_stage_emoji || ''} ${u.life_stage || '—'}</td>
+        <td><span class="badge ${u.tier || 'free'}">${u.tier || 'free'}</span></td>
+        <td style="font-family:monospace;font-size:12px">${u.referral_code || '—'}</td>
+        <td>${formatDate(u.created_at)}</td>
+      </tr>`).join('') || '<tr><td colspan="5" style="color:#888780;text-align:center;padding:20px">No users yet</td></tr>';
+
+    // Life stage breakdown
+    const stages = {};
+    allUsers.forEach(u => { const s = u.life_stage || 'Unknown'; stages[s] = (stages[s] || 0) + 1; });
+    document.getElementById('stage-breakdown').innerHTML = Object.entries(stages)
+      .sort((a, b) => b[1] - a[1])
+      .map(([s, c]) => `
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span>${s}</span><span style="font-weight:700">${c}</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${(c/total*100).toFixed(0)}%;background:#1a7a4a"></div></div>
+        </div>`).join('') || '<p style="color:#888780;font-size:13px">No data yet</p>';
+
+    // Users page
+    renderUsers(allUsers);
+
+    // Segments
+    const now = new Date();
+    const week = new Date(now - 7 * 86400000);
+    document.getElementById('seg-new').textContent = allUsers.filter(u => new Date(u.created_at) > week).length;
+    document.getElementById('seg-student').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('student')).length;
+    document.getElementById('seg-domestic').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('domestic')).length;
+    document.getElementById('seg-employed').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('employ') || (u.life_stage || '').toLowerCase().includes('salaried')).length;
+    document.getElementById('seg-self').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('freelance') || (u.life_stage || '').toLowerCase().includes('business') || (u.life_stage || '').toLowerCase().includes('self')).length;
+    document.getElementById('seg-pensioner').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('pension') || (u.life_stage || '').toLowerCase().includes('retire')).length;
+    document.getElementById('seg-pro').textContent = pro;
+    document.getElementById('seg-prem').textContent = premium;
+
+    // Tier distribution
+    document.getElementById('tier-dist').innerHTML = [
+      ['Free', total - paid, '#888780'],
+      ['Pro', pro, '#1a7a4a'],
+      ['Premium', premium, '#534ab7'],
+    ].map(([t, c, col]) => `
+      <div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+          <span>${t}</span><span style="font-weight:700;color:${col}">${c} users (${total > 0 ? Math.round(c/total*100) : 0}%)</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${total > 0 ? (c/total*100).toFixed(0) : 0}%;background:${col}"></div></div>
+      </div>`).join('');
+
+    // Milestones
+    renderMilestones(total);
+
+    // EasyEquities
+    document.getElementById('easy-count').textContent = total;
+    const pct = Math.min(total / 500 * 100, 100);
+    document.getElementById('easy-fill').style.width = pct + '%';
+    document.getElementById('easy-label').textContent = total >= 500
+      ? '🎉 Ready! Contact EasyEquities now → easequities.co.za/partners'
+      : `${500 - total} more users to go`;
+
+    // Referrals stats
+    document.getElementById('ref-total').textContent = allUsers.filter(u => u.referral_joined).length;
+
+    // Build referral leaderboard and tracking table
+    const referred = allUsers.filter(u => u.referred_by);
+    const referrers = {};
+    referred.forEach(u => {
+      const code = u.referred_by;
+      if (!referrers[code]) referrers[code] = [];
+      referrers[code].push(u);
+    });
+
+    // Find referrer names by matching referral_code
+    const codeToName = {};
+    allUsers.forEach(u => { if (u.referral_code) codeToName[u.referral_code] = u.name; });
+
+    const leaderboard = Object.entries(referrers)
+      .map(([code, users]) => {
+        const paidUsers = users.filter(u => u.tier === 'pro' || u.tier === 'premium');
+        return { code, name: codeToName[code] || code, count: users.length, paidCount: paidUsers.length, users };
+      })
+      .sort((a, b) => b.count - a.count);
+
+    const pendingPayouts = leaderboard.length;
+    document.getElementById('ref-pending').textContent = pendingPayouts;
+
+    if (leaderboard.length === 0) {
+      document.getElementById('referral-list').innerHTML = '<p style="color:#888780;font-size:13px">No referrals yet — share your code to start earning.</p>';
+      document.getElementById('referral-tracking').innerHTML = '<p style="color:#888780;font-size:13px">No referral activity yet.</p>';
+    } else {
+      // Leaderboard
+      document.getElementById('referral-list').innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f5f5f0">
+            <th style="padding:8px 12px;text-align:left">Referrer</th>
+            <th style="padding:8px 12px;text-align:center">Code</th>
+            <th style="padding:8px 12px;text-align:center">Total referred</th>
+            <th style="padding:8px 12px;text-align:center">Paid clients</th>
+            <th style="padding:8px 12px;text-align:right">Monthly owed</th>
+          </tr></thead>
+          <tbody>${leaderboard.map((r,i) => {
+            const monthly = r.paidCount * 5;
+            return `<tr style="border-bottom:1px solid #f0efe9">
+              <td style="padding:10px 12px;font-weight:600">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${r.name}</td>
+              <td style="padding:10px 12px;text-align:center;font-family:monospace;color:#1a7a4a">${r.code}</td>
+              <td style="padding:10px 12px;text-align:center">${r.count}</td>
+              <td style="padding:10px 12px;text-align:center;color:${r.paidCount>0?'#1a7a4a':'#888'}">${r.paidCount}</td>
+              <td style="padding:10px 12px;text-align:right;font-weight:700;color:${monthly>0?'#1a7a4a':'#888'}">${monthly>0?'R'+monthly.toLocaleString('en-ZA')+'/mo':'R0 — no paid clients yet'}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>`;
+
+      // Who referred who tracking table
+      document.getElementById('referral-tracking').innerHTML = `
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="background:#f5f5f0">
+            <th style="padding:8px 12px;text-align:left">New user</th>
+            <th style="padding:8px 12px;text-align:left">Referred by</th>
+            <th style="padding:8px 12px;text-align:center">Tier</th>
+            <th style="padding:8px 12px;text-align:right">Joined</th>
+          </tr></thead>
+          <tbody>${referred.map(u => {
+            const referrerName = codeToName[u.referred_by] || u.referred_by;
+            const tierColor = u.tier==='premium'?'#534ab7':u.tier==='pro'?'#ba7517':'#1a7a4a';
+            const d = new Date(u.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+            return `<tr style="border-bottom:1px solid #f0efe9">
+              <td style="padding:10px 12px;font-weight:600">${u.name||'—'}</td>
+              <td style="padding:10px 12px;color:#1a7a4a">${referrerName}</td>
+              <td style="padding:10px 12px;text-align:center"><span style="background:${tierColor}20;color:${tierColor};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">${(u.tier||'free').toUpperCase()}</span></td>
+              <td style="padding:10px 12px;text-align:right;color:#888780">${d}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>`; 
+    }
+
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-ZA');
+  } catch (e) {
+    console.error('Load failed:', e);
+    document.getElementById('lastUpdated').textContent = 'Error loading data';
+  }
+}
+
+async function loadBugReports(){
+  try{
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?order=created_at.desc&limit=50`,{
+      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+    });
+    const bugs = await res.json();
+    const el = document.getElementById('bug-reports-list');
+    if(!Array.isArray(bugs)||!bugs.length){el.innerHTML='<div style="color:#1a7a4a;font-size:13px;padding:12px 0">✅ No bug reports — all clear!</div>';return;}
+    el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#f5f5f0">
+        <th style="padding:8px;text-align:left">Time</th>
+        <th style="padding:8px;text-align:left">User</th>
+        <th style="padding:8px;text-align:left">Error</th>
+        <th style="padding:8px;text-align:left">Type</th>
+      </tr></thead>
+      <tbody>${bugs.map(b=>{
+        const d=new Date(b.created_at).toLocaleString('en-ZA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+        const isUserReport=b.error_source==='user_report';
+        return `<tr style="border-bottom:1px solid #f0efe9;${isUserReport?'background:#fff8e1':''}">
+          <td style="padding:8px;color:#888780;white-space:nowrap">${d}</td>
+          <td style="padding:8px;font-weight:600">${b.user_name||'—'}</td>
+          <td style="padding:8px;color:#a32d2d;max-width:300px;word-break:break-word">${b.error_message||'—'}</td>
+          <td style="padding:8px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${isUserReport?'#fbbf2422':'#fee2e2'};color:${isUserReport?'#92400e':'#991b1b'}">${isUserReport?'USER':'JS ERROR'}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+    // Update health panel bug count
+    const bugs24h = bugs.filter(b=>new Date(b.created_at)>new Date(Date.now()-86400000)).length;
+    const hpBugs = document.getElementById('hp-bugs');
+    if(hpBugs){hpBugs.textContent=bugs24h;hpBugs.style.color=bugs24h>0?'#a32d2d':'#1a7a4a';}
+  }catch(e){
+    document.getElementById('bug-reports-list').innerHTML='<div style="color:#888780;font-size:13px">Could not load bug reports — check console.</div>';
+  }
+}
+
+async function clearBugReports(){
+  if(!confirm('Delete all bug reports? This cannot be undone.'))return;
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?id=neq.00000000-0000-0000-0000-000000000000`,{
+      method:'DELETE',
+      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
+    });
+    loadBugReports();
+  }catch(e){alert('Could not clear — check RLS policies.');}
+}
+
+function saveAlertSettings(){
+  const email = document.getElementById('alert-email')?.value;
+  const settings = {
+    email,
+    notifNewUser: document.getElementById('notif-new-user')?.checked,
+    notifUpgrade: document.getElementById('notif-upgrade')?.checked,
+    notifBug: document.getElementById('notif-bug')?.checked,
+    notifDaily: document.getElementById('notif-daily')?.checked,
+    notifMilestone: document.getElementById('notif-milestone')?.checked,
+  };
+  localStorage.setItem('rw_alert_settings', JSON.stringify(settings));
+  const msg = document.getElementById('alert-save-msg');
+  if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
+}
+
+async function testAlert(type){
+  const testData = {
+    bug_report: {user_name:'Test User',error_message:'This is a test bug report from the admin dashboard',error_source:'user_report',page_url:'https://nyanisokhoza-code.github.io/randwise'},
+    new_user: {name:'Test User',email:'test@example.com',life_stage:'Employed',income_amount:15000,referred_by:null},
+    daily_summary: {total_users:5,paid_users:0,new_today:2,mrr:0,bugs_24h:1}
+  };
+  try{
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-alert`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON},
+      body:JSON.stringify({type, data:testData[type]||{}})
+    });
+    const d = await res.json();
+    if(d.success){alert(`✅ Test ${type} alert sent to your email!`);}
+    else{alert(`⚠️ Alert failed: ${d.error||'Unknown error'}`);}
+  }catch(e){alert('Could not send test alert: '+e.message);}
+}
+
+async function runHealthCheck(){
+  try{
+    const [users, bugs] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,created_at`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/bug_reports?select=id,created_at&order=created_at.desc&limit=100`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json())
+    ]);
+    const totalUsers = Array.isArray(users)?users.length:0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const newToday = Array.isArray(users)?users.filter(u=>new Date(u.created_at)>=today).length:0;
+    const bugs24h = Array.isArray(bugs)?bugs.filter(b=>new Date(b.created_at)>new Date(Date.now()-86400000)).length:0;
+    const el = (id,val,col)=>{const e=document.getElementById(id);if(e){e.textContent=val;if(col)e.style.color=col;}};
+    el('hp-db','✅ Online','#1a7a4a');
+    el('hp-users',totalUsers);
+    el('hp-today',newToday,newToday>0?'#1a7a4a':'#888780');
+    el('hp-bugs',bugs24h,bugs24h>0?'#a32d2d':'#1a7a4a');
+    const upd=document.getElementById('hp-updated');
+    if(upd)upd.textContent='Last checked: '+new Date().toLocaleTimeString('en-ZA');
+  }catch(e){
+    const db=document.getElementById('hp-db');if(db){db.textContent='❌ Error';db.style.color='#a32d2d';}
+  }
+}
+
+// Load saved settings
+(()=>{
+  const s=localStorage.getItem('rw_alert_settings');
+  if(!s)return;
+  try{
+    const settings=JSON.parse(s);
+    if(settings.email){const el=document.getElementById('alert-email');if(el)el.value=settings.email;}
+    if(settings.notifNewUser!==undefined){const el=document.getElementById('notif-new-user');if(el)el.checked=settings.notifNewUser;}
+    if(settings.notifUpgrade!==undefined){const el=document.getElementById('notif-upgrade');if(el)el.checked=settings.notifUpgrade;}
+    if(settings.notifBug!==undefined){const el=document.getElementById('notif-bug');if(el)el.checked=settings.notifBug;}
+    if(settings.notifDaily!==undefined){const el=document.getElementById('notif-daily');if(el)el.checked=settings.notifDaily;}
+    if(settings.notifMilestone!==undefined){const el=document.getElementById('notif-milestone');if(el)el.checked=settings.notifMilestone;}
+  }catch{}
+})();
+
+// Load bug reports + health when alerts tab clicked
+document.querySelector('[onclick="showPage(\'alerts\')"]')?.addEventListener('click',()=>{loadBugReports();runHealthCheck();});
+
+loadData();
+runHealthCheck();
+setInterval(loadData,30000);
+setInterval(runHealthCheck,60000);
+</script>
+</body>
+</html>
