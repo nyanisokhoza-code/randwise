@@ -385,7 +385,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 <div class="screen" id="main" style="display:none">
   <div class="trial" id="trial" style="display:none">
     <span class="trial-t" id="trial-t">🎁 14 days left in your free trial</span>
-    <span class="trial-c">Upgrade →</span>
+    <span class="trial-c" id="trial-c">Upgrade →</span>
   </div>
   <div class="tab-content">
     <div class="tab-pane active" id="tp-home">
@@ -829,7 +829,8 @@ function renderDash(){
     if(left>0){
       const b=document.getElementById('trial');b.style.display='flex';
       document.getElementById('trial-t').textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;
-      document.getElementById('trial-c').onclick=()=>showUpgradeWall(false);
+      const trialC=document.getElementById('trial-c');
+      if(trialC)trialC.onclick=()=>showUpgradeWall(false);
     } else {
       showUpgradeWall(true);
       return;
@@ -1052,10 +1053,7 @@ window.addEventListener('load',async()=>{
       // Then refresh from Supabase in background
       if(user?.id){
         try{
-          const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);
-          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
-        }catch{}
-        try{await loadExp();}catch{expenses=[];}
+          const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
         try{renderDash();}catch{}
         setTimeout(()=>{try{showIntro();}catch{}},400);
       }
@@ -1173,9 +1171,7 @@ async function refreshApp(){
   showToast('🔄 Refreshing...');
   if(user?.id){
     try{
-      const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);
-      if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
-      await loadExp();renderDash();
+      const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
       showToast('✅ Up to date');
     }catch{showToast('⚠️ Could not refresh — check connection');}
   }
