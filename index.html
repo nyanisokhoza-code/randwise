@@ -70,8 +70,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .goal.sel .goal-chk{background:var(--g);border-color:var(--g);color:#fff}
 .name-in{width:100%;padding:18px 20px;font-size:18px;font-weight:700;background:var(--bg);border:2px solid var(--bd);border-radius:16px;outline:none;color:var(--t);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:14px;transition:border-color .2s}
 .name-in:focus{border-color:var(--g)}
-.auth-row{display:flex;align-items:center;background:var(--bg);border-radius:14px;border:2px solid var(--bd);overflow:hidden;margin-bottom:10px}
-.auth-in{flex:1;padding:15px 16px;font-size:15px;color:var(--t);background:none;border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif}
+.auth-row{display:flex;align-items:center;background:var(--bg2);border-radius:14px;border:1.5px solid var(--bd);overflow:hidden;margin-bottom:10px}
+.auth-in{flex:1;padding:15px 16px;font-size:15px;color:var(--t);background:var(--bg2);border:none;outline:none;font-family:'Plus Jakarta Sans',sans-serif;border-radius:12px;width:100%;box-sizing:border-box}
 .auth-toggle{padding:12px 16px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--mu);font-weight:500}
 
 /* SAVING */
@@ -90,7 +90,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
 /* LOGIN */
 #login{background:var(--w)}
-.login-body{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 24px;overflow-y:auto}
+.login-body{flex:1;display:flex;flex-direction:column;justify-content:flex-start;padding:32px 24px;overflow-y:auto;padding-bottom:120px}
 
 /* MAIN APP */
 #main{background:var(--bg)}
@@ -698,7 +698,7 @@ window.addEventListener('load',async()=>{
     <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-size:16px;font-weight:800;color:#fff">Premium</div>
-        <div style="font-size:20px;font-weight:800;color:#a78bfa">R99<span style="font-size:13px;font-weight:500;color:rgba(255,255,255,.6)">/month</span></div>
+        <div style="font-size:20px;font-weight:800;color:#a78bfa">R129<span style="font-size:13px;font-weight:500;color:rgba(255,255,255,.6)">/month</span></div>
       </div>
       <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.8;text-align:left">✓ Everything in Pro<br>✓ Family / household view<br>✓ Priority support<br>✓ Early access to new features</div>
       <button onclick="doUpgrade('premium')" style="width:100%;background:#a78bfa;color:#2e1065;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:14px">Upgrade to Premium →</button>
@@ -749,7 +749,7 @@ window.addEventListener('load',async()=>{
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="switchTestTier('free')" id="tier-btn-free" style="flex:1;min-width:80px;background:#4ade80;color:#0d3d22;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:800;cursor:pointer">FREE</button>
         <button onclick="switchTestTier('pro')" id="tier-btn-pro" style="flex:1;min-width:80px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer">PRO R49</button>
-        <button onclick="switchTestTier('premium')" id="tier-btn-premium" style="flex:1;min-width:80px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer">PREMIUM R99</button>
+        <button onclick="switchTestTier('premium')" id="tier-btn-premium" style="flex:1;min-width:80px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:10px;padding:10px 8px;font-size:12px;font-weight:700;cursor:pointer">PREMIUM R129</button>
       </div>
       <div id="tier-test-info" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.5);min-height:16px"></div>
     </div>
@@ -780,6 +780,16 @@ window.addEventListener('load',async()=>{
 </div>
 
 <script>
+// ══ MOBILE KEYBOARD FIX ═════════════════════════════════════
+// Scroll focused input into view above keyboard on Android
+document.addEventListener('focusin',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'){
+    setTimeout(()=>{
+      e.target.scrollIntoView({behavior:'smooth',block:'center'});
+    },300);
+  }
+});
+
 // ══ UPGRADE WALL ════════════════════════════════════════════
 function showUpgradeWall(hardBlock){
   const wall=document.getElementById('upgrade-wall');
@@ -800,7 +810,7 @@ function doUpgrade(plan){
   const mid='17641839',mkey='ggvw6iyb2c213';
   const sandbox=true;
   const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
-  const amt=plan==='premium'?'99.00':'49.00';
+  const amt=plan==='premium'?'129.00':'49.00';
   const name=plan==='premium'?'RandWise Premium':'RandWise Pro';
   const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:'https://nyanisokhoza-code.github.io/randwise?paid=1',cancel_url:'https://nyanisokhoza-code.github.io/randwise',notify_url:'https://nyanisokhoza-code.github.io/randwise',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
   window.open(`${base}?${params.toString()}`,'_blank');
@@ -905,7 +915,7 @@ function switchTestTier(tier){
   localStorage.setItem('rw_user',JSON.stringify(user));
   renderDash();
   highlightTierBtn(tier);
-  const msgs={free:'👆 Now viewing FREE experience — trial banner shows, Pro features locked after trial',pro:'⭐ Now viewing PRO experience — full access, R49/month badge',premium:'👑 Now viewing PREMIUM experience — everything unlocked, R99/month'};
+  const msgs={free:'👆 Now viewing FREE experience — trial banner shows, Pro features locked after trial',pro:'⭐ Now viewing PRO experience — full access, R49/month badge',premium:'👑 Now viewing PREMIUM experience — everything unlocked, R129/month'};
   document.getElementById('tier-test-info').textContent=msgs[tier]||'';
   document.getElementById('owner-panel').style.display='none';
   show('main');
