@@ -569,7 +569,13 @@ async function doLogin(){
   hideErr('l-err');
   try{
     const auth=await authPost('token?grant_type=password',{email:email.toLowerCase(),password:pass});
-    if(!auth.access_token){showErr('l-err',auth.error_description||'Wrong email or password');btn.disabled=false;btn.textContent='Sign in →';return;}
+    if(!auth.access_token){
+      const msg=auth.error_description||'';
+      const friendlyMsg=msg.includes('Invalid login')||msg.includes('invalid')?
+        'Wrong email or password. If you recently reset your password, use your new one.':
+        msg||'Wrong email or password';
+      showErr('l-err',friendlyMsg);btn.disabled=false;btn.textContent='Sign in →';return;
+    }
     const rows=await sbG(`beta_testers?auth_id=eq.${auth.user.id}&limit=1&select=*`);
     if(!rows?.length){showErr('l-err','Account not found. Please register first.');btn.disabled=false;btn.textContent='Sign in →';return;}
     user=rows[0];
@@ -703,7 +709,7 @@ function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeIte
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
   const s=localStorage.getItem('rw_user');
-  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');setTimeout(showIntro,400);}catch{show('splash');}}
+  if(s){try{user=JSON.parse(s);if(user?.id){const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1`);if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}}await loadExp();renderDash();show('main');setTimeout(showIntro,400);}catch{localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');show('splash');}}
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
