@@ -1015,7 +1015,7 @@ async function loadDebtsPWA(){
     if(!debts?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">💳</div><div style="font-size:14px;font-weight:600;color:var(--t)">No debts added yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first debt to start tracking</div></div>';return;}
     el.innerHTML=debts.map(d=>`<div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
       <div><div style="font-size:14px;font-weight:700">${d.name||d.category||'Debt'}</div><div style="font-size:12px;color:var(--mu);margin-top:2px">${d.category||''}</div></div>
-      <div style="text-align:right"><div style="font-size:15px;font-weight:800;color:var(--r)">R${Number(d.balance||0).toLocaleString('en-ZA')}</div><div style="font-size:11px;color:var(--mu)">min R${Number(d.minimum_payment||0).toLocaleString('en-ZA')}/mo</div></div>
+      <div style="text-align:right"><div style="font-size:15px;font-weight:800;color:var(--r)">R${Number(d.balance||0).toLocaleString('en-ZA')}</div><div style="font-size:11px;color:var(--mu)">min R${Number(d.min_payment||0).toLocaleString('en-ZA')}/mo</div></div>
     </div>`).join('');
   }catch(e){document.getElementById('debt-list-pwa').innerHTML='<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">Could not load debts</div>';}
 }
@@ -1037,7 +1037,7 @@ async function saveDebtPWA(){
   const btn=document.getElementById('debt-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
   try{
-    await sbP('debts',{tester_id:user.id,name,category:cat,balance,minimum_payment:minPay,original_amount:balance});
+    await sbP('debts',{tester_id:user.id,name,category:cat,balance,min_payment:minPay,original_balance:balance});
     closeAddDebtPWA();loadDebtsPWA();showToast('✅ Debt added');
     document.getElementById('debt-name').value='';document.getElementById('debt-balance').value='';document.getElementById('debt-min').value='';
   }catch(e){showToast('Could not save. Try again.');}
@@ -1422,7 +1422,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v8';
+const APP_VERSION = '2026-04-13-v9';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
