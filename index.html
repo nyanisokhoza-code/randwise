@@ -883,13 +883,12 @@ function renderDash(){
   const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent),wb=inc>0?Math.round(inc*.6/4):0;
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const circ=2*Math.PI*76,pct=inc>0?Math.min(spent/inc,1):0;
-  document.getElementById('rarc').setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
-  document.getElementById('ramt').textContent='R'+sp.toLocaleString('en-ZA');
-  document.getElementById('ramt').style.color=sc;
-  document.getElementById('rtot').textContent='of R'+inc.toLocaleString('en-ZA');
-  document.getElementById('p-inc').textContent='R'+inc.toLocaleString('en-ZA');
-  document.getElementById('p-sp').textContent='R'+spent.toLocaleString('en-ZA');
-  document.getElementById('p-wb').textContent='R'+wb.toLocaleString('en-ZA');
+  const rarcEl=document.getElementById('rarc');if(rarcEl)rarcEl.setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
+  const ramtEl=document.getElementById('ramt');if(ramtEl){ramtEl.textContent='R'+sp.toLocaleString('en-ZA');ramtEl.style.color=sc;}
+  const rtotEl=document.getElementById('rtot');if(rtotEl)rtotEl.textContent='of R'+inc.toLocaleString('en-ZA');
+  const pincEl=document.getElementById('p-inc');if(pincEl)pincEl.textContent='R'+inc.toLocaleString('en-ZA');
+  const pspEl=document.getElementById('p-sp');if(pspEl)pspEl.textContent='R'+spent.toLocaleString('en-ZA');
+  const pwbEl=document.getElementById('p-wb');if(pwbEl)pwbEl.textContent='R'+wb.toLocaleString('en-ZA');
   document.getElementById('wbl').textContent='R'+wb.toLocaleString('en-ZA')+'/week';
   const cw=Math.ceil(now.getDate()/7);
   document.getElementById('wk-snap').innerHTML=[1,2,3,4].map(w=>{
@@ -1393,7 +1392,7 @@ async function saveEdit(){
 })();
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v3';
+const APP_VERSION = '2026-04-13-v4';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
