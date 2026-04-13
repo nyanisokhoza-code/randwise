@@ -14,21 +14,22 @@ const path = window.location.pathname;
 if (hash && hash.includes('access_token')) {
   const params = new URLSearchParams(hash.slice(1));
   const type = params.get('type');
-  const token = params.get('access_token');
   
   if (type === 'recovery') {
-    // Password reset — redirect to reset page with token
     window.location.replace(
       'https://nyanisokhoza-code.github.io/randwise/reset-password.html' + hash
     );
   } else {
-    // Other auth (email confirm etc) — redirect to app
     window.location.replace(
       'https://nyanisokhoza-code.github.io/randwise/' + hash
     );
   }
+} else if (hash && hash.includes('error=access_denied')) {
+  // Expired or invalid link — send back to app with message
+  window.location.replace(
+    'https://nyanisokhoza-code.github.io/randwise/reset-password.html?expired=1'
+  );
 } else {
-  // Regular 404 — redirect to app home
   window.location.replace('https://nyanisokhoza-code.github.io/randwise/');
 }
 </script>
