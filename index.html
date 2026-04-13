@@ -1052,7 +1052,7 @@ async function loadGoalsPWA(){
     const el=document.getElementById('goals-list-pwa');
     if(!goals?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">🌱</div><div style="font-size:14px;font-weight:600;color:var(--t)">No savings goals yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first goal to start growing</div></div>';return;}
     el.innerHTML=goals.map(g=>{
-      const pct=g.target_amount>0?Math.min(100,Math.round((g.current_amount||0)/g.target_amount*100)):0;
+      const pct=g.target>0?Math.min(100,Math.round((g.saved||0)/g.target*100)):0;
       return `<div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px 16px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
           <div style="font-size:14px;font-weight:700">${g.emoji||'🎯'} ${g.name}</div>
@@ -1060,8 +1060,8 @@ async function loadGoalsPWA(){
         </div>
         <div style="background:var(--bg2);border-radius:4px;height:6px;overflow:hidden"><div style="background:var(--g);height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div></div>
         <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--mu)">
-          <span>R${Number(g.current_amount||0).toLocaleString('en-ZA')} saved</span>
-          <span>R${Number(g.target_amount||0).toLocaleString('en-ZA')} goal</span>
+          <span>R${Number(g.saved||0).toLocaleString('en-ZA')} saved</span>
+          <span>R${Number(g.target||0).toLocaleString('en-ZA')} goal</span>
         </div>
       </div>`;
     }).join('');
@@ -1084,7 +1084,7 @@ async function saveGoalPWA(){
   const btn=document.getElementById('goal-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
   try{
-    await sbP('savings_goals',{tester_id:user.id,name,target_amount:target,current_amount:saved,emoji:'🎯'});
+    await sbP('savings_goals',{tester_id:user.id,name,target:target,saved:saved,emoji:'🎯'});
     closeAddGoalPWA();loadGoalsPWA();showToast('✅ Goal added');
     document.getElementById('goal-name').value='';document.getElementById('goal-target').value='';document.getElementById('goal-saved').value='';
   }catch(e){showToast('Could not save. Try again.');}
@@ -1422,7 +1422,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v9';
+const APP_VERSION = '2026-04-13-v10';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
