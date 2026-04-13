@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandWise — Back Soon</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d3d22;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center}
+.logo{font-size:64px;margin-bottom:16px}
+h1{font-size:28px;font-weight:800;color:#fff;margin-bottom:10px}
+h1 span{color:#4ade80}
+p{font-size:15px;color:rgba(255,255,255,.7);line-height:1.6;max-width:300px;margin:0 auto 24px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:30px;padding:10px 20px;margin-bottom:32px}
+.dot{width:8px;height:8px;border-radius:50%;background:#fbbf24;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.badge-text{font-size:13px;color:rgba(255,255,255,.8);font-weight:600}
+.time{font-size:13px;color:rgba(255,255,255,.5);margin-top:8px}
+.back-btn{background:#4ade80;color:#0d3d22;border:none;border-radius:14px;padding:14px 32px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block;margin-top:16px}
+</style>
+</head>
+<body>
+<div>
+  <div class="logo">🌱</div>
+  <h1>We'll be back <span>shortly</span></h1>
+  <p>RandWise is currently undergoing a quick update. We'll be back online in a few minutes.</p>
+  <div class="badge">
+    <div class="dot"></div>
+    <span class="badge-text">Maintenance in progress</span>
+  </div>
+  <div class="time" id="time"></div>
+  <br>
+  <p style="font-size:13px;color:rgba(255,255,255,.5)">Your data is safe. Nothing has been lost.</p>
+  <a href="https://nyanisokhoza-code.github.io/randwise" class="back-btn" style="margin-top:24px;display:block;max-width:280px;margin-left:auto;margin-right:auto">Try again →</a>
+</div>
+<script>
+function updateTime(){
+  const now=new Date();
+  document.getElementById('time').textContent='Current time: '+now.toLocaleTimeString('en-ZA');
+}
+updateTime();
+setInterval(updateTime,1000);
+</script>
+</body>
+</html>
