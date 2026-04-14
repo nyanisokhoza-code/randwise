@@ -301,7 +301,6 @@ if('serviceWorker' in navigator){
   <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
   <button class="btn-p" onclick="show('onboarding');startOB()">Get started — it's free</button>
   <button class="btn-g" onclick="show('login')">I already have an account</button>
-  <button onclick="hardRefresh()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;margin-top:20px;cursor:pointer;padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.15)">🔄 Refresh app</button>
   <div id="splash-error" style="display:none;margin-top:16px;background:rgba(255,0,0,.15);border:1px solid rgba(255,100,100,.3);border-radius:12px;padding:12px 16px;max-width:300px;text-align:center">
     <div style="font-size:13px;color:#ffaaaa;margin-bottom:8px">⚠️ Something's not loading correctly</div>
     <div style="display:flex;gap:8px;justify-content:center">
@@ -341,6 +340,11 @@ if('serviceWorker' in navigator){
       Forgot your password?
     </button>
     <div id="reset-sent" style="display:none;font-size:13px;color:#1a7a4a;margin-bottom:12px;padding:12px;background:#e8f5ee;border-radius:10px"></div>
+    <div id="login-help-btn" style="display:none;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:13px;margin-bottom:12px;text-align:center">
+      <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">Still can't get in?</div>
+      <div style="font-size:12px;color:#92400e;margin-bottom:10px;line-height:1.5">Tap below and the RandWise team will help you within 24 hours.</div>
+      <button onclick="requestLoginHelp()" style="background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🆘 Request login help</button>
+    </div>
     <button id="l-btn" onclick="doLogin()"
       style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:17px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:16px">
       Sign in →
@@ -1030,6 +1034,7 @@ async function doRegister(){
 }
 
 // ── Login ─────────────────────────────────────────────────────
+let loginAttempts=0;
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
   const pass=document.getElementById('l-pass').value;
@@ -1040,15 +1045,44 @@ async function doLogin(){
   try{
     const auth=await authPost('token?grant_type=password',{email:email.toLowerCase(),password:pass});
     if(!auth.access_token){
+      loginAttempts++;
       const msg=auth.error_description||'';
-      const friendlyMsg=msg.includes('Invalid login')||msg.includes('invalid')?
+      const reason=msg.includes('Invalid login')||msg.includes('invalid')?'wrong_password':msg||'unknown';
+      const friendlyMsg=reason==='wrong_password'?
         'Wrong email or password. If you recently reset your password, use your new one.':
         msg||'Wrong email or password';
-      showErr('l-err',friendlyMsg);btn.disabled=false;btn.textContent='Sign in →';return;
+      showErr('l-err',friendlyMsg);
+      btn.disabled=false;btn.textContent='Sign in →';
+      // Log to admin after first failure
+      sendOwnerAlert('login_failed',{email,attempts:loginAttempts,reason});
+      logLoginFailure(email, reason, loginAttempts);
+      // Show help button after 2 failures
+      if(loginAttempts>=2){
+        const helpEl=document.getElementById('login-help-btn');
+        if(helpEl)helpEl.style.display='block';
+      }
+      return;
     }
+    loginAttempts=0;
     const rows=await sbG(`beta_testers?auth_id=eq.${auth.user.id}&limit=1&select=*`);
-    if(!rows?.length){showErr('l-err','Account not found. Please register first.');btn.disabled=false;btn.textContent='Sign in →';return;}
-    user=rows[0];
+    if(!rows?.length){
+      // Auth succeeded but no profile — try matching by email
+      const byEmail=await sbG(`beta_testers?email=eq.${encodeURIComponent(email.toLowerCase())}&limit=1&select=*`);
+      if(byEmail?.length){
+        // Fix the auth_id mismatch silently
+        await fetch(`${SB}/rest/v1/beta_testers?id=eq.${byEmail[0].id}`,{
+          method:'PATCH',headers:{...H,'Prefer':'return=minimal'},
+          body:JSON.stringify({auth_id:auth.user.id})
+        });
+        user=byEmail[0];
+        user.auth_id=auth.user.id;
+      } else {
+        showErr('l-err','Account not found. Please register first.');
+        btn.disabled=false;btn.textContent='Sign in →';return;
+      }
+    } else {
+      user=rows[0];
+    }
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
     if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
@@ -1058,11 +1092,36 @@ async function doLogin(){
     try{setTimeout(showIntro,400);}catch(ex){}
     btn.disabled=false;btn.textContent='Sign in →';
   }catch(e){
+    loginAttempts++;
     const msg=e?.message||'';
     const isNetwork=msg.includes('fetch')||msg.includes('network')||msg.includes('Failed');
     showErr('l-err',isNetwork?'No connection. Check your internet and try again.':'Sign in failed. Please try again.');
     btn.disabled=false;btn.textContent='Sign in →';
+    logLoginFailure(email||'unknown', isNetwork?'network_error':msg, loginAttempts);
   }
+}
+async function logLoginFailure(email, reason, attempts){
+  try{
+    await fetch(`${SB}/rest/v1/bug_reports`,{
+      method:'POST',
+      headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        user_id:null, user_name:email,
+        error_message:`Login failed — ${reason}`,
+        error_source:'login_failure',
+        error_line:0,
+        page_url:window.location.href,
+        created_at:new Date().toISOString()
+      })
+    });
+  }catch(e){}
+}
+async function requestLoginHelp(){
+  const email=document.getElementById('l-email').value.trim()||'unknown';
+  sendOwnerAlert('login_help',{email});
+  showToast('✅ Help requested — the RandWise team will contact you shortly');
+  const helpEl=document.getElementById('login-help-btn');
+  if(helpEl)helpEl.style.display='none';
 }
 async function handleForgot(){
   const email=document.getElementById('l-email').value.trim();
@@ -1763,6 +1822,8 @@ async function sendOwnerAlert(type, data){
     reset_failed: `⚠️ Reset FAILED — email not found: ${data.email}. User may try to create duplicate account.`,
     reset_error: `❌ Reset error for ${data.email}: ${data.error}`,
     duplicate_attempt: `🔁 DUPLICATE ACCOUNT ATTEMPT — ${data.name} (${data.email}) tried to register again. They need help signing in or resetting password.`,
+    login_failed: `🔐 LOGIN FAILED — ${data.email} — attempt ${data.attempts} — reason: ${data.reason}. User may need password reset help.`,
+    login_help: `🆘 LOGIN HELP REQUEST — ${data.email} cannot get in. They tapped "Need help". Please assist manually.`,
   };
   try{
     await fetch(`${SB}/functions/v1/send-alert`,{
@@ -1948,7 +2009,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v15';
+const APP_VERSION = '2026-04-14-v16';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
