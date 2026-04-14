@@ -105,7 +105,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .tab-content{flex:1;overflow-y:auto}
 .tab-pane{display:none;height:100%}
 .tab-pane.active{display:block}
-.tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0}
+.tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0;position:sticky;bottom:0;z-index:100}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;cursor:pointer;border:none;background:none}
 .tab-icon{font-size:20px;line-height:1}
 .tab-lbl{font-size:10px;color:var(--h);font-weight:500}
@@ -273,16 +273,23 @@ if('serviceWorker' in navigator){
 }
 </script>
 <body>
-<!-- ══ UPDATE BANNER ══════════════════════════════════════════ -->
-<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a7a4a;color:#fff;padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3)">
-  <div style="display:flex;align-items:center;gap:10px">
-    <span style="font-size:18px">🌱</span>
-    <div>
-      <div style="font-size:13px;font-weight:700">New version available</div>
-      <div style="font-size:11px;opacity:.8">Tap to get the latest update</div>
+<!-- ══ FORCED UPDATE SCREEN ══════════════════════════════════ -->
+<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;background:#1a5c35;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;gap:22px;font-family:'Plus Jakarta Sans',sans-serif">
+  <div style="width:80px;height:80px;background:#fff;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#1a5c35;letter-spacing:-1px;flex-shrink:0">R</div>
+  <div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">Update available</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.2">RandWise just<br>got better 🌱</div>
+  </div>
+  <div id="update-whats-new" style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;width:100%;max-width:320px;text-align:left">
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">What's new</div>
+    <div style="font-size:13px;color:#fff;line-height:1.9">
+      <div>✦ &nbsp;Smarter home screen</div>
+      <div>✦ &nbsp;Daily spend dots improved</div>
+      <div>✦ &nbsp;Bug fixes &amp; speed</div>
     </div>
   </div>
-  <button onclick="doAppUpdate()" style="background:#fff;color:#1a7a4a;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Update now →</button>
+  <button onclick="doAppUpdate()" style="background:#4ade80;color:#1a5c35;border:none;border-radius:14px;padding:18px 0;font-size:16px;font-weight:900;cursor:pointer;width:100%;max-width:320px;letter-spacing:.2px;font-family:inherit">Update now →</button>
+  <div style="font-size:11px;color:rgba(255,255,255,0.35);max-width:260px;line-height:1.6">Takes 2 seconds · Your data is safe<br>You must update to continue using RandWise</div>
 </div>
 <div id="app">
 
@@ -1203,14 +1210,23 @@ async function renderDash(){
       const isToday=i===todayIdx;
       const isFuture=i>todayIdx;
       const over=amt>dailyLimit&&amt>0;
-      const dotColor=isFuture?'#e8e6de':amt===0?'#e8e6de':over?'#a32d2d':'#1a7a4a';
-      const textColor=isToday?'var(--g)':'var(--mu)';
+      const hasSpend=amt>0&&!isFuture;
+      const dotBg=isFuture||amt===0?'#c8e6cf':over?'#c62828':'#2e7d32';
+      const dayColor=isToday?'#1a5c35':'#5a8a6a';
+      const dayWeight=isToday?'700':'600';
+      let label='';
+      if(hasSpend){
+        if(amt>=10000)label=Math.round(amt/1000)+'k';
+        else if(amt>=1000)label='R'+(amt/1000).toFixed(1)+'k';
+        else if(amt>=100)label='R'+Math.round(amt);
+        else label='R'+Math.round(amt);
+      }
+      const fSize=amt>=1000?'7px':amt>=100?'8px':'10px';
       return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div style="font-size:10px;color:${textColor};font-weight:${isToday?'700':'400'}">${d}</div>
-        <div style="width:28px;height:28px;border-radius:50%;background:${dotColor};display:flex;align-items:center;justify-content:center;${isToday?'border:2px solid var(--g)':''}">
-          ${amt>0&&!isFuture?`<div style="font-size:8px;color:#fff;font-weight:700">${amt>=1000?Math.round(amt/1000)+'k':Math.round(amt)}</div>`:''}
+        <div style="width:34px;height:34px;border-radius:50%;background:${dotBg};display:flex;align-items:center;justify-content:center;${isToday&&hasSpend?'box-shadow:0 0 0 2.5px #1a5c35,0 0 0 4px #c8e6cf':''}flex-shrink:0">
+          ${hasSpend?`<span style="font-size:${fSize};color:#fff;font-weight:700;line-height:1;text-align:center;white-space:nowrap">${label}</span>`:`<span style="font-size:11px;color:${isFuture?'#8fbc8f':'#fff'};font-weight:400">—</span>`}
         </div>
-        ${isToday&&amt>0?`<div style="font-size:9px;color:var(--mu)">R${Math.round(amt)}</div>`:'<div style="font-size:9px;color:transparent">.</div>'}
+        <div style="font-size:10px;color:${dayColor};font-weight:${dayWeight}">${d}</div>
       </div>`;
     }).join('');
   }
@@ -1932,7 +1948,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v14';
+const APP_VERSION = '2026-04-14-v15';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -1946,7 +1962,6 @@ const APP_VERSION = '2026-04-14-v14';
       if(banner){
         if(isInApp){
           banner.style.display='flex';
-          document.body.style.paddingTop='56px';
         } else {
           // Store flag — show banner once user gets to main app
           sessionStorage.setItem('rw_pending_update','1');
