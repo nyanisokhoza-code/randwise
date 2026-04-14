@@ -508,34 +508,43 @@ if('serviceWorker' in navigator){
 
           <!-- 2×2 STAT GRID -->
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0">
-            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">This week</div>
-              <div style="font-size:20px;font-weight:800;color:var(--g);line-height:1" id="stat-week-spent">R0</div>
-              <div style="font-size:10px;color:var(--mu);margin-top:3px" id="stat-week-label">Week 1 of 4</div>
+
+            <!-- THIS WEEK -->
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
+              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div>
+              <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
+              <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-week-label">Week 1 of 4 · R0/wk</div>
             </div>
-            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debit orders</div>
-              <div style="font-size:20px;font-weight:800;color:var(--t);line-height:1" id="stat-debits">R0</div>
-              <div style="font-size:10px;margin-top:3px" id="stat-debit-label" style="color:var(--mu)">this month</div>
+
+            <!-- DEBIT ORDERS -->
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
+              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debit orders</div>
+              <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-debits">R0</div>
+              <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-debit-label">this month</div>
             </div>
-            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px;cursor:pointer" onclick="switchTab('debt')">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt score</div>
+
+            <!-- DEBT SCORE -->
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
+              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div>
               <div style="display:flex;align-items:baseline;gap:3px">
-                <div style="font-size:20px;font-weight:800;line-height:1" id="debt-score-num">—</div>
-                <div style="font-size:11px;color:var(--mu)">/100</div>
+                <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
+                <div style="font-size:12px;color:#5a8a6a;font-weight:600">/100</div>
               </div>
-              <div style="height:3px;background:var(--bg2);border-radius:2px;margin:5px 0;overflow:hidden"><div id="debt-score-bar" style="height:100%;border-radius:2px;width:0%;transition:width .6s ease"></div></div>
-              <div style="font-size:10px;font-weight:600" id="debt-score-label">—</div>
+              <div style="height:3px;background:#c8e6cf;border-radius:2px;margin:6px 0;overflow:hidden"><div id="debt-score-bar" style="height:100%;border-radius:2px;width:0%;transition:width .6s ease"></div></div>
+              <div style="font-size:11px;font-weight:700;color:#2e7d32" id="debt-score-label">—</div>
             </div>
-            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px;cursor:pointer" onclick="switchTab('grow')" id="stat-goal-card">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Savings goal</div>
-              <div style="font-size:20px;font-weight:800;color:var(--g);line-height:1" id="stat-goal-amt">—</div>
-              <div style="font-size:10px;color:var(--mu);margin-top:3px" id="stat-goal-label">tap to add a goal</div>
+
+            <!-- SAVINGS GOAL -->
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('grow')" id="stat-goal-card">
+              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Savings goal</div>
+              <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-goal-amt">—</div>
+              <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-goal-label">tap to add a goal</div>
             </div>
+
           </div>
 
           <!-- DAILY SPEND DOTS -->
-          <div style="margin:10px 14px 0;background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:12px 14px">
+          <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:12px 14px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px">This week — daily spend</div>
               <div style="font-size:10px;color:var(--mu)" id="week-num-label">Week 1 of 4</div>
@@ -555,7 +564,7 @@ if('serviceWorker' in navigator){
               <div style="font-size:15px;font-weight:700;color:var(--t)">Recent transactions</div>
               <div style="font-size:12px;color:var(--g);font-weight:600">See all</div>
             </div>
-            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden" id="exp-list">
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;overflow:hidden" id="exp-list">
               <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>
             </div>
           </div>
@@ -1923,7 +1932,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v13';
+const APP_VERSION = '2026-04-14-v14';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
