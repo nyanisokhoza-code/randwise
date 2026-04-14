@@ -706,7 +706,7 @@ if('serviceWorker' in navigator){
     </div>
 
   </div>
-  <div class="tab-bar" id="main-tab-bar">
+  <div class="tab-bar" id="main-tab-bar" style="display:none">
     <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
     <button class="tab-btn" id="tb-debt" onclick="switchTab('debt')"><span class="tab-icon">💳</span><span class="tab-lbl">Debt</span></button>
     <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
@@ -888,13 +888,20 @@ async function sbPatch(p,b){await fetch(`${SB}/rest/v1/${p}`,{method:'PATCH',hea
 async function authPost(path,body){const r=await fetch(`${SB}/auth/v1/${path}`,{method:'POST',headers:{'apikey':AK,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
 function show(id){
   if(id==='main'){
-    // Show pending update banner if any
     if(sessionStorage.getItem('rw_pending_update')==='1'){
       sessionStorage.removeItem('rw_pending_update');
       const banner=document.getElementById('update-banner');
-      if(banner){banner.style.display='flex';}
+      if(banner)banner.style.display='flex';
     }
-  }document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});const el=document.getElementById(id);el.classList.add('active');}
+  }
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.style.display='flex';
+  // Tab bar only visible on main screen
+  const tabBar=document.getElementById('main-tab-bar');
+  if(tabBar) tabBar.style.display=id==='main'?'flex':'none';
+}
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
 // ── Onboarding ────────────────────────────────────────────────
@@ -1911,7 +1918,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v11';
+const APP_VERSION = '2026-04-14-v12';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
