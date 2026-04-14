@@ -612,9 +612,51 @@ if('serviceWorker' in navigator){
 
     <!-- DEBT TAB -->
     <div class="tab-pane" id="tp-debt">
-      <div style="padding:calc(var(--st) + 12px) 20px 100px;overflow-y:auto">
-        <div style="font-size:18px;font-weight:800;margin-bottom:4px">Your debts</div>
-        <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Track what you owe and build a payoff plan</div>
+      <div style="padding:calc(var(--st) + 12px) 16px 100px;overflow-y:auto;height:100%">
+        <div style="font-size:18px;font-weight:800;margin-bottom:2px">Your debts</div>
+        <div style="font-size:13px;color:var(--mu);margin-bottom:14px">Track what you owe and build a payoff plan</div>
+
+        <!-- DEBT FREEDOM SCORE CARD -->
+        <div id="debt-score-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px;display:none">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+            <div>
+              <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt freedom score</div>
+              <div style="display:flex;align-items:baseline;gap:4px">
+                <div style="font-size:32px;font-weight:900;color:#1a5c35;line-height:1" id="debt-tab-score">—</div>
+                <div style="font-size:14px;color:#5a8a6a;font-weight:600">/100</div>
+              </div>
+            </div>
+            <div id="debt-tab-badge" style="font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;background:#c8e6cf;color:#1a5c35">—</div>
+          </div>
+          <div style="height:6px;background:#c8e6cf;border-radius:4px;overflow:hidden;margin-bottom:8px">
+            <div id="debt-tab-bar" style="height:100%;border-radius:4px;background:#1a5c35;width:0%;transition:width .8s ease"></div>
+          </div>
+          <div style="font-size:12px;color:#5a8a6a" id="debt-tab-summary">—</div>
+        </div>
+
+        <!-- SNOWBALL STRATEGY CARD -->
+        <div id="snowball-card" style="background:#fff8e1;border:1px solid #fbbf24;border-radius:16px;padding:16px;margin-bottom:12px;display:none">
+          <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">⚡ Snowball payoff plan</div>
+          <div id="snowball-content"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #fde68a">
+            <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px">💡 How snowball works</div>
+            <div style="font-size:11px;color:#92400e;line-height:1.6">Pay minimums on all debts. Put every extra rand on the smallest debt first. When it's done, roll that payment onto the next one. Builds momentum and motivation.</div>
+          </div>
+        </div>
+
+        <!-- TOTAL DEBT SUMMARY -->
+        <div id="debt-total-bar" style="display:none;background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Total owed</div>
+            <div style="font-size:20px;font-weight:900;color:#c62828" id="debt-total-amt">R0</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Min/month</div>
+            <div style="font-size:20px;font-weight:900;color:#1a5c35" id="debt-total-min">R0</div>
+          </div>
+        </div>
+
+        <!-- DEBT LIST -->
         <div id="debt-list-pwa"><div style="text-align:center;padding:40px 0;color:var(--mu);font-size:13px">Loading...</div></div>
         <button onclick="openAddDebtPWA()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">+ Add a debt</button>
       </div>
@@ -1012,6 +1054,11 @@ async function doRegister(){
       throw new Error(msg||'Sign up failed');
     }
     const authId=auth.user?.id;
+    // Store token immediately after signup so user is logged in right away
+    if(auth.access_token){
+      localStorage.setItem('rw_token',auth.access_token);
+      if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
+    }
     // 2. Create profile
     const a=parseFloat(ob.income)||0;
     const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;
@@ -1021,8 +1068,8 @@ async function doRegister(){
     // Fire alert email to owner (non-blocking)
     sendOwnerAlert('new_user',{name:ob.name.trim(),email:ob.email.trim(),life_stage:ob.stage,income_amount:m,referred_by:ob.referralCode||null});
     // Celebration
-    document.getElementById('done-t').textContent=`You're all set, ${ob.name.trim().split(' ')[0]}! 🎉`;
-    document.getElementById('done-s').textContent=`Your account is ready. R${m.toLocaleString('en-ZA')} income set up.`;
+    document.getElementById('done-t').textContent=`Welcome, ${ob.name.trim().split(' ')[0]}! 🎉`;
+    document.getElementById('done-s').textContent=`Your account is ready. Check your email to verify your account — you'll need it to log in on a new device.`;
     document.getElementById('done-inc').textContent=`Income: R${m.toLocaleString('en-ZA')}/month`;
     document.getElementById('done-gls').textContent=`${ob.goals.length} goal${ob.goals.length!==1?'s':''} tracked`;
     show('done');
@@ -1474,14 +1521,130 @@ async function saveProfile(){
 async function loadDebtsPWA(){
   if(!user?.id)return;
   try{
-    const debts=await sbG(`debts?tester_id=eq.${user.id}&order=created_at.desc`);
+    const debts=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
     const el=document.getElementById('debt-list-pwa');
-    if(!debts?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">💳</div><div style="font-size:14px;font-weight:600;color:var(--t)">No debts added yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first debt to start tracking</div></div>';return;}
-    el.innerHTML=debts.map(d=>`<div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-      <div><div style="font-size:14px;font-weight:700">${d.name||d.category||'Debt'}</div><div style="font-size:12px;color:var(--mu);margin-top:2px">${d.category||''}</div></div>
-      <div style="text-align:right"><div style="font-size:15px;font-weight:800;color:var(--r)">R${Number(d.balance||0).toLocaleString('en-ZA')}</div><div style="font-size:11px;color:var(--mu)">min R${Number(d.min_payment||0).toLocaleString('en-ZA')}/mo</div></div>
-    </div>`).join('');
+    if(!debts?.length){
+      el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">💳</div><div style="font-size:14px;font-weight:600;color:var(--t)">No debts added yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first debt to start your payoff plan</div></div>';
+      document.getElementById('debt-score-card').style.display='none';
+      document.getElementById('snowball-card').style.display='none';
+      document.getElementById('debt-total-bar').style.display='none';
+      return;
+    }
+    // ── TOTALS ─────────────────────────────────────────────────
+    const totalOwed=debts.reduce((s,d)=>s+Number(d.balance||0),0);
+    const totalMin=debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+    const totalOrig=debts.reduce((s,d)=>s+Number(d.original_balance||d.balance||0),0);
+    // ── DEBT FREEDOM SCORE ─────────────────────────────────────
+    const inc=user?.income_amount||0;
+    const dti=inc>0?totalOwed/inc:0;
+    const progress=totalOrig>0?Math.max(0,(totalOrig-totalOwed)/totalOrig):0;
+    let score=100;
+    if(dti>12)score-=40;else if(dti>6)score-=25;else if(dti>3)score-=15;else if(dti>1)score-=8;
+    score+=Math.round(progress*30);
+    score=Math.max(5,Math.min(100,score));
+    const scoreEl=document.getElementById('debt-tab-score');
+    const scoreBar=document.getElementById('debt-tab-bar');
+    const scoreBadge=document.getElementById('debt-tab-badge');
+    const scoreSummary=document.getElementById('debt-tab-summary');
+    const scoreCard=document.getElementById('debt-score-card');
+    if(scoreEl)scoreEl.textContent=score;
+    if(scoreBar)scoreBar.style.width=score+'%';
+    if(scoreBadge){
+      if(score>=75){scoreBadge.textContent='🟢 Good standing';scoreBadge.style.background='#c8e6cf';scoreBadge.style.color='#1a5c35';}
+      else if(score>=50){scoreBadge.textContent='🟡 Improving';scoreBadge.style.background='#fff9c4';scoreBadge.style.color='#92400e';}
+      else{scoreBadge.textContent='🔴 Needs attention';scoreBadge.style.background='#ffcdd2';scoreBadge.style.color='#c62828';}
+    }
+    if(scoreSummary)scoreSummary.textContent=`R${Math.round(totalOwed).toLocaleString('en-ZA')} total across ${debts.length} debt${debts.length!==1?'s':''}. ${progress>0?Math.round(progress*100)+'% paid off overall.':'Start paying to improve your score.'}`;
+    if(scoreCard)scoreCard.style.display='block';
+    // ── TOTALS BAR ─────────────────────────────────────────────
+    const totalBar=document.getElementById('debt-total-bar');
+    const totalAmt=document.getElementById('debt-total-amt');
+    const totalMinEl=document.getElementById('debt-total-min');
+    if(totalBar)totalBar.style.display='flex';
+    if(totalAmt)totalAmt.textContent='R'+Math.round(totalOwed).toLocaleString('en-ZA');
+    if(totalMinEl)totalMinEl.textContent='R'+Math.round(totalMin).toLocaleString('en-ZA');
+    // ── SNOWBALL STRATEGY ──────────────────────────────────────
+    // Sort smallest balance first (snowball order)
+    const sorted=[...debts].sort((a,b)=>Number(a.balance||0)-Number(b.balance||0));
+    const snowballCard=document.getElementById('snowball-card');
+    const snowballContent=document.getElementById('snowball-content');
+    if(snowballCard&&snowballContent&&sorted.length>0){
+      snowballCard.style.display='block';
+      const extra=Math.max(0,(inc/4)-totalMin); // extra weekly money
+      let html='';
+      sorted.forEach((d,i)=>{
+        const bal=Number(d.balance||0);
+        const min=Number(d.min_payment||0)||Math.round(bal*0.05);
+        const rate=Number(d.interest_rate||0)/100/12;
+        // Months to pay off with minimum + extra on first debt
+        const payment=i===0?min+extra:min;
+        let months=0;
+        if(payment>0&&bal>0){
+          if(rate>0){
+            months=Math.ceil(-Math.log(1-(rate*bal/payment))/Math.log(1+rate));
+          } else {
+            months=Math.ceil(bal/payment);
+          }
+        }
+        months=Math.min(months,360);
+        const isFirst=i===0;
+        html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i<sorted.length-1?'border-bottom:1px solid #fde68a':''}">
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:6px">
+              ${isFirst?'<span style="background:#f59e0b;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">PAY FIRST</span>':'<span style="background:rgba(0,0,0,0.08);color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px">#'+(i+1)+'</span>'}
+              ${d.name||d.category||'Debt'}
+            </div>
+            <div style="font-size:11px;color:#b45309;margin-top:3px">R${Math.round(bal).toLocaleString('en-ZA')} · min R${Math.round(min).toLocaleString('en-ZA')}/mo${months>0?' · done in '+months+' month'+(months!==1?'s':''):''}${d.interest_rate>0?' · '+d.interest_rate+'% interest':''}</div>
+          </div>
+        </div>`;
+      });
+      snowballContent.innerHTML=html;
+    }
+    // ── DEBT LIST ──────────────────────────────────────────────
+    el.innerHTML=debts.map((d,i)=>{
+      const bal=Number(d.balance||0);
+      const orig=Number(d.original_balance||bal);
+      const pct=orig>0?Math.min(100,Math.round((orig-bal)/orig*100)):0;
+      const isFirst=i===0;
+      return`<div style="background:${isFirst?'#fff8e1':'var(--w)'};border-radius:14px;border:${isFirst?'1.5px solid #fbbf24':'1px solid #d1ead9'};padding:14px 16px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+              ${isFirst?'<span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">ATTACK FIRST</span>':''}
+              <div style="font-size:14px;font-weight:700">${d.name||d.category||'Debt'}</div>
+            </div>
+            <div style="font-size:11px;color:var(--mu)">${d.category||''}${d.interest_rate>0?' · '+d.interest_rate+'% p.a.':''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:16px;font-weight:900;color:#c62828">R${Math.round(bal).toLocaleString('en-ZA')}</div>
+            <div style="font-size:11px;color:var(--mu)">min R${Number(d.min_payment||0).toLocaleString('en-ZA')}/mo</div>
+          </div>
+        </div>
+        ${orig>bal?`<div style="height:4px;background:#e8f5ee;border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="height:100%;background:#1a5c35;border-radius:3px;width:${pct}%"></div></div><div style="font-size:10px;color:#5a8a6a">${pct}% paid off</div>`:''}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="deleteDebtPWA('${d.id}')" style="flex:1;padding:7px;background:#fee2e2;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">🗑 Remove</button>
+          <button onclick="openEditDebtPWA('${d.id}',${bal})" style="flex:1;padding:7px;background:#f0faf4;color:#1a5c35;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️ Update balance</button>
+        </div>
+      </div>`;
+    }).join('');
   }catch(e){document.getElementById('debt-list-pwa').innerHTML='<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">Could not load debts</div>';}
+}
+async function deleteDebtPWA(id){
+  if(!confirm('Remove this debt?'))return;
+  try{
+    await fetch(`${SB}/rest/v1/debts?id=eq.${id}`,{method:'DELETE',headers:{...H,'Prefer':'return=minimal'}});
+    loadDebtsPWA();showToast('Debt removed');
+  }catch(e){showToast('Could not remove. Try again.');}
+}
+async function openEditDebtPWA(id,currentBal){
+  const newBal=prompt(`Update balance (currently R${Math.round(currentBal).toLocaleString('en-ZA')}):`);
+  if(newBal===null)return;
+  const val=parseFloat(newBal);
+  if(isNaN(val)||val<0){showToast('Enter a valid amount');return;}
+  try{
+    await fetch(`${SB}/rest/v1/debts?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({balance:val})});
+    loadDebtsPWA();showToast('✅ Balance updated');
+  }catch(e){showToast('Could not update. Try again.');}
 }
 
 function openAddDebtPWA(){
@@ -2008,7 +2171,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v18';
+const APP_VERSION = '2026-04-14-v20';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
