@@ -219,7 +219,52 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').then(reg=>{
+      reg.addEventListener('updatefound',()=>{
+        const nw=reg.installing;
+        nw.addEventListener('statechange',()=>{
+          if(nw.state==='installed'&&navigator.serviceWorker.controller){
+            // New version ready — show banner automatically
+            const banner=document.getElementById('update-banner');
+            if(banner)banner.style.display='flex';
+          }
+        });
+      });
+    }).catch(()=>{});
+    // Listen for SW telling us to reload
+    navigator.serviceWorker.addEventListener('message',e=>{
+      if(e.data==='reload')window.location.reload();
+    });
+  });
+}
+</script>
 </head>
+<script>
+// ── SERVICE WORKER — always get latest version ────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/randwise/sw.js', {scope:'/randwise/'})
+    .then(reg => {
+      // Check for updates every 60 seconds while app is open
+      setInterval(() => reg.update(), 60000);
+      // When new SW is waiting, activate it immediately
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            newSW.postMessage({type:'SKIP_WAITING'});
+          }
+        });
+      });
+    }).catch(()=>{});
+  // When SW activates new version, reload all tabs
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
+</script>
 <body>
 <!-- ══ UPDATE BANNER ══════════════════════════════════════════ -->
 <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a7a4a;color:#fff;padding:12px 16px;display:none;align-items:center;justify-content:space-between;gap:12px;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3)">
@@ -884,9 +929,45 @@ document.getElementById('r-pass')&&document.getElementById('r-pass').addEventLis
 async function doRegister(){
   show('saving');
   try{
+    // 0. Check for duplicate email BEFORE creating auth account
+    const emailCheck=await fetch(`${SB}/rest/v1/beta_testers?select=id,name&email=eq.${encodeURIComponent(ob.email.trim().toLowerCase())}`,{headers:{'apikey':AK,'Authorization':'Bearer '+AK}});
+    const existing=await emailCheck.json();
+    if(existing?.length>0){
+      show('onboarding');
+      // Show friendly inline message — don't use alert()
+      const errEl=document.createElement('div');
+      errEl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+      errEl.innerHTML=`<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">👋</div>
+        <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px">You already have an account</div>
+        <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:20px">An account with <strong>${ob.email}</strong> already exists. Sign in instead — your data is safe.</div>
+        <button onclick="this.closest('[style*=fixed]').remove();show('login')" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Sign in →</button>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;background:#f5f5f0;color:#666;border:none;border-radius:12px;padding:12px;font-size:13px;cursor:pointer">Go back</button>
+      </div>`;
+      document.body.appendChild(errEl);
+      sendOwnerAlert('duplicate_attempt',{email:ob.email,name:ob.name});
+      return;
+    }
     // 1. Create Supabase Auth account
     const auth=await authPost('signup',{email:ob.email.trim().toLowerCase(),password:ob.password,options:{data:{name:ob.name.trim()}}});
-    if(auth.error)throw new Error(auth.error.message||'Sign up failed');
+    if(auth.error){
+      const msg=auth.error.message||'';
+      if(msg.toLowerCase().includes('already registered')||msg.toLowerCase().includes('already exists')||msg.toLowerCase().includes('user already')){
+        show('onboarding');
+        const errEl=document.createElement('div');
+        errEl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+        errEl.innerHTML=`<div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:320px;text-align:center">
+          <div style="font-size:36px;margin-bottom:12px">👋</div>
+          <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px">You already have an account</div>
+          <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:20px">An account with <strong>${ob.email}</strong> already exists. Sign in instead.</div>
+          <button onclick="this.closest('[style*=fixed]').remove();show('login')" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Sign in →</button>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;background:#f5f5f0;color:#666;border:none;border-radius:12px;padding:12px;font-size:13px;cursor:pointer">Go back</button>
+        </div>`;
+        document.body.appendChild(errEl);
+        return;
+      }
+      throw new Error(msg||'Sign up failed');
+    }
     const authId=auth.user?.id;
     // 2. Create profile
     const a=parseFloat(ob.income)||0;
@@ -946,6 +1027,8 @@ async function doLogin(){
 async function handleForgot(){
   const email=document.getElementById('l-email').value.trim();
   if(!email){showErr('l-err','Enter your email first, then tap Forgot your password?');return;}
+  const btn=document.querySelector('[onclick="handleForgot()"]');
+  if(btn){btn.textContent='Sending...';btn.disabled=true;}
   try{
     const res=await authPost('recover',{
       email:email.toLowerCase(),
@@ -953,9 +1036,20 @@ async function handleForgot(){
     });
     const el=document.getElementById('reset-sent');
     el.style.display='block';
-    el.textContent=`✅ Reset link sent to ${email}. Check your inbox and spam folder.`;
+    if(res.error){
+      el.style.background='#fdecea';el.style.color='#a32d2d';
+      el.innerHTML=`⚠️ No account found for <strong>${email}</strong>.<br><span style="font-size:12px">Did you sign up with a different email? Or <button onclick="show('splash')" style="background:none;border:none;color:#a32d2d;font-weight:700;cursor:pointer;text-decoration:underline;font-size:12px">create a new account</button>.</span>`;
+      sendOwnerAlert('reset_failed',{email,error:res.error.message||'Email not found'});
+    } else {
+      el.style.background='#e8f5ee';el.style.color='#1a7a4a';
+      el.innerHTML=`✅ Reset link sent to <strong>${email}</strong>.<br><span style="font-size:12px">Check your <strong>inbox AND spam/junk folder</strong>. Link expires in 1 hour. Come back here to sign in after resetting.</span>`;
+      sendOwnerAlert('reset_requested',{email});
+    }
   }catch(e){
     showErr('l-err','Could not send reset email. Please try again.');
+    sendOwnerAlert('reset_error',{email,error:e.message});
+  } finally {
+    if(btn){btn.textContent='Forgot your password?';btn.disabled=false;}
   }
 }
 function showErr(id,msg){const el=document.getElementById(id);el.style.display='block';el.textContent=msg;}
@@ -1616,11 +1710,20 @@ document.getElementById('splash')?.addEventListener('click', (e)=>{
 
 // ══ REPORT ISSUE ════════════════════════════════════════════
 async function sendOwnerAlert(type, data){
+  const msgs = {
+    new_user: `🌱 New user: ${data.name} (${data.email}) — ${data.life_stage} — R${Number(data.income_amount||0).toLocaleString('en-ZA')}/mo${data.referred_by?' — ref: '+data.referred_by:''}`,
+    upgrade: `💰 Upgrade: ${data.name} → ${data.tier} — R${data.amount}/mo`,
+    bug_report: `🐛 Bug from ${data.user_name||'unknown'}: ${data.error_message}`,
+    reset_requested: `🔑 Password reset requested: ${data.email}`,
+    reset_failed: `⚠️ Reset FAILED — email not found: ${data.email}. User may try to create duplicate account.`,
+    reset_error: `❌ Reset error for ${data.email}: ${data.error}`,
+    duplicate_attempt: `🔁 DUPLICATE ACCOUNT ATTEMPT — ${data.name} (${data.email}) tried to register again. They need help signing in or resetting password.`,
+  };
   try{
     await fetch(`${SB}/functions/v1/send-alert`,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':AK,'Authorization':'Bearer '+AK},
-      body:JSON.stringify({type, data})
+      body:JSON.stringify({type, data, summary: msgs[type]||`Alert: ${type}`})
     });
   }catch(e){console.warn('Alert send failed:',e);}
 }
@@ -1698,9 +1801,13 @@ window.addEventListener('error',async(e)=>{
       })
     });
   }catch{}
-  // After 3 errors, redirect to maintenance
-  if(_errCount>=3){
-    window.location.href='https://nyanisokhoza-code.github.io/randwise/maintenance.html';
+  // After 3 errors — show toast, alert owner, but NEVER redirect to maintenance
+  if(_errCount===3){
+    showToast('⚠️ Something went wrong. Pull down to refresh.');
+    sendOwnerAlert('bug_report',{
+      user_name:user?.name||'unknown',
+      error_message:`Repeated errors (${_errCount}x): ${e.message} @ ${e.filename}:${e.lineno}`
+    });
   }
 });
 
@@ -1772,7 +1879,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v3';
+const APP_VERSION = '2026-04-14-v5';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
