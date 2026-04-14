@@ -482,7 +482,6 @@ if('serviceWorker' in navigator){
               <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:3px" id="ds"></div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button onclick="refreshApp()" style="background:rgba(255,255,255,.12);border:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔄</button>
               <div class="avatar" id="av" onclick="ownerTap()" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.25)">U</div>
             </div>
           </div>
@@ -2009,7 +2008,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v17';
+const APP_VERSION = '2026-04-14-v18';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
