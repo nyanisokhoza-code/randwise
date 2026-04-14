@@ -97,6 +97,7 @@
   <div class="tab" onclick="showPage('referrals')">Referrals</div>
   <div class="tab" onclick="showPage('reserves')">Reserves</div>
   <div class="tab" onclick="showPage('alerts')">Alerts</div>
+  <div class="tab" onclick="showPage('system')">⚙️ System</div>
 </div>
 
 <!-- OVERVIEW -->
@@ -305,6 +306,46 @@
         <button onclick="testAlert('daily_summary')" style="background:#f0efe9;color:#5f5e5a;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test daily summary</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- SYSTEM PAGE -->
+<div class="page" id="page-system" style="display:none">
+  <div class="card">
+    <h3>⚙️ Pending system work</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:16px">Features that need backend code, API integration, or engineering before they work automatically. Visible to NDA signatories.</p>
+    <div id="pending-work-list"></div>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <input type="text" id="new-work-title" placeholder="Feature or system needed..." style="flex:1;padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2">
+      <select id="new-work-priority" style="padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:12px;background:#f7f6f2">
+        <option value="critical">🔴 Critical</option>
+        <option value="high">🟠 High</option>
+        <option value="medium" selected>🟡 Medium</option>
+        <option value="low">🟢 Low</option>
+      </select>
+      <button onclick="addPendingWork()" style="background:#1a7a4a;color:white;border:none;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🗄️ Database column audit</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px">Known column mismatches between app code and Supabase tables. Fixed items are documented for reference.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#f5f5f0"><th style="padding:8px 12px;text-align:left">Table</th><th style="padding:8px 12px;text-align:left">App sends</th><th style="padding:8px 12px;text-align:left">DB column</th><th style="padding:8px 12px;text-align:left">Status</th></tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f0efe9"><td style="padding:8px 12px;font-family:monospace">debts</td><td style="padding:8px 12px;font-family:monospace;color:#a32d2d">minimum_payment</td><td style="padding:8px 12px;font-family:monospace;color:#1a7a4a">min_payment</td><td style="padding:8px 12px"><span style="background:#eaf3de;color:#1a7a4a;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700">FIXED</span></td></tr>
+        <tr style="border-bottom:1px solid #f0efe9"><td style="padding:8px 12px;font-family:monospace">debts</td><td style="padding:8px 12px;font-family:monospace;color:#a32d2d">original_amount</td><td style="padding:8px 12px;font-family:monospace;color:#1a7a4a">original_balance</td><td style="padding:8px 12px"><span style="background:#eaf3de;color:#1a7a4a;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700">FIXED</span></td></tr>
+        <tr style="border-bottom:1px solid #f0efe9"><td style="padding:8px 12px;font-family:monospace">savings_goals</td><td style="padding:8px 12px;font-family:monospace;color:#a32d2d">target_amount</td><td style="padding:8px 12px;font-family:monospace;color:#1a7a4a">target</td><td style="padding:8px 12px"><span style="background:#eaf3de;color:#1a7a4a;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700">FIXED</span></td></tr>
+        <tr style="border-bottom:1px solid #f0efe9"><td style="padding:8px 12px;font-family:monospace">savings_goals</td><td style="padding:8px 12px;font-family:monospace;color:#a32d2d">current_amount</td><td style="padding:8px 12px;font-family:monospace;color:#1a7a4a">saved</td><td style="padding:8px 12px"><span style="background:#eaf3de;color:#1a7a4a;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700">FIXED</span></td></tr>
+        <tr style="border-bottom:1px solid #f0efe9"><td style="padding:8px 12px;font-family:monospace">expenses</td><td style="padding:8px 12px;font-family:monospace;color:#ba7517">date, source, bank</td><td style="padding:8px 12px;font-family:monospace;color:#ba7517">needs adding</td><td style="padding:8px 12px"><span style="background:#faeeda;color:#ba7517;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700">PENDING SQL</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>📋 Feature backlog</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px">Features planned for future builds. Tap to toggle status.</p>
+    <div id="backlog-list"></div>
   </div>
 </div>
 
@@ -699,6 +740,101 @@ async function runHealthCheck(){
 
 // Load bug reports + health when alerts tab clicked
 document.querySelector('[onclick="showPage(\'alerts\')"]')?.addEventListener('click',()=>{loadBugReports();runHealthCheck();});
+document.querySelector('[onclick="showPage(\'system\')"]')?.addEventListener('click',()=>{renderPendingWork();renderBacklog();});
+
+// ── PENDING SYSTEM WORK ───────────────────────────────────────
+const DEFAULT_PENDING = [
+  {id:1, title:'Account nickname matching in bank parser — auto-detect savings contributions by account name', priority:'high', done:false, date:'2026-04-14'},
+  {id:2, title:'Auto-contribution detection — bank parser reads transfers and updates savings goal progress automatically', priority:'high', done:false, date:'2026-04-14'},
+  {id:3, title:'PayFast ITN webhook — auto-upgrade user tier when payment confirmed server-side', priority:'critical', done:false, date:'2026-04-14'},
+  {id:4, title:'Daily health report email at 9am SAST — users, paid, MRR, bugs in last 24h', priority:'medium', done:false, date:'2026-04-14'},
+  {id:5, title:'Token refresh on background — silent re-auth without requiring sign-out', priority:'high', done:false, date:'2026-04-14'},
+  {id:6, title:'Push notifications (FCM) — expense reminders, trial expiry, milestone celebrations', priority:'medium', done:false, date:'2026-04-14'},
+  {id:7, title:'WhatsApp bot — log expenses by sending a WhatsApp message', priority:'high', done:false, date:'2026-04-14'},
+  {id:8, title:'Stokvel tracker — group savings, member contributions, payout schedule', priority:'medium', done:false, date:'2026-04-14'},
+];
+
+const DEFAULT_BACKLOG = [
+  {id:1, title:'Bank statement parser — switch back to Claude API (needs Anthropic credits)', priority:'high', done:false},
+  {id:2, title:'Email verification before APK launch', priority:'high', done:false},
+  {id:3, title:'Google Play Store — production APK build (R385)', priority:'high', done:false},
+  {id:4, title:'CIPC trading name registration (R175)', priority:'medium', done:false},
+  {id:5, title:'Trademark filing — Class 36 + 42 (R1,180)', priority:'medium', done:false},
+  {id:6, title:'PayFast go live — switch sandbox=false (awaiting verification email)', priority:'critical', done:false},
+  {id:7, title:'Electricity tracker (R10/mo add-on)', priority:'low', done:false},
+  {id:8, title:'Household/Family view (R15/mo)', priority:'low', done:false},
+  {id:9, title:'Bond readiness score', priority:'low', done:false},
+  {id:10, title:'i18n — Zulu, Sotho, Xhosa, Afrikaans', priority:'low', done:false},
+];
+
+function getPendingWork(){ try{return JSON.parse(localStorage.getItem('rw_pending_work'))||DEFAULT_PENDING;}catch{return DEFAULT_PENDING;} }
+function savePendingWork(items){ localStorage.setItem('rw_pending_work', JSON.stringify(items)); }
+function getBacklog(){ try{return JSON.parse(localStorage.getItem('rw_backlog'))||DEFAULT_BACKLOG;}catch{return DEFAULT_BACKLOG;} }
+function saveBacklog(items){ localStorage.setItem('rw_backlog', JSON.stringify(items)); }
+
+const PRIORITY_COLORS = {critical:'#fdecea|#a32d2d', high:'#fdf3e0|#ba7517', medium:'#fff8e1|#92400e', low:'#eaf3de|#1a7a4a'};
+function priorityBadge(p){ const [bg,col]=(PRIORITY_COLORS[p]||'#f0efe9|#5f5e5a').split('|'); return `<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${bg};color:${col};font-weight:700">${p.toUpperCase()}</span>`; }
+
+function renderPendingWork(){
+  const items = getPendingWork();
+  const el = document.getElementById('pending-work-list');
+  if(!el) return;
+  if(!items.length){ el.innerHTML='<div style="color:#888780;font-size:13px;padding:12px 0">No pending system work logged.</div>'; return; }
+  el.innerHTML = items.map(item=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0efe9;${item.done?'opacity:.5':''}">
+      <input type="checkbox" ${item.done?'checked':''} onchange="togglePendingWork(${item.id})" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:#2c2c2a;${item.done?'text-decoration:line-through':''}"> ${item.title}</div>
+        <div style="font-size:11px;color:#888780;margin-top:2px">${priorityBadge(item.priority)} · Logged ${item.date||'—'}</div>
+      </div>
+      <button onclick="deletePendingWork(${item.id})" style="background:none;border:none;color:#ccc;font-size:16px;cursor:pointer">×</button>
+    </div>`).join('');
+}
+
+function renderBacklog(){
+  const items = getBacklog();
+  const el = document.getElementById('backlog-list');
+  if(!el) return;
+  el.innerHTML = items.map(item=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f0efe9;${item.done?'opacity:.5':''}">
+      <input type="checkbox" ${item.done?'checked':''} onchange="toggleBacklog(${item.id})" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
+      <div style="flex:1;font-size:13px;font-weight:500;color:#2c2c2a;${item.done?'text-decoration:line-through':''}">${item.title}</div>
+      <div>${priorityBadge(item.priority)}</div>
+    </div>`).join('');
+}
+
+function addPendingWork(){
+  const title = document.getElementById('new-work-title')?.value?.trim();
+  const priority = document.getElementById('new-work-priority')?.value || 'medium';
+  if(!title){ alert('Enter a description'); return; }
+  const items = getPendingWork();
+  items.unshift({id: Date.now(), title, priority, done:false, date: new Date().toISOString().split('T')[0]});
+  savePendingWork(items);
+  document.getElementById('new-work-title').value = '';
+  renderPendingWork();
+}
+
+function togglePendingWork(id){
+  const items = getPendingWork();
+  const item = items.find(i=>i.id===id);
+  if(item) item.done = !item.done;
+  savePendingWork(items);
+  renderPendingWork();
+}
+
+function deletePendingWork(id){
+  const items = getPendingWork().filter(i=>i.id!==id);
+  savePendingWork(items);
+  renderPendingWork();
+}
+
+function toggleBacklog(id){
+  const items = getBacklog();
+  const item = items.find(i=>i.id===id);
+  if(item) item.done = !item.done;
+  saveBacklog(items);
+  renderBacklog();
+}
 
 loadData();
 runHealthCheck();

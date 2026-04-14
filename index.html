@@ -637,57 +637,53 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 <div class="sheet" id="add-goal-sheet" style="max-height:90vh;overflow-y:auto">
   <div class="sh-handle"></div>
   <div class="sh-title">Add a savings goal</div>
-
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">What are you saving for?</div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="goal-category-chips">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
     <button class="goal-chip act" onclick="selectGoalChip(this,'🏖️','Holiday')">🏖️ Holiday</button>
     <button class="goal-chip" onclick="selectGoalChip(this,'🚨','Emergency fund')">🚨 Emergency fund</button>
     <button class="goal-chip" onclick="selectGoalChip(this,'🚗','Car')">🚗 Car</button>
     <button class="goal-chip" onclick="selectGoalChip(this,'🏠','House deposit')">🏠 House deposit</button>
     <button class="goal-chip" onclick="selectGoalChip(this,'📚','Education')">📚 Education</button>
-    <button class="goal-chip" onclick="selectGoalChip(this,'🎁','Custom')">🎁 Custom</button>
+    <button class="goal-chip" onclick="selectGoalChip(this,'🎁','')">🎁 Custom</button>
   </div>
-
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Goal name</div>
   <input type="text" id="goal-name" class="auth-in" placeholder="e.g. Durban holiday Dec 2026" style="margin-bottom:14px">
-
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Target amount (R)</div>
   <input type="number" id="goal-target" class="auth-in" placeholder="e.g. 10000" style="margin-bottom:14px" oninput="calcGoalMonthly()">
-
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Target date — when do you need this money?</div>
   <input type="month" id="goal-date" class="auth-in" style="margin-bottom:14px" oninput="calcGoalMonthly()">
-
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Already saved (R)</div>
   <input type="number" id="goal-saved" class="auth-in" placeholder="e.g. 0" style="margin-bottom:14px" oninput="calcGoalMonthly()">
-
-  <!-- Auto calculator result -->
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Savings account name at your bank <span style="color:var(--mu);font-weight:400">(optional)</span></div>
+  <input type="text" id="goal-nickname" class="auth-in" placeholder="e.g. HOLIDAY2026 or Capitec 32-Day" style="margin-bottom:4px">
+  <div style="font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.6">💡 Name your savings account at your bank to match this goal. When you upload your statement, we'll auto-detect contributions made to this account.</div>
   <div id="goal-calc-result" style="display:none;background:var(--gl);border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #b5dfa8">
     <div style="font-size:12px;color:var(--gd);font-weight:600;margin-bottom:4px">💡 Your savings plan</div>
     <div style="font-size:15px;font-weight:800;color:var(--g)" id="goal-calc-amount">R0/mo</div>
     <div style="font-size:11px;color:var(--g);margin-top:3px" id="goal-calc-desc">to reach your goal</div>
   </div>
-
   <button id="goal-save-btn" onclick="saveGoalPWA()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save goal</button>
   <button onclick="closeAddGoalPWA()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
 </div>
-
 <!-- Contribute to goal sheet -->
 <div class="overlay" id="contrib-ov" onclick="closeContribSheet()"></div>
 <div class="sheet" id="contrib-sheet">
   <div class="sh-handle"></div>
   <div class="sh-title" id="contrib-title">Log a contribution</div>
   <input type="hidden" id="contrib-goal-id">
-  <div style="font-size:12px;color:var(--mu);margin-bottom:14px;line-height:1.6" id="contrib-desc">Tell us how much you saved this month towards this goal — whether you transferred it to your savings account or set it aside.</div>
+  <div style="font-size:12px;color:var(--mu);margin-bottom:14px;line-height:1.6" id="contrib-desc"></div>
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Amount contributed (R)</div>
   <input type="number" id="contrib-amount" class="auth-in" placeholder="e.g. 500" style="margin-bottom:8px">
   <div style="font-size:11px;color:var(--mu);margin-bottom:14px" id="contrib-suggestion"></div>
-  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Where did you save it? (optional)</div>
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Where did you save it? <span style="color:var(--mu);font-weight:400">(optional)</span></div>
   <select id="contrib-account" class="auth-in" style="background:var(--bg2);border-radius:12px;padding:12px 14px;margin-bottom:20px">
     <option value="">Select account</option>
     <option>Capitec 32-Day Notice</option>
     <option>Capitec Savings</option>
-    <option>FNB Savings</option>
+    <option>FNB Savings Pocket</option>
     <option>ABSA Savings</option>
+    <option>Standard Bank PureSave</option>
+    <option>Nedbank Savings</option>
     <option>Cash at home</option>
     <option>Stokvel contribution</option>
     <option>Other</option>
@@ -1103,37 +1099,26 @@ async function loadGoalsPWA(){
     const el=document.getElementById('goals-list-pwa');
     if(!goals?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">🌱</div><div style="font-size:14px;font-weight:600;color:var(--t)">No savings goals yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first goal to start growing</div></div>';return;}
     el.innerHTML=goals.map(g=>{
-      const savedAmt=Number(g.saved||0);
-      const targetAmt=Number(g.target||0);
+      const savedAmt=Number(g.saved||0),targetAmt=Number(g.target||0);
       const pct=targetAmt>0?Math.min(100,Math.round(savedAmt/targetAmt*100)):0;
       const barCol=pct>=100?'#1a7a4a':pct>=50?'#639922':'#1a7a4a';
-      // Monthly calculator
       let monthlyInfo='';
       if(g.target_date&&targetAmt>savedAmt){
-        const now=new Date();
-        const end=new Date(g.target_date);
-        const months=Math.max(1,Math.round((end-now)/(1000*60*60*24*30)));
+        const months=Math.max(1,Math.round((new Date(g.target_date)-new Date())/(1000*60*60*24*30)));
         const needed=Math.ceil((targetAmt-savedAmt)/months);
-        monthlyInfo=`<div style="font-size:11px;color:var(--g);margin-top:4px">💡 Save R${needed.toLocaleString('en-ZA')}/mo to reach goal by ${end.toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`;
+        monthlyInfo=`<div style="font-size:11px;color:var(--g);margin-top:4px">💡 Save R${needed.toLocaleString('en-ZA')}/mo to reach goal by ${new Date(g.target_date).toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`;
       }
+      const nickname=g.account_nickname?`<div style="font-size:11px;color:var(--mu);margin-top:2px">🏦 ${g.account_nickname}</div>`:'';
       return `<div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px 16px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:700">${g.emoji||'🎯'} ${g.name}</div>
-            ${g.target_date?`<div style="font-size:11px;color:var(--mu);margin-top:1px">Target: ${new Date(g.target_date).toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`:''}
-          </div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:700">${g.emoji||'🎯'} ${g.name}</div>${g.target_date?`<div style="font-size:11px;color:var(--mu);margin-top:1px">Target: ${new Date(g.target_date).toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`:''} ${nickname}</div>
           <div style="font-size:14px;font-weight:800;color:${pct>=100?'var(--g)':'var(--t)'};margin-left:8px">${pct}%</div>
         </div>
-        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px">
-          <div style="background:${barCol};height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:6px">
-          <span>R${savedAmt.toLocaleString('en-ZA')} saved</span>
-          <span>R${targetAmt.toLocaleString('en-ZA')} goal</span>
-        </div>
+        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div style="background:${barCol};height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:6px"><span>R${savedAmt.toLocaleString('en-ZA')} saved</span><span>R${targetAmt.toLocaleString('en-ZA')} goal</span></div>
         ${monthlyInfo}
         <div style="display:flex;gap:8px;margin-top:10px">
-          <button onclick="openContribSheet('${g.id}','${(g.name||'').replace(/'/g,"\\'")}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;padding:10px;background:var(--gl);color:var(--gd);border:1px solid #b5dfa8;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">+ Log contribution</button>
+          <button onclick="openContribSheet('${g.id}','${(g.name||'').replace(/'/g,"\'")}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;padding:10px;background:var(--gl);color:var(--gd);border:1px solid #b5dfa8;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">+ Log contribution</button>
           <button onclick="deleteGoalPWA('${g.id}')" style="padding:10px 14px;background:var(--rl);color:var(--r);border:none;border-radius:10px;font-size:12px;cursor:pointer">🗑</button>
         </div>
       </div>`;
@@ -1142,42 +1127,30 @@ async function loadGoalsPWA(){
 }
 
 let selectedGoalEmoji='🏖️';
-
 function selectGoalChip(el,emoji,name){
   document.querySelectorAll('.goal-chip').forEach(c=>c.classList.remove('act'));
-  el.classList.add('act');
-  selectedGoalEmoji=emoji;
+  el.classList.add('act'); selectedGoalEmoji=emoji;
   const nameEl=document.getElementById('goal-name');
-  if(nameEl&&!nameEl.value)nameEl.value=name==='Custom'?'':name;
+  if(nameEl&&!nameEl.value)nameEl.value=name;
   calcGoalMonthly();
 }
-
 function calcGoalMonthly(){
   const target=parseFloat(document.getElementById('goal-target')?.value)||0;
   const saved=parseFloat(document.getElementById('goal-saved')?.value)||0;
   const dateVal=document.getElementById('goal-date')?.value;
   const resultEl=document.getElementById('goal-calc-result');
-  const amtEl=document.getElementById('goal-calc-amount');
-  const descEl=document.getElementById('goal-calc-desc');
   if(!resultEl)return;
   if(!target||!dateVal){resultEl.style.display='none';return;}
-  const end=new Date(dateVal+'-01');
-  const now=new Date();
-  const months=Math.max(1,Math.round((end-now)/(1000*60*60*24*30)));
+  const months=Math.max(1,Math.round((new Date(dateVal+'-01')-new Date())/(1000*60*60*24*30)));
   const needed=Math.ceil(Math.max(0,target-saved)/months);
   resultEl.style.display='block';
-  amtEl.textContent=`R${needed.toLocaleString('en-ZA')}/month`;
-  descEl.textContent=`for ${months} month${months!==1?'s':''} to reach R${target.toLocaleString('en-ZA')} by ${end.toLocaleDateString('en-ZA',{month:'long',year:'numeric'})}`;
+  document.getElementById('goal-calc-amount').textContent=`R${needed.toLocaleString('en-ZA')}/month`;
+  document.getElementById('goal-calc-desc').textContent=`for ${months} month${months!==1?'s':''} — reach R${target.toLocaleString('en-ZA')} by ${new Date(dateVal+'-01').toLocaleDateString('en-ZA',{month:'long',year:'numeric'})}`;
 }
-
 function openAddGoalPWA(){
-  // Reset form
-  document.getElementById('goal-name').value='';
-  document.getElementById('goal-target').value='';
-  document.getElementById('goal-saved').value='';
-  document.getElementById('goal-date').value='';
-  document.getElementById('goal-calc-result').style.display='none';
-  document.querySelectorAll('.goal-chip').forEach((c,i)=>{c.classList.toggle('act',i===0);});
+  ['goal-name','goal-target','goal-saved','goal-date','goal-nickname'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const r=document.getElementById('goal-calc-result');if(r)r.style.display='none';
+  document.querySelectorAll('.goal-chip').forEach((c,i)=>c.classList.toggle('act',i===0));
   selectedGoalEmoji='🏖️';
   document.getElementById('add-goal-sheet').classList.add('open');
   document.getElementById('add-goal-ov').classList.add('open');
@@ -1186,47 +1159,34 @@ function closeAddGoalPWA(){
   document.getElementById('add-goal-sheet').classList.remove('open');
   document.getElementById('add-goal-ov').classList.remove('open');
 }
-
 async function saveGoalPWA(){
   const name=document.getElementById('goal-name').value.trim();
   const target=parseFloat(document.getElementById('goal-target').value)||0;
   const saved=parseFloat(document.getElementById('goal-saved').value)||0;
-  const dateVal=document.getElementById('goal-date').value;
+  const dateVal=document.getElementById('goal-date')?.value||null;
+  const nickname=document.getElementById('goal-nickname')?.value?.trim()||null;
   if(!name||!target){showToast('Enter goal name and target amount');return;}
   const btn=document.getElementById('goal-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
-  // Calculate monthly contribution
   let monthly=0;
   if(dateVal){
-    const end=new Date(dateVal+'-01');
-    const months=Math.max(1,Math.round((end-new Date())/(1000*60*60*24*30)));
+    const months=Math.max(1,Math.round((new Date(dateVal+'-01')-new Date())/(1000*60*60*24*30)));
     monthly=Math.ceil(Math.max(0,target-saved)/months);
   }
   try{
-    await sbP('savings_goals',{
-      tester_id:user.id,
-      name,
-      target,
-      saved,
-      emoji:selectedGoalEmoji,
-      target_date:dateVal||null,
-      monthly_contribution:monthly
-    });
-    closeAddGoalPWA();
-    loadGoalsPWA();
-    showToast('✅ Goal added — '+( monthly?`save R${monthly.toLocaleString('en-ZA')}/mo to reach it`:'keep saving!'));
+    await sbP('savings_goals',{tester_id:user.id,name,target,saved,emoji:selectedGoalEmoji||'🎯',target_date:dateVal,monthly_contribution:monthly,account_nickname:nickname});
+    closeAddGoalPWA();loadGoalsPWA();
+    showToast('✅ Goal saved'+(monthly?` — save R${monthly.toLocaleString('en-ZA')}/mo`:''));
   }catch(e){showToast('Could not save. Try again.');}
   btn.disabled=false;btn.textContent='Save goal';
 }
-
-// ── Contribution ──────────────────────────────────────────────
 function openContribSheet(id,name,target,saved,monthly){
   document.getElementById('contrib-goal-id').value=id;
   document.getElementById('contrib-title').textContent=`Log contribution — ${name}`;
   document.getElementById('contrib-amount').value='';
   const remaining=Math.max(0,target-saved);
-  document.getElementById('contrib-desc').textContent=`You've saved R${saved.toLocaleString('en-ZA')} of R${target.toLocaleString('en-ZA')}. Log how much you saved towards this goal — a bank transfer, cash set aside, anything counts.`;
-  document.getElementById('contrib-suggestion').textContent=monthly?`💡 Your plan suggests R${monthly.toLocaleString('en-ZA')}/mo. R${remaining.toLocaleString('en-ZA')} still to go.`:`R${remaining.toLocaleString('en-ZA')} remaining to reach your goal.`;
+  document.getElementById('contrib-desc').textContent=`You have saved R${Number(saved).toLocaleString('en-ZA')} of R${Number(target).toLocaleString('en-ZA')}. Log how much you saved — a bank transfer, cash set aside, anything counts.`;
+  document.getElementById('contrib-suggestion').textContent=monthly?`💡 Your plan: R${Number(monthly).toLocaleString('en-ZA')}/mo. R${remaining.toLocaleString('en-ZA')} still to go.`:`R${remaining.toLocaleString('en-ZA')} remaining to reach your goal.`;
   document.getElementById('contrib-sheet').classList.add('open');
   document.getElementById('contrib-ov').classList.add('open');
 }
@@ -1234,41 +1194,32 @@ function closeContribSheet(){
   document.getElementById('contrib-sheet').classList.remove('open');
   document.getElementById('contrib-ov').classList.remove('open');
 }
-
 async function saveContribution(){
   const id=document.getElementById('contrib-goal-id').value;
   const amount=parseFloat(document.getElementById('contrib-amount').value)||0;
   if(!amount||amount<=0){showToast('Enter an amount');return;}
   try{
-    // Get current saved amount
     const goals=await sbG(`savings_goals?id=eq.${id}&limit=1`);
     const current=Number(goals?.[0]?.saved||0);
     const newSaved=current+amount;
-    await fetch(`${SB}/rest/v1/savings_goals?id=eq.${id}`,{
-      method:'PATCH',
-      headers:{...getH(),'Prefer':'return=minimal'},
-      body:JSON.stringify({saved:newSaved})
-    });
-    closeContribSheet();
-    loadGoalsPWA();
+    await fetch(`${SB}/rest/v1/savings_goals?id=eq.${id}`,{method:'PATCH',headers:{...getH(),'Prefer':'return=minimal'},body:JSON.stringify({saved:newSaved})});
+    closeContribSheet();loadGoalsPWA();
     const target=Number(goals?.[0]?.target||0);
     const pct=target>0?Math.round(newSaved/target*100):0;
     showToast(`✅ R${amount.toLocaleString('en-ZA')} logged — ${pct}% reached!`);
-    // Celebration at milestones
-    if(pct>=100)setTimeout(()=>showToast('🎉 Goal complete! You did it!'),1000);
-    else if(pct>=75)setTimeout(()=>showToast('🔥 75% there — almost!'),1000);
-    else if(pct>=50)setTimeout(()=>showToast('⭐ Halfway there — keep going!'),1000);
+    if(pct>=100)setTimeout(()=>showToast('🎉 Goal complete! You did it!'),1200);
+    else if(pct>=75)setTimeout(()=>showToast('🔥 75% there — almost!'),1200);
+    else if(pct>=50)setTimeout(()=>showToast('⭐ Halfway there — keep going!'),1200);
   }catch(e){showToast('Could not save contribution. Try again.');}
 }
-
 async function deleteGoalPWA(id){
-  if(!confirm('Delete this savings goal? This cannot be undone.'))return;
+  if(!confirm('Delete this savings goal?'))return;
   try{
     await fetch(`${SB}/rest/v1/savings_goals?id=eq.${id}`,{method:'DELETE',headers:getH()});
-    loadGoalsPWA();
-    showToast('Goal deleted');
+    loadGoalsPWA();showToast('Goal deleted');
   }catch{showToast('⚠️ Could not delete goal');}
 }
+
 
 // ── Utils ─────────────────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
@@ -1601,7 +1552,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-13-v12';
+const APP_VERSION = '2026-04-13-v13';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
