@@ -520,10 +520,11 @@ if('serviceWorker' in navigator){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0">
 
             <!-- THIS WEEK -->
-            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="openWeeklyPlanner()">
               <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div>
               <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-week-label">Week 1 of 4 · R0/wk</div>
+              <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to see plan →</div>
             </div>
 
             <!-- DEBIT ORDERS -->
@@ -604,6 +605,15 @@ if('serviceWorker' in navigator){
           <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px">🤝 Earn with referrals</div>
           <div style="font-size:12px;color:var(--g);line-height:1.6">Earn R10 when a friend goes Pro + R5/month for 6 months. Paid via Capitec Pay.</div>
           <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share RandWise</button>
+        </div>
+        <!-- EXPORT SECTION -->
+        <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:4px">📥 Export my data</div>
+          <div style="font-size:12px;color:#5a8a6a;line-height:1.6;margin-bottom:12px">Download your expenses as CSV or a PDF summary report.</div>
+          <div style="display:flex;gap:8px">
+            <button onclick="exportCSV()" style="flex:1;padding:11px;background:#1a5c35;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📊 Export CSV</button>
+            <button onclick="exportPDF()" style="flex:1;padding:11px;background:#f0faf4;color:#1a5c35;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
+          </div>
         </div>
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Sign out</button>
       </div>
@@ -874,6 +884,66 @@ if('serviceWorker' in navigator){
   <button onclick="closeContribSheet()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
 </div>
 <div class="overlay" id="ov" onclick="closeSheet()"></div>
+
+<!-- ══ WEEKLY PLANNER ════════════════════════════════════════ -->
+<div id="weekly-planner" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <!-- Header -->
+  <div style="background:#1a5c35;padding:calc(env(safe-area-inset-top,16px) + 16px) 20px 20px;position:sticky;top:0;z-index:10">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <button onclick="closeWeeklyPlanner()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+      <div style="font-size:15px;font-weight:700;color:#fff" id="wp-title">Weekly Budget</div>
+      <div style="width:36px"></div>
+    </div>
+    <!-- Week selector -->
+    <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px" id="wp-week-tabs"></div>
+  </div>
+
+  <div style="padding:16px">
+    <!-- Left this week big number -->
+    <div style="text-align:center;padding:20px 0 16px">
+      <div style="font-size:12px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Left this week</div>
+      <div style="font-size:48px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-2px" id="wp-left">R0</div>
+      <div style="font-size:13px;color:#5a8a6a;margin-top:6px" id="wp-of-total">of R0 weekly budget</div>
+      <div style="height:6px;background:#c8e6cf;border-radius:4px;overflow:hidden;margin:12px 24px 0">
+        <div id="wp-progress-bar" style="height:100%;background:#1a5c35;border-radius:4px;transition:width .6s ease;width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Daily spend this week -->
+    <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">This week — daily spend</div>
+      <div style="display:flex;justify-content:space-between" id="wp-daily-dots"></div>
+    </div>
+
+    <!-- Spent this week breakdown -->
+    <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Spent this week</div>
+        <div style="font-size:16px;font-weight:900;color:#c62828" id="wp-spent">R0</div>
+      </div>
+      <div id="wp-categories"></div>
+    </div>
+
+    <!-- Daily budget left -->
+    <div style="background:#1a5c35;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Daily budget left</div>
+      <div style="font-size:32px;font-weight:900;color:#4ade80;line-height:1" id="wp-daily-left">R0</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px" id="wp-days-remaining">for today</div>
+    </div>
+
+    <!-- Smart rollover -->
+    <div id="wp-rollover" style="display:none;background:#fff8e1;border:1px solid #fbbf24;border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">💡 Smart rollover</div>
+      <div style="font-size:12px;color:#92400e;line-height:1.6" id="wp-rollover-text"></div>
+    </div>
+
+    <!-- Recent transactions this week -->
+    <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px">
+      <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Transactions this week</div>
+      <div id="wp-transactions"></div>
+    </div>
+  </div>
+</div>
 <div class="sheet" id="sheet">
   <div class="sh-handle"></div>
   <div class="sh-title">Log an expense</div>
@@ -1812,6 +1882,204 @@ function shareApp(){
 }
 function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
 
+// ── Weekly Planner ─────────────────────────────────────────────
+function openWeeklyPlanner(){
+  document.getElementById('weekly-planner').style.display='block';
+  document.body.style.overflow='hidden';
+  renderWeeklyPlanner();
+}
+function closeWeeklyPlanner(){
+  document.getElementById('weekly-planner').style.display='none';
+  document.body.style.overflow='';
+}
+function renderWeeklyPlanner(){
+  if(!user)return;
+  const inc=Number(user.income_amount||0);
+  const now=new Date();
+  const dow=now.getDay(); // 0=Sun
+  const mon=(dow+6)%7; // days since Monday
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-mon);weekStart.setHours(0,0,0,0);
+  const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+7);
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const wb=Math.round(inc/4);
+  const daysLeft=7-mon;
+  // Week tabs
+  const weekOfMonth=Math.ceil(now.getDate()/7);
+  const tabsEl=document.getElementById('wp-week-tabs');
+  if(tabsEl){
+    tabsEl.innerHTML=[1,2,3,4].map(w=>`<div onclick="selectWeek(${w})" style="flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:${w===weekOfMonth?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)'};color:#fff;white-space:nowrap">Week ${w}${w===weekOfMonth?' — now':''}</div>`).join('');
+  }
+  // Title
+  const monthName=now.toLocaleString('en-ZA',{month:'long',year:'numeric'});
+  const el=document.getElementById('wp-title');
+  if(el)el.textContent=`${monthName} — Week ${weekOfMonth}`;
+  // Filter this week's expenses
+  const weekExp=expenses.filter(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    return d>=weekStart&&d<weekEnd;
+  });
+  const spent=weekExp.reduce((s,e)=>s+Number(e.amount||0),0);
+  const left=Math.max(0,wb-spent);
+  const pct=wb>0?Math.min(100,Math.round(spent/wb*100)):0;
+  // Big number
+  const wpLeft=document.getElementById('wp-left');
+  const wpOf=document.getElementById('wp-of-total');
+  const wpBar=document.getElementById('wp-progress-bar');
+  const wpSpent=document.getElementById('wp-spent');
+  if(wpLeft)wpLeft.textContent='R'+left.toLocaleString('en-ZA');
+  if(wpOf)wpOf.textContent=`of R${wb.toLocaleString('en-ZA')} weekly budget`;
+  if(wpBar){wpBar.style.width=pct+'%';wpBar.style.background=pct>90?'#c62828':pct>70?'#f59e0b':'#1a5c35';}
+  if(wpSpent)wpSpent.textContent='R'+Math.round(spent).toLocaleString('en-ZA');
+  // Daily left
+  const dailyLeft=daysLeft>0?Math.round(left/daysLeft):0;
+  const wpDailyLeft=document.getElementById('wp-daily-left');
+  const wpDaysRem=document.getElementById('wp-days-remaining');
+  if(wpDailyLeft)wpDailyLeft.textContent='R'+dailyLeft.toLocaleString('en-ZA');
+  if(wpDaysRem)wpDaysRem.textContent=daysLeft<=1?'for today':`for each of the next ${daysLeft} days`;
+  // Daily dots
+  const DAYS=['M','T','W','T','F','Sa','Su'];
+  const dailySpends=[0,0,0,0,0,0,0];
+  weekExp.forEach(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    const di=(d.getDay()+6)%7;
+    if(di>=0&&di<7)dailySpends[di]+=Number(e.amount||0);
+  });
+  const todayIdx=mon;
+  const dailyLimit=wb/7;
+  const dotsEl=document.getElementById('wp-daily-dots');
+  if(dotsEl){
+    dotsEl.innerHTML=DAYS.map((d,i)=>{
+      const amt=dailySpends[i];
+      const isFuture=i>todayIdx;
+      const over=amt>dailyLimit&&amt>0;
+      const hasSpend=amt>0&&!isFuture;
+      const dotBg=isFuture||amt===0?'#c8e6cf':over?'#c62828':'#2e7d32';
+      let label=hasSpend?(amt>=1000?'R'+(amt/1000).toFixed(1)+'k':'R'+Math.round(amt)):'';
+      const fSize=amt>=1000?'7px':amt>=100?'8px':'10px';
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:36px;height:36px;border-radius:50%;background:${dotBg};display:flex;align-items:center;justify-content:center">
+          ${hasSpend?`<span style="font-size:${fSize};color:#fff;font-weight:700">${label}</span>`:`<span style="font-size:11px;color:${isFuture?'#8fbc8f':'#fff'}">—</span>`}
+        </div>
+        <div style="font-size:10px;color:#5a8a6a;font-weight:600">${d}</div>
+      </div>`;
+    }).join('');
+  }
+  // Category breakdown
+  const cats={};
+  weekExp.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
+  const catEl=document.getElementById('wp-categories');
+  if(catEl){
+    if(Object.keys(cats).length===0){
+      catEl.innerHTML='<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">No expenses logged this week yet</div>';
+    } else {
+      catEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,a])=>{
+        const pct2=spent>0?Math.round(a/spent*100):0;
+        return`<div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <div style="font-size:12px;font-weight:600;color:#1a5c35">${c}</div>
+            <div style="font-size:12px;font-weight:700;color:#c62828">R${Math.round(a).toLocaleString('en-ZA')}</div>
+          </div>
+          <div style="height:4px;background:#c8e6cf;border-radius:3px;overflow:hidden">
+            <div style="height:100%;background:#1a5c35;width:${pct2}%;border-radius:3px"></div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+  // Rollover
+  const rollEl=document.getElementById('wp-rollover');
+  const rollText=document.getElementById('wp-rollover-text');
+  if(rollEl&&rollText&&left>200&&daysLeft<=3){
+    rollEl.style.display='block';
+    rollText.textContent=`You have R${Math.round(left).toLocaleString('en-ZA')} left this week. Save R${Math.round(left/2).toLocaleString('en-ZA')} and roll it into next week's budget for a head start.`;
+  } else if(rollEl){
+    rollEl.style.display='none';
+  }
+  // Transactions this week
+  const txEl=document.getElementById('wp-transactions');
+  if(txEl){
+    if(!weekExp.length){
+      txEl.innerHTML='<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">No transactions this week</div>';
+    } else {
+      txEl.innerHTML=weekExp.sort((a,b)=>new Date(b.logged_at||b.created_at)-new Date(a.logged_at||a.created_at)).map(e=>{
+        const d=new Date(e.logged_at||e.created_at);
+        const day=d.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'});
+        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e8f5ee">
+          <div>
+            <div style="font-size:13px;font-weight:600">${e.category||'Other'}</div>
+            <div style="font-size:11px;color:#5a8a6a">${day}${e.note?' · '+e.note:''}</div>
+          </div>
+          <div style="font-size:14px;font-weight:800;color:#c62828">-R${Number(e.amount||0).toLocaleString('en-ZA')}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+function selectWeek(w){
+  // Show toast for past weeks (we can extend this later)
+  if(w!==Math.ceil(new Date().getDate()/7)){
+    showToast('Historical week view coming soon');return;
+  }
+  renderWeeklyPlanner();
+}
+
+function exportCSV(){
+  if(!expenses?.length){showToast('No expenses to export yet');return;}
+  const rows=[['Date','Category','Amount','Note','Source']];
+  expenses.forEach(e=>{
+    const date=e.logged_at||e.created_at||'';
+    rows.push([
+      date?new Date(date).toLocaleDateString('en-ZA'):'',
+      e.category||'',
+      Number(e.amount||0).toFixed(2),
+      (e.note||'').replace(/,/g,' '),
+      e.source||'manual'
+    ]);
+  });
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const month=new Date().toLocaleString('en-ZA',{month:'long',year:'numeric'});
+  a.download=`RandWise_Expenses_${month.replace(' ','_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ CSV downloaded');
+  sendOwnerAlert('export',{name:user?.name||'Unknown',type:'CSV',count:expenses.length});
+}
+
+function exportPDF(){
+  if(!expenses?.length){showToast('No expenses to export yet');return;}
+  const month=new Date().toLocaleString('en-ZA',{month:'long',year:'numeric'});
+  const total=expenses.reduce((s,e)=>s+Number(e.amount||0),0);
+  // Group by category
+  const cats={};
+  expenses.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
+  const catRows=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`<tr><td style="padding:6px 8px;border-bottom:1px solid #e8f5ee">${c}</td><td style="padding:6px 8px;border-bottom:1px solid #e8f5ee;text-align:right;font-weight:600">R${a.toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr>`).join('');
+  const expRows=expenses.slice(0,50).map(e=>{
+    const date=e.logged_at||e.created_at||'';
+    return`<tr><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px">${date?new Date(date).toLocaleDateString('en-ZA'):''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px">${e.category||''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#333">${e.note||''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px;text-align:right;font-weight:600;color:#c62828">R${Number(e.amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RandWise Report — ${month}</title><style>body{font-family:sans-serif;color:#333;padding:32px;max-width:700px;margin:0 auto}h1{color:#1a5c35;margin-bottom:4px}table{width:100%;border-collapse:collapse}th{background:#1a5c35;color:#fff;padding:8px;text-align:left;font-size:13px}.total{font-size:20px;font-weight:900;color:#1a5c35}.sub{font-size:13px;color:#5a8a6a;margin-bottom:24px}.section{margin-bottom:28px}.section h3{color:#1a5c35;border-bottom:2px solid #e8f5ee;padding-bottom:6px;margin-bottom:12px}.footer{margin-top:32px;font-size:11px;color:#999;text-align:center;border-top:1px solid #e8f5ee;padding-top:12px}</style></head><body>
+  <h1>🌱 RandWise</h1>
+  <div class="sub">Expense Report — ${month} · ${user?.name||''}</div>
+  <div class="section"><h3>Summary</h3><table><tr><td style="padding:8px 0;font-size:14px">Total expenses</td><td style="text-align:right" class="total">R${total.toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr><tr><td style="padding:8px 0;font-size:14px">Transactions</td><td style="text-align:right;font-size:18px;font-weight:700">${expenses.length}</td></tr><tr><td style="padding:8px 0;font-size:14px">Monthly income</td><td style="text-align:right;font-size:18px;font-weight:700;color:#1a5c35">R${Number(user?.income_amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr></table></div>
+  <div class="section"><h3>By category</h3><table><tr><th>Category</th><th style="text-align:right">Total</th></tr>${catRows}</table></div>
+  <div class="section"><h3>Transactions${expenses.length>50?' (latest 50)':''}</h3><table><tr><th>Date</th><th>Category</th><th>Note</th><th style="text-align:right">Amount</th></tr>${expRows}</table></div>
+  <div class="footer">Generated by RandWise · ${new Date().toLocaleDateString('en-ZA')} · Your money, your rules. 🇿🇦</div>
+  </body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`RandWise_Report_${month.replace(' ','_')}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ PDF report downloaded — open in browser then print/save as PDF');
+  sendOwnerAlert('export',{name:user?.name||'Unknown',type:'PDF',count:expenses.length});
+}
+
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
   await refreshTokenIfNeeded();
@@ -2217,7 +2485,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v22';
+const APP_VERSION = '2026-04-14-v24';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
