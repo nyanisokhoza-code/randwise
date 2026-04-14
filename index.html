@@ -2009,7 +2009,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v16';
+const APP_VERSION = '2026-04-14-v17';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -2122,17 +2122,38 @@ function highlightTierBtn(tier){
   <div class="intro-logo">🌱</div>
   <div class="intro-tagline">Your money,<br><span>your rules.</span></div>
   <div class="intro-sub">The personal finance app built for real South African life — not American, not European. <strong style="color:#fff">Ours.</strong></div>
-  <div class="intro-tier" id="intro-tier-badge">
-    <span class="intro-tier-badge free" id="intro-badge-pill">FREE TRIAL</span>
-    <span class="intro-tier-name" id="intro-tier-name">14 days of full Pro access — free</span>
-  </div>
-  <div class="intro-perks" id="intro-perks">
-    <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
-    <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy</span></div>
-    <div class="intro-perk"><span class="intro-perk-ico">🌱</span><span>Savings goals tracker</span></div>
-    <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement parser</span><span class="intro-perk-lock">PRO</span></div>
-    <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges</span><span class="intro-perk-lock">PRO</span></div>
-    <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings</span></div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:10px;letter-spacing:.5px">14 days of full Pro access — free</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;border-radius:14px;overflow:hidden;width:100%;max-width:340px;margin-bottom:18px">
+    <!-- FREE column -->
+    <div style="background:rgba(255,255,255,0.07);padding:12px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.45);text-transform:uppercase;letter-spacing:.8px">Free</div>
+        <div id="you-badge-free" style="display:none;font-size:10px;background:rgba(255,255,255,0.2);color:#fff;padding:2px 7px;border-radius:20px;font-weight:700">You</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;text-align:left">
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Expense tracking</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Budget ring</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Referrals</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:5px"><span style="font-size:10px">✕</span>Daily dots</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:5px"><span style="font-size:10px">✕</span>Debt score</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.25);display:flex;align-items:center;gap:5px"><span style="font-size:10px">✕</span>Bank import</div>
+      </div>
+    </div>
+    <!-- PRO column -->
+    <div style="background:rgba(74,222,128,0.12);padding:12px 10px;border:1.5px solid rgba(74,222,128,0.5);border-radius:0 14px 14px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#4ade80;text-transform:uppercase;letter-spacing:.8px">Pro</div>
+        <div id="you-badge-pro" style="font-size:10px;background:#4ade80;color:#1a5c35;padding:2px 7px;border-radius:20px;font-weight:800">You ✦</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;text-align:left">
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Everything free</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Daily dots</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Debt score</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Bank import</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Savings goals</div>
+        <div style="font-size:11px;color:#fff;display:flex;align-items:center;gap:5px"><span style="color:#4ade80;font-size:10px">✓</span>Export PDF</div>
+      </div>
+    </div>
   </div>
   <button class="intro-cta" id="intro-cta-btn" onclick="closeIntroStartTour()">Let's go 🚀</button>
 </div>
@@ -2166,36 +2187,22 @@ const TOUR_STEPS=[
 
 function showIntro(){
   const tier=user?.tier||'free';
-  const pill=document.getElementById('intro-badge-pill');
-  const tname=document.getElementById('intro-tier-name');
-  const perks=document.getElementById('intro-perks');
   const cta=document.getElementById('intro-cta-btn');
-  if(tier==='premium'){
-    pill.className='intro-tier-badge premium';pill.textContent='PREMIUM';
-    tname.textContent='Full unlimited access — everything unlocked';
-    cta.textContent='Enter RandWise 👑';
-    perks.innerHTML=`
-      <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy — Avalanche & Snowball</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement auto-import</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges — personalised</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">👨‍👩‍👧</span><span>Family / household view</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings — earn up to R40/person</span></div>`;
-  } else if(tier==='pro'){
-    pill.className='intro-tier-badge pro';pill.textContent='PRO';
-    tname.textContent='Pro access — your full financial picture';
-    cta.textContent='Open my dashboard →';
-    perks.innerHTML=`
-      <div class="intro-perk"><span class="intro-perk-ico">📊</span><span>Weekly budget envelopes</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">💳</span><span>Debt payoff strategy</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">🏦</span><span>Bank statement auto-import</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">🤖</span><span>AI money nudges</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">💸</span><span>Referral earnings</span></div>
-      <div class="intro-perk"><span class="intro-perk-ico">🌱</span><span>Savings goals tracker</span></div>`;
+  // Show/hide "You" badge based on tier
+  const youFree=document.getElementById('you-badge-free');
+  const youPro=document.getElementById('you-badge-pro');
+  if(tier==='premium'||tier==='pro'){
+    if(youFree)youFree.style.display='none';
+    if(youPro)youPro.style.display='block';
+    cta.textContent=tier==='premium'?'Enter RandWise 👑':'Open my dashboard →';
   } else {
+    // Free/trial user — on trial so they have Pro temporarily, show "You" on Pro with trial note
+    if(youFree)youFree.style.display='none';
+    if(youPro){youPro.style.display='block';youPro.textContent='You (trial) ✦';}
     const days=user?.created_at?Math.max(0,14-Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000)):14;
-    pill.className='intro-tier-badge free';pill.textContent='FREE TRIAL';
-    tname.textContent=`${days} day${days!==1?'s':''} of full Pro access — free`;
+    // Update the days text
+    const daysEl=document.querySelector('#rw-intro div[style*="14 days"]');
+    if(daysEl)daysEl.textContent=`${days} day${days!==1?'s':''} of full Pro access — free`;
     cta.textContent="Let's go 🚀";
   }
   document.getElementById('rw-intro').classList.add('show');
