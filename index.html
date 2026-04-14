@@ -1049,6 +1049,7 @@ if('serviceWorker' in navigator){
 
 <script>
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
+const APP_URL='https://nyanisokhoza-code.github.io/randwise';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 // Always use user JWT when available so RLS policies work correctly
 async function refreshTokenIfNeeded(){
@@ -1126,7 +1127,7 @@ function show(id){
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
 // ── Onboarding ────────────────────────────────────────────────
-function startOB(){step=1;ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:''};renderStep();}
+function startOB(){step=1;ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:ob?.referralCode||''};renderStep();}
 function renderStep(){
   [1,2,3,4,5].forEach(i=>document.getElementById('ob-'+i).style.display=i===step?'block':'none');
   document.getElementById('ob-prog').style.width=(step/5*100)+'%';
@@ -1332,7 +1333,7 @@ async function handleForgot(){
   try{
     const res=await authPost('recover',{
       email:email.toLowerCase(),
-      redirectTo:'https://nyanisokhoza-code.github.io/randwise/reset-password.html'
+      redirectTo:APP_URL+'/reset-password.html'
     });
     const el=document.getElementById('reset-sent');
     el.style.display='block';
@@ -1963,8 +1964,8 @@ async function deleteGoalPWA(id){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function shareApp(){
   const code=user?.referral_code||'';
-  const tx=`Hey! I'm using RandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\nhttps://nyanisokhoza-code.github.io/randwise${code?'\n\nUse my code: '+code:''}`;
-  if(navigator.share)navigator.share({title:'RandWise',text:tx,url:'https://nyanisokhoza-code.github.io/randwise'});
+  const tx=`Hey! I'm using RandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\n${APP_URL}${code?'\n\nUse my code: '+code:''}`;
+  if(navigator.share)navigator.share({title:'RandWise',text:tx,url:APP_URL});
   else window.open('https://wa.me/?text='+encodeURIComponent(tx));
 }
 function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
@@ -2695,7 +2696,7 @@ window.addEventListener('load',()=>{
     if(!online){
       _offlineCount++;
       if(_offlineCount>=2){
-        window.location.href='https://nyanisokhoza-code.github.io/randwise/maintenance.html';
+        window.location.href=APP_URL+'/maintenance.html';
       }
     } else {
       _offlineCount=0;
@@ -2783,7 +2784,7 @@ function doUpgrade(plan){
   const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
   const amt=plan==='premium'?'129.00':'49.00';
   const name=plan==='premium'?'RandWise Premium':'RandWise Pro';
-  const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:'https://nyanisokhoza-code.github.io/randwise?paid=1',cancel_url:'https://nyanisokhoza-code.github.io/randwise',notify_url:'https://nyanisokhoza-code.github.io/randwise',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
+  const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:APP_URL+'?paid=1',cancel_url:APP_URL,notify_url:APP_URL+'?payfast_notify=1',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
   window.open(`${base}?${params.toString()}`,'_blank');
 }
 // Check if returning from PayFast payment
@@ -2816,7 +2817,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v26';
+const APP_VERSION = '2026-04-14-v27';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
