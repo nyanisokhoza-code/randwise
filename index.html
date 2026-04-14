@@ -1254,8 +1254,7 @@ async function renderDash(){
   set('debit-sub',`${debits.length} commitment${debits.length!==1?'s':''} this month`);
   // Warn if payday is in next 5 days and debits are coming
   const today=now.getDate();
-  const payDay=Number(user.pay_day||25);
-  const daysToPayday=payDay>today?payDay-today:daysInMonth-today+payDay;
+  // payDay already declared above
   const debitWarnEl=document.getElementById('debit-warning-text');
   if(debitWarnEl){
     if(daysToPayday<=3)debitWarnEl.textContent=`⚠️ Payday in ${daysToPayday} day${daysToPayday!==1?'s':''}`;
@@ -1274,9 +1273,7 @@ async function renderDash(){
 
   // ── 2×2 STAT CARDS ─────────────────────────────────────────
   // This week spending
-  const weekStart2=new Date(now);weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));weekStart2.setHours(0,0,0,0);
-  const weekSpentAmt=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart2).reduce((s,e)=>s+Number(e.amount),0);
-  const weekOfMonth=Math.ceil(now.getDate()/7);
+  const weekSpentAmt=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart).reduce((s,e)=>s+Number(e.amount),0);
   set('stat-week-spent','R'+weekSpentAmt.toLocaleString('en-ZA'));
   set('stat-week-label',`Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`);
   set('week-num-label',`Week ${weekOfMonth} of 4`);
@@ -1915,7 +1912,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v9';
+const APP_VERSION = '2026-04-14-v10';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
