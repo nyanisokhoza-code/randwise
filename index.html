@@ -569,6 +569,19 @@ if('serviceWorker' in navigator){
             <div style="font-size:11px;color:#92400e;line-height:1.5" id="rollover-text">—</div>
           </div>
 
+          <!-- AI NUDGE CARD -->
+          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:14px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+              <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.8px">🤖 Weekly insight</div>
+              <div style="display:flex;gap:6px">
+                <button onclick="refreshAINudge()" id="nudge-refresh-btn" style="background:none;border:none;color:#5a8a6a;font-size:11px;cursor:pointer;font-weight:600;padding:2px 6px;border-radius:6px">↻ Refresh</button>
+                <button onclick="dismissAINudge()" style="background:none;border:none;color:#5a8a6a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+              </div>
+            </div>
+            <div style="font-size:13px;color:#1a5c35;line-height:1.6;font-weight:500" id="ai-nudge-text">Analysing your spending...</div>
+            <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
+          </div>
+
           <!-- RECENT TRANSACTIONS -->
           <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -1279,6 +1292,7 @@ async function loadExp(){
 async function renderDash(){
   if(!user)return;
   applyTierTheme();
+  setTimeout(loadAINudge, 1500);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -1883,6 +1897,107 @@ function shareApp(){
 function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
 
 // ── Weekly Planner ─────────────────────────────────────────────
+// ── AI Nudges ──────────────────────────────────────────────────
+async function loadAINudge(){
+  const{isPro}=getTier();
+  const card=document.getElementById('ai-nudge-card');
+  if(!card)return;
+  // Only for Pro/trial users
+  if(!isPro){card.style.display='none';return;}
+  // Check if dismissed today
+  const dismissed=localStorage.getItem('rw_nudge_dismissed');
+  if(dismissed===new Date().toDateString()){card.style.display='none';return;}
+  // Check if we have a cached nudge from today
+  const cached=localStorage.getItem('rw_nudge_cache');
+  const cachedDate=localStorage.getItem('rw_nudge_date');
+  if(cached&&cachedDate===new Date().toDateString()){
+    card.style.display='block';
+    document.getElementById('ai-nudge-text').textContent=cached;
+    const dateEl=document.getElementById('ai-nudge-date');
+    if(dateEl)dateEl.textContent='Generated today · Tap ↻ to refresh';
+    return;
+  }
+  // Only generate on Monday or if no nudge yet this week
+  const dayOfWeek=new Date().getDay();
+  const lastNudgeWeek=localStorage.getItem('rw_nudge_week');
+  const thisWeek=`${new Date().getFullYear()}-W${Math.ceil(new Date().getDate()/7)}`;
+  if(lastNudgeWeek===thisWeek&&!cached){return;} // Already tried this week
+  // Show card with loading state
+  card.style.display='block';
+  document.getElementById('ai-nudge-text').textContent='Analysing your spending patterns...';
+  await generateAINudge();
+}
+
+async function generateAINudge(){
+  const card=document.getElementById('ai-nudge-card');
+  const textEl=document.getElementById('ai-nudge-text');
+  const dateEl=document.getElementById('ai-nudge-date');
+  const btn=document.getElementById('nudge-refresh-btn');
+  if(btn){btn.textContent='Loading...';btn.disabled=true;}
+  try{
+    // Build spending context
+    const inc=Number(user?.income_amount||0);
+    const now=new Date();
+    const weekAgo=new Date(now-7*24*60*60*1000);
+    const weekExp=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=weekAgo);
+    const totalWeek=weekExp.reduce((s,e)=>s+Number(e.amount||0),0);
+    const cats={};
+    weekExp.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
+    const catSummary=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,a])=>`${c}: R${Math.round(a)}`).join(', ');
+    const wb=Math.round(inc/4);
+    const pctUsed=wb>0?Math.round(totalWeek/wb*100):0;
+    const prompt=`You are a personal finance advisor for South African users. Based on this week's spending data, give ONE specific, actionable money tip. Be conversational, warm, and South African in tone. Maximum 2 sentences. No generic advice.
+
+User context:
+- Monthly income: R${inc.toLocaleString('en-ZA')}
+- Weekly budget: R${wb.toLocaleString('en-ZA')}
+- Spent this week: R${Math.round(totalWeek).toLocaleString('en-ZA')} (${pctUsed}% of budget)
+- Top categories: ${catSummary||'No expenses yet this week'}
+- Day of week: ${now.toLocaleDateString('en-ZA',{weekday:'long'})}
+
+Give one specific tip based on this data. If they overspent, suggest how to recover. If they're on track, suggest how to save more. Reference actual amounts and categories from their data.`;
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:150,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const nudge=data?.content?.[0]?.text||'Keep tracking your spending — every rand logged helps you understand your patterns better.';
+    // Cache it
+    localStorage.setItem('rw_nudge_cache',nudge);
+    localStorage.setItem('rw_nudge_date',new Date().toDateString());
+    localStorage.setItem('rw_nudge_week',`${now.getFullYear()}-W${Math.ceil(now.getDate()/7)}`);
+    if(textEl)textEl.textContent=nudge;
+    if(dateEl)dateEl.textContent=`Generated ${now.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'short'})}`;
+    if(card)card.style.display='block';
+  }catch(e){
+    // Fail silently — just hide the card
+    if(card)card.style.display='none';
+    console.warn('AI nudge failed:',e);
+  }finally{
+    if(btn){btn.textContent='↻ Refresh';btn.disabled=false;}
+  }
+}
+
+function dismissAINudge(){
+  const card=document.getElementById('ai-nudge-card');
+  if(card)card.style.display='none';
+  localStorage.setItem('rw_nudge_dismissed',new Date().toDateString());
+}
+
+async function refreshAINudge(){
+  localStorage.removeItem('rw_nudge_cache');
+  localStorage.removeItem('rw_nudge_date');
+  const textEl=document.getElementById('ai-nudge-text');
+  if(textEl)textEl.textContent='Analysing your spending patterns...';
+  await generateAINudge();
+}
+
 function openWeeklyPlanner(){
   document.getElementById('weekly-planner').style.display='block';
   document.body.style.overflow='hidden';
@@ -2485,7 +2600,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v24';
+const APP_VERSION = '2026-04-14-v25';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
