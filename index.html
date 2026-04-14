@@ -534,7 +534,7 @@ if('serviceWorker' in navigator){
             </div>
 
             <!-- DEBT SCORE -->
-            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
+            <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
               <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div>
               <div style="display:flex;align-items:baseline;gap:3px">
                 <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
@@ -554,7 +554,7 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- DAILY SPEND DOTS -->
-          <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:12px 14px">
+          <div id="daily-dots-row" style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:12px 14px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px">This week — daily spend</div>
               <div style="font-size:10px;color:var(--mu)" id="week-num-label">Week 1 of 4</div>
@@ -1208,6 +1208,7 @@ async function loadExp(){
 }
 async function renderDash(){
   if(!user)return;
+  applyTierTheme();
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -2114,6 +2115,51 @@ document.addEventListener('focusin',e=>{
 });
 
 // ══ UPGRADE WALL ════════════════════════════════════════════
+function getTier(){
+  const t=user?.tier||'free';
+  const created=user?.created_at;
+  const days=created?Math.floor((Date.now()-new Date(created).getTime())/86400000):0;
+  const trialActive=t==='free'&&days<14;
+  return{tier:t,trialActive,trialDays:Math.max(0,14-days),isPro:t==='pro'||t==='premium'||trialActive,isPremium:t==='premium'};
+}
+
+function applyTierTheme(){
+  const{tier,trialActive,isPro}=getTier();
+  const root=document.getElementById('app');
+  if(!root)return;
+  root.classList.remove('theme-free','theme-pro','theme-premium');
+  if(tier==='premium')root.classList.add('theme-premium');
+  else if(tier==='pro'||trialActive)root.classList.add('theme-pro');
+  else root.classList.add('theme-free');
+  // Show/hide Pro-gated features
+  const proFeatures=['daily-dots-row','stat-debt-card','stat-goal-card','snowball-card','debt-score-card','debt-total-bar'];
+  proFeatures.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!isPro){
+      // Wrap in locked overlay if not already
+      if(!el.querySelector('.tier-lock-overlay')){
+        el.style.position='relative';
+        el.style.overflow='hidden';
+        const overlay=document.createElement('div');
+        overlay.className='tier-lock-overlay';
+        overlay.style.cssText='position:absolute;inset:0;background:rgba(240,250,244,0.85);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:14px;z-index:10';
+        overlay.innerHTML=`<div style="font-size:18px;margin-bottom:4px">🔒</div><div style="font-size:11px;font-weight:700;color:#1a5c35">Pro feature</div><div style="font-size:10px;color:#5a8a6a;margin-top:2px">Tap to upgrade</div>`;
+        overlay.onclick=()=>showUpgradeWall(false);
+        el.appendChild(overlay);
+      }
+    } else {
+      // Remove lock overlay if exists
+      const overlay=el.querySelector('.tier-lock-overlay');
+      if(overlay)overlay.remove();
+      el.style.overflow='';
+    }
+  });
+  // Import tab lock
+  const importLock=document.getElementById('import-lock-banner');
+  if(importLock)importLock.style.display=isPro?'none':'block';
+}
+
 function showUpgradeWall(hardBlock){
   const wall=document.getElementById('upgrade-wall');
   wall.style.display='flex';
@@ -2171,7 +2217,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v21';
+const APP_VERSION = '2026-04-14-v22';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
