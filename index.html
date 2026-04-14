@@ -619,6 +619,18 @@ if('serviceWorker' in navigator){
           <div style="font-size:12px;color:var(--g);line-height:1.6">Earn R10 when a friend goes Pro + R5/month for 6 months. Paid via Capitec Pay.</div>
           <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share RandWise</button>
         </div>
+        <!-- BOND READINESS CARD -->
+        <div onclick="openBondReadiness()" style="background:#1a5c35;border-radius:14px;padding:16px;margin-bottom:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">🏠 Bond readiness score</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7)">See if you qualify for a home loan</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:22px;font-weight:900;color:#4ade80" id="bond-score-preview">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5)">/100</div>
+          </div>
+        </div>
+
         <!-- EXPORT SECTION -->
         <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:16px;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:4px">📥 Export my data</div>
@@ -899,6 +911,66 @@ if('serviceWorker' in navigator){
 <div class="overlay" id="ov" onclick="closeSheet()"></div>
 
 <!-- ══ WEEKLY PLANNER ════════════════════════════════════════ -->
+<!-- ══ BOND READINESS SCREEN ══════════════════════════════════ -->
+<div id="bond-screen" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
+  <!-- Header -->
+  <div style="background:#1a5c35;padding:calc(env(safe-area-inset-top,16px) + 16px) 20px 28px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <button onclick="closeBondReadiness()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">‹</button>
+      <div style="font-size:15px;font-weight:700;color:#fff">Bond readiness</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Your score</div>
+      <div style="font-size:64px;font-weight:900;color:#4ade80;line-height:1" id="bond-score-big">—</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px" id="bond-score-label">Calculating...</div>
+      <div style="height:6px;background:rgba(255,255,255,.2);border-radius:4px;margin:14px 32px 0;overflow:hidden">
+        <div id="bond-score-bar" style="height:100%;background:#4ade80;border-radius:4px;width:0%;transition:width .8s ease"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin:6px 32px 0">
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Not ready</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">Bond ready</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:16px">
+    <!-- Qualification card -->
+    <div id="bond-qualify-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
+      <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">You could qualify for</div>
+      <div style="font-size:32px;font-weight:900;color:#1a5c35;line-height:1" id="bond-amount">R0</div>
+      <div style="font-size:12px;color:#5a8a6a;margin-top:4px" id="bond-timeline">based on your income</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid #d1ead9;font-size:12px;color:#5a8a6a;line-height:1.8">
+        Monthly repayment: <span style="font-weight:700;color:#1a5c35" id="bond-repayment">R0/mo</span><br>
+        <span id="bond-terms">20 year term · 11.5% prime rate</span>
+      </div>
+    </div>
+
+    <!-- 3 things to fix -->
+    <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
+      <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">What to work on</div>
+      <div id="bond-actions"></div>
+    </div>
+
+    <!-- What banks look at -->
+    <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
+      <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">What banks check</div>
+      <div id="bond-factors"></div>
+    </div>
+
+    <!-- Apply CTA -->
+    <div style="background:#1a5c35;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Ready to apply?</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);margin-bottom:12px">Get pre-approved with ooba — SA's largest bond originator. Free, no obligation.</div>
+      <button onclick="applyForBond()" style="background:#4ade80;color:#1a5c35;border:none;border-radius:12px;padding:13px 32px;font-size:14px;font-weight:800;cursor:pointer;width:100%">Apply with ooba →</button>
+    </div>
+
+    <!-- Disclaimer -->
+    <div style="background:#f5f5f0;border-radius:12px;padding:12px;margin-bottom:20px">
+      <div style="font-size:11px;color:#999;line-height:1.6;text-align:center">Estimates based on your RandWise data and current SA prime rate (11.5%). Not financial advice — consult a bond originator for a formal pre-approval assessment.</div>
+    </div>
+  </div>
+</div>
+
 <div id="weekly-planner" style="display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch">
   <!-- Header -->
   <div style="background:#1a5c35;padding:calc(env(safe-area-inset-top,16px) + 16px) 20px 20px;position:sticky;top:0;z-index:10">
@@ -1573,6 +1645,7 @@ function switchTab(t){
   if(btn)btn.classList.add('act');
   if(t==='debt')loadDebtsPWA();
   if(t==='grow')loadGoalsPWA();
+  if(t==='profile')updateBondPreview();
   if(t==='import')initImportTab();
 }
 
@@ -1897,6 +1970,149 @@ function shareApp(){
 function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
 
 // ── Weekly Planner ─────────────────────────────────────────────
+// ── Bond Readiness ────────────────────────────────────────────
+function updateBondPreview(){
+  const inc=Number(user?.income_amount||0);
+  const PRIME=11.5,TERM=240,monthlyRate=PRIME/100/12;
+  const debtsMin=0; // simplified for preview
+  const maxRep=inc*0.30;
+  const bond=maxRep>0?Math.round(maxRep*(1-Math.pow(1+monthlyRate,-TERM))/monthlyRate/10000)*10000:0;
+  const dti=0;
+  let score=50;
+  if(inc>=30000)score+=20;else if(inc>=20000)score+=15;else if(inc>=15000)score+=10;else if(inc>=10000)score+=5;
+  score=Math.max(5,Math.min(100,score));
+  const el=document.getElementById('bond-score-preview');
+  if(el)el.textContent=score;
+}
+function openBondReadiness(){
+  document.getElementById('bond-screen').style.display='block';
+  document.body.style.overflow='hidden';
+  renderBondReadiness();
+}
+function closeBondReadiness(){
+  document.getElementById('bond-screen').style.display='none';
+  document.body.style.overflow='';
+}
+function applyForBond(){
+  window.open('https://www.ooba.co.za/home-loans/apply/?source=myrandwise','_blank');
+  sendOwnerAlert('bond_apply',{name:user?.name||'Unknown',income:user?.income_amount||0});
+}
+async function renderBondReadiness(){
+  const inc=Number(user?.income_amount||0);
+  const PRIME=11.5;
+  const TERM_YEARS=20;
+  const TERM_MONTHS=TERM_YEARS*12;
+  const monthlyRate=PRIME/100/12;
+
+  // Get debts for DTI
+  let debts=[];
+  try{debts=await sbG(`debts?tester_id=eq.${user.id}`);}catch(e){}
+  const totalDebt=debts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const totalMinPayments=debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+
+  // Get savings for deposit
+  let goals=[];
+  try{goals=await sbG(`savings_goals?tester_id=eq.${user.id}`);}catch(e){}
+  const totalSaved=goals.reduce((s,g)=>s+Number(g.saved||0),0);
+
+  // ── CALCULATIONS ──────────────────────────────────────────
+  // Max monthly repayment (30% of income minus existing debt payments)
+  const maxRepayment=Math.max(0,inc*0.30-totalMinPayments);
+
+  // Bond amount from max repayment (PV formula)
+  const bondAmount=maxRepayment>0?
+    Math.round(maxRepayment*(1-Math.pow(1+monthlyRate,-TERM_MONTHS))/monthlyRate/10000)*10000:0;
+
+  // Actual repayment for the bond amount
+  const actualRepayment=bondAmount>0?
+    Math.round(bondAmount*monthlyRate/(1-Math.pow(1+monthlyRate,-TERM_MONTHS))):0;
+
+  // DTI ratio (total debt / annual income)
+  const dti=inc>0?(totalMinPayments/inc*100):0;
+
+  // Deposit needed (10% of bond)
+  const depositNeeded=Math.round(bondAmount*0.10);
+  const depositSaved=totalSaved;
+  const depositGap=Math.max(0,depositNeeded-depositSaved);
+
+  // ── SCORE ─────────────────────────────────────────────────
+  let score=50; // base
+  // Income factor
+  if(inc>=30000)score+=20;else if(inc>=20000)score+=15;else if(inc>=15000)score+=10;else if(inc>=10000)score+=5;
+  // DTI factor
+  if(dti<20)score+=15;else if(dti<30)score+=10;else if(dti<40)score+=5;else score-=10;
+  // Savings factor
+  if(depositSaved>=depositNeeded)score+=15;else if(depositSaved>=depositNeeded*0.5)score+=8;else if(depositSaved>0)score+=3;
+  // Spending discipline (use weekly budget adherence)
+  const wb=Math.round(inc/4);
+  const now=new Date();
+  const weekAgo=new Date(now-7*24*60*60*1000);
+  const weekExp=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=weekAgo);
+  const weekSpent=weekExp.reduce((s,e)=>s+Number(e.amount||0),0);
+  if(weekSpent<=wb)score+=10;else if(weekSpent<=wb*1.1)score+=5;
+  score=Math.max(5,Math.min(100,score));
+
+  // ── TIMELINE ──────────────────────────────────────────────
+  // How long to fix the worst issue
+  let timelineMonths=0;
+  // Time to save deposit
+  const monthlySpare=Math.max(0,inc-totalMinPayments-weekSpent*4);
+  const depositMonths=depositGap>0&&monthlySpare>0?Math.ceil(depositGap/monthlySpare*0.3):0;
+  // Time to reduce DTI
+  const dtiMonths=dti>30?Math.ceil((totalDebt*0.1)/Math.max(1,monthlySpare)):0;
+  timelineMonths=Math.max(depositMonths,dtiMonths,score<60?6:score<80?3:0);
+
+  // ── RENDER ────────────────────────────────────────────────
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  const setStyle=(id,prop,val)=>{const el=document.getElementById(id);if(el)el.style[prop]=val;};
+
+  set('bond-score-big',score);
+  set('bond-score-preview',score);
+  setStyle('bond-score-bar','width',score+'%');
+  setStyle('bond-score-bar','background',score>=75?'#4ade80':score>=50?'#fbbf24':'#f87171');
+
+  const label=score>=80?'Bond ready — apply now':score>=60?'Getting close — keep going':score>=40?'Building towards it':'Start with the basics';
+  set('bond-score-label',label);
+  set('bond-amount','R'+bondAmount.toLocaleString('en-ZA'));
+  set('bond-repayment','R'+actualRepayment.toLocaleString('en-ZA')+'/mo');
+  set('bond-timeline',timelineMonths>0?`in approximately ${timelineMonths} months`:'based on your current profile');
+  set('bond-terms',`${TERM_YEARS} year term · ${PRIME}% prime rate`);
+
+  // Actions
+  const actionsEl=document.getElementById('bond-actions');
+  if(actionsEl){
+    const actions=[];
+    if(dti>30) actions.push({color:'#fee2e2',textColor:'#c62828',title:'Reduce debt payments',desc:`Your debt payments are ${Math.round(dti)}% of income — banks want under 30%. Pay extra R${Math.round((dti-30)*inc/100/12).toLocaleString('en-ZA')}/mo on your smallest debt.`});
+    if(depositGap>0) actions.push({color:'#fff8e1',textColor:'#92400e',title:'Save your deposit',desc:`R${depositNeeded.toLocaleString('en-ZA')} deposit needed (10%). You have R${depositSaved.toLocaleString('en-ZA')} saved. ${depositMonths>0?`At your savings rate, ${depositMonths} months to go.`:'Keep saving consistently.'}`});
+    if(weekSpent>wb) actions.push({color:'#fff8e1',textColor:'#92400e',title:'Stay within weekly budget',desc:`You spent R${Math.round(weekSpent).toLocaleString('en-ZA')} this week vs R${wb.toLocaleString('en-ZA')} budget. Banks look at 3 months of consistent spending.`});
+    if(actions.length===0) actions.push({color:'#e8f5ee',textColor:'#1a5c35',title:'Looking good!',desc:'Your debt, savings and spending are in good shape. Focus on building your deposit and maintaining consistency.'});
+    // Limit to 3
+    actionsEl.innerHTML=actions.slice(0,3).map((a,i)=>`
+      <div style="display:flex;gap:10px;align-items:flex-start;${i<Math.min(actions.length,3)-1?'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #d1ead9':''}">
+        <div style="width:24px;height:24px;border-radius:50%;background:${a.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:${a.textColor};flex-shrink:0">${i+1}</div>
+        <div><div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:2px">${a.title}</div><div style="font-size:11px;color:#5a8a6a;line-height:1.6">${a.desc}</div></div>
+      </div>`).join('');
+  }
+
+  // Factors
+  const factorsEl=document.getElementById('bond-factors');
+  if(factorsEl){
+    const factors=[
+      {label:'Income',value:'R'+inc.toLocaleString('en-ZA')+'/mo',status:inc>=15000?'good':inc>=10000?'ok':'low'},
+      {label:'Debt-to-income',value:Math.round(dti)+'%',status:dti<30?'good':dti<40?'ok':'high'},
+      {label:'Deposit saved',value:'R'+depositSaved.toLocaleString('en-ZA'),status:depositSaved>=depositNeeded?'good':depositSaved>0?'ok':'none'},
+      {label:'Weekly budget',value:weekSpent<=wb?'On track':'Over budget',status:weekSpent<=wb?'good':'high'},
+    ];
+    factorsEl.innerHTML=factors.map((f,i)=>{
+      const col=f.status==='good'?'#2e7d32':f.status==='ok'?'#f59e0b':'#c62828';
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i<factors.length-1?'border-bottom:1px solid #d1ead9':''}">
+        <div style="font-size:13px;color:#5a8a6a">${f.label}</div>
+        <div style="font-size:13px;font-weight:700;color:${col}">${f.value}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
 // ── AI Nudges ──────────────────────────────────────────────────
 async function loadAINudge(){
   const{isPro}=getTier();
@@ -2600,7 +2816,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v25';
+const APP_VERSION = '2026-04-14-v26';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
