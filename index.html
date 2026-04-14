@@ -706,14 +706,16 @@ if('serviceWorker' in navigator){
     </div>
 
   </div>
-  <div class="tab-bar" id="main-tab-bar" style="display:none">
-    <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
-    <button class="tab-btn" id="tb-debt" onclick="switchTab('debt')"><span class="tab-icon">💳</span><span class="tab-lbl">Debt</span></button>
-    <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
-    <button class="tab-btn" id="tb-grow" onclick="switchTab('grow')"><span class="tab-icon">🌱</span><span class="tab-lbl">Grow</span></button>
-    <button class="tab-btn" id="tb-import" onclick="switchTab('import')" style="position:relative"><span class="tab-icon">📄</span><span class="tab-lbl">Import</span><span id="import-badge" style="display:none;position:absolute;top:8px;right:8px;width:8px;height:8px;background:#4ade80;border-radius:50%"></span></button>
-    <button class="tab-btn" id="tb-profile" onclick="switchTab('profile')"><span class="tab-icon">○</span><span class="tab-lbl">Profile</span></button>
-  </div>
+</div>
+
+<!-- TAB BAR — outside all screens, controlled by show() -->
+<div class="tab-bar" id="main-tab-bar" style="display:none">
+  <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
+  <button class="tab-btn" id="tb-debt" onclick="switchTab('debt')"><span class="tab-icon">💳</span><span class="tab-lbl">Debt</span></button>
+  <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
+  <button class="tab-btn" id="tb-grow" onclick="switchTab('grow')"><span class="tab-icon">🌱</span><span class="tab-lbl">Grow</span></button>
+  <button class="tab-btn" id="tb-import" onclick="switchTab('import')" style="position:relative"><span class="tab-icon">📄</span><span class="tab-lbl">Import</span><span id="import-badge" style="display:none;position:absolute;top:8px;right:8px;width:8px;height:8px;background:#4ade80;border-radius:50%"></span></button>
+  <button class="tab-btn" id="tb-profile" onclick="switchTab('profile')"><span class="tab-icon">○</span><span class="tab-lbl">Profile</span></button>
 </div>
 
 <!-- Edit Profile Sheet -->
@@ -1918,7 +1920,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v12';
+const APP_VERSION = '2026-04-14-v13';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
