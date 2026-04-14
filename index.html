@@ -229,7 +229,7 @@ if('serviceWorker' in navigator){
           if(nw.state==='installed'&&navigator.serviceWorker.controller){
             // New version ready — show banner automatically
             const banner=document.getElementById('update-banner');
-            if(banner)banner.style.display='flex';
+            if(banner){banner.style.display='flex';}
           }
         });
       });
@@ -259,9 +259,13 @@ if('serviceWorker' in navigator){
         });
       });
     }).catch(()=>{});
-  // When SW activates new version, reload all tabs
+  // When SW activates new version, reload smoothly after page is ready
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
+    if(document.readyState === 'complete'){
+      window.location.reload();
+    } else {
+      window.addEventListener('load', () => window.location.reload());
+    }
   });
 }
 </script>
@@ -882,7 +886,15 @@ async function sbG(p){const r=await fetch(`${SB}/rest/v1/${p}`,{headers:getH()})
 async function sbD(p){await fetch(`${SB}/rest/v1/${p}`,{method:'DELETE',headers:getH()});}
 async function sbPatch(p,b){await fetch(`${SB}/rest/v1/${p}`,{method:'PATCH',headers:{...getH(),'Prefer':'return=minimal'},body:JSON.stringify(b)});}
 async function authPost(path,body){const r=await fetch(`${SB}/auth/v1/${path}`,{method:'POST',headers:{'apikey':AK,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
-function show(id){document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});const el=document.getElementById(id);el.classList.add('active');}
+function show(id){
+  if(id==='main'){
+    // Show pending update banner if any
+    if(sessionStorage.getItem('rw_pending_update')==='1'){
+      sessionStorage.removeItem('rw_pending_update');
+      const banner=document.getElementById('update-banner');
+      if(banner){banner.style.display='flex';}
+    }
+  }document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='';});const el=document.getElementById(id);el.classList.add('active');}
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
 // ── Onboarding ────────────────────────────────────────────────
@@ -1125,7 +1137,7 @@ async function renderDash(){
   if(dailyEl){dailyEl.textContent='R'+dailyBudget.toLocaleString('en-ZA');dailyEl.style.color=dailyColor;}
   set('daily-budget-sub',`for today · ${daysLeft} day${daysLeft!==1?'s':''} left this month`);
   // Week budget remaining
-  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());
+  const weekStartP=new Date(now);weekStartP.setDate(now.getDate()-now.getDay());
   const thisWeekSpent=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart).reduce((s,e)=>s+Number(e.amount),0);
   const weekLeft=Math.max(0,wb-thisWeekSpent);
   set('daily-week-budget','R'+weekLeft.toLocaleString('en-ZA'));
@@ -1903,14 +1915,26 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v7';
+const APP_VERSION = '2026-04-14-v9';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
     if(!stored){ localStorage.setItem('rw_app_version', APP_VERSION); return; }
     if(stored !== APP_VERSION){
+      // Only show banner inside the main app, not on splash/login/onboarding
+      const currentScreen = document.querySelector('.screen[style*="flex"], .screen:not([style*="none"])');
+      const isInApp = document.getElementById('main')?.style?.display === 'flex' ||
+                      document.getElementById('main')?.style?.display === 'block';
       const banner = document.getElementById('update-banner');
-      if(banner){ banner.style.display='flex'; document.body.style.paddingTop='56px'; }
+      if(banner){
+        if(isInApp){
+          banner.style.display='flex';
+          document.body.style.paddingTop='56px';
+        } else {
+          // Store flag — show banner once user gets to main app
+          sessionStorage.setItem('rw_pending_update','1');
+        }
+      }
     }
   } catch(e){}
 })();
