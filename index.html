@@ -1316,7 +1316,7 @@ async function logLoginFailure(email, reason, attempts){
         created_at:new Date().toISOString()
       })
     });
-  }catch(e){}
+  }catch(e){console.warn('Login failure log error:',e);}
 }
 async function requestLoginHelp(){
   const email=document.getElementById('l-email').value.trim()||'unknown';
@@ -1436,8 +1436,8 @@ async function renderDash(){
 
   // ── PAYDAY BANNER ──────────────────────────────────────────
   const payDay=Number(user.pay_day||25);
-  const daysInMonth2=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const daysToPayday=payDay>now.getDate()?payDay-now.getDate():daysInMonth2-now.getDate()+payDay;
+  const daysInMonthForPayday=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const daysToPayday=payDay>now.getDate()?payDay-now.getDate():daysInMonthForPayday-now.getDate()+payDay;
   const paydayBanner=document.getElementById('payday-banner');
   if(paydayBanner){
     if(daysToPayday<=5){
@@ -1512,7 +1512,7 @@ async function renderDash(){
     } else if(sghCard){
       sghCard.style.display='none';
     }
-  }catch{}
+  }catch(e){console.warn('Savings goal home card error:',e);}
 
   // ── SMART ROLLOVER NUDGE ───────────────────────────────────
   const rolloverEl=document.getElementById('rollover-nudge');
@@ -2007,13 +2007,13 @@ async function renderBondReadiness(){
 
   // Get debts for DTI
   let debts=[];
-  try{debts=await sbG(`debts?tester_id=eq.${user.id}`);}catch(e){}
+  try{debts=await sbG(`debts?tester_id=eq.${user.id}`);}catch(e){console.warn('Bond: debts load error',e);}
   const totalDebt=debts.reduce((s,d)=>s+Number(d.balance||0),0);
   const totalMinPayments=debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
 
   // Get savings for deposit
   let goals=[];
-  try{goals=await sbG(`savings_goals?tester_id=eq.${user.id}`);}catch(e){}
+  try{goals=await sbG(`savings_goals?tester_id=eq.${user.id}`);}catch(e){console.warn('Bond: goals load error',e);}
   const totalSaved=goals.reduce((s,g)=>s+Number(g.saved||0),0);
 
   // ── CALCULATIONS ──────────────────────────────────────────
@@ -2812,12 +2812,12 @@ async function saveEdit(){
   expenses=expenses.map(e=>e.id===id?{...e,amount:amt,note}:e);
   renderDash();closeEditSheet();showToast('✅ Expense updated');
   if(!id.startsWith('tmp-')){
-    try{await fetch(`${SB}/rest/v1/expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({amount:amt,note})});}catch{}
+    try{await fetch(`${SB}/rest/v1/expenses?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({amount:amt,note})});}catch(e){console.warn('Expense update sync error:',e);showToast('Saved locally — will sync shortly');}
   }
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v27';
+const APP_VERSION = '2026-04-14-v28';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
