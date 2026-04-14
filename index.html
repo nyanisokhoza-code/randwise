@@ -1133,8 +1133,8 @@ async function renderDash(){
 
   // ── PAYDAY BANNER ──────────────────────────────────────────
   const payDay=Number(user.pay_day||25);
-  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
-  const daysToPayday=payDay>now.getDate()?payDay-now.getDate():daysInMonth-now.getDate()+payDay;
+  const daysInMonth2=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const daysToPayday=payDay>now.getDate()?payDay-now.getDate():daysInMonth2-now.getDate()+payDay;
   const paydayBanner=document.getElementById('payday-banner');
   if(paydayBanner){
     if(daysToPayday<=5){
@@ -1815,22 +1815,25 @@ window.addEventListener('error',async(e)=>{
 async function checkConnectivity(){
   try{
     const r=await fetch(`${SB}/rest/v1/`,{headers:{'apikey':AK},signal:AbortSignal.timeout(5000)});
-    return r.ok||r.status===400; // 400 = reachable but no table specified
+    return r.ok||r.status===400;
   }catch{return false;}
 }
 let _offlineCount=0;
-setInterval(async()=>{
-  if(document.hidden)return; // don't check when tab not visible
-  const online=await checkConnectivity();
-  if(!online){
-    _offlineCount++;
-    if(_offlineCount>=2){ // 2 consecutive failures = truly down
-      window.location.href='https://nyanisokhoza-code.github.io/randwise/maintenance.html';
+// Start connectivity check AFTER app loads (so showToast/show are defined)
+window.addEventListener('load',()=>{
+  setInterval(async()=>{
+    if(document.hidden)return;
+    const online=await checkConnectivity();
+    if(!online){
+      _offlineCount++;
+      if(_offlineCount>=2){
+        window.location.href='https://nyanisokhoza-code.github.io/randwise/maintenance.html';
+      }
+    } else {
+      _offlineCount=0;
     }
-  } else {
-    _offlineCount=0;
-  }
-},30000); // check every 30 seconds
+  },30000);
+});
 
 // ══ MOBILE KEYBOARD FIX ═════════════════════════════════════
 // Scroll focused input into view above keyboard on Android
@@ -1900,7 +1903,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v6';
+const APP_VERSION = '2026-04-14-v7';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
