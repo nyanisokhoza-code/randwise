@@ -706,7 +706,7 @@ if('serviceWorker' in navigator){
     </div>
 
   </div>
-  <div class="tab-bar">
+  <div class="tab-bar" id="main-tab-bar">
     <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
     <button class="tab-btn" id="tb-debt" onclick="switchTab('debt')"><span class="tab-icon">💳</span><span class="tab-lbl">Debt</span></button>
     <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
@@ -1127,6 +1127,7 @@ async function renderDash(){
   const me=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=ms);
   const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent),wb=inc>0?Math.round(inc*.6/4):0;
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
 
   // ── DAILY BUDGET ───────────────────────────────────────────
   const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
@@ -1137,7 +1138,6 @@ async function renderDash(){
   if(dailyEl){dailyEl.textContent='R'+dailyBudget.toLocaleString('en-ZA');dailyEl.style.color=dailyColor;}
   set('daily-budget-sub',`for today · ${daysLeft} day${daysLeft!==1?'s':''} left this month`);
   // Week budget remaining
-  const weekStartP=new Date(now);weekStartP.setDate(now.getDate()-now.getDay());
   const thisWeekSpent=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart).reduce((s,e)=>s+Number(e.amount),0);
   const weekLeft=Math.max(0,wb-thisWeekSpent);
   set('daily-week-budget','R'+weekLeft.toLocaleString('en-ZA'));
@@ -1165,7 +1165,6 @@ async function renderDash(){
 
   // ── DAILY SPEND DOTS ───────────────────────────────────────
   const DAYS=['M','T','W','T','F','Sa','Su'];
-  const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
   const dailySpends=Array(7).fill(0);
   me.forEach(e=>{
     const d=new Date(e.logged_at||e.created_at);
@@ -1823,8 +1822,8 @@ window.addEventListener('error',async(e)=>{
 // ── Connectivity check — redirect to maintenance only if truly unreachable ──
 async function checkConnectivity(){
   try{
-    const r=await fetch(`${SB}/rest/v1/`,{headers:{'apikey':AK},signal:AbortSignal.timeout(5000)});
-    return r.ok||r.status===400;
+    const r=await fetch(`${SB}/rest/v1/beta_testers?limit=0`,{headers:{'apikey':AK,'Authorization':'Bearer '+AK},signal:AbortSignal.timeout(5000)});
+    return r.ok||r.status===406||r.status===400;
   }catch{return false;}
 }
 let _offlineCount=0;
@@ -1912,7 +1911,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v10';
+const APP_VERSION = '2026-04-14-v11';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
