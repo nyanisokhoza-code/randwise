@@ -691,9 +691,40 @@ if('serviceWorker' in navigator){
           </div>
         </div>
 
+        <!-- DEBT FREE TIMELINE -->
+        <div id="debt-free-timeline" style="display:none;background:#1a5c35;border-radius:16px;padding:14px 16px;margin-bottom:12px;text-align:center">
+          <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div>
+          <div style="font-size:28px;font-weight:900;color:#4ade80;line-height:1" id="debt-free-months">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px" id="debt-free-label">paying minimums</div>
+        </div>
+
+        <!-- PAYOFF ACCELERATOR -->
+        <div id="payoff-accelerator" style="display:none;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
+          <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div>
+          <div id="accelerator-scenarios"></div>
+          <!-- Dad's split strategy -->
+          <div id="split-strategy" style="margin-top:12px;padding-top:12px;border-top:1px solid #d1ead9">
+            <div style="font-size:12px;font-weight:700;color:#1a5c35;margin-bottom:4px">🛡️ Debt shield strategy</div>
+            <div style="font-size:11px;color:#5a8a6a;line-height:1.7" id="split-strategy-text">Pay half towards debt, save the other half. If something goes wrong, your savings cover the debt — stress free.</div>
+          </div>
+        </div>
+
         <!-- DEBT LIST -->
         <div id="debt-list-pwa"><div style="text-align:center;padding:40px 0;color:var(--mu);font-size:13px">Loading...</div></div>
-        <button onclick="openAddDebtPWA()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">+ Add a debt</button>
+
+        <!-- BOND READINESS ON DEBT TAB -->
+        <div onclick="openBondReadiness()" style="background:#1a5c35;border-radius:14px;padding:14px 16px;margin-top:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">🏠 Bond readiness score</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7)">See if you qualify for a home loan</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:22px;font-weight:900;color:#4ade80" id="bond-score-debt-tab">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5)">/100</div>
+          </div>
+        </div>
+
+        <button onclick="openAddDebtPWA()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">+ Add a debt</button>
       </div>
     </div>
 
@@ -714,11 +745,15 @@ if('serviceWorker' in navigator){
       </div>
     </div>
 
-    <!-- IMPORT TAB -->
+    <!-- FINANCIAL HEALTH TAB -->
     <div class="tab-pane" id="tp-import">
-      <div style="padding:calc(var(--st) + 12px) 20px 100px;overflow-y:auto;height:100%">
-        <div style="font-size:18px;font-weight:800;margin-bottom:4px">Import statement</div>
-        <div style="font-size:13px;color:var(--mu);margin-bottom:20px">Upload your bank PDF — we read and categorise every transaction automatically</div>
+      <div style="padding:calc(var(--st) + 12px) 16px 100px;overflow-y:auto;height:100%">
+        <div style="font-size:18px;font-weight:800;margin-bottom:2px">Financial health</div>
+        <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Tools to build a stronger financial future</div>
+
+        <!-- BANK IMPORT SECTION -->
+        <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">📄 Bank statement import</div>
+        <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Upload your bank PDF — we read and categorise every transaction automatically</div>
 
         <!-- Pro lock banner for free users -->
         <div id="import-lock-banner" style="display:none;background:var(--al);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center">
@@ -801,6 +836,77 @@ if('serviceWorker' in navigator){
             </div>
           </div>
         </div>
+
+        <!-- LIFE PLANNING TEASERS -->
+        <div style="margin-top:24px">
+          <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🌱 Life planning tools</div>
+          <div style="font-size:12px;color:#5a8a6a;margin-bottom:14px;line-height:1.6">Coming soon in <strong style="color:#1a5c35">RandWise Life</strong> — deeper financial planning for every major life decision.</div>
+
+          <!-- Emergency fund -->
+          <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="font-size:24px">🛡️</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35">Emergency fund calculator</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:2px">How many months salary should you save?</div>
+              </div>
+            </div>
+            <div style="font-size:10px;background:#1a5c35;color:#fff;padding:3px 8px;border-radius:10px;font-weight:700;white-space:nowrap">Coming soon</div>
+          </div>
+
+          <!-- Retirement projector -->
+          <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="font-size:24px">📈</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35">Retirement projector</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:2px">See what you'll have at 65 if you save now</div>
+              </div>
+            </div>
+            <div style="font-size:10px;background:#1a5c35;color:#fff;padding:3px 8px;border-radius:10px;font-weight:700;white-space:nowrap">Coming soon</div>
+          </div>
+
+          <!-- Baby cost calculator -->
+          <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="font-size:24px">👶</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35">Baby cost calculator</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Nappies, formula, creche, clinic — the real cost</div>
+              </div>
+            </div>
+            <div style="font-size:10px;background:#1a5c35;color:#fff;padding:3px 8px;border-radius:10px;font-weight:700;white-space:nowrap">Coming soon</div>
+          </div>
+
+          <!-- Car true cost -->
+          <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="font-size:24px">🚗</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35">Car true cost calculator</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Repayment + fuel + insurance = real monthly cost</div>
+              </div>
+            </div>
+            <div style="font-size:10px;background:#1a5c35;color:#fff;padding:3px 8px;border-radius:10px;font-weight:700;white-space:nowrap">Coming soon</div>
+          </div>
+
+          <!-- 30% rules -->
+          <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="font-size:24px">📊</div>
+              <div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35">30% rules checker</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Are you within safe limits on car, bond, and debt?</div>
+              </div>
+            </div>
+            <div style="font-size:10px;background:#1a5c35;color:#fff;padding:3px 8px;border-radius:10px;font-weight:700;white-space:nowrap">Coming soon</div>
+          </div>
+
+          <div style="background:#1a5c35;border-radius:14px;padding:14px;text-align:center;margin-top:4px">
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">RandWise Life — coming 2026</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.6">Deep financial planning for every major South African life decision. Built by us, for us. 🇿🇦</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -813,7 +919,7 @@ if('serviceWorker' in navigator){
   <button class="tab-btn" id="tb-debt" onclick="switchTab('debt')"><span class="tab-icon">💳</span><span class="tab-lbl">Debt</span></button>
   <button class="tab-btn" id="fab" style="flex:1;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer" onclick="openSheet()"><div class="add-btn"><span>+</span></div></button>
   <button class="tab-btn" id="tb-grow" onclick="switchTab('grow')"><span class="tab-icon">🌱</span><span class="tab-lbl">Grow</span></button>
-  <button class="tab-btn" id="tb-import" onclick="switchTab('import')" style="position:relative"><span class="tab-icon">📄</span><span class="tab-lbl">Import</span><span id="import-badge" style="display:none;position:absolute;top:8px;right:8px;width:8px;height:8px;background:#4ade80;border-radius:50%"></span></button>
+  <button class="tab-btn" id="tb-import" onclick="switchTab('import')" style="position:relative"><span class="tab-icon">💡</span><span class="tab-lbl">Health</span><span id="import-badge" style="display:none;position:absolute;top:8px;right:8px;width:8px;height:8px;background:#4ade80;border-radius:50%"></span></button>
   <button class="tab-btn" id="tb-profile" onclick="switchTab('profile')"><span class="tab-icon">○</span><span class="tab-lbl">Profile</span></button>
 </div>
 
@@ -1786,8 +1892,78 @@ async function loadDebtsPWA(){
         </div>
       </div>`;
     }).join('');
+
+    // ── PAYOFF ACCELERATOR ─────────────────────────────────────
+    renderPayoffAccelerator(debts, totalOwed, totalMin, inc);
+
   }catch(e){document.getElementById('debt-list-pwa').innerHTML='<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">Could not load debts</div>';}
 }
+
+function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
+  const timelineEl=document.getElementById('debt-free-timeline');
+  const accEl=document.getElementById('payoff-accelerator');
+  const scenEl=document.getElementById('accelerator-scenarios');
+  const splitEl=document.getElementById('split-strategy-text');
+  const bondEl=document.getElementById('bond-score-debt-tab');
+  if(!timelineEl||!accEl||!scenEl)return;
+
+  if(!debts?.length){timelineEl.style.display='none';accEl.style.display='none';return;}
+
+  // Calculate months to payoff at minimum payments (simplified)
+  function monthsToPayoff(balance, minPay, extraPay=0){
+    if(balance<=0)return 0;
+    const payment=minPay+extraPay;
+    if(payment<=0)return 999;
+    return Math.min(360,Math.ceil(balance/payment));
+  }
+
+  const totalMonthsMin=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50))));
+  const extra100=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50),d===debts[0]?100:0)));
+  const extra200=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50),d===debts[0]?200:0)));
+
+  // Debt free timeline
+  timelineEl.style.display='block';
+  const freeMonthsEl=document.getElementById('debt-free-months');
+  const freeLabelEl=document.getElementById('debt-free-label');
+  if(freeMonthsEl)freeMonthsEl.textContent=totalMonthsMin>60?Math.round(totalMonthsMin/12)+' years':totalMonthsMin+' months';
+  if(freeLabelEl)freeLabelEl.textContent='paying only minimums (R'+totalMin.toLocaleString('en-ZA')+'/mo)';
+
+  // Accelerator scenarios
+  accEl.style.display='block';
+  const scenarios=[
+    {label:'Minimum payments',extra:0,months:totalMonthsMin,color:'#c62828',bg:'#fee2e2'},
+    {label:'Pay R100 extra/mo',extra:100,months:extra100,color:'#f59e0b',bg:'#fff8e1'},
+    {label:'Pay R200 extra/mo',extra:200,months:extra200,color:'#2e7d32',bg:'#e8f5ee'},
+  ];
+  scenEl.innerHTML=scenarios.map((s,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#1a5c35">${s.label}</div>
+        <div style="font-size:11px;color:#5a8a6a;margin-top:2px">R${(totalMin+(i>0?s.extra:0)).toLocaleString('en-ZA')}/mo total</div>
+      </div>
+      <div style="background:${s.bg};padding:6px 12px;border-radius:20px;text-align:right">
+        <div style="font-size:13px;font-weight:800;color:${s.color}">${s.months>60?Math.round(s.months/12)+' yrs':s.months+' mo'}</div>
+        ${i>0?`<div style="font-size:10px;color:#5a8a6a">${totalMonthsMin-s.months} months faster</div>`:''}
+      </div>
+    </div>`).join('');
+
+  // Dad's split strategy
+  const spare=Math.max(0,Math.round((inc-totalMin)*0.15));
+  const debtHalf=Math.round(spare/2);
+  const saveHalf=Math.round(spare/2);
+  if(splitEl)splitEl.textContent=`Pay R${debtHalf.toLocaleString('en-ZA')} extra towards debt AND save R${saveHalf.toLocaleString('en-ZA')} as a buffer — every month. If something goes wrong, your savings cover the debt. You finish debt faster AND stay protected.`;
+
+  // Update bond score on debt tab
+  if(bondEl){
+    const dti=inc>0?(totalMin/inc*100):0;
+    let score=50;
+    if(inc>=20000)score+=15;else if(inc>=15000)score+=10;else if(inc>=10000)score+=5;
+    if(dti<20)score+=15;else if(dti<30)score+=10;else if(dti<40)score+=5;else score-=10;
+    score=Math.max(5,Math.min(100,score));
+    bondEl.textContent=score;
+  }
+}
+
 async function deleteDebtPWA(id){
   if(!confirm('Remove this debt?'))return;
   try{
@@ -2817,7 +2993,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v28';
+const APP_VERSION = '2026-04-15-v29';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
