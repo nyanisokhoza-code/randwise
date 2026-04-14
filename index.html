@@ -113,9 +113,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .goal-chip.act{border-color:var(--g);background:var(--gl);color:var(--gd)}
 .add-btn{width:48px;height:48px;border-radius:14px;background:var(--g);display:flex;align-items:center;justify-content:center;margin-top:-8px;box-shadow:0 4px 16px rgba(26,122,74,.35);border:none;cursor:pointer}
 .add-btn span{font-size:26px;color:#fff;font-weight:300;line-height:1}
-.dash-hdr{padding:calc(var(--st) + 4px) 20px 12px;background:var(--w);border-bottom:.5px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.dash-g{font-size:16px;font-weight:700;color:var(--t)}
-.dash-s{font-size:12px;color:var(--mu);margin-top:2px}
+.dash-hdr{padding:calc(var(--st) + 12px) 20px 16px;background:linear-gradient(160deg,#0a3d20 0%,#1a7a4a 100%);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;overflow:hidden}
+.dash-hdr::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(168,217,110,.15) 0%,transparent 70%);pointer-events:none}
+.dash-g{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.dash-s{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px}
 .avatar{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
 .dash-scroll{overflow-y:auto;padding:0 0 32px}
 .ring-card{background:var(--w);margin:16px;border-radius:18px;border:.5px solid var(--bd);padding:20px;display:flex;flex-direction:column;align-items:center}
@@ -406,108 +407,108 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
   <div class="tab-content">
     <div class="tab-pane active" id="tp-home">
       <div style="display:flex;flex-direction:column;height:100%">
-        <!-- HEADER -->
-        <div class="dash-hdr">
-          <div>
-            <div class="dash-g" id="dg"></div>
-            <div class="dash-s" id="ds"></div>
+
+        <!-- DARK GREEN HEADER — greeting + mini ring + salary -->
+        <div style="background:linear-gradient(160deg,#0a3d20 0%,#1a7a4a 100%);padding:calc(var(--st) + 10px) 18px 18px;flex-shrink:0;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(168,217,110,.12),transparent 70%);pointer-events:none"></div>
+          <!-- Greeting row -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative">
+            <div>
+              <div style="font-size:12px;color:rgba(255,255,255,.55);font-weight:500;margin-bottom:1px" id="dg-small">Good morning</div>
+              <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1" id="dg-name">Khoza</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:3px" id="ds"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="refreshApp()" style="background:rgba(255,255,255,.12);border:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px">🔄</button>
+              <div class="avatar" id="av" onclick="ownerTap()" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.25)">U</div>
+            </div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <button onclick="refreshApp()" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--g)" title="Refresh">🔄</button>
-            <div class="avatar" id="av" onclick="ownerTap()">U</div>
+          <!-- Ring + Salary row -->
+          <div style="display:flex;align-items:center;gap:16px;position:relative">
+            <div style="flex-shrink:0;position:relative;width:84px;height:84px">
+              <svg width="84" height="84" viewBox="0 0 84 84">
+                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.15)" stroke-width="7" fill="none"/>
+                <circle id="rarc" cx="42" cy="42" r="34" stroke="#4ade80" stroke-width="7" fill="none" stroke-dasharray="0 214" stroke-linecap="round" transform="rotate(-90 42 42)"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:11px;font-weight:800;color:#fff;line-height:1;text-align:center" id="ramt">R0</div>
+                <div style="font-size:8px;color:rgba(255,255,255,.45);margin-top:1px">free</div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
+              <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1" id="hdr-income">R0</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px">After commitments</div>
+              <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
+            </div>
           </div>
         </div>
 
-        <!-- INCOME GATE — shows if no income set -->
+        <!-- INCOME GATE -->
         <div id="income-gate" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
           <div style="font-size:48px;margin-bottom:16px">💰</div>
           <div style="font-size:20px;font-weight:800;color:var(--t);margin-bottom:8px">Set your income first</div>
-          <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px;max-width:280px">Without your income, RandWise can't build your budget, track your spending, or help you save. It takes 10 seconds.</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px;max-width:280px">Without your income, RandWise can't build your budget, track your spending, or help you save. Takes 10 seconds.</div>
           <button onclick="switchTab('profile');setTimeout(openEditProfile,300)" style="background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:300px">Set my income →</button>
         </div>
 
         <div class="dash-scroll" id="dash-main-content">
 
-          <!-- SALARY / PAYDAY BANNER — shows near payday -->
-          <div id="payday-banner" style="display:none;margin:12px 16px 0;background:linear-gradient(135deg,#0d3d22,#1a7a4a);border-radius:14px;padding:14px 16px;display:none;align-items:center;justify-content:space-between">
-            <div>
-              <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Salary expected</div>
-              <div style="font-size:15px;font-weight:800;color:#fff" id="payday-text">In 3 days</div>
+          <!-- 2×2 STAT GRID -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0">
+            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px">
+              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">This week</div>
+              <div style="font-size:20px;font-weight:800;color:var(--g);line-height:1" id="stat-week-spent">R0</div>
+              <div style="font-size:10px;color:var(--mu);margin-top:3px" id="stat-week-label">Week 1 of 4</div>
             </div>
-            <div style="font-size:28px">💸</div>
-          </div>
-
-          <!-- DAILY BUDGET CARD -->
-          <div id="daily-budget-card" style="margin:12px 16px 0;background:var(--w);border-radius:16px;border:.5px solid var(--bd);padding:16px 18px;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:11px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Daily budget left</div>
-              <div style="font-size:26px;font-weight:800;color:var(--g);line-height:1" id="daily-budget-amt">R0</div>
-              <div style="font-size:11px;color:var(--mu);margin-top:3px" id="daily-budget-sub">for today</div>
+            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px">
+              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debit orders</div>
+              <div style="font-size:20px;font-weight:800;color:var(--t);line-height:1" id="stat-debits">R0</div>
+              <div style="font-size:10px;margin-top:3px" id="stat-debit-label" style="color:var(--mu)">this month</div>
             </div>
-            <div style="text-align:right">
-              <div style="font-size:11px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Week budget</div>
-              <div style="font-size:16px;font-weight:700;color:var(--m)" id="daily-week-budget">R0</div>
-              <div style="font-size:11px;color:var(--mu);margin-top:2px" id="daily-week-left">this week</div>
-            </div>
-          </div>
-
-          <!-- DEBT SCORE + DEBIT WARNING ROW -->
-          <div style="margin:10px 16px 0;display:flex;gap:10px">
-            <!-- Debt score -->
-            <div id="debt-score-card" style="flex:1;background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px;cursor:pointer" onclick="switchTab('debt')">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Debt score</div>
-              <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:6px">
-                <div style="font-size:28px;font-weight:800;line-height:1" id="debt-score-num">—</div>
-                <div style="font-size:13px;color:var(--mu)">/100</div>
+            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px;cursor:pointer" onclick="switchTab('debt')">
+              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt score</div>
+              <div style="display:flex;align-items:baseline;gap:3px">
+                <div style="font-size:20px;font-weight:800;line-height:1" id="debt-score-num">—</div>
+                <div style="font-size:11px;color:var(--mu)">/100</div>
               </div>
-              <div style="height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;margin-bottom:5px">
-                <div id="debt-score-bar" style="height:100%;border-radius:2px;background:var(--g);width:0%;transition:width .6s ease"></div>
-              </div>
-              <div style="font-size:11px;font-weight:600" id="debt-score-label">—</div>
+              <div style="height:3px;background:var(--bg2);border-radius:2px;margin:5px 0;overflow:hidden"><div id="debt-score-bar" style="height:100%;border-radius:2px;width:0%;transition:width .6s ease"></div></div>
+              <div style="font-size:10px;font-weight:600" id="debt-score-label">—</div>
             </div>
-            <!-- Debit warning -->
-            <div id="debit-warning-card" style="flex:1;background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px">
-              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Debit orders</div>
-              <div style="font-size:22px;font-weight:800;line-height:1;margin-bottom:4px" id="debit-count">R0</div>
-              <div style="font-size:11px;color:var(--mu)" id="debit-sub">this month</div>
-              <div style="font-size:11px;font-weight:600;color:var(--a);margin-top:4px" id="debit-warning-text"></div>
+            <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:13px 14px;cursor:pointer" onclick="switchTab('grow')" id="stat-goal-card">
+              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Savings goal</div>
+              <div style="font-size:20px;font-weight:800;color:var(--g);line-height:1" id="stat-goal-amt">—</div>
+              <div style="font-size:10px;color:var(--mu);margin-top:3px" id="stat-goal-label">tap to add a goal</div>
             </div>
           </div>
 
-          <!-- RING CARD -->
-          <div class="ring-card" style="margin-top:10px">
-            <div class="ring-wrap">
-              <svg width="180" height="180" viewBox="0 0 180 180">
-                <circle cx="90" cy="90" r="76" stroke="#e8e6de" stroke-width="14" fill="none"/>
-                <circle id="rarc" cx="90" cy="90" r="76" stroke="#a32d2d" stroke-width="14" fill="none" stroke-dasharray="0 477" stroke-linecap="round"/>
-              </svg>
-              <div class="ring-center">
-                <div class="ring-lbl">spendable</div>
-                <div class="ring-amt" id="ramt" style="color:var(--g)">R0</div>
-                <div class="ring-tot" id="rtot">of R0</div>
-              </div>
+          <!-- DAILY SPEND DOTS -->
+          <div style="margin:10px 14px 0;background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:12px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:10px;color:var(--mu);font-weight:600;text-transform:uppercase;letter-spacing:.8px">This week — daily spend</div>
+              <div style="font-size:10px;color:var(--mu)" id="week-num-label">Week 1 of 4</div>
             </div>
-            <div class="pills">
-              <div class="pill" style="border-color:#1a7a4a40;background:#1a7a4a12"><div class="pill-v" style="color:var(--g)" id="p-inc">R0</div><div class="pill-l">income</div></div>
-              <div class="pill" style="border-color:#a32d2d40;background:#a32d2d12"><div class="pill-v" style="color:var(--r)" id="p-sp">R0</div><div class="pill-l">spent</div></div>
-              <div class="pill" style="border-color:#b4b2a940;background:#b4b2a912"><div class="pill-v" style="color:var(--m)" id="p-wb">R0</div><div class="pill-l">week budget</div></div>
-            </div>
+            <div style="display:flex;justify-content:space-between;gap:4px" id="daily-dots"></div>
           </div>
 
-          <!-- WEEKLY SNAPSHOT -->
-          <div class="sec">
-            <div class="sec-hdr"><div class="sec-t">Weekly snapshot</div><div class="sec-s" id="wbl">R0/week</div></div>
-            <div class="wbars" id="wk-snap"></div>
+          <!-- SMART NUDGE -->
+          <div id="rollover-nudge" style="display:none;margin:10px 14px 0;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:11px 13px">
+            <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:2px">💡 Smart tip</div>
+            <div style="font-size:11px;color:#92400e;line-height:1.5" id="rollover-text">—</div>
           </div>
 
-          <!-- RECENT EXPENSES -->
-          <div class="sec">
-            <div class="sec-hdr"><div class="sec-t">Recent expenses</div><div class="sec-s">This month</div></div>
+          <!-- RECENT TRANSACTIONS -->
+          <div style="padding:14px 14px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div style="font-size:15px;font-weight:700;color:var(--t)">Recent transactions</div>
+              <div style="font-size:12px;color:var(--g);font-weight:600">See all</div>
+            </div>
             <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden" id="exp-list">
-              <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No expenses yet</div><div class="empty-s">Tap + to log your first expense</div></div>
+              <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>
             </div>
           </div>
 
+          <div style="height:24px"></div>
         </div>
       </div>
     </div>
@@ -966,7 +967,7 @@ async function loadExp(){
   if(!user?.id)return;
   try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
 }
-function renderDash(){
+async function renderDash(){
   if(!user)return;
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
@@ -975,9 +976,13 @@ function renderDash(){
   const dateStr=now.toLocaleDateString('en-ZA',{day:'numeric',month:'long'});
   const set=(id,val,prop='textContent')=>{const el=document.getElementById(id);if(el)el[prop]=val;};
 
-  set('dg',`${gr}, ${name.split(' ')[0]} 👋`);
+  // New header elements
+  set('dg-small',gr);
+  set('dg-name',name.split(' ')[0]+' 👋');
   set('ds',`${dayName}, ${dateStr}`);
   set('av',init);
+  set('hdr-income','R'+inc.toLocaleString('en-ZA'));
+  // Profile tab
   set('pav',init);
   set('pname',name);
   set('pstage',(user.life_stage_emoji||'')+' '+(user.life_stage||'—'));
@@ -1032,6 +1037,96 @@ function renderDash(){
   set('daily-week-budget','R'+weekLeft.toLocaleString('en-ZA'));
   set('daily-week-left',`of R${wb.toLocaleString('en-ZA')} left this week`);
 
+  // ── PAYDAY BANNER ──────────────────────────────────────────
+  const payDay=Number(user.pay_day||25);
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const daysToPayday=payDay>now.getDate()?payDay-now.getDate():daysInMonth-now.getDate()+payDay;
+  const paydayBanner=document.getElementById('payday-banner');
+  if(paydayBanner){
+    if(daysToPayday<=5){
+      paydayBanner.style.display='flex';
+      set('payday-label',daysToPayday===0?'Payday today! 🎉':'Salary expected');
+      set('payday-text',daysToPayday===0?`R${inc.toLocaleString('en-ZA')} coming in!`:daysToPayday===1?'Tomorrow!':` In ${daysToPayday} days`);
+      set('payday-after',`After commitments: R${Math.max(0,inc-spent).toLocaleString('en-ZA')} yours`);
+    } else {
+      paydayBanner.style.display='none';
+    }
+  }
+
+  // ── WEEK NUMBER ────────────────────────────────────────────
+  const weekOfMonth=Math.ceil(now.getDate()/7);
+  set('week-num-label',`Week ${weekOfMonth} of 4`);
+
+  // ── DAILY SPEND DOTS ───────────────────────────────────────
+  const DAYS=['M','T','W','T','F','Sa','Su'];
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
+  const dailySpends=Array(7).fill(0);
+  me.forEach(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    const dayIdx=(d.getDay()+6)%7;
+    const dayDate=new Date(weekStart);dayDate.setDate(weekStart.getDate()+dayIdx);
+    if(d>=weekStart)dailySpends[dayIdx]+=Number(e.amount);
+  });
+  const todayIdx=(now.getDay()+6)%7;
+  const maxSpend=Math.max(...dailySpends,1);
+  const dailyDotsEl=document.getElementById('daily-dots');
+  if(dailyDotsEl){
+    const dailyLimit=wb>0?wb/7:inc/30;
+    dailyDotsEl.innerHTML=DAYS.map((d,i)=>{
+      const amt=dailySpends[i];
+      const isToday=i===todayIdx;
+      const isFuture=i>todayIdx;
+      const over=amt>dailyLimit&&amt>0;
+      const dotColor=isFuture?'#e8e6de':amt===0?'#e8e6de':over?'#a32d2d':'#1a7a4a';
+      const textColor=isToday?'var(--g)':'var(--mu)';
+      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="font-size:10px;color:${textColor};font-weight:${isToday?'700':'400'}">${d}</div>
+        <div style="width:28px;height:28px;border-radius:50%;background:${dotColor};display:flex;align-items:center;justify-content:center;${isToday?'border:2px solid var(--g)':''}">
+          ${amt>0&&!isFuture?`<div style="font-size:8px;color:#fff;font-weight:700">${amt>=1000?Math.round(amt/1000)+'k':Math.round(amt)}</div>`:''}
+        </div>
+        ${isToday&&amt>0?`<div style="font-size:9px;color:var(--mu)">R${Math.round(amt)}</div>`:'<div style="font-size:9px;color:transparent">.</div>'}
+      </div>`;
+    }).join('');
+  }
+
+  // ── SAVINGS GOAL ON HOME ───────────────────────────────────
+  try{
+    const goals=await sbG(`savings_goals?tester_id=eq.${user.id}&order=created_at.desc&limit=1`);
+    const sghCard=document.getElementById('savings-goal-home');
+    if(goals?.length&&sghCard){
+      const g=goals[0];
+      const savedAmt=Number(g.saved||0),targetAmt=Number(g.target||0);
+      const pct=targetAmt>0?Math.min(100,Math.round(savedAmt/targetAmt*100)):0;
+      const left=Math.max(0,targetAmt-savedAmt);
+      sghCard.style.display='block';
+      set('sgh-name',(g.emoji||'🎯')+' '+g.name);
+      set('sgh-pct',pct+'%');
+      set('sgh-saved','R'+savedAmt.toLocaleString('en-ZA')+' saved');
+      set('sgh-left','R'+left.toLocaleString('en-ZA')+' to go');
+      const bar=document.getElementById('sgh-bar');if(bar)bar.style.width=pct+'%';
+    } else if(sghCard){
+      sghCard.style.display='none';
+    }
+  }catch{}
+
+  // ── SMART ROLLOVER NUDGE ───────────────────────────────────
+  const rolloverEl=document.getElementById('rollover-nudge');
+  const rolloverText=document.getElementById('rollover-text');
+  if(rolloverEl&&rolloverText){
+    const weekSpent=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart).reduce((s,e)=>s+Number(e.amount),0);
+    const weekRemaining=Math.max(0,wb-weekSpent);
+    const daysLeftInWeek=Math.max(1,7-todayIdx);
+    if(weekRemaining>0&&todayIdx>=4){// Thursday onwards
+      rolloverEl.style.display='block';
+      rolloverText.textContent=`Save R${Math.round(weekRemaining/2).toLocaleString('en-ZA')} by Sunday to roll over to next week's budget. You have R${weekRemaining.toLocaleString('en-ZA')} left this week.`;
+    } else if(spent>inc*0.9){
+      rolloverEl.style.display='block';
+      rolloverText.textContent=`You've used ${Math.round(spent/inc*100)}% of your monthly income. Tap + before spending anything to track it.`;
+    } else {
+      rolloverEl.style.display='none';
+    }
+  }
+
   // ── DEBT SCORE ─────────────────────────────────────────────
   const totalDebt=expenses.filter(e=>e.category==='Loan payment'||e.category_id==='loan').reduce((s,e)=>s+Number(e.amount),0);
   const debtRatio=inc>0?Math.min(totalDebt/inc,1):0;
@@ -1062,29 +1157,32 @@ function renderDash(){
     else debitWarnEl.textContent='✅ On track';
   }
 
-  // ── RING ────────────────────────────────────────────────────
-  const circ=2*Math.PI*76,pct=inc>0?Math.min(spent/inc,1):0;
+  // ── MINI RING in header ────────────────────────────────────
+  const circ=2*Math.PI*34,pct=inc>0?Math.min(spent/inc,1):0;
   const rarcEl=document.getElementById('rarc');if(rarcEl)rarcEl.setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
-  const ramtEl=document.getElementById('ramt');if(ramtEl){ramtEl.textContent='R'+sp.toLocaleString('en-ZA');ramtEl.style.color=sc;}
-  const rtotEl=document.getElementById('rtot');if(rtotEl)rtotEl.textContent='of R'+inc.toLocaleString('en-ZA');
-  const pincEl=document.getElementById('p-inc');if(pincEl)pincEl.textContent='R'+inc.toLocaleString('en-ZA');
-  const pspEl=document.getElementById('p-sp');if(pspEl)pspEl.textContent='R'+spent.toLocaleString('en-ZA');
-  const pwbEl=document.getElementById('p-wb');if(pwbEl)pwbEl.textContent='R'+wb.toLocaleString('en-ZA');
-  set('wbl','R'+wb.toLocaleString('en-ZA')+'/week');
+  const ramtEl=document.getElementById('ramt');
+  if(ramtEl)ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+  // After commitments = spendable
+  const afterEl=document.getElementById('hdr-after');
+  if(afterEl)afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
 
-  // ── WEEKLY BARS ─────────────────────────────────────────────
-  const cw=Math.ceil(now.getDate()/7);
-  document.getElementById('wk-snap').innerHTML=[1,2,3,4].map(w=>{
-    const ws=me.filter(e=>Math.ceil(new Date(e.logged_at||e.created_at).getDate()/7)===w).reduce((s,e)=>s+Number(e.amount),0);
-    const pp=wb>0?Math.min(ws/wb,1):0,hh=Math.round(pp*72),ov=ws>wb&&wb>0;
-    const col=ov?'#a32d2d':w===cw?'#1a7a4a':'#5aab7a';
-    const show=w<cw||(w===cw&&ws>0);
-    return`<div class="wbw"><div class="wbt">${show?`<div class="wbf" style="height:${hh}px;background:${col}"></div>`:''}</div><div class="wbl ${w===cw?'cur':''}">W${w}</div></div>`;
-  }).join('');
+  // ── 2×2 STAT CARDS ─────────────────────────────────────────
+  // This week spending
+  const weekStart2=new Date(now);weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));weekStart2.setHours(0,0,0,0);
+  const weekSpentAmt=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart2).reduce((s,e)=>s+Number(e.amount),0);
+  const weekOfMonth=Math.ceil(now.getDate()/7);
+  set('stat-week-spent','R'+weekSpentAmt.toLocaleString('en-ZA'));
+  set('stat-week-label',`Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`);
+  set('week-num-label',`Week ${weekOfMonth} of 4`);
+
+  // Debit orders
+  set('stat-debits','R'+debitTotal.toLocaleString('en-ZA'));
+  const daysToP=Number(user.pay_day||25)>now.getDate()?Number(user.pay_day||25)-now.getDate():new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+Number(user.pay_day||25);
+  set('stat-debit-label',debits.length+` commitment${debits.length!==1?'s':''}${daysToP<=3?' · ⚠️ Payday in '+daysToP+'d':''}`);
 
   // ── EXPENSES LIST ────────────────────────────────────────────
   const el=document.getElementById('exp-list');
-  if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No expenses yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
+  if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
   const cm=CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
   el.innerHTML=expenses.slice(0,10).map(e=>{const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
     return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
@@ -1674,7 +1772,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-14-v1';
+const APP_VERSION = '2026-04-14-v3';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
