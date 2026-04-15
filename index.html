@@ -931,19 +931,89 @@ if('serviceWorker' in navigator){
 
 <!-- Add Debt Sheet -->
 <div class="overlay" id="add-debt-ov" onclick="closeAddDebtPWA()"></div>
-<div class="sheet" id="add-debt-sheet">
+<div class="sheet" id="add-debt-sheet" style="max-height:90vh;overflow-y:auto">
   <div class="sh-handle"></div>
-  <div class="sh-title">Add a debt</div>
-  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Debt name</div>
-  <input type="text" id="debt-name" class="auth-in" placeholder="e.g. Capitec Personal Loan" style="margin-bottom:14px">
+  <div class="sh-title" id="debt-sheet-title">Add a debt</div>
+
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Category</div>
-  <select id="debt-cat" class="auth-in" style="margin-bottom:14px;background:var(--bg2);border-radius:12px;padding:14px">
+  <select id="debt-cat" class="auth-in" style="margin-bottom:14px;background:var(--bg2);border-radius:12px;padding:14px" onchange="onDebtCatChange()">
     <option>Personal loan</option><option>Credit card</option><option>Bond</option><option>Vehicle</option><option>Store account</option><option>Mashonisa</option><option>Other</option>
   </select>
-  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Current balance (R)</div>
-  <input type="number" id="debt-balance" class="auth-in" placeholder="e.g. 15000" style="margin-bottom:14px">
-  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Minimum monthly payment (R)</div>
-  <input type="number" id="debt-min" class="auth-in" placeholder="e.g. 500" style="margin-bottom:20px">
+
+  <!-- STANDARD FIELDS -->
+  <div id="debt-standard-fields">
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Debt name</div>
+    <input type="text" id="debt-name" class="auth-in" placeholder="e.g. Capitec Personal Loan" style="margin-bottom:14px">
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Current balance (R)</div>
+    <input type="number" id="debt-balance" class="auth-in" placeholder="e.g. 15000" style="margin-bottom:14px">
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Minimum monthly payment (R)</div>
+    <input type="number" id="debt-min" class="auth-in" placeholder="e.g. 500" style="margin-bottom:20px">
+  </div>
+
+  <!-- MASHONISA FIELDS -->
+  <div id="debt-mashonisa-fields" style="display:none">
+    <!-- Warning banner -->
+    <div style="background:#fff3e0;border:1px solid #ffb74d;border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:4px">⚠️ Mashonisa loans are very expensive</div>
+      <div style="font-size:12px;color:#bf360c;line-height:1.6">A 30% monthly rate is <strong>360% per year</strong>. A bank charges 11–24%. Let us show you exactly what this is costing you and how to get out fast.</div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Amount you borrowed (R)</div>
+    <input type="number" id="mash-borrowed" class="auth-in" placeholder="e.g. 3000" style="margin-bottom:14px" oninput="calcMashonisa()">
+
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Interest rate per R100 borrowed (R)</div>
+    <div style="font-size:11px;color:var(--mu);margin-bottom:8px">e.g. if they charge R30 per R100, enter 30</div>
+    <input type="number" id="mash-rate" class="auth-in" placeholder="e.g. 30" style="margin-bottom:14px" oninput="calcMashonisa()">
+
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Due date (days from today)</div>
+    <input type="number" id="mash-days" class="auth-in" placeholder="e.g. 30" value="30" style="margin-bottom:14px" oninput="calcMashonisa()">
+
+    <!-- Live breakdown -->
+    <div id="mash-breakdown" style="display:none;background:#fbe9e7;border:1px solid #ef9a9a;border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#b71c1c;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">What this really costs you</div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ffcdd2">
+        <span style="font-size:13px;color:#c62828">Amount borrowed</span>
+        <span style="font-size:13px;font-weight:700;color:#c62828" id="mash-principal">R0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ffcdd2">
+        <span style="font-size:13px;color:#c62828">Interest charged</span>
+        <span style="font-size:13px;font-weight:700;color:#c62828" id="mash-interest-amt">R0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ffcdd2">
+        <span style="font-size:13px;font-weight:700;color:#b71c1c">Total to repay</span>
+        <span style="font-size:15px;font-weight:900;color:#b71c1c" id="mash-total">R0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #ffcdd2">
+        <span style="font-size:13px;color:#c62828">Due date</span>
+        <span style="font-size:13px;font-weight:700;color:#c62828" id="mash-due">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0">
+        <span style="font-size:13px;color:#c62828">Annual interest rate</span>
+        <span style="font-size:13px;font-weight:700;color:#b71c1c" id="mash-annual">—</span>
+      </div>
+      <!-- Comparison -->
+      <div style="margin-top:10px;background:#fff3e0;border-radius:10px;padding:10px">
+        <div style="font-size:11px;font-weight:700;color:#e65100;margin-bottom:6px">Compare to a bank personal loan:</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#bf360c">
+          <span>Same R<span id="mash-comp-amt">0</span> from a bank (20% pa)</span>
+          <span id="mash-bank-interest">R0 interest</span>
+        </div>
+        <div style="font-size:11px;color:#e65100;margin-top:4px;font-weight:600" id="mash-overpay">You're paying R0 more than a bank would charge</div>
+      </div>
+    </div>
+
+    <!-- Escape plan -->
+    <div id="mash-escape" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#1b5e20;margin-bottom:6px">🚀 Your escape plan</div>
+      <div style="font-size:12px;color:#2e7d32;line-height:1.7" id="mash-escape-text">—</div>
+    </div>
+
+    <!-- Hidden fields to save correctly -->
+    <input type="hidden" id="debt-name" value="Mashonisa loan">
+    <input type="number" id="debt-balance" style="display:none">
+    <input type="number" id="debt-min" style="display:none" value="0">
+  </div>
+
   <button id="debt-save-btn" onclick="saveDebtPWA()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save debt</button>
   <button onclick="closeAddDebtPWA()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
 </div>
@@ -2111,10 +2181,75 @@ async function openEditDebtPWA(id,currentBal){
 function openAddDebtPWA(){
   document.getElementById('add-debt-sheet').classList.add('open');
   document.getElementById('add-debt-ov').classList.add('open');
+  // Reset to standard view
+  document.getElementById('debt-cat').value='Personal loan';
+  onDebtCatChange();
 }
 function closeAddDebtPWA(){
   document.getElementById('add-debt-sheet').classList.remove('open');
   document.getElementById('add-debt-ov').classList.remove('open');
+}
+
+function onDebtCatChange(){
+  const cat=document.getElementById('debt-cat').value;
+  const isMash=cat==='Mashonisa';
+  document.getElementById('debt-standard-fields').style.display=isMash?'none':'block';
+  document.getElementById('debt-mashonisa-fields').style.display=isMash?'block':'none';
+  document.getElementById('debt-sheet-title').textContent=isMash?'Mashonisa loan — real cost':'Add a debt';
+  if(isMash) calcMashonisa();
+}
+
+function calcMashonisa(){
+  const borrowed=parseFloat(document.getElementById('mash-borrowed')?.value)||0;
+  const ratePerHundred=parseFloat(document.getElementById('mash-rate')?.value)||30;
+  const days=parseInt(document.getElementById('mash-days')?.value)||30;
+  if(!borrowed){
+    document.getElementById('mash-breakdown').style.display='none';
+    document.getElementById('mash-escape').style.display='none';
+    return;
+  }
+  const interest=Math.round(borrowed*(ratePerHundred/100));
+  const total=borrowed+interest;
+  const annualRate=Math.round((ratePerHundred/100)*(365/days)*100);
+  const dueDate=new Date(Date.now()+days*86400000).toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'});
+  // Bank comparison — 20% annual = ~1.67% per month
+  const bankMonthlyRate=0.20/12;
+  const bankMonths=Math.ceil(days/30);
+  const bankInterest=Math.round(borrowed*bankMonthlyRate*bankMonths);
+  const overpay=interest-bankInterest;
+
+  // Update breakdown
+  document.getElementById('mash-principal').textContent='R'+borrowed.toLocaleString('en-ZA');
+  document.getElementById('mash-interest-amt').textContent='R'+interest.toLocaleString('en-ZA');
+  document.getElementById('mash-total').textContent='R'+total.toLocaleString('en-ZA');
+  document.getElementById('mash-due').textContent=dueDate;
+  document.getElementById('mash-annual').textContent=annualRate+'% per year';
+  document.getElementById('mash-comp-amt').textContent=borrowed.toLocaleString('en-ZA');
+  document.getElementById('mash-bank-interest').textContent='R'+bankInterest.toLocaleString('en-ZA')+' interest';
+  document.getElementById('mash-overpay').textContent=`You're paying R${overpay.toLocaleString('en-ZA')} MORE than a bank would charge`;
+  document.getElementById('mash-breakdown').style.display='block';
+
+  // Escape plan
+  const inc=Number(user?.income_amount||0);
+  const weeklyInc=Math.round(inc/4);
+  let escapeText='';
+  if(total<=weeklyInc){
+    escapeText=`✅ Good news — R${total.toLocaleString('en-ZA')} is less than your weekly budget. Pay it all on your next payday and you're free. Do NOT roll it over.`;
+  } else if(total<=inc*0.3){
+    escapeText=`⚠️ R${total.toLocaleString('en-ZA')} is ${Math.round(total/inc*100)}% of your monthly income. Prioritise paying this first on payday — before any other spending. Ask family for help with the shortfall if needed rather than rolling over.`;
+  } else {
+    escapeText=`🚨 R${total.toLocaleString('en-ZA')} is ${Math.round(total/inc*100)}% of your monthly income — this is a serious burden. Do NOT roll it over (the debt will grow fast). Options: ask family to lend you the money, apply for a small bank loan at 20% interest (much cheaper), or negotiate directly with the Mashonisa for more time.`;
+  }
+  document.getElementById('mash-escape-text').textContent=escapeText;
+  document.getElementById('mash-escape').style.display='block';
+
+  // Pre-fill hidden save fields
+  const nameEl=document.getElementById('debt-name');
+  const balEl=document.getElementById('debt-balance');
+  const minEl=document.getElementById('debt-min');
+  if(nameEl) nameEl.value='Mashonisa loan';
+  if(balEl) balEl.value=total; // save total owed (principal + interest)
+  if(minEl) minEl.value=total; // full amount due — no monthly instalments
 }
 async function saveDebtPWA(){
   const name=document.getElementById('debt-name').value.trim();
@@ -3336,7 +3471,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v40';
+const APP_VERSION = '2026-04-15-v41';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
