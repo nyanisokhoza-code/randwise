@@ -482,7 +482,7 @@ if('serviceWorker' in navigator){
               <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:3px" id="ds"></div>
             </div>
             <div style="display:flex;gap:8px;align-items:center">
-              <div class="avatar" id="av" onclick="ownerTap()" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.25)">U</div>
+              <div class="avatar" id="av" onclick="ownerTap()" style="background:rgba(255,255,255,.2);color:#fff;border:2px solid rgba(255,255,255,.25);cursor:pointer" title="Tap 5× for owner panel"></div>
             </div>
           </div>
           <!-- Ring + Salary row -->
@@ -599,7 +599,7 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <div class="tab-pane" id="tp-profile">
-      <div style="padding:calc(var(--st) + 12px) 20px 40px;overflow-y:auto">
+      <div style="padding:calc(var(--st) + 12px) 20px 100px;overflow-y:auto;height:100%;-webkit-overflow-scrolling:touch">
         <div style="text-align:center;padding:20px 0 18px">
           <div class="avatar" style="width:72px;height:72px;border-radius:50%;font-size:28px;margin:0 auto 12px" id="pav">U</div>
           <div style="font-size:20px;font-weight:800" id="pname">—</div>
@@ -632,8 +632,8 @@ if('serviceWorker' in navigator){
             <button onclick="exportPDF()" style="flex:1;padding:11px;background:#f0faf4;color:#1a5c35;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
           </div>
         </div>
-        <div style="height:20px"></div>
-        <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:32px">Sign out</button>
+        <div style="height:8px"></div>
+        <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
       </div>
     </div>
   </div>
@@ -3354,7 +3354,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v36';
+const APP_VERSION = '2026-04-15-v37';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -3394,6 +3394,9 @@ function ownerTap(){
     document.getElementById('owner-pin-input').value='';
     document.getElementById('owner-pin-err').style.display='none';
     setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
+  } else if(ownerTapCount===1){
+    // Single tap — go to home tab
+    switchTab('home');
   }
 }
 async function checkOwnerPin(){
