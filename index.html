@@ -2056,16 +2056,19 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
     const monthsSaved=i>0?totalMonthsMin-s.months:0;
     const intSaved=i>0?intMin-s.interest:0;
     const fmtMonths=s.months>=60?Math.round(s.months/12)+' yrs':s.months+' mo';
-    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
-      <div style="flex:1">
+    let insight='';
+    if(i===0) insight=`<div style="font-size:11px;color:#c62828;line-height:1.6">Costs the most<br>in interest over time</div>`;
+    if(i===1&&intSaved>0) insight=`<div style="font-size:11px;color:#92400e;line-height:1.6">Saves <strong>R${intSaved.toLocaleString('en-ZA')}</strong> interest<br>& ${monthsSaved} months sooner</div>`;
+    if(i===2&&intSaved>0) insight=`<div style="font-size:11px;color:#1a5c35;line-height:1.6"><strong>Best choice</strong> — saves<br>R${intSaved.toLocaleString('en-ZA')} in interest</div>`;
+    return`<div style="display:flex;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
+      <div style="flex:1.2">
         <div style="font-size:13px;font-weight:700;color:#1a5c35">${s.label}</div>
         <div style="font-size:11px;color:#5a8a6a;margin-top:2px">R${(totalMin+s.extra).toLocaleString('en-ZA')}/mo total</div>
-        ${s.interest>0?`<div style="font-size:10px;color:#5a8a6a">Interest paid: R${s.interest.toLocaleString('en-ZA')}</div>`:''}
       </div>
+      <div style="flex:1;text-align:center;padding:0 6px">${insight}</div>
       <div style="background:${s.bg};padding:6px 12px;border-radius:20px;text-align:right;flex-shrink:0">
         <div style="font-size:13px;font-weight:800;color:${s.color}">${fmtMonths}</div>
         ${monthsSaved>0?`<div style="font-size:10px;color:#2e7d32;font-weight:700">${monthsSaved} mo faster</div>`:''}
-        ${intSaved>0?`<div style="font-size:10px;color:#2e7d32">Save R${intSaved.toLocaleString('en-ZA')}</div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -3333,7 +3336,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v39';
+const APP_VERSION = '2026-04-15-v40';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
