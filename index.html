@@ -2944,29 +2944,105 @@ async function sendOwnerAlert(type, data){
   }catch(e){console.warn('Alert send failed:',e);}
 }
 
-async function reportIssue(){
-  const msg = prompt('Describe what happened (optional):') || 'User reported issue from splash screen';
+// ── Report a Problem — proper form ──────────────────────────
+function reportIssue(){
+  // Remove existing modal if any
+  const existing = document.getElementById('report-modal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'report-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+    display:flex;align-items:flex-end;justify-content:center;
+    animation:fadeIn .2s ease;
+  `;
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px 20px 0 0;padding:24px 24px 40px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px;"></div>
+      <div style="font-size:18px;font-weight:800;color:#1a1a1a;margin-bottom:4px;">Report a problem</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px;">We'll look into this and get back to you.</div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;">YOUR NAME</label>
+        <input id="rp-name" type="text" placeholder="e.g. Thandi" value="${user?.name||''}"
+          style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:14px;outline:none;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;">WHAT WENT WRONG? <span style="color:#c00">*</span></label>
+        <select id="rp-category" style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:14px;background:#fff;outline:none;margin-bottom:10px;">
+          <option value="">— Select issue type —</option>
+          <option value="login">Can't log in / password reset not working</option>
+          <option value="data">My data isn't saving or showing</option>
+          <option value="buttons">Buttons not responding</option>
+          <option value="loading">Page won't load / stuck on loading</option>
+          <option value="bank_import">Bank statement import failed</option>
+          <option value="payments">Payment / upgrade issue</option>
+          <option value="other">Something else</option>
+        </select>
+        <textarea id="rp-desc" rows="3" placeholder="Tell us more — what were you doing when it happened?"
+          style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:14px;resize:none;outline:none;"></textarea>
+      </div>
+
+      <div id="rp-error" style="color:#c00;font-size:12px;margin-bottom:10px;display:none;"></div>
+
+      <button onclick="submitReport()" style="width:100%;background:#1a5c35;color:#fff;border:none;border-radius:12px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;">
+        Send report →
+      </button>
+      <button onclick="document.getElementById('report-modal').remove()"
+        style="width:100%;background:none;border:none;color:#999;font-size:13px;cursor:pointer;padding:8px;">
+        Cancel
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  // Close on backdrop tap
+  modal.addEventListener('click', e => { if(e.target === modal) modal.remove(); });
+}
+
+async function submitReport(){
+  const name = document.getElementById('rp-name')?.value?.trim() || user?.name || 'Anonymous';
+  const category = document.getElementById('rp-category')?.value;
+  const desc = document.getElementById('rp-desc')?.value?.trim();
+  const errEl = document.getElementById('rp-error');
+
+  if(!category){ errEl.textContent='Please select an issue type.'; errEl.style.display='block'; return; }
+  if(!desc){ errEl.textContent='Please describe what happened.'; errEl.style.display='block'; return; }
+  if(errEl) errEl.style.display='none';
+
+  // Determine severity
+  const serious = ['login','payments','loading'].includes(category);
+  const errorSource = serious ? 'user_report_critical' : 'user_report';
+
   const reportData = {
     user_id: user?.id || null,
-    user_name: user?.name || 'unknown',
-    error_message: msg,
-    error_source: 'user_report',
+    user_name: name,
+    error_message: `[${category.toUpperCase()}] ${desc}`,
+    error_source: errorSource,
     error_line: 0,
     page_url: window.location.href,
     user_agent: navigator.userAgent,
     created_at: new Date().toISOString()
   };
+
+  const btn = document.querySelector('#report-modal button');
+  if(btn){ btn.textContent = 'Sending...'; btn.disabled = true; }
+
   try{
     await fetch(`${SB}/rest/v1/bug_reports`,{
       method:'POST',
       headers:{...H,'Prefer':'return=minimal'},
       body:JSON.stringify(reportData)
     });
-    // Fire alert email to owner
     sendOwnerAlert('bug_report', reportData);
-    alert('✅ Report sent. Thank you! The RandWise team will look into this.');
+    document.getElementById('report-modal').remove();
+    showToast(serious
+      ? '🚨 Report sent — this is marked urgent and we\'ll respond ASAP.'
+      : '✅ Report sent. Thank you! We\'ll look into this.');
   }catch{
-    alert('Could not send report. Please try refreshing the page.');
+    if(btn){ btn.textContent='Send report →'; btn.disabled=false; }
+    if(errEl){ errEl.textContent='Could not send. Please try again.'; errEl.style.display='block'; }
   }
 }
 
@@ -3027,28 +3103,110 @@ window.addEventListener('error',async(e)=>{
   }
 });
 
-// ── Connectivity check — redirect to maintenance only if truly unreachable ──
+// ══ SMART MAINTENANCE SYSTEM ════════════════════════════════
+// Two triggers: (1) auto-detect Supabase unreachable, (2) manual admin switch
+// Severity detection: serious issues notify owner immediately
+
 async function checkConnectivity(){
   try{
-    const r=await fetch(`${SB}/rest/v1/beta_testers?limit=0`,{headers:{'apikey':AK,'Authorization':'Bearer '+AK},signal:AbortSignal.timeout(5000)});
-    return r.ok||r.status===406||r.status===400;
-  }catch{return false;}
+    const r = await fetch(`${SB}/rest/v1/beta_testers?limit=0`,{
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK},
+      signal:AbortSignal.timeout(5000)
+    });
+    return r.ok || r.status===406 || r.status===400 || r.status===401;
+  }catch{ return false; }
 }
-let _offlineCount=0;
-// Start connectivity check AFTER app loads (so showToast/show are defined)
-window.addEventListener('load',()=>{
+
+async function checkManualMaintenanceFlag(){
+  // Check Supabase for a manual maintenance flag set by admin
+  try{
+    const r = await fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK},
+      signal:AbortSignal.timeout(4000)
+    });
+    if(r.ok){
+      const data = await r.json();
+      return data?.[0]?.value === 'true';
+    }
+  }catch{}
+  return false;
+}
+
+function goToMaintenance(reason){
+  // Store reason so maintenance page can show it
+  sessionStorage.setItem('maintenance_reason', reason || 'scheduled');
+  window.location.href = APP_URL + '/maintenance.html';
+}
+
+// Button unresponsiveness detection
+// If user taps any interactive element 3+ times with no response in 8 seconds → flag
+let _deadTapCount = 0;
+let _deadTapTimer = null;
+function trackDeadTap(){
+  _deadTapCount++;
+  clearTimeout(_deadTapTimer);
+  _deadTapTimer = setTimeout(()=>{ _deadTapCount=0; }, 8000);
+  if(_deadTapCount >= 5){
+    _deadTapCount = 0;
+    // Check if we're on main app (not splash)
+    const mainEl = document.getElementById('main');
+    if(mainEl && mainEl.style.display !== 'none'){
+      sendOwnerAlert('bug_report',{
+        user_name: user?.name||'unknown',
+        error_message: 'BUTTONS UNRESPONSIVE — user tapped 5+ times with no response',
+        error_source: 'unresponsive_ui',
+        page_url: window.location.href
+      });
+      goToMaintenance('unresponsive');
+    }
+  }
+}
+
+let _offlineCount = 0;
+let _maintenanceNotified = false;
+
+window.addEventListener('load', ()=>{
+
+  // Dead tap tracking on all buttons
+  document.addEventListener('click', e=>{
+    const el = e.target.closest('button, [onclick], .tab-btn');
+    if(el) trackDeadTap();
+  }, true);
+
+  // Main connectivity + manual flag check every 30s
   setInterval(async()=>{
-    if(document.hidden)return;
-    const online=await checkConnectivity();
+    if(document.hidden) return;
+
+    // Check manual override first (admin flipped switch)
+    const manualMaintenance = await checkManualMaintenanceFlag();
+    if(manualMaintenance){
+      goToMaintenance('manual');
+      return;
+    }
+
+    // Auto-detect: Supabase unreachable
+    const online = await checkConnectivity();
     if(!online){
       _offlineCount++;
-      if(_offlineCount>=2){
-        window.location.href=APP_URL+'/maintenance.html';
+      if(_offlineCount >= 2){
+        // Only notify owner once per outage
+        if(!_maintenanceNotified){
+          _maintenanceNotified = true;
+          sendOwnerAlert('bug_report',{
+            user_name: user?.name||'system',
+            error_message: '🚨 CRITICAL: App went to maintenance — Supabase unreachable for 60+ seconds',
+            error_source: 'connectivity_failure',
+            page_url: window.location.href
+          });
+        }
+        goToMaintenance('outage');
       }
     } else {
-      _offlineCount=0;
+      _offlineCount = 0;
+      _maintenanceNotified = false;
     }
-  },30000);
+  }, 30000);
+
 });
 
 // ══ MOBILE KEYBOARD FIX ═════════════════════════════════════
@@ -3164,7 +3322,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v33';
+const APP_VERSION = '2026-04-15-v34';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
