@@ -528,10 +528,11 @@ if('serviceWorker' in navigator){
             </div>
 
             <!-- DEBIT ORDERS -->
-            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
+            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="openDebitOrders()">
               <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debit orders</div>
               <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-debits">R0</div>
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-debit-label">this month</div>
+              <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to manage →</div>
             </div>
 
             <!-- DEBT SCORE -->
@@ -606,12 +607,13 @@ if('serviceWorker' in navigator){
           <div style="font-size:13px;color:var(--mu)" id="pinc">R0/monthly</div>
           <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
             <button onclick="openEditProfile()" style="background:#f5f5f0;border:1px solid #e0e0e0;color:#333;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px;cursor:pointer">✏️ Edit profile</button>
-            <button onclick="hardRefresh()" style="background:#f5f5f0;border:1px solid #e0e0e0;color:#888;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px;cursor:pointer">🔄 Refresh</button>
           </div>
+          <div style="font-size:10px;color:var(--mu);margin-top:8px;text-align:center" id="p-version"></div>
         </div>
         <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden;margin-bottom:14px">
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Account tier</span><span style="background:var(--bg2);color:var(--mu);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px" id="ptier">Free</span></div>
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Referral code</span><span style="font-size:13px;color:var(--g);font-weight:700;font-family:monospace" id="pref">—</span></div>
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Pay day</span><span style="font-size:13px;color:var(--mu)" id="ppayday">25th</span></div>
           <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Member since</span><span style="font-size:13px;color:var(--mu)" id="psince">—</span></div>
         </div>
         <div style="background:var(--gl);border-radius:14px;padding:16px;margin-bottom:14px">
@@ -619,17 +621,7 @@ if('serviceWorker' in navigator){
           <div style="font-size:12px;color:var(--g);line-height:1.6">Earn R10 when a friend goes Pro + R5/month for 6 months. Paid via Capitec Pay.</div>
           <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share RandWise</button>
         </div>
-        <!-- BOND READINESS CARD -->
-        <div onclick="openBondReadiness()" style="background:#1a5c35;border-radius:14px;padding:16px;margin-bottom:14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px">🏠 Bond readiness score</div>
-            <div style="font-size:11px;color:rgba(255,255,255,.7)">See if you qualify for a home loan</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:22px;font-weight:900;color:#4ade80" id="bond-score-preview">—</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.5)">/100</div>
-          </div>
-        </div>
+
 
         <!-- EXPORT SECTION -->
         <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:16px;margin-bottom:14px">
@@ -640,7 +632,8 @@ if('serviceWorker' in navigator){
             <button onclick="exportPDF()" style="flex:1;padding:11px;background:#f0faf4;color:#1a5c35;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
           </div>
         </div>
-        <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer">Sign out</button>
+        <div style="height:20px"></div>
+        <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:32px">Sign out</button>
       </div>
     </div>
   </div>
@@ -931,9 +924,31 @@ if('serviceWorker' in navigator){
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Your name</div>
   <input type="text" id="ep-name" class="auth-in" placeholder="First name or nickname" style="margin-bottom:14px">
   <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Monthly income (R)</div>
-  <input type="number" id="ep-income" class="auth-in" placeholder="e.g. 8500" style="margin-bottom:20px">
+  <input type="number" id="ep-income" class="auth-in" placeholder="e.g. 8500" style="margin-bottom:14px">
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Pay day (day of month)</div>
+  <select id="ep-payday" class="auth-in" style="margin-bottom:14px;background:var(--bg2);border-radius:12px;padding:14px">
+    <option value="1">1st</option><option value="5">5th</option><option value="7">7th</option><option value="10">10th</option><option value="15">15th</option><option value="20">20th</option><option value="25" selected>25th</option><option value="28">28th</option><option value="30">30th / Last day</option>
+  </select>
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Phone number (optional)</div>
+  <input type="tel" id="ep-phone" class="auth-in" placeholder="e.g. 0821234567" style="margin-bottom:20px">
   <button id="ep-save-btn" onclick="saveProfile()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save changes</button>
   <button onclick="closeEditProfile()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
+</div>
+
+<!-- Debit Orders Sheet -->
+<div class="overlay" id="debit-orders-ov" onclick="closeDebitOrders()"></div>
+<div class="sheet" id="debit-orders-sheet" style="max-height:80vh;overflow-y:auto">
+  <div class="sh-handle"></div>
+  <div class="sh-title">Debit orders</div>
+  <div style="font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.6">Log your monthly debit orders so RandWise can warn you before payday and track your total commitments.</div>
+  <div id="debit-orders-list"><div style="text-align:center;padding:20px;color:var(--mu);font-size:13px">Loading...</div></div>
+  <div style="margin-top:12px">
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Add debit order</div>
+    <input type="text" id="do-name" class="auth-in" placeholder="e.g. Vodacom, Insurance, Gym" style="margin-bottom:8px">
+    <input type="number" id="do-amount" class="auth-in" placeholder="Monthly amount (R)" style="margin-bottom:12px">
+    <button onclick="addDebitOrder()" style="width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer">+ Add</button>
+  </div>
+  <button onclick="closeDebitOrders()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Close</button>
 </div>
 
 <!-- Add Debt Sheet -->
@@ -1683,10 +1698,20 @@ async function renderDash(){
   set('stat-week-label',`Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`);
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
-  // Debit orders
-  set('stat-debits','R'+debitTotal.toLocaleString('en-ZA'));
+  // Debit orders — combine expense-based + locally stored debit orders
+  const storedDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+  const storedDOTotal=storedDOs.reduce((s,d)=>s+Number(d.amount||0),0);
+  const combinedDebitTotal=debitTotal+storedDOTotal;
+  const combinedDebitCount=debits.length+storedDOs.length;
+  set('stat-debits','R'+combinedDebitTotal.toLocaleString('en-ZA'));
   const daysToP=Number(user.pay_day||25)>now.getDate()?Number(user.pay_day||25)-now.getDate():new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+Number(user.pay_day||25);
-  set('stat-debit-label',debits.length+` commitment${debits.length!==1?'s':''}${daysToP<=3?' · ⚠️ Payday in '+daysToP+'d':''}`);
+  set('stat-debit-label',combinedDebitCount+` commitment${combinedDebitCount!==1?'s':''}${daysToP<=3?' · ⚠️ Payday in '+daysToP+'d':''}`);
+
+  // Update profile display
+  const pdDisplay=document.getElementById('ppayday');
+  if(pdDisplay){const pd=Number(user.pay_day||25);pdDisplay.textContent=pd+(pd===1?'st':pd===2?'nd':pd===3?'rd':'th');}
+  const verEl=document.getElementById('p-version');
+  if(verEl)verEl.textContent='Version '+APP_VERSION;
 
   // ── EXPENSES LIST ────────────────────────────────────────────
   const el=document.getElementById('exp-list');
@@ -1760,6 +1785,10 @@ function switchTab(t){
 function openEditProfile(){
   document.getElementById('ep-name').value=user?.name||'';
   document.getElementById('ep-income').value=user?.income_amount||'';
+  const pdEl=document.getElementById('ep-payday');
+  if(pdEl)pdEl.value=user?.pay_day||25;
+  const phEl=document.getElementById('ep-phone');
+  if(phEl)phEl.value=user?.phone||'';
   document.getElementById('ep-sheet').classList.add('open');
   document.getElementById('ep-ov').classList.add('open');
 }
@@ -1770,16 +1799,73 @@ function closeEditProfile(){
 async function saveProfile(){
   const name=document.getElementById('ep-name').value.trim();
   const income=parseFloat(document.getElementById('ep-income').value)||0;
+  const payDay=parseInt(document.getElementById('ep-payday')?.value||25);
+  const phone=document.getElementById('ep-phone')?.value.trim()||'';
   if(!name){showToast('Enter your name');return;}
   const btn=document.getElementById('ep-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
   try{
-    await fetch(`${SB}/rest/v1/beta_testers?id=eq.${user.id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({name,income_amount:income})});
-    user.name=name;user.income_amount=income;
+    await fetch(`${SB}/rest/v1/beta_testers?id=eq.${user.id}`,{method:'PATCH',headers:{...H,'Prefer':'return=minimal'},body:JSON.stringify({name,income_amount:income,pay_day:payDay,phone:phone||null})});
+    user.name=name;user.income_amount=income;user.pay_day=payDay;user.phone=phone;
     localStorage.setItem('rw_user',JSON.stringify(user));
     renderDash();closeEditProfile();showToast('✅ Profile updated');
+    // Update pay day display
+    const pdDisplay=document.getElementById('ppayday');
+    if(pdDisplay)pdDisplay.textContent=payDay+(payDay===1?'st':payDay===2?'nd':payDay===3?'rd':'th');
   }catch(e){showToast('Could not save. Try again.');}
   btn.disabled=false;btn.textContent='Save changes';
+}
+
+// ── Debit Orders ──────────────────────────────────────────────
+let debitOrders=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+
+function openDebitOrders(){
+  document.getElementById('debit-orders-sheet').classList.add('open');
+  document.getElementById('debit-orders-ov').classList.add('open');
+  renderDebitOrdersList();
+}
+function closeDebitOrders(){
+  document.getElementById('debit-orders-sheet').classList.remove('open');
+  document.getElementById('debit-orders-ov').classList.remove('open');
+}
+function renderDebitOrdersList(){
+  const el=document.getElementById('debit-orders-list');
+  if(!el)return;
+  if(!debitOrders.length){
+    el.innerHTML='<div style="text-align:center;padding:16px;color:var(--mu);font-size:13px">No debit orders added yet</div>';
+    return;
+  }
+  const total=debitOrders.reduce((s,d)=>s+Number(d.amount||0),0);
+  el.innerHTML=`<div style="background:#f0faf4;border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between">
+    <span style="font-size:12px;font-weight:700;color:#5a8a6a">Total commitments</span>
+    <span style="font-size:14px;font-weight:800;color:#1a5c35">R${total.toLocaleString('en-ZA')}/mo</span>
+  </div>`+debitOrders.map((d,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0faf4">
+      <div style="font-size:13px;font-weight:600">${d.name}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:13px;font-weight:700;color:#1a5c35">R${Number(d.amount).toLocaleString('en-ZA')}/mo</span>
+        <button onclick="removeDebitOrder(${i})" style="background:#fee2e2;border:none;color:#c62828;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>
+      </div>
+    </div>`).join('');
+}
+function addDebitOrder(){
+  const name=document.getElementById('do-name').value.trim();
+  const amount=parseFloat(document.getElementById('do-amount').value)||0;
+  if(!name||!amount){showToast('Enter name and amount');return;}
+  debitOrders.push({name,amount});
+  localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
+  document.getElementById('do-name').value='';
+  document.getElementById('do-amount').value='';
+  renderDebitOrdersList();
+  renderDash();
+  showToast('✅ Debit order added');
+}
+function removeDebitOrder(i){
+  debitOrders.splice(i,1);
+  localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
+  renderDebitOrdersList();
+  renderDash();
+  showToast('Removed');
 }
 
 // ── Debt PWA ──────────────────────────────────────────────────
@@ -1909,17 +1995,70 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
 
   if(!debts?.length){timelineEl.style.display='none';accEl.style.display='none';return;}
 
-  // Calculate months to payoff at minimum payments (simplified)
-  function monthsToPayoff(balance, minPay, extraPay=0){
+  // Real amortization — accounts for interest rate
+  function monthsToPayoffAmort(balance, minPay, extraPay=0, annualRate=0){
     if(balance<=0)return 0;
     const payment=minPay+extraPay;
     if(payment<=0)return 999;
-    return Math.min(360,Math.ceil(balance/payment));
+    const monthlyRate=annualRate/100/12;
+    if(monthlyRate<=0) return Math.min(360,Math.ceil(balance/payment));
+    if(payment<=balance*monthlyRate) return 360; // Payment doesn't cover interest
+    return Math.min(360,Math.ceil(-Math.log(1-(monthlyRate*balance/payment))/Math.log(1+monthlyRate)));
   }
 
-  const totalMonthsMin=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50))));
-  const extra100=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50),d===debts[0]?100:0)));
-  const extra200=Math.max(...debts.map(d=>monthsToPayoff(Number(d.balance||0),Number(d.min_payment||50),d===debts[0]?200:0)));
+  // Total interest paid calculation
+  function totalInterestPaid(balance, minPay, extraPay=0, annualRate=0){
+    if(balance<=0||annualRate<=0)return 0;
+    const payment=minPay+extraPay;
+    const monthlyRate=annualRate/100/12;
+    let bal=balance, totalInt=0, months=0;
+    while(bal>0&&months<360){
+      const interest=bal*monthlyRate;
+      totalInt+=interest;
+      bal=bal+interest-payment;
+      if(bal<0)bal=0;
+      months++;
+    }
+    return Math.round(totalInt);
+  }
+
+  // Snowball: pay off smallest first, roll payment to next
+  function snowballMonths(debtList, extraPay=0){
+    const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
+    let balances=sorted.map(d=>Number(d.balance||0));
+    const payments=sorted.map(d=>Number(d.min_payment||50));
+    const rates=sorted.map(d=>Number(d.interest_rate||0)/100/12);
+    let rollingExtra=extraPay;
+    let maxMonths=0;
+    for(let i=0;i<sorted.length;i++){
+      const pay=payments[i]+rollingExtra;
+      const rate=rates[i];
+      let bal=balances[i],months=0;
+      while(bal>0&&months<360){
+        bal=bal*(1+rate)-pay;
+        if(bal<0)bal=0;
+        months++;
+      }
+      if(months>maxMonths)maxMonths=months;
+      rollingExtra+=payments[i]; // Roll minimum onto next debt
+    }
+    return maxMonths;
+  }
+
+  function snowballInterest(debtList, extraPay=0){
+    let total=0;
+    debtList.forEach(d=>{
+      total+=totalInterestPaid(Number(d.balance||0),Number(d.min_payment||50),extraPay,Number(d.interest_rate||0));
+    });
+    return total;
+  }
+
+  const totalMonthsMin=snowballMonths(debts,0);
+  const extra100=snowballMonths(debts,100);
+  const extra200=snowballMonths(debts,200);
+  const intMin=snowballInterest(debts,0);
+  const int100=snowballInterest(debts,100);
+  const int200=snowballInterest(debts,200);
 
   // Debt free timeline
   timelineEl.style.display='block';
@@ -1928,24 +2067,30 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   if(freeMonthsEl)freeMonthsEl.textContent=totalMonthsMin>60?Math.round(totalMonthsMin/12)+' years':totalMonthsMin+' months';
   if(freeLabelEl)freeLabelEl.textContent='paying only minimums (R'+totalMin.toLocaleString('en-ZA')+'/mo)';
 
-  // Accelerator scenarios
+  // Accelerator scenarios with real interest data
   accEl.style.display='block';
   const scenarios=[
-    {label:'Minimum payments',extra:0,months:totalMonthsMin,color:'#c62828',bg:'#fee2e2'},
-    {label:'Pay R100 extra/mo',extra:100,months:extra100,color:'#f59e0b',bg:'#fff8e1'},
-    {label:'Pay R200 extra/mo',extra:200,months:extra200,color:'#2e7d32',bg:'#e8f5ee'},
+    {label:'Minimum payments',extra:0,months:totalMonthsMin,interest:intMin,color:'#c62828',bg:'#fee2e2'},
+    {label:'Pay R100 extra/mo',extra:100,months:extra100,interest:int100,color:'#f59e0b',bg:'#fff8e1'},
+    {label:'Pay R200 extra/mo',extra:200,months:extra200,interest:int200,color:'#2e7d32',bg:'#e8f5ee'},
   ];
-  scenEl.innerHTML=scenarios.map((s,i)=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
-      <div>
+  scenEl.innerHTML=scenarios.map((s,i)=>{
+    const monthsSaved=i>0?totalMonthsMin-s.months:0;
+    const intSaved=i>0?intMin-s.interest:0;
+    const fmtMonths=s.months>=60?Math.round(s.months/12)+' yrs':s.months+' mo';
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
+      <div style="flex:1">
         <div style="font-size:13px;font-weight:700;color:#1a5c35">${s.label}</div>
-        <div style="font-size:11px;color:#5a8a6a;margin-top:2px">R${(totalMin+(i>0?s.extra:0)).toLocaleString('en-ZA')}/mo total</div>
+        <div style="font-size:11px;color:#5a8a6a;margin-top:2px">R${(totalMin+s.extra).toLocaleString('en-ZA')}/mo total</div>
+        ${s.interest>0?`<div style="font-size:10px;color:#5a8a6a">Interest paid: R${s.interest.toLocaleString('en-ZA')}</div>`:''}
       </div>
-      <div style="background:${s.bg};padding:6px 12px;border-radius:20px;text-align:right">
-        <div style="font-size:13px;font-weight:800;color:${s.color}">${s.months>60?Math.round(s.months/12)+' yrs':s.months+' mo'}</div>
-        ${i>0?`<div style="font-size:10px;color:#5a8a6a">${totalMonthsMin-s.months} months faster</div>`:''}
+      <div style="background:${s.bg};padding:6px 12px;border-radius:20px;text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:800;color:${s.color}">${fmtMonths}</div>
+        ${monthsSaved>0?`<div style="font-size:10px;color:#2e7d32;font-weight:700">${monthsSaved} mo faster</div>`:''}
+        ${intSaved>0?`<div style="font-size:10px;color:#2e7d32">Save R${intSaved.toLocaleString('en-ZA')}</div>`:''}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   // Dad's split strategy
   const spare=Math.max(0,Math.round((inc-totalMin)*0.15));
@@ -2394,41 +2539,67 @@ async function refreshAINudge(){
 function openWeeklyPlanner(){
   document.getElementById('weekly-planner').style.display='block';
   document.body.style.overflow='hidden';
-  renderWeeklyPlanner();
+  const currentWeek=Math.ceil(new Date().getDate()/7);
+  selectedWeek=currentWeek;
+  renderWeeklyPlanner(currentWeek);
 }
 function closeWeeklyPlanner(){
   document.getElementById('weekly-planner').style.display='none';
   document.body.style.overflow='';
 }
-function renderWeeklyPlanner(){
+
+let selectedWeek=null; // null = current week
+
+function selectWeek(w){
+  const now=new Date();
+  const currentWeek=Math.ceil(now.getDate()/7);
+  selectedWeek=w;
+  renderWeeklyPlanner(w);
+}
+
+function renderWeeklyPlanner(weekNum){
   if(!user)return;
   const inc=Number(user.income_amount||0);
   const now=new Date();
-  const dow=now.getDay(); // 0=Sun
-  const mon=(dow+6)%7; // days since Monday
-  const weekStart=new Date(now);weekStart.setDate(now.getDate()-mon);weekStart.setHours(0,0,0,0);
-  const weekEnd=new Date(weekStart);weekEnd.setDate(weekStart.getDate()+7);
-  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const currentWeek=Math.ceil(now.getDate()/7);
+  const w=weekNum||currentWeek;
   const wb=Math.round(inc/4);
-  const daysLeft=7-mon;
+
+  // Calculate week date range
+  // Week 1 = days 1-7, Week 2 = 8-14, Week 3 = 15-21, Week 4 = 22-end
+  const year=now.getFullYear();
+  const month=now.getMonth();
+  const weekStartDay=(w-1)*7+1;
+  const weekEndDay=Math.min(w*7, new Date(year,month+1,0).getDate());
+  const weekStart=new Date(year,month,weekStartDay,0,0,0,0);
+  const weekEnd=new Date(year,month,weekEndDay,23,59,59,999);
+
+  // Days left (only relevant for current week)
+  const dow=now.getDay();
+  const mon=(dow+6)%7;
+  const daysLeft=w===currentWeek?7-mon:0;
+
   // Week tabs
-  const weekOfMonth=Math.ceil(now.getDate()/7);
+  const weekOfMonth=currentWeek;
   const tabsEl=document.getElementById('wp-week-tabs');
   if(tabsEl){
-    tabsEl.innerHTML=[1,2,3,4].map(w=>`<div onclick="selectWeek(${w})" style="flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:${w===weekOfMonth?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)'};color:#fff;white-space:nowrap">Week ${w}${w===weekOfMonth?' — now':''}</div>`).join('');
+    tabsEl.innerHTML=[1,2,3,4].map(wk=>`<div onclick="selectWeek(${wk})" style="flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:${wk===w?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)'};color:#fff;white-space:nowrap">Week ${wk}${wk===currentWeek?' — now':''}</div>`).join('');
   }
+
   // Title
   const monthName=now.toLocaleString('en-ZA',{month:'long',year:'numeric'});
   const el=document.getElementById('wp-title');
-  if(el)el.textContent=`${monthName} — Week ${weekOfMonth}`;
-  // Filter this week's expenses
+  if(el)el.textContent=`${monthName} — Week ${w}`;
+
+  // Filter expenses for selected week
   const weekExp=expenses.filter(e=>{
     const d=new Date(e.logged_at||e.created_at);
-    return d>=weekStart&&d<weekEnd;
+    return d>=weekStart&&d<=weekEnd;
   });
   const spent=weekExp.reduce((s,e)=>s+Number(e.amount||0),0);
   const left=Math.max(0,wb-spent);
   const pct=wb>0?Math.min(100,Math.round(spent/wb*100)):0;
+
   // Big number
   const wpLeft=document.getElementById('wp-left');
   const wpOf=document.getElementById('wp-of-total');
@@ -2438,13 +2609,15 @@ function renderWeeklyPlanner(){
   if(wpOf)wpOf.textContent=`of R${wb.toLocaleString('en-ZA')} weekly budget`;
   if(wpBar){wpBar.style.width=pct+'%';wpBar.style.background=pct>90?'#c62828':pct>70?'#f59e0b':'#1a5c35';}
   if(wpSpent)wpSpent.textContent='R'+Math.round(spent).toLocaleString('en-ZA');
-  // Daily left
+
+  // Daily left (only for current week)
   const dailyLeft=daysLeft>0?Math.round(left/daysLeft):0;
   const wpDailyLeft=document.getElementById('wp-daily-left');
   const wpDaysRem=document.getElementById('wp-days-remaining');
-  if(wpDailyLeft)wpDailyLeft.textContent='R'+dailyLeft.toLocaleString('en-ZA');
-  if(wpDaysRem)wpDaysRem.textContent=daysLeft<=1?'for today':`for each of the next ${daysLeft} days`;
-  // Daily dots
+  if(wpDailyLeft)wpDailyLeft.textContent=daysLeft>0?'R'+dailyLeft.toLocaleString('en-ZA'):'R0';
+  if(wpDaysRem)wpDaysRem.textContent=w<currentWeek?'week complete':w>currentWeek?'week not started yet':daysLeft<=1?'for today':`for each of the next ${daysLeft} days`;
+
+  // Daily dots — show 7 days of selected week
   const DAYS=['M','T','W','T','F','Sa','Su'];
   const dailySpends=[0,0,0,0,0,0,0];
   weekExp.forEach(e=>{
@@ -2452,13 +2625,13 @@ function renderWeeklyPlanner(){
     const di=(d.getDay()+6)%7;
     if(di>=0&&di<7)dailySpends[di]+=Number(e.amount||0);
   });
-  const todayIdx=mon;
+  const todayIdx=w===currentWeek?mon:w<currentWeek?6:-1;
   const dailyLimit=wb/7;
   const dotsEl=document.getElementById('wp-daily-dots');
   if(dotsEl){
     dotsEl.innerHTML=DAYS.map((d,i)=>{
       const amt=dailySpends[i];
-      const isFuture=i>todayIdx;
+      const isFuture=w>currentWeek||(w===currentWeek&&i>todayIdx);
       const over=amt>dailyLimit&&amt>0;
       const hasSpend=amt>0&&!isFuture;
       const dotBg=isFuture||amt===0?'#c8e6cf':over?'#c62828':'#2e7d32';
@@ -2472,13 +2645,14 @@ function renderWeeklyPlanner(){
       </div>`;
     }).join('');
   }
+
   // Category breakdown
   const cats={};
   weekExp.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
   const catEl=document.getElementById('wp-categories');
   if(catEl){
     if(Object.keys(cats).length===0){
-      catEl.innerHTML='<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">No expenses logged this week yet</div>';
+      catEl.innerHTML=`<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">${w<currentWeek?'No expenses logged for this week':'No expenses logged this week yet'}</div>`;
     } else {
       catEl.innerHTML=Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,a])=>{
         const pct2=spent>0?Math.round(a/spent*100):0;
@@ -2494,20 +2668,24 @@ function renderWeeklyPlanner(){
       }).join('');
     }
   }
-  // Rollover
+
+  // Rollover (only current week)
   const rollEl=document.getElementById('wp-rollover');
   const rollText=document.getElementById('wp-rollover-text');
-  if(rollEl&&rollText&&left>200&&daysLeft<=3){
-    rollEl.style.display='block';
-    rollText.textContent=`You have R${Math.round(left).toLocaleString('en-ZA')} left this week. Save R${Math.round(left/2).toLocaleString('en-ZA')} and roll it into next week's budget for a head start.`;
-  } else if(rollEl){
-    rollEl.style.display='none';
+  if(rollEl&&rollText){
+    if(w===currentWeek&&left>200&&daysLeft<=3){
+      rollEl.style.display='block';
+      rollText.textContent=`You have R${Math.round(left).toLocaleString('en-ZA')} left this week. Save R${Math.round(left/2).toLocaleString('en-ZA')} and roll it into next week's budget for a head start.`;
+    } else {
+      rollEl.style.display='none';
+    }
   }
-  // Transactions this week
+
+  // Transactions
   const txEl=document.getElementById('wp-transactions');
   if(txEl){
     if(!weekExp.length){
-      txEl.innerHTML='<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">No transactions this week</div>';
+      txEl.innerHTML=`<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">${w>currentWeek?'Week hasn't started yet':w<currentWeek?'No transactions recorded for this week':'No transactions this week'}</div>`;
     } else {
       txEl.innerHTML=weekExp.sort((a,b)=>new Date(b.logged_at||b.created_at)-new Date(a.logged_at||a.created_at)).map(e=>{
         const d=new Date(e.logged_at||e.created_at);
@@ -2522,13 +2700,6 @@ function renderWeeklyPlanner(){
       }).join('');
     }
   }
-}
-function selectWeek(w){
-  // Show toast for past weeks (we can extend this later)
-  if(w!==Math.ceil(new Date().getDate()/7)){
-    showToast('Historical week view coming soon');return;
-  }
-  renderWeeklyPlanner();
 }
 
 function exportCSV(){
@@ -2993,7 +3164,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v29';
+const APP_VERSION = '2026-04-15-v33';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
