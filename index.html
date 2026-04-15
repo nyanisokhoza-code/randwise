@@ -299,8 +299,8 @@ if('serviceWorker' in navigator){
   <div class="s-title">Your money,<br><span>your rules.</span></div>
   <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
   <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
-  <button class="btn-p" onclick="show('onboarding');startOB()">Get started — it's free</button>
-  <button class="btn-g" onclick="show('login')">I already have an account</button>
+  <button class="btn-p" onclick="if(typeof show==='function'){show('onboarding');startOB();}">Get started — it's free</button>
+  <button class="btn-g" onclick="if(typeof show==='function')show('login');">I already have an account</button>
   <div id="splash-error" style="display:none;margin-top:16px;background:rgba(255,0,0,.15);border:1px solid rgba(255,100,100,.3);border-radius:12px;padding:12px 16px;max-width:300px;text-align:center">
     <div style="font-size:13px;color:#ffaaaa;margin-bottom:8px">⚠️ Something's not loading correctly</div>
     <div style="display:flex;gap:8px;justify-content:center">
@@ -2685,7 +2685,7 @@ function renderWeeklyPlanner(weekNum){
   const txEl=document.getElementById('wp-transactions');
   if(txEl){
     if(!weekExp.length){
-      txEl.innerHTML=`<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">${w>currentWeek?'Week hasn't started yet':w<currentWeek?'No transactions recorded for this week':'No transactions this week'}</div>`;
+      txEl.innerHTML=`<div style="font-size:12px;color:#5a8a6a;text-align:center;padding:8px">${w>currentWeek?'Week not started yet':w<currentWeek?'No transactions recorded for this week':'No transactions this week'}</div>`;
     } else {
       txEl.innerHTML=weekExp.sort((a,b)=>new Date(b.logged_at||b.created_at)-new Date(a.logged_at||a.created_at)).map(e=>{
         const d=new Date(e.logged_at||e.created_at);
@@ -2924,24 +2924,60 @@ document.getElementById('splash')?.addEventListener('click', (e)=>{
 
 // ══ REPORT ISSUE ════════════════════════════════════════════
 async function sendOwnerAlert(type, data){
+  // Severity classification
+  const critical = ['login_failed','login_help','reset_failed','duplicate_attempt',
+                    'connectivity_failure','unresponsive_ui','user_report_critical'];
+  const isCritical = critical.includes(type) || data?.error_source === 'user_report_critical';
+
   const msgs = {
     new_user: `🌱 New user: ${data.name} (${data.email}) — ${data.life_stage} — R${Number(data.income_amount||0).toLocaleString('en-ZA')}/mo${data.referred_by?' — ref: '+data.referred_by:''}`,
     upgrade: `💰 Upgrade: ${data.name} → ${data.tier} — R${data.amount}/mo`,
-    bug_report: `🐛 Bug from ${data.user_name||'unknown'}: ${data.error_message}`,
+    bug_report: `${isCritical?'🚨 CRITICAL':'🐛'} Bug from ${data.user_name||'unknown'}: ${data.error_message}`,
     reset_requested: `🔑 Password reset requested: ${data.email}`,
     reset_failed: `⚠️ Reset FAILED — email not found: ${data.email}. User may try to create duplicate account.`,
     reset_error: `❌ Reset error for ${data.email}: ${data.error}`,
-    duplicate_attempt: `🔁 DUPLICATE ACCOUNT ATTEMPT — ${data.name} (${data.email}) tried to register again. They need help signing in or resetting password.`,
-    login_failed: `🔐 LOGIN FAILED — ${data.email} — attempt ${data.attempts} — reason: ${data.reason}. User may need password reset help.`,
-    login_help: `🆘 LOGIN HELP REQUEST — ${data.email} cannot get in. They tapped "Need help". Please assist manually.`,
+    duplicate_attempt: `🔁 DUPLICATE ACCOUNT — ${data.name} (${data.email}) tried to register again. Help them sign in.`,
+    login_failed: `🔐 LOGIN FAILED — ${data.email} — attempt ${data.attempts} — reason: ${data.reason}.`,
+    login_help: `🆘 LOGIN HELP — ${data.email} cannot get in. Please assist manually within 24h.`,
+    connectivity_failure: `🚨 OUTAGE — ${data.error_message}`,
+    unresponsive_ui: `🚨 UI FROZEN — ${data.user_name}: ${data.error_message}`,
+    export: `📤 Export: ${data.name} downloaded ${data.type} (${data.count} transactions)`,
+    bond_apply: `🏠 Bond inquiry: ${data.name} (R${Number(data.income||0).toLocaleString('en-ZA')}/mo income)`,
   };
+
+  const summary = msgs[type] || `Alert [${type}]: ${JSON.stringify(data)}`;
+
+  // Track critical issues for 24h escalation
+  if(isCritical){
+    const key = `rw_alert_${type}_${data.email||data.user_name||'sys'}`;
+    const existing = localStorage.getItem(key);
+    if(!existing){
+      localStorage.setItem(key, Date.now().toString());
+    } else {
+      const age = Date.now() - parseInt(existing);
+      if(age > 86400000){ // 24 hours passed — escalate
+        data._escalated = true;
+        data._hours_open = Math.round(age/3600000);
+        localStorage.removeItem(key); // reset so it can fire again
+      }
+    }
+  }
+
   try{
     await fetch(`${SB}/functions/v1/send-alert`,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':AK,'Authorization':'Bearer '+AK},
-      body:JSON.stringify({type, data, summary: msgs[type]||`Alert: ${type}`})
+      body:JSON.stringify({
+        type,
+        data,
+        summary,
+        severity: isCritical ? 'critical' : 'info',
+        escalated: data._escalated || false,
+        from_name: 'MyRandWise Alerts',
+        reply_to: 'noreply@myrandwise.co.za'
+      })
     });
-  }catch(e){console.warn('Alert send failed:',e);}
+  }catch(e){ console.warn('Alert send failed:',e); }
 }
 
 // ── Report a Problem — proper form ──────────────────────────
@@ -2965,7 +3001,7 @@ function reportIssue(){
 
       <div style="margin-bottom:14px;">
         <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;">YOUR NAME</label>
-        <input id="rp-name" type="text" placeholder="e.g. Thandi" value="${user?.name||''}"
+        <input id="rp-name" type="text" placeholder="e.g. Thandi" value="${(typeof user!=='undefined'&&user?.name)||''}"
           style="width:100%;box-sizing:border-box;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:14px;outline:none;">
       </div>
 
@@ -3002,7 +3038,7 @@ function reportIssue(){
 }
 
 async function submitReport(){
-  const name = document.getElementById('rp-name')?.value?.trim() || user?.name || 'Anonymous';
+  const name = document.getElementById('rp-name')?.value?.trim() || (typeof user!=='undefined'&&user?.name) || 'Anonymous';
   const category = document.getElementById('rp-category')?.value;
   const desc = document.getElementById('rp-desc')?.value?.trim();
   const errEl = document.getElementById('rp-error');
@@ -3016,7 +3052,7 @@ async function submitReport(){
   const errorSource = serious ? 'user_report_critical' : 'user_report';
 
   const reportData = {
-    user_id: user?.id || null,
+    user_id: (typeof user!=='undefined'&&user?.id) || null,
     user_name: name,
     error_message: `[${category.toUpperCase()}] ${desc}`,
     error_source: errorSource,
@@ -3322,7 +3358,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v34';
+const APP_VERSION = '2026-04-15-v35';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
