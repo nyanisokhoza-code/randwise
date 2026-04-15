@@ -222,28 +222,6 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js').then(reg=>{
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed'&&navigator.serviceWorker.controller){
-            // New version ready — show banner automatically
-            const banner=document.getElementById('update-banner');
-            if(banner){banner.style.display='flex';}
-          }
-        });
-      });
-    }).catch(()=>{});
-    // Listen for SW telling us to reload
-    navigator.serviceWorker.addEventListener('message',e=>{
-      if(e.data==='reload')window.location.reload();
-    });
-  });
-}
-</script>
 </head>
 <script>
 // ── SERVICE WORKER — always get latest version ────────────────
@@ -2764,23 +2742,24 @@ window.addEventListener('load',async()=>{
     try{
       user=JSON.parse(s);
       if(user?.id){
-        try{renderDash();}catch{}
-        show('main');
-      }
-      if(user?.id){
+        // Load data FIRST, then show main — no flash
         try{
           const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
           if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
         }catch{}
         try{await loadExp();}catch{expenses=[];}
         try{renderDash();}catch{}
-        setTimeout(()=>{try{showIntro();}catch{}},400);
+        show('main');
+        // Only show intro if user has never seen it
+        const introSeen=localStorage.getItem('rw_intro_seen');
+        if(!introSeen){
+          setTimeout(()=>{try{showIntro();localStorage.setItem('rw_intro_seen','1');}catch{}},600);
+        }
       }
     }catch{
       show('splash');
     }
   } else if(s && !tok){
-    // Token expired and refresh failed — clear stale data, force re-login
     localStorage.removeItem('rw_user');
     show('splash');
   } else {
@@ -3354,7 +3333,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v37';
+const APP_VERSION = '2026-04-15-v38';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
