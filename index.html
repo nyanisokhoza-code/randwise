@@ -3333,7 +3333,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-15-v38';
+const APP_VERSION = '2026-04-15-v39';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -3374,8 +3374,8 @@ function ownerTap(){
     document.getElementById('owner-pin-err').style.display='none';
     setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
   } else if(ownerTapCount===1){
-    // Single tap — go to home tab
-    switchTab('home');
+    // Single tap — go to profile tab
+    switchTab('profile');
   }
 }
 async function checkOwnerPin(){
