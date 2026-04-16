@@ -384,6 +384,10 @@ if('serviceWorker' in navigator){
       style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:17px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:16px">
       Sign in →
     </button>
+    <!-- Biometric unlock button — only shown if fingerprint credentials saved -->
+    <button id="biometric-btn" onclick="doBiometricLogin()" style="display:none;width:100%;background:#f0f8f4;color:#1a7a4a;border:2px solid #1a7a4a;border-radius:14px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px">
+      🔒 Sign in with Fingerprint
+    </button>
     <div style="background:#f5f5f0;border-radius:12px;padding:14px;font-size:12px;color:#888;line-height:1.7;text-align:center">
       🔒 Your password is securely encrypted.<br>New to RandWise? Go back and tap Get Started.
     </div>
@@ -1342,6 +1346,9 @@ function show(id){
       if(banner)banner.style.display='flex';
     }
   }
+  if(id==='login'){
+    setTimeout(initBiometricButton, 100);
+  }
   document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
   const el=document.getElementById(id);
   el.classList.add('active');
@@ -1517,7 +1524,8 @@ async function doLogin(){
     try{await loadExp();}catch(ex){expenses=[];}
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     show('main');
-    try{setTimeout(showIntro,400);}catch(ex){}
+    try{if(!localStorage.getItem('rw_intro_seen')){setTimeout(()=>{showIntro();localStorage.setItem('rw_intro_seen','1');},400);}}catch(ex){}
+    setTimeout(()=>offerBiometricSetup(email), 1500);
     btn.disabled=false;btn.textContent='Sign in →';
   }catch(e){
     loginAttempts++;
@@ -1528,6 +1536,131 @@ async function doLogin(){
     logLoginFailure(email||'unknown', isNetwork?'network_error':msg, loginAttempts);
   }
 }
+
+// ── Biometric / Fingerprint Login ─────────────────────────────
+function isBiometricSupported(){
+  return window.PublicKeyCredential && typeof navigator.credentials?.create === 'function';
+}
+
+function initBiometricButton(){
+  // Show fingerprint button only if supported + user previously enabled it
+  const saved = localStorage.getItem('rw_biometric_email');
+  const btn = document.getElementById('biometric-btn');
+  if(!btn) return;
+  if(isBiometricSupported() && saved){
+    btn.style.display = 'block';
+    document.getElementById('l-email').value = saved;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function offerBiometricSetup(email){
+  // Called after successful password login — ask if they want fingerprint next time
+  if(!isBiometricSupported()) return;
+  if(localStorage.getItem('rw_biometric_declined')) return;
+  if(localStorage.getItem('rw_biometric_email') === email) return; // already set up
+
+  // Show offer toast/sheet
+  const sheet = document.createElement('div');
+  sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;z-index:9999;box-shadow:0 -8px 40px rgba(0,0,0,.18)';
+  sheet.innerHTML = `
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:10px">🔒</div>
+      <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:6px">Sign in faster next time</div>
+      <div style="font-size:14px;color:#666;line-height:1.6">Use your fingerprint or face ID to sign in instantly — no password needed.</div>
+    </div>
+    <button onclick="enableBiometric('${email}',this.closest('[style*=fixed]'))" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px">Enable Fingerprint Sign-in</button>
+    <button onclick="this.closest('[style*=fixed]').remove();localStorage.setItem('rw_biometric_declined','1')" style="width:100%;background:none;border:none;color:#888;font-size:14px;cursor:pointer;padding:8px">Not now</button>
+  `;
+  document.body.appendChild(sheet);
+}
+
+async function enableBiometric(email, sheet){
+  try{
+    // Register a credential — triggers device biometric prompt
+    const cred = await navigator.credentials.create({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp:{ name:'RandWise', id: location.hostname },
+        user:{ id: new TextEncoder().encode(email), name: email, displayName: email.split('@')[0] },
+        pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],
+        authenticatorSelection:{ userVerification:'required', residentKey:'preferred' },
+        timeout: 60000
+      }
+    });
+    if(cred){
+      localStorage.setItem('rw_biometric_email', email);
+      localStorage.setItem('rw_biometric_cred_id', btoa(String.fromCharCode(...new Uint8Array(cred.rawId))));
+      if(sheet) sheet.remove();
+      showToast('✅ Fingerprint sign-in enabled!');
+      // Show the button for next time
+      const btn = document.getElementById('biometric-btn');
+      if(btn) btn.style.display = 'block';
+    }
+  }catch(e){
+    if(sheet) sheet.remove();
+    // User cancelled or device doesn't support — no error shown
+  }
+}
+
+async function doBiometricLogin(){
+  const email = localStorage.getItem('rw_biometric_email');
+  const credIdB64 = localStorage.getItem('rw_biometric_cred_id');
+  if(!email || !credIdB64){ showToast('⚠️ Please sign in with your password first'); return; }
+
+  const btn = document.getElementById('biometric-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Verifying...'; }
+
+  try{
+    // Reconstruct credential ID
+    const credIdBytes = Uint8Array.from(atob(credIdB64), c => c.charCodeAt(0));
+
+    // Trigger device biometric verification
+    const assertion = await navigator.credentials.get({
+      publicKey:{
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        allowCredentials:[{ type:'public-key', id: credIdBytes }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    });
+
+    if(!assertion){ throw new Error('Biometric failed'); }
+
+    // Biometric verified — now sign in with stored email using Supabase magic link flow
+    // We use the stored refresh token to get a new session
+    const storedRefresh = localStorage.getItem('rw_refresh');
+    if(storedRefresh){
+      try{
+        const refresh = await authPost('token?grant_type=refresh_token',{refresh_token: storedRefresh});
+        if(refresh.access_token){
+          localStorage.setItem('rw_token', refresh.access_token);
+          if(refresh.refresh_token) localStorage.setItem('rw_refresh', refresh.refresh_token);
+          const rows = await sbG(`beta_testers?email=eq.${encodeURIComponent(email.toLowerCase())}&limit=1&select=*`);
+          if(rows?.length){ user = rows[0]; localStorage.setItem('rw_user', JSON.stringify(user)); }
+          try{await loadExp();}catch{expenses=[];}
+          try{renderDash();}catch{}
+          show('main');
+          if(btn){ btn.disabled=false; btn.textContent='🔒 Sign in with Fingerprint'; }
+          return;
+        }
+      }catch{}
+    }
+    // No valid refresh token — ask for password once
+    showToast('Session expired — please sign in with your password once');
+    if(btn){ btn.disabled=false; btn.textContent='🔒 Sign in with Fingerprint'; }
+  }catch(e){
+    if(e.name === 'NotAllowedError'){
+      showToast('Fingerprint not recognised — try your password');
+    } else {
+      showToast('Biometric sign-in failed — use your password');
+    }
+    if(btn){ btn.disabled=false; btn.textContent='🔒 Sign in with Fingerprint'; }
+  }
+}
+
 async function logLoginFailure(email, reason, attempts){
   try{
     await fetch(`${SB}/rest/v1/bug_reports`,{
@@ -3528,7 +3661,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-16-v42';
+const APP_VERSION = '2026-04-16-v43';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -3975,9 +4108,10 @@ Respond with ONLY valid JSON, no markdown, no explanation:
 
   // Route through Supabase Edge Function to keep API key server-side
   const EDGE_URL = `${SB}/functions/v1/parse-statement`;
+  const authTok = localStorage.getItem('rw_token') || AK;
   const response = await fetch(EDGE_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': AK, 'Authorization': 'Bearer '+AK },
+    headers: { 'Content-Type': 'application/json', 'apikey': AK, 'Authorization': 'Bearer '+authTok },
     body: JSON.stringify({
       pdf: base64Pdf,
       prompt: prompt
