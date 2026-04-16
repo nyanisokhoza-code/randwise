@@ -41,6 +41,11 @@ self.addEventListener('fetch', e => {
   }
 
   // Other requests — network first, cache fallback
+  // Only cache GET requests — Cache API doesn't support POST/PUT etc.
+  if(e.request.method !== 'GET'){
+    e.respondWith(fetch(e.request));
+    return;
+  }
   e.respondWith(
     fetch(e.request)
       .then(res => {
