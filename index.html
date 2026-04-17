@@ -802,7 +802,7 @@ if('serviceWorker' in navigator){
           <div id="import-processing" style="display:none;text-align:center;padding:40px 20px">
             <div class="spin" style="margin:0 auto 16px"></div>
             <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px" id="import-status-text">Reading your statement...</div>
-            <div style="font-size:12px;color:var(--mu)">Claude AI is analysing your transactions</div>
+            <div style="font-size:12px;color:var(--mu)">AI is reading your transactions — takes 15–30 seconds</div>
           </div>
 
           <!-- Results preview -->
@@ -3531,7 +3531,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-16-v43';
+const APP_VERSION = '2026-04-16-v44';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -3881,8 +3881,8 @@ async function handlePdfUpload(event) {
     showToast('⚠️ Please upload a PDF file');
     return;
   }
-  if (file.size > 10 * 1024 * 1024) {
-    showToast('⚠️ File too large — max 10MB');
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('⚠️ File too large — please upload one month at a time (max 5MB)');
     return;
   }
 
@@ -3898,7 +3898,7 @@ async function handlePdfUpload(event) {
     // Convert PDF to base64
     const base64 = await fileToBase64(file);
 
-    document.getElementById('import-status-text').textContent = 'Claude AI is analysing transactions...';
+    document.getElementById('import-status-text').textContent = 'AI is reading your transactions...';
 
     const month = document.getElementById('import-month')?.value || '';
     const monthLabel = document.getElementById('import-month')?.selectedOptions[0]?.textContent || '';
@@ -3917,7 +3917,17 @@ async function handlePdfUpload(event) {
     document.getElementById('upload-zone').style.display = 'block';
     document.getElementById('import-processing').style.display = 'none';
     document.getElementById('import-tips').style.display = 'block';
-    showToast('⚠️ ' + (err.message || 'Could not read statement — try another file'));
+    const msg = err.message || 'Could not read statement — try another file';
+    // Show friendly specific messages
+    if(msg.includes('429') || msg.includes('Daily limit') || msg.includes('limit reached')){
+      showToast('⏳ Daily AI limit reached — try again after 2am SA time');
+    } else if(msg.includes('No transactions')){
+      showToast('⚠️ No transactions found — make sure it\'s a bank statement PDF');
+    } else if(msg.includes('too large') || msg.includes('5MB')){
+      showToast('⚠️ File too large — use a single month statement');
+    } else {
+      showToast('⚠️ ' + msg);
+    }
   }
 
   // Reset file input so same file can be re-uploaded
