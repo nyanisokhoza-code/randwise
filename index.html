@@ -151,6 +151,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .exp-amt{font-size:14px;font-weight:700;color:var(--r);margin-left:auto;flex-shrink:0}
 .exp-del{background:none;border:none;font-size:16px;color:var(--h);cursor:pointer;padding:4px 8px;flex-shrink:0}
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none}
+.lbtn{background:rgba(255,255,255,.08);border:none;border-radius:50%;width:72px;height:72px;font-size:22px;font-weight:600;color:#fff;cursor:pointer;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.lbtn:active{background:rgba(255,255,255,.2)}
+.sp-btn{background:#f5f5f0;border:1px solid #e0e0e0;border-radius:50%;width:64px;height:64px;font-size:20px;font-weight:600;color:#1a1a1a;cursor:pointer;transition:background .15s;margin:0 auto}
+.sp-btn:active{background:#e8f5ee}
 .overlay.open{display:block}
 /* ── Welcome intro ── */
 #rw-intro{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;align-items:center;justify-content:flex-start;background:#0d3d22;padding:env(safe-area-inset-top,32px) 24px 60px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -322,6 +326,74 @@ if('serviceWorker' in navigator){
     @keyframes dot2 { 0%,80%,100%{opacity:.3} 40%{opacity:1;transform:scale(1.3)} }
     @keyframes dot3 { 0%,80%,100%{opacity:.3} 40%{opacity:1;transform:scale(1.3)} }
   </style>
+</div>
+
+<!-- APP LOCK SCREEN -->
+<div id="app-lock-screen" style="display:none;position:fixed;inset:0;z-index:9000;background:#0d1f14;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px">
+  <div style="width:64px;height:64px;background:#1a5c35;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:16px">🌱</div>
+  <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:4px">MyRandWise</div>
+  <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:32px" id="lock-subtitle">Enter your PIN</div>
+
+  <!-- PIN dots -->
+  <div style="display:flex;gap:12px;margin-bottom:32px" id="lock-dots">
+    <div class="ldot" style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s"></div>
+    <div class="ldot" style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s"></div>
+    <div class="ldot" style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s"></div>
+    <div class="ldot" style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .15s"></div>
+  </div>
+
+  <!-- Error message -->
+  <div id="lock-error" style="display:none;font-size:12px;color:#ff6b6b;margin-bottom:16px;text-align:center"></div>
+
+  <!-- PIN pad -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:260px">
+    <button onclick="lockPinTap('1')" class="lbtn">1</button>
+    <button onclick="lockPinTap('2')" class="lbtn">2</button>
+    <button onclick="lockPinTap('3')" class="lbtn">3</button>
+    <button onclick="lockPinTap('4')" class="lbtn">4</button>
+    <button onclick="lockPinTap('5')" class="lbtn">5</button>
+    <button onclick="lockPinTap('6')" class="lbtn">6</button>
+    <button onclick="lockPinTap('7')" class="lbtn">7</button>
+    <button onclick="lockPinTap('8')" class="lbtn">8</button>
+    <button onclick="lockPinTap('9')" class="lbtn">9</button>
+    <button onclick="lockBiometric()" class="lbtn" id="lock-bio-btn" style="font-size:22px;background:rgba(255,255,255,.06)">👆</button>
+    <button onclick="lockPinTap('0')" class="lbtn">0</button>
+    <button onclick="lockPinBack()" class="lbtn" style="font-size:18px;background:rgba(255,255,255,.06)">⌫</button>
+  </div>
+
+  <button onclick="lockForgotPin()" style="margin-top:24px;background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer">Forgot PIN? Use password instead</button>
+</div>
+
+<!-- SET PIN SHEET -->
+<div class="overlay" id="set-pin-ov" onclick="closeSetPin()" style="z-index:9001"></div>
+<div class="sheet" id="set-pin-sheet" style="z-index:9002;max-height:90vh;overflow-y:auto">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="set-pin-title">Set your PIN</div>
+  <div style="font-size:13px;color:var(--mu);margin-bottom:20px" id="set-pin-sub">Choose a 4-digit PIN to lock your app</div>
+
+  <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px" id="set-pin-dots">
+    <div style="width:14px;height:14px;border-radius:50%;background:#e0e0e0;transition:background .15s" id="sp-d0"></div>
+    <div style="width:14px;height:14px;border-radius:50%;background:#e0e0e0;transition:background .15s" id="sp-d1"></div>
+    <div style="width:14px;height:14px;border-radius:50%;background:#e0e0e0;transition:background .15s" id="sp-d2"></div>
+    <div style="width:14px;height:14px;border-radius:50%;background:#e0e0e0;transition:background .15s" id="sp-d3"></div>
+  </div>
+  <div id="set-pin-error" style="display:none;font-size:12px;color:#c62828;text-align:center;margin-bottom:10px"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+    <button onclick="setPinTap('1')" class="sp-btn">1</button>
+    <button onclick="setPinTap('2')" class="sp-btn">2</button>
+    <button onclick="setPinTap('3')" class="sp-btn">3</button>
+    <button onclick="setPinTap('4')" class="sp-btn">4</button>
+    <button onclick="setPinTap('5')" class="sp-btn">5</button>
+    <button onclick="setPinTap('6')" class="sp-btn">6</button>
+    <button onclick="setPinTap('7')" class="sp-btn">7</button>
+    <button onclick="setPinTap('8')" class="sp-btn">8</button>
+    <button onclick="setPinTap('9')" class="sp-btn">9</button>
+    <div></div>
+    <button onclick="setPinTap('0')" class="sp-btn">0</button>
+    <button onclick="setPinBack()" class="sp-btn" style="font-size:16px">⌫</button>
+  </div>
+  <button onclick="closeSetPin()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;cursor:pointer;padding:8px">Cancel</button>
 </div>
 
 <!-- LOGIN -->
@@ -644,6 +716,22 @@ if('serviceWorker' in navigator){
             <button onclick="exportCSV()" style="flex:1;padding:11px;background:#1a5c35;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📊 Export CSV</button>
             <button onclick="exportPDF()" style="flex:1;padding:11px;background:#f0faf4;color:#1a5c35;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
           </div>
+        </div>
+        <!-- SECURITY SECTION -->
+        <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:12px">🔒 App lock</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#1a1a1a">Require PIN to open</div>
+              <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Locks after 5 min of inactivity</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+              <input type="checkbox" id="lock-toggle" onchange="toggleAppLock(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
+              <span id="lock-toggle-track" style="position:absolute;inset:0;background:#ccc;border-radius:12px;transition:background .2s"></span>
+              <span id="lock-toggle-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+            </label>
+          </div>
+          <button id="change-pin-btn" onclick="openSetPin('change')" style="display:none;width:100%;padding:10px;background:#fff;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:600;color:#1a5c35;cursor:pointer">Change PIN</button>
         </div>
         <div style="height:8px"></div>
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
@@ -1569,7 +1657,7 @@ function showErr(id,msg){const el=document.getElementById(id);el.style.display='
 function hideErr(id){document.getElementById(id).style.display='none';}
 
 // ── Dashboard ─────────────────────────────────────────────────
-async function openDash(){show('main');await loadExp();renderDash();}
+async function openDash(){show('main');startLockTimer();await loadExp();renderDash();}
 async function loadExp(){
   if(!user?.id)return;
   try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
@@ -1868,7 +1956,7 @@ function switchTab(t){
   if(btn)btn.classList.add('act');
   if(t==='debt')loadDebtsPWA();
   if(t==='grow')loadGoalsPWA();
-  if(t==='profile')updateBondPreview();
+  if(t==='profile'){updateBondPreview();initLock();}
   if(t==='import')initImportTab();
 }
 
@@ -2450,6 +2538,272 @@ function shareApp(){
 }
 function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
 
+// ══ APP LOCK SYSTEM ══════════════════════════════════════════
+const LOCK_KEY='rw_lock_enabled';
+const LOCK_PIN_KEY='rw_lock_pin';
+const LOCK_TIMEOUT=5*60*1000; // 5 minutes
+let lockTimer=null;
+let lockPinEntry='';
+let setPinEntry='';
+let setPinConfirm='';
+let setPinStage='first'; // 'first' or 'confirm'
+let setPinMode='set'; // 'set' or 'change'
+let lockFailCount=0;
+
+function isLockEnabled(){ return localStorage.getItem(LOCK_KEY)==='1'; }
+function getLockPin(){ return localStorage.getItem(LOCK_PIN_KEY)||''; }
+
+function initLock(){
+  const enabled=isLockEnabled();
+  const toggle=document.getElementById('lock-toggle');
+  const track=document.getElementById('lock-toggle-track');
+  const thumb=document.getElementById('lock-toggle-thumb');
+  const changeBtn=document.getElementById('change-pin-btn');
+  if(toggle) toggle.checked=enabled;
+  if(track) track.style.background=enabled?'#1a5c35':'#ccc';
+  if(thumb) thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
+  if(changeBtn) changeBtn.style.display=enabled?'block':'none';
+
+  // Check biometric support
+  const bioBtn=document.getElementById('lock-bio-btn');
+  if(bioBtn){
+    if(window.PublicKeyCredential){
+      bioBtn.style.display='flex';
+    } else {
+      bioBtn.style.display='none';
+    }
+  }
+}
+
+function toggleAppLock(enabled){
+  const track=document.getElementById('lock-toggle-track');
+  const thumb=document.getElementById('lock-toggle-thumb');
+  const changeBtn=document.getElementById('change-pin-btn');
+  if(track) track.style.background=enabled?'#1a5c35':'#ccc';
+  if(thumb) thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
+  if(enabled){
+    // Must set PIN first
+    openSetPin('set');
+  } else {
+    localStorage.removeItem(LOCK_KEY);
+    localStorage.removeItem(LOCK_PIN_KEY);
+    if(changeBtn) changeBtn.style.display='none';
+    showToast('App lock disabled');
+    stopLockTimer();
+  }
+}
+
+function startLockTimer(){
+  if(!isLockEnabled()) return;
+  stopLockTimer();
+  lockTimer=setTimeout(()=>{ showLockScreen(); }, LOCK_TIMEOUT);
+}
+
+function stopLockTimer(){
+  if(lockTimer){ clearTimeout(lockTimer); lockTimer=null; }
+}
+
+function resetLockTimer(){
+  if(!isLockEnabled()) return;
+  stopLockTimer();
+  startLockTimer();
+}
+
+function showLockScreen(){
+  if(!isLockEnabled()||!getLockPin()) return;
+  lockPinEntry='';
+  lockFailCount=0;
+  updateLockDots();
+  const errEl=document.getElementById('lock-error');
+  if(errEl){ errEl.style.display='none'; errEl.textContent=''; }
+  document.getElementById('lock-subtitle').textContent='Enter your PIN';
+  const ls=document.getElementById('app-lock-screen');
+  if(ls) ls.style.display='flex';
+  stopLockTimer();
+}
+
+function hideLockScreen(){
+  const ls=document.getElementById('app-lock-screen');
+  if(ls) ls.style.display='none';
+  startLockTimer();
+}
+
+function updateLockDots(){
+  const dots=document.querySelectorAll('.ldot');
+  dots.forEach((d,i)=>{
+    d.style.background=i<lockPinEntry.length?'#4ade80':'rgba(255,255,255,.2)';
+  });
+}
+
+function lockPinTap(digit){
+  if(lockPinEntry.length>=4) return;
+  lockPinEntry+=digit;
+  updateLockDots();
+  if(lockPinEntry.length===4){
+    setTimeout(()=>checkLockPin(), 150);
+  }
+}
+
+function lockPinBack(){
+  lockPinEntry=lockPinEntry.slice(0,-1);
+  updateLockDots();
+}
+
+function checkLockPin(){
+  const stored=getLockPin();
+  if(lockPinEntry===stored){
+    // Correct
+    lockFailCount=0;
+    hideLockScreen();
+  } else {
+    // Wrong
+    lockFailCount++;
+    lockPinEntry='';
+    updateLockDots();
+    const errEl=document.getElementById('lock-error');
+    if(errEl){
+      errEl.style.display='block';
+      errEl.textContent=lockFailCount>=3?
+        `${lockFailCount} wrong attempts — tap "Forgot PIN?" to use your password`:
+        'Incorrect PIN — try again';
+    }
+    // Shake animation
+    const dots=document.getElementById('lock-dots');
+    if(dots){
+      dots.style.animation='none';
+      dots.offsetHeight; // reflow
+      dots.style.animation='shake .4s ease';
+    }
+  }
+}
+
+async function lockBiometric(){
+  if(!window.PublicKeyCredential) return;
+  try{
+    const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!available){ showToast('Fingerprint not available on this device'); return; }
+    // Use credential get to trigger fingerprint
+    const credential=await navigator.credentials.get({
+      publicKey:{
+        challenge: new Uint8Array(16),
+        timeout:60000,
+        userVerification:'required',
+        rpId: window.location.hostname
+      }
+    }).catch(()=>null);
+    if(credential){
+      hideLockScreen();
+    } else {
+      showToast('Fingerprint not recognised — use PIN');
+    }
+  }catch(e){
+    // Biometric not set up or failed — fall back to PIN silently
+    console.warn('Biometric failed:',e.message);
+  }
+}
+
+function lockForgotPin(){
+  // Sign out and let them log back in with password
+  if(confirm('This will sign you out. You can log back in with your password.')){
+    localStorage.removeItem(LOCK_KEY);
+    localStorage.removeItem(LOCK_PIN_KEY);
+    localStorage.removeItem('rw_user');
+    localStorage.removeItem('rw_token');
+    localStorage.removeItem('rw_refresh');
+    user=null; expenses=[];
+    const ls=document.getElementById('app-lock-screen');
+    if(ls) ls.style.display='none';
+    show('splash');
+  }
+}
+
+// SET PIN flow
+function openSetPin(mode){
+  setPinMode=mode;
+  setPinStage='first';
+  setPinEntry='';
+  setPinConfirm='';
+  updateSetPinDots();
+  const errEl=document.getElementById('set-pin-error');
+  if(errEl) errEl.style.display='none';
+  const title=document.getElementById('set-pin-title');
+  const sub=document.getElementById('set-pin-sub');
+  if(title) title.textContent=mode==='change'?'Change your PIN':'Set your PIN';
+  if(sub) sub.textContent='Choose a 4-digit PIN to lock your app';
+  document.getElementById('set-pin-sheet').classList.add('open');
+  document.getElementById('set-pin-ov').classList.add('open');
+}
+
+function closeSetPin(){
+  document.getElementById('set-pin-sheet').classList.remove('open');
+  document.getElementById('set-pin-ov').classList.remove('open');
+  // If user cancelled without setting PIN, turn toggle back off
+  if(!getLockPin()){
+    const toggle=document.getElementById('lock-toggle');
+    const track=document.getElementById('lock-toggle-track');
+    const thumb=document.getElementById('lock-toggle-thumb');
+    if(toggle) toggle.checked=false;
+    if(track) track.style.background='#ccc';
+    if(thumb) thumb.style.transform='translateX(0)';
+    localStorage.removeItem(LOCK_KEY);
+  }
+}
+
+function updateSetPinDots(){
+  const entry=setPinStage==='first'?setPinEntry:setPinConfirm;
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('sp-d'+i);
+    if(d) d.style.background=i<entry.length?'#1a5c35':'#e0e0e0';
+  }
+}
+
+function setPinTap(digit){
+  const entry=setPinStage==='first'?setPinEntry:setPinConfirm;
+  if(entry.length>=4) return;
+  if(setPinStage==='first') setPinEntry+=digit;
+  else setPinConfirm+=digit;
+  updateSetPinDots();
+  if((setPinStage==='first'?setPinEntry:setPinConfirm).length===4){
+    setTimeout(()=>handleSetPinComplete(), 150);
+  }
+}
+
+function setPinBack(){
+  if(setPinStage==='first') setPinEntry=setPinEntry.slice(0,-1);
+  else setPinConfirm=setPinConfirm.slice(0,-1);
+  updateSetPinDots();
+}
+
+function handleSetPinComplete(){
+  if(setPinStage==='first'){
+    // Move to confirm step
+    setPinStage='confirm';
+    setPinConfirm='';
+    updateSetPinDots();
+    const sub=document.getElementById('set-pin-sub');
+    if(sub) sub.textContent='Confirm your PIN';
+  } else {
+    // Confirm step — check match
+    if(setPinEntry===setPinConfirm){
+      // Save and enable
+      localStorage.setItem(LOCK_PIN_KEY, setPinEntry);
+      localStorage.setItem(LOCK_KEY,'1');
+      closeSetPin();
+      initLock();
+      startLockTimer();
+      showToast('✅ App lock enabled');
+    } else {
+      // Mismatch — restart
+      const errEl=document.getElementById('set-pin-error');
+      if(errEl){ errEl.textContent="PINs don't match — try again"; errEl.style.display='block'; }
+      setPinEntry=''; setPinConfirm=''; setPinStage='first';
+      updateSetPinDots();
+      const sub=document.getElementById('set-pin-sub');
+      if(sub) sub.textContent='Choose a 4-digit PIN to lock your app';
+    }
+  }
+}
+
 // ── Weekly Planner ─────────────────────────────────────────────
 // ── Bond Readiness ────────────────────────────────────────────
 function updateBondPreview(){
@@ -2916,6 +3270,35 @@ function exportPDF(){
 
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
+  // App lock — init toggle state
+  initLock();
+
+  // Lock on visibility change (user switches away for 5+ min)
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){
+      // App going to background — start timer
+      if(isLockEnabled()) startLockTimer();
+    } else {
+      // App coming to foreground — check if should lock
+      if(isLockEnabled()&&getLockPin()&&!lockTimer){
+        showLockScreen();
+      }
+    }
+  });
+
+  // Reset timer on any user interaction
+  ['touchstart','mousedown','keydown'].forEach(evt=>{
+    document.addEventListener(evt, resetLockTimer, {passive:true});
+  });
+
+  // Add shake keyframe if not already present
+  if(!document.getElementById('lock-shake-style')){
+    const s=document.createElement('style');
+    s.id='lock-shake-style';
+    s.textContent='@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}';
+    document.head.appendChild(s);
+  }
+
   // Splash loader: show 3s animation for new visitors, skip for returning users
   const hasSession = localStorage.getItem('rw_user') && localStorage.getItem('rw_token');
   const loader = document.getElementById('splash-loader');
@@ -3531,7 +3914,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-20-v45';
+const APP_VERSION = '2026-04-20-v46';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
