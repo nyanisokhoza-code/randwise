@@ -3494,7 +3494,7 @@ function showUpgradeWall(hardBlock){
 }
 function doUpgrade(plan){
   const mid='17641839',mkey='ggvw6iyb2c213';
-  const sandbox=true;
+  const sandbox=false;
   const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
   const amt=plan==='premium'?'129.00':'49.00';
   const name=plan==='premium'?'RandWise Premium':'RandWise Pro';
@@ -3531,7 +3531,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-16-v44';
+const APP_VERSION = '2026-04-20-v45';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
