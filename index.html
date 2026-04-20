@@ -3872,6 +3872,12 @@ window.addEventListener('load', ()=>{
   setInterval(async()=>{
     if(document.hidden) return;
 
+    // Don't redirect during PIN setup, lock screen, or any open sheet
+    const anySheetOpen = document.querySelector('.sheet.open');
+    const lockVisible = document.getElementById('app-lock-screen')?.style?.display === 'flex';
+    const setPinOpen = document.getElementById('set-pin-sheet')?.classList?.contains('open');
+    if(anySheetOpen || lockVisible || setPinOpen) return;
+
     // Check manual override first (admin flipped switch)
     const manualMaintenance = await checkManualMaintenanceFlag();
     if(manualMaintenance){
@@ -4017,7 +4023,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-20-v47';
+const APP_VERSION = '2026-04-20-v48';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
