@@ -336,6 +336,55 @@ if('serviceWorker' in navigator){
   </style>
 </div>
 
+<!-- STOKVEL SHEET -->
+<div class="overlay" id="stokvel-ov" onclick="closeAddStokvel()"></div>
+<div class="sheet" id="stokvel-sheet" style="max-height:92vh;overflow-y:auto">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="stokvel-sheet-title">Create a stokvel</div>
+  <div style="font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.6">You track it — money still moves between members the usual way.</div>
+
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Stokvel name</div>
+  <input type="text" id="stk-name" class="auth-in" placeholder="e.g. Nomsa's Christmas Stokvel 2026" style="margin-bottom:14px">
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Members</div>
+      <input type="number" id="stk-members" class="auth-in" placeholder="e.g. 8" min="2" max="50">
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Monthly contribution (R)</div>
+      <input type="number" id="stk-contribution" class="auth-in" placeholder="e.g. 500">
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Payout month (who gets the pot first)</div>
+  <select id="stk-start-month" class="auth-in" style="background:var(--bg2);border-radius:12px;padding:12px 14px;margin-bottom:14px">
+    <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+    <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+    <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+    <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+  </select>
+
+  <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:8px">Member names (one per line)</div>
+  <textarea id="stk-member-names" class="auth-in" rows="4" placeholder="Nomsa&#10;Thabo&#10;Lindiwe&#10;Sipho" style="resize:none;margin-bottom:16px;font-family:inherit"></textarea>
+
+  <div id="stk-preview" style="background:#f0faf4;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:none">
+    <div style="font-size:11px;font-weight:700;color:#1a5c35;margin-bottom:4px">Preview</div>
+    <div style="font-size:12px;color:#1a5c35" id="stk-preview-text">—</div>
+  </div>
+
+  <button onclick="saveStokvel()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save stokvel</button>
+  <button onclick="closeAddStokvel()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;cursor:pointer;padding:8px;margin-top:4px">Cancel</button>
+</div>
+
+<!-- STOKVEL DETAIL SHEET -->
+<div class="overlay" id="stokvel-detail-ov" onclick="closeStokvelDetail()"></div>
+<div class="sheet" id="stokvel-detail-sheet" style="max-height:92vh;overflow-y:auto">
+  <div class="sh-handle"></div>
+  <div class="sh-title" id="stokvel-detail-title">Stokvel</div>
+  <div id="stokvel-detail-content"></div>
+</div>
+
 <!-- DEBT INTERVENTION POPUP -->
 <div id="debt-intervention-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:7500;align-items:flex-end;justify-content:center">
   <div id="debt-intervention-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow:hidden">
@@ -799,6 +848,19 @@ if('serviceWorker' in navigator){
             <div style="display:flex;justify-content:space-between;gap:4px" id="daily-dots"></div>
           </div>
 
+          <!-- BUDGET BREAKDOWN CARD -->
+          <div id="budget-breakdown-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:13px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Budget breakdown</div>
+              <div style="font-size:11px;color:#1a5c35;font-weight:700" id="bb-weekly">R0/wk free</div>
+            </div>
+            <div id="bb-rows"></div>
+            <div style="border-top:1px solid #d1ead9;margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:11px;color:#5a8a6a">After commitments</div>
+              <div style="font-size:13px;font-weight:800;color:#1a5c35" id="bb-disposable">R0/mo</div>
+            </div>
+          </div>
+
           <!-- SMART NUDGE -->
           <div id="rollover-nudge" style="display:none;margin:10px 14px 0;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:11px 13px">
             <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:2px">💡 Smart tip</div>
@@ -1010,12 +1072,24 @@ if('serviceWorker' in navigator){
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Savings goals and investment guidance</div>
         <div id="goals-list-pwa"><div style="text-align:center;padding:40px 0;color:var(--mu);font-size:13px">Loading...</div></div>
         <button onclick="openAddGoalPWA()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">+ Add a savings goal</button>
+
+        <!-- STOKVEL TRACKER -->
+        <div style="margin-top:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div style="font-size:14px;font-weight:800">🤝 Stokvel tracker</div>
+              <div style="font-size:11px;color:var(--mu);margin-top:2px">Premium feature</div>
+            </div>
+            <button onclick="openAddStokvel()" id="add-stokvel-btn" style="background:#1a5c35;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer">+ New stokvel</button>
+          </div>
+          <div id="stokvel-list"><div style="text-align:center;padding:24px 0;color:var(--mu);font-size:13px">Loading...</div></div>
+        </div>
+
         <div style="margin-top:20px">
           <div style="font-size:14px;font-weight:700;margin-bottom:12px">💡 Where to grow your money</div>
           <div style="background:var(--w);border-radius:12px;border:.5px solid var(--bd);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center"><div style="font-size:24px">📈</div><div><div style="font-size:13px;font-weight:700">EasyEquities ETFs</div><div style="font-size:12px;color:var(--mu);margin-top:2px">Start with R100. Low fees. Great for beginners.</div></div></div>
           <div style="background:var(--w);border-radius:12px;border:.5px solid var(--bd);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center"><div style="font-size:24px">🏦</div><div><div style="font-size:13px;font-weight:700">Capitec 32-Day Notice</div><div style="font-size:12px;color:var(--mu);margin-top:2px">Beat inflation. Easy to open in the app.</div></div></div>
           <div style="background:var(--w);border-radius:12px;border:.5px solid var(--bd);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center"><div style="font-size:24px">🛡️</div><div><div style="font-size:13px;font-weight:700">Tax-Free Savings (TFSA)</div><div style="font-size:12px;color:var(--mu);margin-top:2px">Up to R36k/year tax-free. Long-term wealth.</div></div></div>
-          <div style="background:var(--w);border-radius:12px;border:.5px solid var(--bd);padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center"><div style="font-size:24px">🤝</div><div><div style="font-size:13px;font-weight:700">Stokvel</div><div style="font-size:12px;color:var(--mu);margin-top:2px">Community savings. Traditional and powerful.</div></div></div>
         </div>
       </div>
     </div>
@@ -1872,6 +1946,300 @@ async function loadExp(){
   if(!user?.id)return;
   try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
 }
+// ══ STOKVEL TRACKER ══════════════════════════════════════════
+const STOKVEL_KEY = 'rw_stokvels';
+
+function getStokvels(){ return JSON.parse(localStorage.getItem(STOKVEL_KEY)||'[]'); }
+function saveStokvels(arr){ localStorage.setItem(STOKVEL_KEY, JSON.stringify(arr)); }
+
+function openAddStokvel(){
+  // Premium gate
+  const tier = getTier();
+  if(tier==='free'){
+    showToast('🔒 Stokvel tracker is a Premium feature — upgrade to unlock');
+    return;
+  }
+  document.getElementById('stokvel-sheet').classList.add('open');
+  document.getElementById('stokvel-ov').classList.add('open');
+  // Pre-select current month
+  const sel = document.getElementById('stk-start-month');
+  if(sel) sel.value = new Date().getMonth()+1;
+  // Live preview
+  ['stk-name','stk-members','stk-contribution','stk-start-month'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('input', updateStokvelPreview);
+    if(el) el.addEventListener('change', updateStokvelPreview);
+  });
+}
+
+function updateStokvelPreview(){
+  const members = parseInt(document.getElementById('stk-members')?.value||0);
+  const contribution = parseFloat(document.getElementById('stk-contribution')?.value||0);
+  const preview = document.getElementById('stk-preview');
+  const previewText = document.getElementById('stk-preview-text');
+  if(members>1 && contribution>0 && preview && previewText){
+    const pot = members * contribution;
+    preview.style.display='block';
+    previewText.textContent = `${members} members × R${contribution.toLocaleString('en-ZA')}/mo = R${pot.toLocaleString('en-ZA')} pot per month. Each member receives R${pot.toLocaleString('en-ZA')} once a year.`;
+  } else if(preview){
+    preview.style.display='none';
+  }
+}
+
+function closeAddStokvel(){
+  document.getElementById('stokvel-sheet').classList.remove('open');
+  document.getElementById('stokvel-ov').classList.remove('open');
+}
+
+function saveStokvel(){
+  const name = document.getElementById('stk-name')?.value?.trim();
+  const members = parseInt(document.getElementById('stk-members')?.value||0);
+  const contribution = parseFloat(document.getElementById('stk-contribution')?.value||0);
+  const startMonth = parseInt(document.getElementById('stk-start-month')?.value||1);
+  const namesRaw = document.getElementById('stk-member-names')?.value?.trim();
+
+  if(!name){ showToast('Enter a stokvel name'); return; }
+  if(members<2){ showToast('A stokvel needs at least 2 members'); return; }
+  if(contribution<=0){ showToast('Enter the monthly contribution amount'); return; }
+
+  const memberNames = namesRaw ? namesRaw.split('\n').map(n=>n.trim()).filter(Boolean) : [];
+  // Pad with generic names if needed
+  const allMembers = Array.from({length:members}, (_,i)=>memberNames[i]||`Member ${i+1}`);
+
+  const stokvel = {
+    id: 'stk-'+Date.now(),
+    name,
+    members: allMembers,
+    contribution,
+    startMonth,
+    created: new Date().toISOString(),
+    payments: {}, // {year-month: [memberIndex, ...]}
+    payoutHistory: [] // [{month, year, recipient, amount}]
+  };
+
+  const stokvels = getStokvels();
+  stokvels.push(stokvel);
+  saveStokvels(stokvels);
+  closeAddStokvel();
+  loadStokvelList();
+  showToast('✅ Stokvel created!');
+}
+
+function loadStokvelList(){
+  const el = document.getElementById('stokvel-list');
+  if(!el) return;
+  const stokvels = getStokvels();
+
+  if(!stokvels.length){
+    el.innerHTML=`<div style="text-align:center;padding:20px;background:#f0faf4;border-radius:14px;border:1px dashed #d1ead9">
+      <div style="font-size:28px;margin-bottom:8px">🤝</div>
+      <div style="font-size:13px;font-weight:700;color:var(--t)">No stokvels yet</div>
+      <div style="font-size:12px;color:var(--mu);margin-top:4px">Track your savings group here</div>
+    </div>`;
+    return;
+  }
+
+  const now = new Date();
+  el.innerHTML = stokvels.map(s=>{
+    const pot = s.members.length * s.contribution;
+    const monthKey = `${now.getFullYear()}-${now.getMonth()+1}`;
+    const paidThisMonth = (s.payments[monthKey]||[]).length;
+    const totalMembers = s.members.length;
+    const allPaid = paidThisMonth >= totalMembers;
+
+    // Whose turn is it this month?
+    const monthsFromStart = (now.getFullYear()*12 + now.getMonth()) - (new Date(s.created).getFullYear()*12 + s.startMonth - 1);
+    const recipientIdx = ((monthsFromStart % totalMembers) + totalMembers) % totalMembers;
+    const recipient = s.members[recipientIdx];
+
+    return`<div style="background:var(--w);border-radius:14px;border:1px solid #d1ead9;padding:14px 16px;margin-bottom:10px;cursor:pointer" onclick="openStokvelDetail('${s.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--t)">🤝 ${s.name}</div>
+          <div style="font-size:11px;color:var(--mu);margin-top:2px">${totalMembers} members · R${s.contribution.toLocaleString('en-ZA')}/mo each</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:900;color:#1a5c35">R${pot.toLocaleString('en-ZA')}</div>
+          <div style="font-size:10px;color:var(--mu)">monthly pot</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:#f0faf4;border-radius:10px;padding:8px 12px;margin-bottom:8px">
+        <div style="font-size:11px;color:#1a5c35;font-weight:600">🎯 This month: ${recipient}'s payout</div>
+        <div style="font-size:11px;font-weight:700;color:#1a5c35">R${pot.toLocaleString('en-ZA')}</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:var(--mu)">${paidThisMonth}/${totalMembers} paid this month</div>
+        <div style="font-size:11px;font-weight:700;color:${allPaid?'#1a5c35':'#f57f17'}">${allPaid?'✅ All paid':'⏳ Pending'}</div>
+      </div>
+      <!-- Payment dots -->
+      <div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">
+        ${s.members.map((_,i)=>{
+          const paid=(s.payments[monthKey]||[]).includes(i);
+          return`<div style="width:8px;height:8px;border-radius:50%;background:${paid?'#1a5c35':'#d1ead9'}"></div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openStokvelDetail(id){
+  const stokvels = getStokvels();
+  const s = stokvels.find(x=>x.id===id);
+  if(!s) return;
+
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()+1}`;
+  const pot = s.members.length * s.contribution;
+  const monthsFromStart = (now.getFullYear()*12 + now.getMonth()) - (new Date(s.created).getFullYear()*12 + s.startMonth - 1);
+  const recipientIdx = ((monthsFromStart % s.members.length) + s.members.length) % s.members.length;
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  document.getElementById('stokvel-detail-title').textContent = s.name;
+
+  const content = document.getElementById('stokvel-detail-content');
+  content.innerHTML = `
+    <!-- Pot info -->
+    <div style="background:linear-gradient(135deg,#0d1f14,#1a5c35);border-radius:16px;padding:16px;margin-bottom:16px;text-align:center">
+      <div style="font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Monthly pot</div>
+      <div style="font-size:32px;font-weight:900;color:#4ade80">R${pot.toLocaleString('en-ZA')}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">${s.members.length} members × R${s.contribution.toLocaleString('en-ZA')}</div>
+    </div>
+
+    <!-- This month's payout -->
+    <div style="background:#f0faf4;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.5px">This month's payout</div>
+        <div style="font-size:16px;font-weight:800;color:#1a5c35;margin-top:2px">🎉 ${s.members[recipientIdx]}</div>
+      </div>
+      <div style="font-size:18px;font-weight:900;color:#1a5c35">R${pot.toLocaleString('en-ZA')}</div>
+    </div>
+
+    <!-- Members + payment tracking -->
+    <div style="font-size:13px;font-weight:700;margin-bottom:10px">Mark who has paid this month</div>
+    <div id="stokvel-members-list">
+      ${s.members.map((name,i)=>{
+        const paid = (s.payments[monthKey]||[]).includes(i);
+        const isRecipient = i === recipientIdx;
+        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:32px;height:32px;border-radius:50%;background:${paid?'#1a5c35':'#e8f5ee'};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:${paid?'#fff':'#1a5c35'}">${name[0].toUpperCase()}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600">${name}${isRecipient?' 🎯':''}</div>
+              <div style="font-size:10px;color:var(--mu)">${isRecipient?'Receives pot this month':''}</div>
+            </div>
+          </div>
+          <button onclick="toggleStokvelPayment('${id}',${i})" style="background:${paid?'#1a5c35':'#f0faf4'};color:${paid?'#fff':'#1a5c35'};border:1px solid ${paid?'#1a5c35':'#d1ead9'};border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">
+            ${paid?'✅ Paid':'Mark paid'}
+          </button>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Payout schedule -->
+    <div style="margin-top:20px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px">Payout schedule</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${s.members.map((name,i)=>{
+          const payoutMonthIdx = (s.startMonth - 1 + i) % 12;
+          const isPast = i < (monthsFromStart % s.members.length);
+          const isCurrent = i === recipientIdx;
+          return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:${isCurrent?'#f0faf4':isPast?'#fafafa':'var(--w)'};border-radius:10px;border:1px solid ${isCurrent?'#d1ead9':'#f0f0f0'}">
+            <div style="font-size:12px;font-weight:${isCurrent?'700':'400'};color:${isCurrent?'#1a5c35':isPast?'#aaa':'var(--t)'}">${name}</div>
+            <div style="font-size:11px;color:${isCurrent?'#1a5c35':isPast?'#aaa':'var(--mu)'}">${monthNames[payoutMonthIdx]} ${isCurrent?'← now':isPast?'✓':''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Share + Delete -->
+    <button onclick="shareStokvelCard('${id}')" style="width:100%;background:#1a5c35;color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px">📸 Share progress card</button>
+    <button onclick="deleteStokvel('${id}')" style="width:100%;background:var(--rl);color:var(--r);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:700;cursor:pointer">Delete stokvel</button>
+  `;
+
+  document.getElementById('stokvel-detail-sheet').classList.add('open');
+  document.getElementById('stokvel-detail-ov').classList.add('open');
+}
+
+function closeStokvelDetail(){
+  document.getElementById('stokvel-detail-sheet').classList.remove('open');
+  document.getElementById('stokvel-detail-ov').classList.remove('open');
+}
+
+function toggleStokvelPayment(id, memberIdx){
+  const stokvels = getStokvels();
+  const s = stokvels.find(x=>x.id===id);
+  if(!s) return;
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()+1}`;
+  if(!s.payments[monthKey]) s.payments[monthKey]=[];
+  const paid = s.payments[monthKey].includes(memberIdx);
+  if(paid){
+    s.payments[monthKey] = s.payments[monthKey].filter(i=>i!==memberIdx);
+  } else {
+    s.payments[monthKey].push(memberIdx);
+    if(s.payments[monthKey].length === s.members.length){
+      showToast('🎉 All members paid this month!');
+    }
+  }
+  saveStokvels(stokvels);
+  loadStokvelList();
+  openStokvelDetail(id); // Refresh detail view
+}
+
+function deleteStokvel(id){
+  if(!confirm('Delete this stokvel? All payment history will be lost.')) return;
+  const stokvels = getStokvels().filter(s=>s.id!==id);
+  saveStokvels(stokvels);
+  closeStokvelDetail();
+  loadStokvelList();
+  showToast('Stokvel deleted');
+}
+
+function shareStokvelCard(id){
+  const stokvels = getStokvels();
+  const s = stokvels.find(x=>x.id===id);
+  if(!s) return;
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${now.getMonth()+1}`;
+  const paidCount = (s.payments[monthKey]||[]).length;
+  const pot = s.members.length * s.contribution;
+  window._shareCardData = {
+    cardHeadline: `Our stokvel pot is R${pot.toLocaleString('en-ZA')} this month 🤝`,
+    cardBody: `${paidCount}/${s.members.length} members paid. ${s.name} — tracking with MyRandWise. 🇿🇦`
+  };
+  closeStokvelDetail();
+  generateShareCard();
+}
+
+// ══ SMART WEEKLY BUDGET ══════════════════════════════════════
+// Returns disposable weekly budget = (income − fixed commitments) ÷ 4
+function getSmartWeeklyBudget(){
+  const inc = Number(user?.income_amount||0);
+  if(inc<=0) return {wb:0, disposable:0, fixed:0, breakdown:[]};
+
+  const breakdown = [];
+
+  // Debit orders from localStorage
+  const storedDOs = JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+  const doTotal = storedDOs.reduce((s,d)=>s+Number(d.amount||0),0);
+  if(doTotal>0) breakdown.push({label:'Debit orders', amount:doTotal});
+
+  // Debt minimum payments
+  const debtMin = (debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
+  if(debtMin>0) breakdown.push({label:'Debt minimums', amount:debtMin});
+
+  // Recurring expenses from localStorage
+  const recurring = JSON.parse(localStorage.getItem('rw_recurring')||'[]');
+  const recTotal = recurring.reduce((s,r)=>s+Number(r.amount||0),0);
+  if(recTotal>0) breakdown.push({label:'Recurring expenses', amount:recTotal});
+
+  const fixed = doTotal + debtMin + recTotal;
+  const disposable = Math.max(0, inc - fixed);
+  const wb = Math.round(disposable/4);
+
+  return {wb, disposable, fixed, breakdown, inc};
+}
+
 async function renderDash(){
   if(!user)return;
   applyTierTheme();
@@ -1947,7 +2315,8 @@ async function renderDash(){
 
   const ms=new Date(now.getFullYear(),now.getMonth(),1);
   const me=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=ms);
-  const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent),wb=inc>0?Math.round(inc*.6/4):0;
+  const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent);
+  const {wb,disposable,fixed,breakdown:budgetBreakdown}=getSmartWeeklyBudget();
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
 
@@ -2155,6 +2524,30 @@ async function renderDash(){
   }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
+  // ── BUDGET BREAKDOWN CARD ──────────────────────────────────
+  const bbCard = document.getElementById('budget-breakdown-card');
+  if(bbCard && budgetBreakdown && budgetBreakdown.length > 0){
+    bbCard.style.display='block';
+    document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
+    document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
+    const rows = document.getElementById('bb-rows');
+    if(rows){
+      rows.innerHTML = `
+        <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0">
+          <span style="color:#5a8a6a">Monthly income</span>
+          <span style="color:#1a1a1a;font-weight:600">R${inc.toLocaleString('en-ZA')}</span>
+        </div>
+        ${budgetBreakdown.map(b=>`
+        <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0">
+          <span style="color:#5a8a6a">− ${b.label}</span>
+          <span style="color:#c62828;font-weight:600">−R${Math.round(b.amount).toLocaleString('en-ZA')}</span>
+        </div>`).join('')}
+      `;
+    }
+  } else if(bbCard){
+    bbCard.style.display='none';
+  }
+
   // Debit orders — combine expense-based + locally stored debit orders
   const storedDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
   const storedDOTotal=storedDOs.reduce((s,d)=>s+Number(d.amount||0),0);
@@ -2257,7 +2650,7 @@ function switchTab(t){
   const btn=document.getElementById('tb-'+t);
   if(btn)btn.classList.add('act');
   if(t==='debt')loadDebtsPWA();
-  if(t==='grow')loadGoalsPWA();
+  if(t==='grow'){loadGoalsPWA();loadStokvelList();}
   if(t==='profile'){updateBondPreview();initLock();initPushToggle();}
   if(t==='import')initImportTab();
 }
@@ -3051,7 +3444,7 @@ function schedulePushNudges(){
   const hour = now.getHours();
   const inc = Number(user?.income_amount || 0);
   const totalExp = expenses.reduce((s,e) => s + Number(e.amount||0), 0);
-  const weekBudget = Math.round(inc/4);
+  const weekBudget = getSmartWeeklyBudget().wb;
   const pctUsed = weekBudget > 0 ? Math.round(totalExp/weekBudget*100) : 0;
 
   // Evening reminder if no expenses logged today
@@ -3826,7 +4219,7 @@ async function renderBondReadiness(){
   // Savings factor
   if(depositSaved>=depositNeeded)score+=15;else if(depositSaved>=depositNeeded*0.5)score+=8;else if(depositSaved>0)score+=3;
   // Spending discipline (use weekly budget adherence)
-  const wb=Math.round(inc/4);
+  const {wb}=getSmartWeeklyBudget();
   const now=new Date();
   const weekAgo=new Date(now-7*24*60*60*1000);
   const weekExp=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=weekAgo);
@@ -3942,7 +4335,7 @@ async function generateAINudge(){
     const cats={};
     weekExp.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
     const catSummary=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c,a])=>`${c}: R${Math.round(a)}`).join(', ');
-    const wb=Math.round(inc/4);
+    const {wb}=getSmartWeeklyBudget();
     const pctUsed=wb>0?Math.round(totalWeek/wb*100):0;
     const prompt=`You are a personal finance advisor for South African users. Based on this week's spending data, give ONE specific, actionable money tip. Be conversational, warm, and South African in tone. Maximum 2 sentences. No generic advice.
 
@@ -4019,7 +4412,7 @@ function renderWeeklyPlanner(weekNum){
   const now=new Date();
   const currentWeek=Math.ceil(now.getDate()/7);
   const w=weekNum||currentWeek;
-  const wb=Math.round(inc/4);
+  const {wb}=getSmartWeeklyBudget();
 
   // Calculate week date range
   // Week 1 = days 1-7, Week 2 = 8-14, Week 3 = 15-21, Week 4 = 22-end
@@ -4969,7 +5362,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v65';
+const APP_VERSION = '2026-04-21-v66';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
