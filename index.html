@@ -2284,9 +2284,15 @@ function getSmartWeeklyBudget(){
 
 async function renderDash(){
   if(!user)return;
-  // Always scroll to top so stat cards are visible
-  const dmcEl=document.getElementById('dash-main-content');
-  if(dmcEl) dmcEl.scrollTop=0;
+  // Force scroll to top - multiple attempts to ensure it works
+  const forceTop=()=>{
+    const el=document.getElementById('dash-main-content');
+    if(el){el.scrollTop=0;el.scrollTo({top:0,behavior:'instant'});}
+  };
+  forceTop();
+  setTimeout(forceTop,50);
+  setTimeout(forceTop,200);
+  setTimeout(forceTop,500);
   applyTierTheme();
   setTimeout(loadAINudge, 1500);
   setTimeout(renderInsights, 300);
@@ -4410,11 +4416,13 @@ async function loadAINudge(){
   // Check if we have a cached nudge from today
   const cached=localStorage.getItem('rw_nudge_cache');
   const cachedDate=localStorage.getItem('rw_nudge_date');
+  const forceTop=()=>{ const el=document.getElementById('dash-main-content'); if(el) el.scrollTop=0; };
   if(cached&&cachedDate===new Date().toDateString()){
     card.style.display='block';
     document.getElementById('ai-nudge-text').textContent=cached;
     const dateEl=document.getElementById('ai-nudge-date');
     if(dateEl)dateEl.textContent='Generated today · Tap ↻ to refresh';
+    forceTop(); // Keep scroll at top after showing card
     return;
   }
   // Only generate on Monday or if no nudge yet this week
@@ -4424,6 +4432,7 @@ async function loadAINudge(){
   if(lastNudgeWeek===thisWeek&&!cached){return;} // Already tried this week
   // Show card with loading state
   card.style.display='block';
+  forceTop(); // Keep scroll at top after showing card
   document.getElementById('ai-nudge-text').textContent='Analysing your spending patterns...';
   await generateAINudge();
 }
@@ -5471,7 +5480,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v72';
+const APP_VERSION = '2026-04-22-v73';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
