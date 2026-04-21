@@ -859,7 +859,7 @@ if('serviceWorker' in navigator){
               <div style="font-size:11px;color:#5a8a6a">After commitments</div>
               <div style="font-size:13px;font-weight:800;color:#1a5c35" id="bb-disposable">R0/mo</div>
             </div>
-          </div>
+          </div></div>
 
           <!-- SMART NUDGE -->
           <div id="rollover-nudge" style="display:none;margin:10px 14px 0;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:11px 13px">
@@ -867,15 +867,17 @@ if('serviceWorker' in navigator){
             <div style="font-size:11px;color:#92400e;line-height:1.5" id="rollover-text">—</div>
           </div>
 
-          <!-- AI NUDGE CARD -->
-          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:14px">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <!-- AI NUDGE CARD - collapsed by default -->
+          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:10px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center" onclick="toggleNudgeExpand()" style="cursor:pointer">
               <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.8px">🤖 Weekly insight</div>
-              <div style="display:flex;gap:6px">
-                <button onclick="refreshAINudge()" id="nudge-refresh-btn" style="background:none;border:none;color:#5a8a6a;font-size:11px;cursor:pointer;font-weight:600;padding:2px 6px;border-radius:6px">↻ Refresh</button>
-                <button onclick="dismissAINudge()" style="background:none;border:none;color:#5a8a6a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button onclick="event.stopPropagation();refreshAINudge()" id="nudge-refresh-btn" style="background:none;border:none;color:#5a8a6a;font-size:11px;cursor:pointer;font-weight:600;padding:2px 6px;border-radius:6px">↻</button>
+                <button onclick="event.stopPropagation();dismissAINudge()" style="background:none;border:none;color:#5a8a6a;font-size:16px;cursor:pointer;line-height:1;padding:0 4px">×</button>
+                <span id="nudge-toggle-icon" style="font-size:12px;color:#5a8a6a">▼</span>
               </div>
             </div>
+            <div id="nudge-body" style="display:none;margin-top:8px">
             <div style="font-size:13px;color:#1a5c35;line-height:1.6;font-weight:500" id="ai-nudge-text">Analysing your spending...</div>
             <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
           </div>
@@ -4489,6 +4491,15 @@ Give one specific tip based on this data. If they overspent, suggest how to reco
   }
 }
 
+function toggleNudgeExpand(){
+  const body = document.getElementById('nudge-body');
+  const icon = document.getElementById('nudge-toggle-icon');
+  if(!body) return;
+  const expanded = body.style.display !== 'none';
+  body.style.display = expanded ? 'none' : 'block';
+  if(icon) icon.textContent = expanded ? '▼' : '▲';
+}
+
 function dismissAINudge(){
   const card=document.getElementById('ai-nudge-card');
   if(card)card.style.display='none';
@@ -5480,7 +5491,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v73';
+const APP_VERSION = '2026-04-22-v74';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
