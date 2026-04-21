@@ -859,6 +859,7 @@ if('serviceWorker' in navigator){
           <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div>
           <div style="font-size:28px;font-weight:900;color:#4ade80;line-height:1" id="debt-free-months">—</div>
           <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px" id="debt-free-label">paying minimums</div>
+          <div style="font-size:13px;color:#4ade80;font-weight:700;margin-top:6px" id="debt-free-date"></div>
         </div>
 
         <!-- PAYOFF ACCELERATOR -->
@@ -2207,7 +2208,7 @@ async function loadDebtsPWA(){
     const snowballContent=document.getElementById('snowball-content');
     if(snowballCard&&snowballContent&&sorted.length>0){
       snowballCard.style.display='block';
-      const extra=Math.max(0,(inc/4)-totalMin); // extra weekly money
+      const extra=0; // Show minimum payments only in snowball list — accelerator section handles extras
       let html='';
       sorted.forEach((d,i)=>{
         const bal=Number(d.balance||0);
@@ -2350,7 +2351,15 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   timelineEl.style.display='block';
   const freeMonthsEl=document.getElementById('debt-free-months');
   const freeLabelEl=document.getElementById('debt-free-label');
-  if(freeMonthsEl)freeMonthsEl.textContent=totalMonthsMin>60?Math.round(totalMonthsMin/12)+' years':totalMonthsMin+' months';
+  if(freeMonthsEl){
+    freeMonthsEl.textContent=totalMonthsMin>60?Math.round(totalMonthsMin/12)+' years':totalMonthsMin+' months';
+    // Add calendar date
+    const freeDate=new Date();
+    freeDate.setMonth(freeDate.getMonth()+totalMonthsMin);
+    const freeDateStr=freeDate.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
+    const dateEl=document.getElementById('debt-free-date');
+    if(dateEl) dateEl.textContent='Debt free: '+freeDateStr;
+  }
   if(freeLabelEl)freeLabelEl.textContent='paying only minimums (R'+totalMin.toLocaleString('en-ZA')+'/mo)';
 
   // Accelerator scenarios with real interest data
@@ -4413,7 +4422,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v57';
+const APP_VERSION = '2026-04-21-v58';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
