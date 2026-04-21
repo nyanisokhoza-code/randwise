@@ -531,8 +531,8 @@ if('serviceWorker' in navigator){
 </div>
 
 <!-- INFO TOOLTIP SHEET -->
-<div class="overlay" id="info-ov" onclick="closeInfo()"></div>
-<div class="sheet" id="info-sheet">
+<div class="overlay" id="info-ov" onclick="closeInfo()" style="z-index:500"></div>
+<div class="sheet" id="info-sheet" style="z-index:501">
   <div class="sh-handle"></div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
     <div style="width:36px;height:36px;background:#f0faf4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px" id="info-icon">💡</div>
@@ -2611,6 +2611,24 @@ async function saveExp(){
     localStorage.setItem('rw_share_nudge_shown','1');
     setTimeout(()=>showShareNudge(), 1500);
   }
+  // Suggest recurring for large/monthly-looking expenses
+  const monthlyLookingCats = ['Electricity','Water','Rent','Groceries','Airtime','Insurance','Transport','Gym','School fees','Loan payment'];
+  const isMonthlyLooking = monthlyLookingCats.includes(selectedCat?.n) || a >= 500;
+  const recKey = `rw_rec_suggested_${selectedCat?.n}_${Math.round(a/100)*100}`;
+  if(!recurring && isMonthlyLooking && !localStorage.getItem(recKey)){
+    localStorage.setItem(recKey,'1');
+    setTimeout(()=>{
+      if(confirm(`Add ${selectedCat?.e||''} ${selectedCat?.n} (R${a.toLocaleString('en-ZA')}) as a monthly recurring expense?\n\nThis improves your weekly budget accuracy.`)){
+        const recList=JSON.parse(localStorage.getItem('rw_recurring')||'[]');
+        const exists=recList.find(r=>r.category===selectedCat.n&&Math.abs(r.amount-a)<50);
+        if(!exists){
+          recList.push({category:selectedCat.n,category_id:selectedCat.id,emoji:selectedCat.e,amount:a,note:note||'',added:new Date().toISOString()});
+          localStorage.setItem('rw_recurring',JSON.stringify(recList));
+          showToast('✅ Added as recurring — budget updated');
+        }
+      }
+    }, 600);
+  }
   btn.disabled=false;btn.textContent='Save expense';
   // Reset recurring toggle
   const recEl=document.getElementById('exp-recurring');
@@ -3526,8 +3544,20 @@ const INFO = {
   'weekly-budget': {
     icon: '📅',
     title: 'Weekly Budget',
-    body: 'Your monthly income divided by 4 gives your weekly spending budget. Tracking weekly (not monthly) makes overspending harder to hide — you catch problems early instead of at the end of the month when it\'s too late.',
-    example: 'Income: R9,000/mo\nWeekly budget: R2,250/wk\n\nIf you spend R2,800 in week 1, you have R1,700 left for week 2 to stay on track.'
+    body: 'Your weekly budget is your income minus fixed commitments (debit orders, debt minimums, recurring expenses) divided by 4. This gives your real spending money — not just income ÷ 4 which ignores your bills. Add your debit orders and debts to get an accurate number.',
+    get example(){
+      const inc = Number(user?.income_amount||9000);
+      try {
+        const {wb, disposable, fixed, breakdown} = getSmartWeeklyBudget();
+        if(fixed>0){
+          const lines = breakdown.map(b=>`  − ${b.label}: R${Math.round(b.amount).toLocaleString('en-ZA')}`).join('\n');
+          return `Income: R${inc.toLocaleString('en-ZA')}/mo\n${lines}\n= R${Math.round(disposable).toLocaleString('en-ZA')}/mo free\nWeekly budget: R${wb.toLocaleString('en-ZA')}/wk`;
+        }
+        return `Income: R${inc.toLocaleString('en-ZA')}/mo ÷ 4 = R${Math.round(inc/4).toLocaleString('en-ZA')}/wk\n\nAdd your debit orders and debts to see your real number.`;
+      } catch(e) {
+        return `Income: R${inc.toLocaleString('en-ZA')}/mo\nWeekly budget = (Income − fixed costs) ÷ 4`;
+      }
+    }
   },
   'bond-readiness': {
     icon: '🏠',
@@ -5362,7 +5392,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v66';
+const APP_VERSION = '2026-04-21-v67';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -5402,6 +5432,10 @@ function ownerTap(){
     document.getElementById('owner-pin-input').value='';
     document.getElementById('owner-pin-err').style.display='none';
     setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
+  } else if(ownerTapCount===3){
+    // 3 taps — open edit profile
+    switchTab('profile');
+    setTimeout(()=>openEditProfile(),300);
   } else if(ownerTapCount===1){
     // Single tap — go to profile tab
     switchTab('profile');
