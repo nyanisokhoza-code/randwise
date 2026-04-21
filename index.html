@@ -786,7 +786,7 @@ if('serviceWorker' in navigator){
           <div style="position:absolute;right:-10px;top:-10px;font-size:60px;opacity:.08">📱</div>
           <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:4px">📱 Android App</div>
           <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">Download the native Android app — installs directly, works faster, no browser needed.</div>
-          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" download style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
+          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
           <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
@@ -4171,7 +4171,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v52';
+const APP_VERSION = '2026-04-21-v53';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
