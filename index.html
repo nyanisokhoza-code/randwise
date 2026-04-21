@@ -481,6 +481,22 @@ if('serviceWorker' in navigator){
   <button onclick="lockForgotPin()" style="margin-top:24px;background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer">Forgot PIN? Use password instead</button>
 </div>
 
+<!-- INFO TOOLTIP SHEET -->
+<div class="overlay" id="info-ov" onclick="closeInfo()"></div>
+<div class="sheet" id="info-sheet">
+  <div class="sh-handle"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div style="width:36px;height:36px;background:#f0faf4;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px" id="info-icon">💡</div>
+    <div style="font-size:17px;font-weight:800;color:var(--t)" id="info-title">—</div>
+  </div>
+  <div style="font-size:14px;color:var(--t);line-height:1.8;margin-bottom:16px" id="info-body">—</div>
+  <div id="info-example" style="background:#f0faf4;border-radius:12px;padding:12px 14px;display:none">
+    <div style="font-size:11px;font-weight:700;color:#1a5c35;margin-bottom:4px">Example</div>
+    <div style="font-size:13px;color:#1a5c35;line-height:1.6" id="info-example-text">—</div>
+  </div>
+  <button onclick="closeInfo()" style="width:100%;margin-top:16px;background:var(--g);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Got it ✓</button>
+</div>
+
 <!-- SET PIN SHEET -->
 <div class="overlay" id="set-pin-ov" onclick="closeSetPin()" style="z-index:9001"></div>
 <div class="sheet" id="set-pin-sheet" style="z-index:9002;max-height:90vh;overflow-y:auto">
@@ -722,8 +738,8 @@ if('serviceWorker' in navigator){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0">
 
             <!-- THIS WEEK -->
-            <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="openWeeklyPlanner()">
-              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div>
+            <div id="week-stat-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer;transition:background .3s,border-color .3s" onclick="openWeeklyPlanner()">
+              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div><button onclick="showInfo('weekly-budget')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
               <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-week-label">Week 1 of 4 · R0/wk</div>
               <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to see plan →</div>
@@ -739,7 +755,7 @@ if('serviceWorker' in navigator){
 
             <!-- DEBT SCORE -->
             <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
-              <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div>
+              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div><button onclick="showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
               <div style="display:flex;align-items:baseline;gap:3px">
                 <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
                 <div style="font-size:12px;color:#5a8a6a;font-weight:600">/100</div>
@@ -761,7 +777,7 @@ if('serviceWorker' in navigator){
           <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px 16px;cursor:pointer" onclick="switchTab('grow')" id="net-worth-card">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
-                <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div>
+                <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div><button onclick="showInfo('net-worth')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
                 <div style="font-size:24px;font-weight:900;line-height:1;letter-spacing:-.5px" id="net-worth-amt">—</div>
                 <div style="font-size:11px;color:#5a8a6a;margin-top:4px" id="net-worth-sub">savings minus debt</div>
               </div>
@@ -951,7 +967,7 @@ if('serviceWorker' in navigator){
 
         <!-- DEBT FREE TIMELINE -->
         <div id="debt-free-timeline" style="display:none;background:#1a5c35;border-radius:16px;padding:14px 16px;margin-bottom:12px;text-align:center">
-          <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px"><div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div><button onclick="showInfo('snowball')" style="background:rgba(255,255,255,.15);border:none;width:16px;height:16px;border-radius:50%;color:rgba(255,255,255,.7);font-size:9px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px">i</button></div>
           <div style="font-size:28px;font-weight:900;color:#4ade80;line-height:1" id="debt-free-months">—</div>
           <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px" id="debt-free-label">paying minimums</div>
           <div style="font-size:13px;color:#4ade80;font-weight:700;margin-top:6px" id="debt-free-date"></div>
@@ -959,7 +975,7 @@ if('serviceWorker' in navigator){
 
         <!-- PAYOFF ACCELERATOR -->
         <div id="payoff-accelerator" style="display:none;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
-          <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div>
+          <div style="display:flex;align-items:center;gap:4px"><div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div><button onclick="showInfo('payoff-accelerator')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
           <div id="accelerator-scenarios"></div>
           <!-- Dad's split strategy -->
           <div id="split-strategy" style="margin-top:12px;padding-top:12px;border-top:1px solid #d1ead9">
@@ -2061,6 +2077,13 @@ async function renderDash(){
   const dsBar=document.getElementById('debt-score-bar');
   if(dsBar){dsBar.style.width=debtScore+'%';dsBar.style.background=scoreColor.replace('var(--g)','#1a7a4a').replace('var(--a)','#ba7517').replace('var(--r)','#a32d2d');}
   set('debt-score-label',scoreLabel);
+  // Color the debt score card based on score
+  const dsCard=document.getElementById('stat-debt-card');
+  if(dsCard){
+    if(debtScore<40){dsCard.style.background='#fff5f5';dsCard.style.borderColor='#ffcdd2';}
+    else if(debtScore<70){dsCard.style.background='#fffde7';dsCard.style.borderColor='#fff176';}
+    else{dsCard.style.background='';dsCard.style.borderColor='';}
+  }
 
   // ── DEBIT ORDERS (expenses tagged as loan/insurance/rent) ──
   const debitCats=['Loan payment','Insurance','Rent','Electricity','Stokvel'];
@@ -2088,10 +2111,26 @@ async function renderDash(){
   if(afterEl)afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
 
   // ── 2×2 STAT CARDS ─────────────────────────────────────────
-  // This week spending
+  // This week spending — red if over budget
   const weekSpentAmt=me.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart).reduce((s,e)=>s+Number(e.amount),0);
-  set('stat-week-spent','R'+weekSpentAmt.toLocaleString('en-ZA'));
-  set('stat-week-label',`Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`);
+  const overBudget = wb > 0 && weekSpentAmt > wb;
+  const weekEl = document.getElementById('stat-week-spent');
+  if(weekEl){
+    weekEl.textContent = 'R'+weekSpentAmt.toLocaleString('en-ZA');
+    weekEl.style.color = overBudget ? '#c62828' : '#1a5c35';
+  }
+  const weekCard = document.getElementById('week-stat-card');
+  if(weekCard){
+    weekCard.style.background = overBudget ? '#fff5f5' : '';
+    weekCard.style.borderColor = overBudget ? '#ffcdd2' : '';
+  }
+  const weekLabelEl = document.getElementById('stat-week-label');
+  if(weekLabelEl){
+    weekLabelEl.textContent = overBudget
+      ? `⚠️ R${Math.round(weekSpentAmt-wb).toLocaleString('en-ZA')} over budget`
+      : `Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`;
+    weekLabelEl.style.color = overBudget ? '#c62828' : '';
+  }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
   // Debit orders — combine expense-based + locally stored debit orders
@@ -3029,6 +3068,87 @@ function schedulePushNudges(){
       );
     }, 3000);
   }
+}
+
+// ══ INFO TOOLTIPS ════════════════════════════════════════════
+const INFO = {
+  'net-worth': {
+    icon: '💰',
+    title: 'Net Worth',
+    body: 'Net worth is simply what you own minus what you owe. If your savings are R5,000 and your debt is R8,000, your net worth is -R3,000. The goal is to grow this number every month — either by saving more or paying off debt.',
+    example: 'Savings: R5,000\nDebt: R8,000\nNet worth: -R3,000\n\nNext month if you pay R500 off debt:\nNet worth: -R2,500 ✅ Growing!'
+  },
+  'debt-score': {
+    icon: '🎯',
+    title: 'Debt Freedom Score',
+    body: 'Your Debt Freedom Score (0–100) measures how healthy your debt situation is. It looks at how much debt you have compared to your income, and how much you\'ve paid off. 100 means debt-free. Below 50 means your debt is a serious burden.',
+    example: 'Score 80–100: Excellent — debt is manageable\nScore 60–79: Good — keep paying\nScore 40–59: Caution — debt is growing\nScore 0–39: Danger — need a plan now'
+  },
+  'snowball': {
+    icon: '⚡',
+    title: 'Debt Snowball',
+    body: 'The snowball method means paying off your smallest debt first, then rolling that payment onto the next debt. Like a snowball rolling downhill — it gets bigger and faster as it goes. It\'s not always the cheapest method, but it\'s the most motivating.',
+    example: 'You have:\n• Store card: R2,000 @ R100/mo\n• Car: R50,000 @ R1,000/mo\n\nSnowball: Attack the R2,000 first. Once it\'s done, pay R1,100/mo on the car. Done in less time!'
+  },
+  'stokvel': {
+    icon: '🤝',
+    title: 'Stokvel',
+    body: 'A stokvel is a rotating savings club. A group of people each contribute a fixed amount every month, and one member receives the full pot each month. It\'s one of the most powerful savings tools in South Africa — over R50 billion moves through stokvels every year.',
+    example: '8 people each contribute R500/mo\nTotal pot: R4,000/mo\nEach person gets R4,000 once a year\n\nYou "save" R500 but receive R4,000!'
+  },
+  'payoff-accelerator': {
+    icon: '🚀',
+    title: 'Payoff Accelerator',
+    body: 'The payoff accelerator shows you exactly how much faster you can become debt-free by paying a little extra each month. Even R100 extra can save you months of payments and thousands in interest.',
+    example: 'R8,821 debt @ R300/mo minimum:\n• Minimum only: 20 months\n• +R100/mo: 14 months (6 months faster!)\n• +R200/mo: 10 months (10 months faster!)'
+  },
+  'debt-to-income': {
+    icon: '📊',
+    title: 'Debt-to-Income Ratio',
+    body: 'Debt-to-income ratio compares your total debt to your monthly income. A ratio above 40% is a warning sign. Above 60% is dangerous. Banks use this to decide if they\'ll give you a loan — and it affects your bond application.',
+    example: 'Income: R10,000/mo\nDebt: R50,000\nRatio: 500% (5× income) — danger zone\n\nIdeal: Keep debt below 3× monthly income'
+  },
+  'weekly-budget': {
+    icon: '📅',
+    title: 'Weekly Budget',
+    body: 'Your monthly income divided by 4 gives your weekly spending budget. Tracking weekly (not monthly) makes overspending harder to hide — you catch problems early instead of at the end of the month when it\'s too late.',
+    example: 'Income: R9,000/mo\nWeekly budget: R2,250/wk\n\nIf you spend R2,800 in week 1, you have R1,700 left for week 2 to stay on track.'
+  },
+  'bond-readiness': {
+    icon: '🏠',
+    title: 'Bond Readiness Score',
+    body: 'Your bond readiness score tells you how likely a bank is to approve your home loan application. It looks at your income, debt, savings, and spending habits. A score above 70 means you have a good chance of approval.',
+    example: 'Banks look at:\n• Income stability (job type)\n• Debt-to-income ratio\n• Savings / deposit\n• Monthly spending patterns\n• Existing debt repayments'
+  },
+  'mashonisa': {
+    icon: '⚠️',
+    title: 'Mashonisa Loan',
+    body: 'A Mashonisa is an informal money lender. They typically charge 30% per month — that\'s 360% per year. A bank personal loan charges 20–27% per YEAR. A R1,000 Mashonisa loan costs R300 in interest after just one month.',
+    example: 'Borrow R1,000 from Mashonisa:\nMonth 1: owe R1,300\nMonth 2: owe R1,690\nMonth 3: owe R2,197\n\nSame R1,000 from bank: owe R1,020 after 3 months'
+  }
+};
+
+function showInfo(key){
+  const info = INFO[key];
+  if(!info) return;
+  document.getElementById('info-icon').textContent = info.icon;
+  document.getElementById('info-title').textContent = info.title;
+  document.getElementById('info-body').textContent = info.body;
+  const exEl = document.getElementById('info-example');
+  const exText = document.getElementById('info-example-text');
+  if(info.example){
+    exText.textContent = info.example;
+    exEl.style.display='block';
+  } else {
+    exEl.style.display='none';
+  }
+  document.getElementById('info-ov').classList.add('open');
+  document.getElementById('info-sheet').classList.add('open');
+}
+
+function closeInfo(){
+  document.getElementById('info-ov').classList.remove('open');
+  document.getElementById('info-sheet').classList.remove('open');
 }
 
 // ══ CSI FREE PRO PROGRAMME ═══════════════════════════════════
@@ -4820,7 +4940,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v61';
+const APP_VERSION = '2026-04-21-v62';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
