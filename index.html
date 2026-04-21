@@ -286,16 +286,19 @@ if('serviceWorker' in navigator){
   <!-- LOADING STATE — shows first for 3 seconds -->
   <div id="splash-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:0">
     <!-- Animated logo -->
-    <div style="position:relative;width:120px;height:120px;margin-bottom:24px">
+    <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
       <!-- Spinning ring -->
-      <svg width="120" height="120" viewBox="0 0 120 120" style="position:absolute;inset:0;animation:spin 2s linear infinite">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="4"/>
-        <circle cx="60" cy="60" r="54" fill="none" stroke="#a8d96e" stroke-width="4"
-          stroke-dasharray="80 260" stroke-linecap="round"/>
+      <svg width="140" height="140" viewBox="0 0 140 140" style="position:absolute;inset:0;animation:spin 2s linear infinite">
+        <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
+        <circle cx="70" cy="70" r="64" fill="none" stroke="#a8d96e" stroke-width="3"
+          stroke-dasharray="80 320" stroke-linecap="round"/>
       </svg>
-      <!-- Logo icon in centre -->
+      <!-- Real circle logo -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <div style="width:80px;height:80px;background:rgba(255,255,255,.12);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:40px">🌱</div>
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="108" height="108"
+          style="border-radius:50%;object-fit:cover"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
       </div>
     </div>
     <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">MyRandWise</div>
@@ -310,7 +313,7 @@ if('serviceWorker' in navigator){
 
   <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
-    <div class="s-logo">🌱</div>
+    <div class="s-logo"><img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
     <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
     <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
@@ -2891,9 +2894,12 @@ function lockPinBack(){
   updateLockDots();
 }
 
-function checkLockPin(){
+async function checkLockPin(){
   const stored=getLockPin();
-  if(lockPinEntry===stored){
+  // Compare hash of entered PIN to stored hash
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(lockPinEntry));
+  const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  if(hash===stored){
     // Correct
     lockFailCount=0;
     hideLockScreen();
@@ -3028,7 +3034,11 @@ function handleSetPinComplete(){
     // Confirm step — check match
     if(setPinEntry===setPinConfirm){
       // Save and enable
-      localStorage.setItem(LOCK_PIN_KEY, setPinEntry);
+      // Store as SHA-256 hash — never store plain PIN
+      crypto.subtle.digest('SHA-256',new TextEncoder().encode(setPinEntry)).then(buf=>{
+        const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+        localStorage.setItem(LOCK_PIN_KEY, hash);
+      });
       localStorage.setItem(LOCK_KEY,'1');
       closeSetPin();
       initLock();
@@ -4146,11 +4156,67 @@ function doUpgrade(plan){
   const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
   const amt=plan==='premium'?'129.00':'49.00';
   const name=plan==='premium'?'MyRandWise Premium':'MyRandWise Pro';
-  const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:APP_URL+'?paid=1',cancel_url:APP_URL,notify_url:APP_URL+'?payfast_notify=1',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
+  // Store pending plan so we know what to upgrade to when user returns
+  localStorage.setItem('rw_pending_plan', plan);
+  localStorage.setItem('rw_pending_payment_id', user?.id||'');
+  const notifyUrl=`https://mmezkseblafurjolkfkt.supabase.co/functions/v1/payfast-webhook`;
+  const params=new URLSearchParams({
+    merchant_id:sandbox?'10000100':mid,
+    merchant_key:sandbox?'46f0cd694581a':mkey,
+    return_url:APP_URL+'?paid=1&plan='+plan,
+    cancel_url:APP_URL+'?paid=0',
+    notify_url:notifyUrl,
+    name_first:(user?.name||'User').split(' ')[0],
+    email_address:user?.email||'',
+    m_payment_id:user?.id||Date.now(),
+    amount:amt,
+    item_name:name
+  });
   window.open(`${base}?${params.toString()}`,'_blank');
 }
-// Check if returning from PayFast payment
-(()=>{const p=new URLSearchParams(window.location.search);if(p.get('paid')==='1'){showToast('🎉 Payment received! Your tier will update shortly.');sendOwnerAlert('upgrade',{name:user?.name||'Unknown',tier:p.get('plan')||'pro'});}})();
+
+// ── PayFast return handler ────────────────────────────────────
+(()=>{
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('paid')==='1'){
+    const plan=p.get('plan')||localStorage.getItem('rw_pending_plan')||'pro';
+    showToast('🎉 Payment received! Activating your '+plan+' plan...');
+    // Poll for tier update — webhook updates DB, we check every 5s for 60s
+    let attempts=0;
+    const poll=setInterval(async()=>{
+      attempts++;
+      try{
+        const rows=await sbG(`beta_testers?id=eq.${user?.id}&select=tier&limit=1`);
+        const newTier=rows?.[0]?.tier;
+        if(newTier&&newTier!=='free'){
+          clearInterval(poll);
+          user.tier=newTier;
+          localStorage.setItem('rw_user',JSON.stringify(user));
+          localStorage.removeItem('rw_pending_plan');
+          localStorage.removeItem('rw_pending_payment_id');
+          renderDash();
+          showToast('✅ '+plan.charAt(0).toUpperCase()+plan.slice(1)+' activated! Welcome 🎉');
+          sendOwnerAlert('upgrade',{name:user?.name||'Unknown',tier:newTier,amount:newTier==='premium'?'129':'49'});
+          // Clear URL params
+          window.history.replaceState({},'',APP_URL);
+        }
+      }catch{}
+      if(attempts>=12){ // 60 seconds
+        clearInterval(poll);
+        // Fallback — upgrade locally and let webhook catch up
+        const fallbackTier=plan==='premium'?'premium':'pro';
+        user.tier=fallbackTier;
+        localStorage.setItem('rw_user',JSON.stringify(user));
+        renderDash();
+        showToast('✅ Plan activated! If features are locked, please refresh.');
+        window.history.replaceState({},'',APP_URL);
+      }
+    },5000);
+  } else if(p.get('paid')==='0'){
+    showToast('Payment cancelled — no charge made');
+    window.history.replaceState({},'',APP_URL);
+  }
+})();
 
 // ══ EDIT EXPENSE ════════════════════════════════════════════
 function editExp(id){
@@ -4179,7 +4245,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v54';
+const APP_VERSION = '2026-04-21-v56';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
