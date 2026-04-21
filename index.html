@@ -1917,7 +1917,26 @@ async function renderDash(){
     if(left>0){
       const tb=document.getElementById('trial');if(tb)tb.style.display='flex';
       const trialT=document.getElementById('trial-t');
-      if(trialT)trialT.textContent=`${left<=3?'⚠️':'🎁'} ${left} day${left!==1?'s':''} left in your free trial`;
+      const trialBanner=document.getElementById('trial');
+      if(trialT){
+        if(left<=3){
+          trialT.textContent=`⚠️ ${left} day${left!==1?'s':''} left — expires soon!`;
+          if(trialBanner){trialBanner.style.background='#ffebee';trialBanner.style.borderBottom='.5px solid #ffcdd2';}
+          if(trialT)trialT.style.color='#c62828';
+          const trialC=document.getElementById('trial-c');
+          if(trialC)trialC.style.color='#c62828';
+        } else if(left<=5){
+          trialT.textContent=`🕐 ${left} days left — upgrade soon`;
+          if(trialBanner){trialBanner.style.background='#fffde7';trialBanner.style.borderBottom='.5px solid #fff176';}
+          if(trialT)trialT.style.color='#f57f17';
+          const trialC=document.getElementById('trial-c');
+          if(trialC)trialC.style.color='#f57f17';
+        } else {
+          trialT.textContent=`🎁 ${left} day${left!==1?'s':''} left in your free trial`;
+          if(trialBanner){trialBanner.style.background='';trialBanner.style.borderBottom='';}
+          if(trialT)trialT.style.color='';
+        }
+      }
       const trialC=document.getElementById('trial-c');
       if(trialC)trialC.onclick=()=>showUpgradeWall(false);
     } else {
@@ -1980,13 +1999,15 @@ async function renderDash(){
   const dailyDotsEl=document.getElementById('daily-dots');
   if(dailyDotsEl){
     const dailyLimit=wb>0?wb/7:inc/30;
-    dailyDotsEl.innerHTML=DAYS.map((d,i)=>{
+    dailyDotsEl.innerHTML=DAYS.map((d,i)=>{ 
       const amt=dailySpends[i];
       const isToday=i===todayIdx;
       const isFuture=i>todayIdx;
       const over=amt>dailyLimit&&amt>0;
+      const nearLimit=amt>dailyLimit*0.8&&amt<=dailyLimit&&amt>0;
       const hasSpend=amt>0&&!isFuture;
-      const dotBg=isFuture||amt===0?'#c8e6cf':over?'#c62828':'#2e7d32';
+      // Traffic light: red=over, amber=near limit (80-100%), green=under, pale=empty/future
+      const dotBg=isFuture||amt===0?'#c8e6cf':over?'#c62828':nearLimit?'#e8a000':'#2e7d32';
       const dayColor=isToday?'#1a5c35':'#5a8a6a';
       const dayWeight=isToday?'700':'600';
       let label='';
@@ -1997,9 +2018,10 @@ async function renderDash(){
         else label='R'+Math.round(amt);
       }
       const fSize=amt>=1000?'7px':amt>=100?'8px':'10px';
+      const todayRing=isToday&&hasSpend?`box-shadow:0 0 0 2.5px ${over?'#c62828':nearLimit?'#e8a000':'#1a5c35'},0 0 0 4px ${over?'#ffcdd2':nearLimit?'#fff9c4':'#c8e6cf'};`:'';
       return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div style="width:34px;height:34px;border-radius:50%;background:${dotBg};display:flex;align-items:center;justify-content:center;${isToday&&hasSpend?'box-shadow:0 0 0 2.5px #1a5c35,0 0 0 4px #c8e6cf':''}flex-shrink:0">
-          ${hasSpend?`<span style="font-size:${fSize};color:#fff;font-weight:700;line-height:1;text-align:center;white-space:nowrap">${label}</span>`:`<span style="font-size:11px;color:${isFuture?'#8fbc8f':'#fff'};font-weight:400">—</span>`}
+        <div style="width:34px;height:34px;border-radius:50%;background:${dotBg};display:flex;align-items:center;justify-content:center;${todayRing}flex-shrink:0">
+          ${hasSpend?`<span style="font-size:${fSize};color:#fff;font-weight:700;line-height:1;text-align:center;white-space:nowrap">${label}</span>`:`<span style="font-size:11px;color:${isFuture?'#8fbc8f':'#aaa'};font-weight:400">—</span>`}
         </div>
         <div style="font-size:10px;color:${dayColor};font-weight:${dayWeight}">${d}</div>
       </div>`;
@@ -4940,7 +4962,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v62';
+const APP_VERSION = '2026-04-21-v63';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
