@@ -282,16 +282,19 @@ if('serviceWorker' in navigator){
   <!-- LOADING STATE — shows first for 3 seconds -->
   <div id="splash-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:0">
     <!-- Animated logo -->
-    <div style="position:relative;width:120px;height:120px;margin-bottom:24px">
+    <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
       <!-- Spinning ring -->
-      <svg width="120" height="120" viewBox="0 0 120 120" style="position:absolute;inset:0;animation:spin 2s linear infinite">
-        <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="4"/>
-        <circle cx="60" cy="60" r="54" fill="none" stroke="#a8d96e" stroke-width="4"
-          stroke-dasharray="80 260" stroke-linecap="round"/>
+      <svg width="140" height="140" viewBox="0 0 140 140" style="position:absolute;inset:0;animation:spin 2s linear infinite">
+        <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
+        <circle cx="70" cy="70" r="64" fill="none" stroke="#a8d96e" stroke-width="3"
+          stroke-dasharray="80 320" stroke-linecap="round"/>
       </svg>
-      <!-- Logo icon in centre -->
+      <!-- Real circle logo -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <div style="width:80px;height:80px;background:rgba(255,255,255,.12);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:40px">🌱</div>
+        <img src="icon_192.png" width="108" height="108" style="border-radius:50%;object-fit:cover"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        >
+        <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
       </div>
     </div>
     <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">MyRandWise</div>
@@ -304,7 +307,7 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 
-  <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
+  <!-- MAIN SPLASH CONTENT — hidden, fades in after 5s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
     <div class="s-logo">🌱</div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
@@ -3540,7 +3543,7 @@ window.addEventListener('load',async()=>{
     setTimeout(()=>{
       if(loader) loader.style.display='none';
       if(content){ content.style.display='flex'; setTimeout(()=>content.style.opacity='1',50); }
-    }, 3000);
+    }, 5000);
   } else {
     // Returning user — hide loader immediately, auto-login takes over
     if(loader) loader.style.display='none';
@@ -4163,7 +4166,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-20-v50';
+const APP_VERSION = '2026-04-21-v51';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
