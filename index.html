@@ -282,19 +282,16 @@ if('serviceWorker' in navigator){
   <!-- LOADING STATE — shows first for 3 seconds -->
   <div id="splash-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:0">
     <!-- Animated logo -->
-    <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
+    <div style="position:relative;width:120px;height:120px;margin-bottom:24px">
       <!-- Spinning ring -->
-      <svg width="140" height="140" viewBox="0 0 140 140" style="position:absolute;inset:0;animation:spin 2s linear infinite">
-        <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
-        <circle cx="70" cy="70" r="64" fill="none" stroke="#a8d96e" stroke-width="3"
-          stroke-dasharray="80 320" stroke-linecap="round"/>
+      <svg width="120" height="120" viewBox="0 0 120 120" style="position:absolute;inset:0;animation:spin 2s linear infinite">
+        <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="4"/>
+        <circle cx="60" cy="60" r="54" fill="none" stroke="#a8d96e" stroke-width="4"
+          stroke-dasharray="80 260" stroke-linecap="round"/>
       </svg>
-      <!-- Real circle logo -->
+      <!-- Logo icon in centre -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <img src="icon_192.png" width="108" height="108" style="border-radius:50%;object-fit:cover"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-        >
-        <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
+        <div style="width:80px;height:80px;background:rgba(255,255,255,.12);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:40px">🌱</div>
       </div>
     </div>
     <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">MyRandWise</div>
@@ -307,7 +304,7 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 
-  <!-- MAIN SPLASH CONTENT — hidden, fades in after 5s -->
+  <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
     <div class="s-logo">🌱</div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
@@ -783,6 +780,14 @@ if('serviceWorker' in navigator){
               <span id="push-toggle-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
             </label>
           </div>
+        </div>
+        <!-- APK DOWNLOAD -->
+        <div style="background:linear-gradient(135deg,#0d1f14 0%,#1a5c35 100%);border-radius:14px;padding:16px;margin-bottom:14px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:-10px;top:-10px;font-size:60px;opacity:.08">📱</div>
+          <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:4px">📱 Android App</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">Download the native Android app — installs directly, works faster, no browser needed.</div>
+          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" download style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
+          <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
@@ -3543,7 +3548,7 @@ window.addEventListener('load',async()=>{
     setTimeout(()=>{
       if(loader) loader.style.display='none';
       if(content){ content.style.display='flex'; setTimeout(()=>content.style.opacity='1',50); }
-    }, 5000);
+    }, 3000);
   } else {
     // Returning user — hide loader immediately, auto-login takes over
     if(loader) loader.style.display='none';
@@ -4166,7 +4171,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v51';
+const APP_VERSION = '2026-04-21-v52';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
