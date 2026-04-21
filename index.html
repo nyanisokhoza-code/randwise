@@ -707,6 +707,12 @@ if('serviceWorker' in navigator){
             <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
           </div>
 
+          <!-- SPENDING INSIGHTS -->
+          <div style="padding:14px 14px 0" id="insights-section">
+            <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:10px">💡 Spending insights</div>
+            <div id="insights-list"></div>
+          </div>
+
           <!-- RECENT TRANSACTIONS -->
           <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -1133,7 +1139,14 @@ if('serviceWorker' in navigator){
     <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Current balance (R)</div>
     <input type="number" id="debt-balance" class="auth-in" placeholder="e.g. 15000" style="margin-bottom:14px">
     <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Minimum monthly payment (R)</div>
-    <input type="number" id="debt-min" class="auth-in" placeholder="e.g. 500" style="margin-bottom:20px">
+    <input type="number" id="debt-min" class="auth-in" placeholder="e.g. 500" style="margin-bottom:14px">
+    <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Interest rate % per year <span style="font-weight:400;color:var(--mu)">(optional — e.g. 24.5)</span></div>
+    <div style="position:relative;margin-bottom:6px">
+      <input type="number" id="debt-rate" class="auth-in" placeholder="e.g. 24.5" step="0.1" min="0" max="500" style="margin-bottom:4px">
+    </div>
+    <div id="debt-rate-hint" style="font-size:11px;color:var(--mu);margin-bottom:20px;line-height:1.6">
+      💡 Find this on your statement or loan agreement. Capitec: ~27.75% · FNB: ~24.5% · Mashonisa: skip — use the Mashonisa calculator above.
+    </div>
   </div>
 
   <!-- MASHONISA FIELDS -->
@@ -1397,6 +1410,18 @@ if('serviceWorker' in navigator){
     <button class="qbtn" onclick="setAmt(500)">R500</button>
   </div>
   <input type="text" id="en" class="note-in" placeholder="Add a note (optional)">
+  <!-- Recurring toggle -->
+  <div style="display:flex;justify-content:space-between;align-items:center;background:#f0faf4;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#1a5c35">🔁 Recurring monthly</div>
+      <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Auto-log this expense every month</div>
+    </div>
+    <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+      <input type="checkbox" id="exp-recurring" style="opacity:0;width:0;height:0;position:absolute" onchange="toggleRecurringStyle(this.checked)">
+      <span id="rec-track" style="position:absolute;inset:0;background:#ccc;border-radius:12px;transition:background .2s"></span>
+      <span id="rec-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+    </label>
+  </div>
   <button class="save-btn" id="save-btn" onclick="saveExp()" disabled>Save expense</button>
 </div>
 
@@ -1729,6 +1754,7 @@ async function renderDash(){
   if(!user)return;
   applyTierTheme();
   setTimeout(loadAINudge, 1500);
+  setTimeout(renderInsights, 300);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -1975,28 +2001,46 @@ function closeSheet(){document.getElementById('ov').classList.remove('open');doc
 function selectCat(el){document.querySelectorAll('.cat-p').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selectedCat={id:el.dataset.id,e:el.dataset.e,n:el.dataset.n,c:el.dataset.c};chkSave();}
 function setAmt(v){document.getElementById('ea').value=v;chkSave();}
 function chkSave(){const a=parseFloat(document.getElementById('ea').value);document.getElementById('save-btn').disabled=!selectedCat||!a||a<=0;}
+function toggleRecurringStyle(checked){
+  const track=document.getElementById('rec-track');
+  const thumb=document.getElementById('rec-thumb');
+  if(track) track.style.background=checked?'#1a5c35':'#ccc';
+  if(thumb) thumb.style.transform=checked?'translateX(20px)':'translateX(0)';
+}
+
 async function saveExp(){
   if(!selectedCat){showToast('⚠️ Pick a category first');return;}
   const a=parseFloat(document.getElementById('ea').value);
   const note=document.getElementById('en').value.trim();
+  const recurring=document.getElementById('exp-recurring')?.checked||false;
   if(!a||a<=0){showToast('⚠️ Enter an amount');return;}
   const btn=document.getElementById('save-btn');
   btn.disabled=true;btn.textContent='Saving...';
-  const d={tester_id:user?.id||null,category_id:selectedCat.id,category:selectedCat.n,emoji:selectedCat.e,amount:a,note:note||''};
+  const d={tester_id:user?.id||null,category_id:selectedCat.id,category:selectedCat.n,emoji:selectedCat.e,amount:a,note:note||'',recurring:recurring||false};
   const tid='tmp-'+Date.now();
   expenses.unshift({id:tid,...d,logged_at:new Date().toISOString()});
   renderDash();
   closeSheet();
-  showToast(`✅ R${a.toLocaleString('en-ZA')} logged`);
+  if(recurring) showToast(`✅ R${a.toLocaleString('en-ZA')} logged · 🔁 Will repeat monthly`);
+  else showToast(`✅ R${a.toLocaleString('en-ZA')} logged`);
   btn.disabled=false;btn.textContent='Save expense';
+  // Reset recurring toggle
+  const recEl=document.getElementById('exp-recurring');
+  if(recEl){recEl.checked=false;toggleRecurringStyle(false);}
   if(user?.id){
     try{
       const s=await sbP('expenses',d);
       if(s?.[0]){
         expenses=expenses.map(e=>e.id===tid?s[0]:e);
-      } else if(Array.isArray(s)&&s.length===0){
-        // RLS blocked - try to inform
-        showToast('⚠️ Saved locally — sync failed. Check connection.');
+        // If recurring, store in localStorage for monthly auto-log
+        if(recurring){
+          const recList=JSON.parse(localStorage.getItem('rw_recurring')||'[]');
+          const exists=recList.find(r=>r.category===selectedCat.n&&r.amount===a);
+          if(!exists){
+            recList.push({category:selectedCat.n,category_id:selectedCat.id,emoji:selectedCat.e,amount:a,note:note||'',added:new Date().toISOString()});
+            localStorage.setItem('rw_recurring',JSON.stringify(recList));
+          }
+        }
       }
     }catch(err){
       showToast('⚠️ Saved locally — will sync when connection returns');
@@ -2449,14 +2493,16 @@ async function saveDebtPWA(){
   const name=document.getElementById('debt-name').value.trim();
   const balance=parseFloat(document.getElementById('debt-balance').value)||0;
   const minPay=parseFloat(document.getElementById('debt-min').value)||0;
+  const rate=parseFloat(document.getElementById('debt-rate')?.value)||0;
   const cat=document.getElementById('debt-cat').value;
   if(!name||!balance){showToast('Enter debt name and balance');return;}
   const btn=document.getElementById('debt-save-btn');
   btn.disabled=true;btn.textContent='Saving...';
   try{
-    await sbP('debts',{tester_id:user.id,name,category:cat,balance,min_payment:minPay,original_balance:balance});
+    await sbP('debts',{tester_id:user.id,name,category:cat,balance,min_payment:minPay,original_balance:balance,interest_rate:rate||null});
     closeAddDebtPWA();loadDebtsPWA();showToast('✅ Debt added');
     document.getElementById('debt-name').value='';document.getElementById('debt-balance').value='';document.getElementById('debt-min').value='';
+    if(document.getElementById('debt-rate'))document.getElementById('debt-rate').value='';
   }catch(e){showToast('Could not save. Try again.');}
   btn.disabled=false;btn.textContent='Save debt';
 }
@@ -2487,9 +2533,9 @@ async function loadGoalsPWA(){
         <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div style="background:${barCol};height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:6px"><span>R${savedAmt.toLocaleString('en-ZA')} saved</span><span>R${targetAmt.toLocaleString('en-ZA')} goal</span></div>
         ${monthlyInfo}
-        <div style="display:flex;gap:8px;margin-top:10px">
-          <button onclick="openContribSheet('${g.id}','${(g.name||'').replace(/'/g,"\'")}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;padding:10px;background:var(--gl);color:var(--gd);border:1px solid #b5dfa8;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">+ Log contribution</button>
-          <button onclick="deleteGoalPWA('${g.id}')" style="padding:10px 14px;background:var(--rl);color:var(--r);border:none;border-radius:10px;font-size:12px;cursor:pointer">🗑</button>
+                <div style="display:flex;gap:8px;margin-top:12px">
+          <button onclick="openContribSheet('${g.id}','${(g.name||'').replace(/'/g,"\'")}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer">➕ Add money</button>
+          <button onclick="deleteGoalPWA('${g.id}')" style="padding:13px 16px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;cursor:pointer">🗑</button>
         </div>
       </div>`;
     }).join('');
@@ -2600,6 +2646,128 @@ function shareApp(){
   else window.open('https://wa.me/?text='+encodeURIComponent(tx));
 }
 function doSignOut(){if(confirm('Sign out of MyRandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
+
+// ══ SPENDING INSIGHTS ═══════════════════════════════════════
+function renderInsights(){
+  const el = document.getElementById('insights-list');
+  const section = document.getElementById('insights-section');
+  if(!el || !expenses.length){ if(section) section.style.display='none'; return; }
+
+  const now = new Date();
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonth = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+
+  const thisMe = expenses.filter(e => new Date(e.logged_at||e.created_at) >= thisMonth);
+  const lastMe = expenses.filter(e => {
+    const d = new Date(e.logged_at||e.created_at);
+    return d >= lastMonth && d <= lastMonthEnd;
+  });
+
+  const sumCat = (exps, cat) => exps.filter(e=>e.category===cat).reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalThis = thisMe.reduce((s,e)=>s+Number(e.amount||0),0);
+  const totalLast = lastMe.reduce((s,e)=>s+Number(e.amount||0),0);
+  const inc = Number(user?.income_amount||0);
+  const payDay = user?.pay_day || 25;
+  const daysLeft = payDay > now.getDate() ? payDay - now.getDate() : (payDay + 30 - now.getDate());
+
+  const insights = [];
+
+  // Category comparisons vs last month
+  const cats = [...new Set([...thisMe, ...lastMe].map(e=>e.category))];
+  cats.forEach(cat => {
+    const t = sumCat(thisMe, cat);
+    const l = sumCat(lastMe, cat);
+    if(l > 0 && t > 0){
+      const pct = Math.round(((t-l)/l)*100);
+      const emoji = thisMe.find(e=>e.category===cat)?.emoji || '📦';
+      if(pct >= 30){
+        insights.push({
+          color:'#fff3e0', border:'#ffb74d', icon: emoji,
+          text: `${cat} up ${pct}% vs last month`,
+          sub: `R${Math.round(t).toLocaleString('en-ZA')} this month vs R${Math.round(l).toLocaleString('en-ZA')} last month`,
+          type:'warn'
+        });
+      } else if(pct <= -20){
+        insights.push({
+          color:'#f0faf4', border:'#b5dfa8', icon: emoji,
+          text: `${cat} down ${Math.abs(pct)}% — well done!`,
+          sub: `Saved R${Math.round(l-t).toLocaleString('en-ZA')} vs last month`,
+          type:'good'
+        });
+      }
+    }
+  });
+
+  // Payday countdown with budget remaining
+  if(inc > 0 && totalThis > 0){
+    const remaining = inc - totalThis;
+    const dailyBudget = daysLeft > 0 ? Math.round(remaining/daysLeft) : 0;
+    if(remaining > 0 && daysLeft > 0){
+      insights.push({
+        color:'#e8f5e9', border:'#81c784', icon:'📅',
+        text: `${daysLeft} days until payday`,
+        sub: `R${Math.round(remaining).toLocaleString('en-ZA')} left · R${dailyBudget.toLocaleString('en-ZA')}/day to stay on budget`,
+        type:'info'
+      });
+    } else if(remaining < 0){
+      insights.push({
+        color:'#ffebee', border:'#ef9a9a', icon:'⚠️',
+        text: `Over budget by R${Math.round(Math.abs(remaining)).toLocaleString('en-ZA')}`,
+        sub: `You've spent more than your income this month`,
+        type:'danger'
+      });
+    }
+  }
+
+  // Top spending category this month
+  if(thisMe.length >= 5){
+    const catTotals = {};
+    thisMe.forEach(e=>{ catTotals[e.category]=(catTotals[e.category]||0)+Number(e.amount||0); });
+    const top = Object.entries(catTotals).sort((a,b)=>b[1]-a[1])[0];
+    if(top && inc > 0){
+      const pct = Math.round((top[1]/totalThis)*100);
+      const emoji = thisMe.find(e=>e.category===top[0])?.emoji||'📦';
+      if(pct >= 30){
+        insights.push({
+          color:'#f3e5f5', border:'#ce93d8', icon: emoji,
+          text: `${top[0]} is your biggest spend`,
+          sub: `${pct}% of your total spending this month — R${Math.round(top[1]).toLocaleString('en-ZA')}`,
+          type:'info'
+        });
+      }
+    }
+  }
+
+  // No expenses logged recently
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  const recent = expenses.filter(e=>{
+    const d = new Date(e.logged_at||e.created_at).toDateString();
+    return d===today||d===yesterday;
+  });
+  if(!recent.length && thisMe.length > 0){
+    insights.push({
+      color:'#e3f2fd', border:'#90caf9', icon:'📝',
+      text: `Nothing logged recently`,
+      sub: `Don't forget to log today's expenses`,
+      type:'info'
+    });
+  }
+
+  if(!insights.length){ if(section) section.style.display='none'; return; }
+  if(section) section.style.display='block';
+
+  el.innerHTML = insights.slice(0,3).map(i=>`
+    <div style="background:${i.color};border:1px solid ${i.border};border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start">
+      <div style="font-size:22px;flex-shrink:0;margin-top:1px">${i.icon}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:2px">${i.text}</div>
+        <div style="font-size:11px;color:#555;line-height:1.5">${i.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
 
 // ══ PUSH NOTIFICATIONS ══════════════════════════════════════
 const PUSH_KEY = 'rw_push_enabled';
@@ -4245,7 +4413,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v56';
+const APP_VERSION = '2026-04-21-v57';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
