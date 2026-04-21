@@ -336,6 +336,27 @@ if('serviceWorker' in navigator){
   </style>
 </div>
 
+<!-- SHARE & EARN NUDGE -->
+<div id="share-nudge-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:flex-end;justify-content:center">
+  <div id="share-nudge-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:40px;margin-bottom:12px">🎉</div>
+      <div style="font-size:19px;font-weight:800;color:#1a1a1a;margin-bottom:6px">You're getting the hang of it!</div>
+      <div style="font-size:13px;color:#5a8a6a;line-height:1.6">You've logged 5 expenses. Know someone who struggles with money? Share MyRandWise — and earn R10 when they upgrade.</div>
+    </div>
+    <div style="background:#f0faf4;border-radius:14px;padding:14px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#1a5c35">Your referral code</div>
+        <div style="font-size:20px;font-weight:900;color:#1a5c35;letter-spacing:2px" id="share-nudge-code">—</div>
+      </div>
+      <button onclick="copyReferralCode()" style="background:#1a5c35;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer">Copy code</button>
+    </div>
+    <button onclick="shareAppFromNudge()" style="width:100%;background:#1a5c35;color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">📤 Share MyRandWise now</button>
+    <button onclick="closeShareNudge()" style="width:100%;background:none;border:none;color:#999;font-size:12px;cursor:pointer;padding:6px">Maybe later</button>
+  </div>
+</div>
+
 <!-- WHAT'S NEW POPUP -->
 <div id="whats-new-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:flex-end;justify-content:center">
   <div id="whats-new-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
@@ -677,6 +698,23 @@ if('serviceWorker' in navigator){
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-goal-label">tap to add a goal</div>
             </div>
 
+          </div>
+
+          <!-- NET WORTH CARD -->
+          <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px 16px;cursor:pointer" onclick="switchTab('grow')" id="net-worth-card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div>
+                <div style="font-size:24px;font-weight:900;line-height:1;letter-spacing:-.5px" id="net-worth-amt">—</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:4px" id="net-worth-sub">savings minus debt</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:11px;color:#5a8a6a;margin-bottom:2px">Savings</div>
+                <div style="font-size:13px;font-weight:700;color:#1a5c35" id="nw-savings">R0</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:6px;margin-bottom:2px">Debt</div>
+                <div style="font-size:13px;font-weight:700;color:#c62828" id="nw-debt">R0</div>
+              </div>
+            </div>
           </div>
 
           <!-- DAILY SPEND DOTS -->
@@ -1912,6 +1950,27 @@ async function renderDash(){
     } else if(sghCard){
       sghCard.style.display='none';
     }
+
+    // ── NET WORTH CARD ─────────────────────────────────────
+    try{
+      const allGoals=await sbG(`savings_goals?tester_id=eq.${user.id}&select=saved`);
+      const allDebts=await sbG(`debts?tester_id=eq.${user.id}&select=balance`);
+      const totalSavings=(allGoals||[]).reduce((s,g)=>s+Number(g.saved||0),0);
+      const totalDebt=(allDebts||[]).reduce((s,d)=>s+Number(d.balance||0),0);
+      const netWorth=totalSavings-totalDebt;
+      const nwEl=document.getElementById('net-worth-amt');
+      const nwCard=document.getElementById('net-worth-card');
+      if(nwEl){
+        nwEl.textContent='R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
+        nwEl.style.color=netWorth>=0?'#1a5c35':'#c62828';
+        if(netWorth<0) nwEl.textContent='-R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
+      }
+      set('nw-savings','R'+Math.round(totalSavings).toLocaleString('en-ZA'));
+      set('nw-debt','R'+Math.round(totalDebt).toLocaleString('en-ZA'));
+      const sub=document.getElementById('net-worth-sub');
+      if(sub) sub.textContent=netWorth>=0?'↑ Growing — keep it up':'↓ Debt exceeds savings — focus on debt';
+      if(nwCard) nwCard.style.display=(totalSavings>0||totalDebt>0)?'block':'none';
+    }catch{}
   }catch(e){console.warn('Savings goal home card error:',e);}
 
   // ── SMART ROLLOVER NUDGE ───────────────────────────────────
@@ -2034,6 +2093,12 @@ async function saveExp(){
   closeSheet();
   if(recurring) showToast(`✅ R${a.toLocaleString('en-ZA')} logged · 🔁 Will repeat monthly`);
   else showToast(`✅ R${a.toLocaleString('en-ZA')} logged`);
+  // Share & earn nudge after 5th expense — once only
+  const expCount = expenses.length;
+  if(expCount === 5 && !localStorage.getItem('rw_share_nudge_shown')){
+    localStorage.setItem('rw_share_nudge_shown','1');
+    setTimeout(()=>showShareNudge(), 1500);
+  }
   btn.disabled=false;btn.textContent='Save expense';
   // Reset recurring toggle
   const recEl=document.getElementById('exp-recurring');
@@ -2218,23 +2283,23 @@ async function loadDebtsPWA(){
     const snowballContent=document.getElementById('snowball-content');
     if(snowballCard&&snowballContent&&sorted.length>0){
       snowballCard.style.display='block';
-      const extra=0; // Show minimum payments only in snowball list — accelerator section handles extras
       let html='';
+      let cumulativeMonths=0;
+      let rollingExtra=0;
       sorted.forEach((d,i)=>{
         const bal=Number(d.balance||0);
         const min=Number(d.min_payment||0)||Math.round(bal*0.05);
         const rate=Number(d.interest_rate||0)/100/12;
-        // Months to pay off with minimum + extra on first debt
-        const payment=i===0?min+extra:min;
-        let months=0;
-        if(payment>0&&bal>0){
-          if(rate>0){
-            months=Math.ceil(-Math.log(1-(rate*bal/payment))/Math.log(1+rate));
-          } else {
-            months=Math.ceil(bal/payment);
-          }
+        const payment=min+rollingExtra;
+        // Simulate payoff
+        let b=bal, months=0;
+        while(b>0.01&&months<360){
+          b=b*(1+rate)-payment;
+          if(b<0)b=0;
+          months++;
         }
-        months=Math.min(months,360);
+        cumulativeMonths+=months;
+        rollingExtra+=min; // Roll this debt's min into next
         const isFirst=i===0;
         html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;${i<sorted.length-1?'border-bottom:1px solid #fde68a':''}">
           <div style="flex:1">
@@ -2242,7 +2307,7 @@ async function loadDebtsPWA(){
               ${isFirst?'<span style="background:#f59e0b;color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px">PAY FIRST</span>':'<span style="background:rgba(0,0,0,0.08);color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px">#'+(i+1)+'</span>'}
               ${d.name||d.category||'Debt'}
             </div>
-            <div style="font-size:11px;color:#b45309;margin-top:3px">R${Math.round(bal).toLocaleString('en-ZA')} · min R${Math.round(min).toLocaleString('en-ZA')}/mo${months>0?' · done in '+months+' month'+(months!==1?'s':''):''}${d.interest_rate>0?' · '+d.interest_rate+'% interest':''}</div>
+            <div style="font-size:11px;color:#b45309;margin-top:3px">R${Math.round(bal).toLocaleString('en-ZA')} · min R${Math.round(min).toLocaleString('en-ZA')}/mo${cumulativeMonths>0?' · paid off in '+cumulativeMonths+' month'+(cumulativeMonths!==1?'s':''):''}${d.interest_rate>0?' · '+d.interest_rate+'% p.a.':''}</div>
           </div>
         </div>`;
       });
@@ -2323,23 +2388,28 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   function snowballMonths(debtList, extraPay=0){
     const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
     let balances=sorted.map(d=>Number(d.balance||0));
-    const payments=sorted.map(d=>Number(d.min_payment||50));
+    const minPayments=sorted.map(d=>Math.max(Number(d.min_payment||0),50));
     const rates=sorted.map(d=>Number(d.interest_rate||0)/100/12);
-    let rollingExtra=extraPay;
-    let maxMonths=0;
+    let extra=extraPay;
+    let totalMonths=0;
+
     for(let i=0;i<sorted.length;i++){
-      const pay=payments[i]+rollingExtra;
+      // Pay off debt i with min + rolling extra
+      let bal=balances[i];
       const rate=rates[i];
-      let bal=balances[i],months=0;
-      while(bal>0&&months<360){
-        bal=bal*(1+rate)-pay;
+      const pay=minPayments[i]+extra;
+      let months=0;
+      while(bal>0.01&&months<360){
+        const interest=bal*rate;
+        bal=bal+interest-pay;
         if(bal<0)bal=0;
         months++;
       }
-      if(months>maxMonths)maxMonths=months;
-      rollingExtra+=payments[i]; // Roll minimum onto next debt
+      totalMonths+=months;
+      // Roll this debt's minimum into extra for next debt
+      extra+=minPayments[i];
     }
-    return maxMonths;
+    return totalMonths;
   }
 
   function snowballInterest(debtList, extraPay=0){
@@ -2902,6 +2972,33 @@ function schedulePushNudges(){
     }, 3000);
   }
 }
+
+// ══ SHARE & EARN NUDGE ══════════════════════════════════════
+function showShareNudge(){
+  const overlay=document.getElementById('share-nudge-overlay');
+  const sheet=document.getElementById('share-nudge-sheet');
+  const codeEl=document.getElementById('share-nudge-code');
+  if(codeEl) codeEl.textContent=user?.referral_code||'—';
+  if(overlay&&sheet){
+    overlay.style.display='flex';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
+  }
+}
+function closeShareNudge(){
+  const overlay=document.getElementById('share-nudge-overlay');
+  const sheet=document.getElementById('share-nudge-sheet');
+  if(sheet) sheet.style.transform='translateY(100%)';
+  setTimeout(()=>{ if(overlay) overlay.style.display='none'; },350);
+}
+function copyReferralCode(){
+  const code=user?.referral_code||'';
+  if(code) navigator.clipboard?.writeText(code).then(()=>showToast('✅ Code copied!')).catch(()=>showToast('Code: '+code));
+}
+function shareAppFromNudge(){
+  closeShareNudge();
+  shareApp();
+}
+document.addEventListener('click',e=>{ if(e.target===document.getElementById('share-nudge-overlay')) closeShareNudge(); });
 
 // ══ WHAT'S NEW POPUP ════════════════════════════════════════
 const WHATS_NEW = {
@@ -4432,7 +4529,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v59';
+const APP_VERSION = '2026-04-21-v60';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
