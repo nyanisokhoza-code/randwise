@@ -929,6 +929,16 @@ if('serviceWorker' in navigator){
 
         <!-- Upload zone -->
         <div id="import-main">
+
+          <!-- COMING SOON BANNER -->
+          <div style="background:linear-gradient(135deg,#fff8e1,#fffde7);border:1px solid #f9a825;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start">
+            <div style="font-size:24px;flex-shrink:0">🔧</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:3px">Coming soon — bank import is being upgraded</div>
+              <div style="font-size:12px;color:#bf360c;line-height:1.6">We're upgrading our AI to read statements more accurately. This feature will be back shortly. Log expenses manually using the + button for now.</div>
+            </div>
+          </div>
+
           <!-- Bank selector -->
           <div style="margin-bottom:16px">
             <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--m)">Select your bank</div>
@@ -4422,7 +4432,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v58';
+const APP_VERSION = '2026-04-21-v59';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
