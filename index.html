@@ -246,10 +246,14 @@ if('serviceWorker' in navigator){
     }).catch(()=>{});
   // When SW activates new version, reload smoothly after page is ready
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if(document.readyState === 'complete'){
-      window.location.reload();
-    } else {
-      window.addEventListener('load', () => window.location.reload());
+    // Only reload if user is not logged in — avoid login flash for existing users
+    const hasSession = localStorage.getItem('rw_user') && localStorage.getItem('rw_token');
+    if(!hasSession){
+      if(document.readyState === 'complete'){
+        window.location.reload();
+      } else {
+        window.addEventListener('load', () => window.location.reload());
+      }
     }
   });
 }
@@ -3901,7 +3905,11 @@ document.addEventListener('touchend',e=>{
   if(ptr_pulling&&ptr_startY>0){
     const dy=e.changedTouches[0].clientY-ptr_startY;
     if(dy>ptr_threshold){
-      window.location.reload();
+      // Refresh data without full page reload — no login flash
+      if(user&&user.id){
+        showToast('🔄 Refreshing...');
+        loadExp().then(()=>{renderDash();showToast('✅ Updated');}).catch(()=>{});
+      }
     }
   }
   ptr_startY=0;ptr_pulling=false;
@@ -4171,7 +4179,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v53';
+const APP_VERSION = '2026-04-21-v54';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
