@@ -739,7 +739,7 @@ if('serviceWorker' in navigator){
 
             <!-- THIS WEEK -->
             <div id="week-stat-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer;transition:background .3s,border-color .3s" onclick="openWeeklyPlanner()">
-              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div><button onclick="showInfo('weekly-budget')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div><button onclick="event.stopPropagation();showInfo('weekly-budget')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
               <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-week-label">Week 1 of 4 · R0/wk</div>
               <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to see plan →</div>
@@ -755,7 +755,7 @@ if('serviceWorker' in navigator){
 
             <!-- DEBT SCORE -->
             <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
-              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div><button onclick="showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div><button onclick="event.stopPropagation();showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
               <div style="display:flex;align-items:baseline;gap:3px">
                 <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
                 <div style="font-size:12px;color:#5a8a6a;font-weight:600">/100</div>
@@ -777,7 +777,7 @@ if('serviceWorker' in navigator){
           <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px 16px;cursor:pointer" onclick="switchTab('grow')" id="net-worth-card">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
-                <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div><button onclick="showInfo('net-worth')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+                <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div><button onclick="event.stopPropagation();showInfo('net-worth')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
                 <div style="font-size:24px;font-weight:900;line-height:1;letter-spacing:-.5px" id="net-worth-amt">—</div>
                 <div style="font-size:11px;color:#5a8a6a;margin-top:4px" id="net-worth-sub">savings minus debt</div>
               </div>
@@ -967,7 +967,7 @@ if('serviceWorker' in navigator){
 
         <!-- DEBT FREE TIMELINE -->
         <div id="debt-free-timeline" style="display:none;background:#1a5c35;border-radius:16px;padding:14px 16px;margin-bottom:12px;text-align:center">
-          <div style="display:flex;align-items:center;justify-content:center;gap:6px"><div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div><button onclick="showInfo('snowball')" style="background:rgba(255,255,255,.15);border:none;width:16px;height:16px;border-radius:50%;color:rgba(255,255,255,.7);font-size:9px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px">i</button></div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px"><div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt free in</div><button onclick="event.stopPropagation();showInfo('snowball')" style="background:rgba(255,255,255,.15);border:none;width:16px;height:16px;border-radius:50%;color:rgba(255,255,255,.7);font-size:9px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-bottom:4px">i</button></div>
           <div style="font-size:28px;font-weight:900;color:#4ade80;line-height:1" id="debt-free-months">—</div>
           <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px" id="debt-free-label">paying minimums</div>
           <div style="font-size:13px;color:#4ade80;font-weight:700;margin-top:6px" id="debt-free-date"></div>
@@ -975,7 +975,7 @@ if('serviceWorker' in navigator){
 
         <!-- PAYOFF ACCELERATOR -->
         <div id="payoff-accelerator" style="display:none;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:4px"><div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div><button onclick="showInfo('payoff-accelerator')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+          <div style="display:flex;align-items:center;gap:4px"><div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div><button onclick="event.stopPropagation();showInfo('payoff-accelerator')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
           <div id="accelerator-scenarios"></div>
           <!-- Dad's split strategy -->
           <div id="split-strategy" style="margin-top:12px;padding-top:12px;border-top:1px solid #d1ead9">
@@ -4864,7 +4864,14 @@ function showUpgradeWall(hardBlock){
     document.getElementById('uw-continue').style.display='none';
     // Intercept back button so users can't navigate away
     history.pushState(null,'',location.href);
-    window.onpopstate=()=>{history.pushState(null,'',location.href);};
+    window.onpopstate=()=>{
+      // Close info sheet if open, otherwise push state again
+      const infoSheet=document.getElementById('info-sheet');
+      if(infoSheet?.classList?.contains('open')){ closeInfo(); history.pushState(null,'',location.href); return; }
+      const wpScreen=document.getElementById('weekly-planner');
+      if(wpScreen?.style?.display==='flex'){ closeWeeklyPlanner?.(); history.pushState(null,'',location.href); return; }
+      history.pushState(null,'',location.href);
+    };
   }
 }
 function doUpgrade(plan){
@@ -4962,7 +4969,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v63';
+const APP_VERSION = '2026-04-21-v64';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
