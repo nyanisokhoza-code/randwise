@@ -336,6 +336,63 @@ if('serviceWorker' in navigator){
   </style>
 </div>
 
+<!-- DEBT INTERVENTION POPUP -->
+<div id="debt-intervention-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:7500;align-items:flex-end;justify-content:center">
+  <div id="debt-intervention-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow:hidden">
+    <!-- Red header -->
+    <div style="background:linear-gradient(135deg,#b71c1c,#c62828);padding:24px 24px 20px;text-align:center">
+      <div style="font-size:32px;margin-bottom:8px">🚨</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Debt intervention</div>
+      <div style="font-size:19px;font-weight:800;color:#fff;line-height:1.3" id="di-headline">Your debt is getting dangerous</div>
+    </div>
+    <div style="padding:20px 24px">
+      <div style="font-size:14px;color:#333;line-height:1.7;margin-bottom:20px" id="di-message">—</div>
+      <!-- 3 step plan -->
+      <div style="margin-bottom:20px" id="di-steps"></div>
+      <!-- Share card button -->
+      <button onclick="generateShareCard()" style="width:100%;background:#1a5c35;color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">📸 Save & share this insight</button>
+      <button onclick="closeDebtIntervention()" style="width:100%;background:none;border:none;color:#999;font-size:12px;cursor:pointer;padding:6px">Got it — I'll take action</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHAREABLE CARD OVERLAY -->
+<div id="share-card-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:8500;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:360px">
+    <!-- The card itself — this gets screenshotted -->
+    <div id="share-card" style="background:linear-gradient(135deg,#0d1f14 0%,#1a5c35 100%);border-radius:20px;padding:28px 24px;position:relative;overflow:hidden">
+      <!-- Background pattern -->
+      <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(74,222,128,.08)"></div>
+      <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(74,222,128,.05)"></div>
+      <!-- Logo -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#fff">MyRandWise</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5)">Your money, your rules. 🇿🇦</div>
+        </div>
+      </div>
+      <!-- Insight content -->
+      <div id="share-card-content" style="margin-bottom:20px">
+        <div style="font-size:28px;margin-bottom:8px">💡</div>
+        <div style="font-size:18px;font-weight:800;color:#4ade80;line-height:1.3;margin-bottom:8px" id="sc-headline">—</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.75);line-height:1.6" id="sc-body">—</div>
+      </div>
+      <!-- CTA -->
+      <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:rgba(255,255,255,.6)">Track yours free</div>
+        <div style="font-size:11px;font-weight:700;color:#4ade80">myrandwise.co.za →</div>
+      </div>
+    </div>
+    <!-- Action buttons -->
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="shareCard()" style="flex:1;background:#4ade80;color:#0d1f14;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer">📤 Share</button>
+      <button onclick="closeShareCard()" style="flex:1;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:12px;padding:14px;font-size:14px;font-weight:700;cursor:pointer">Close</button>
+    </div>
+    <div style="text-align:center;margin-top:10px;font-size:11px;color:rgba(255,255,255,.4)">Screenshot this card and share on WhatsApp or Instagram</div>
+  </div>
+</div>
+
 <!-- SHARE & EARN NUDGE -->
 <div id="share-nudge-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:flex-end;justify-content:center">
   <div id="share-nudge-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
@@ -1804,6 +1861,7 @@ async function renderDash(){
   applyTierTheme();
   setTimeout(loadAINudge, 1500);
   setTimeout(renderInsights, 300);
+  setTimeout(checkDebtIntervention, 2000);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -2973,6 +3031,217 @@ function schedulePushNudges(){
   }
 }
 
+// ══ CSI FREE PRO PROGRAMME ═══════════════════════════════════
+async function grantCSIPro(){
+  const email = document.getElementById('csi-email')?.value?.trim()?.toLowerCase();
+  const name = document.getElementById('csi-name')?.value?.trim();
+  const income = parseFloat(document.getElementById('csi-income')?.value||0);
+  const resultEl = document.getElementById('csi-result');
+  if(!email){ resultEl.textContent='⚠️ Enter an email address'; return; }
+  resultEl.textContent='Processing...';
+  try{
+    const r = await fetch(`${SB}/rest/v1/beta_testers?email=eq.${encodeURIComponent(email)}`,{
+      method:'PATCH',
+      headers:{...getH(),'Prefer':'return=minimal'},
+      body:JSON.stringify({tier:'pro', upgraded_at: new Date().toISOString(), payfast_payment_id:'CSI-FREE-PRO'})
+    });
+    if(r.ok){
+      // Log CSI grant
+      const csiLog = JSON.parse(localStorage.getItem('rw_csi_log')||'[]');
+      csiLog.unshift({email, name, income, date: new Date().toISOString()});
+      localStorage.setItem('rw_csi_log', JSON.stringify(csiLog.slice(0,50)));
+      resultEl.textContent=`✅ Free Pro granted to ${email}`;
+      resultEl.style.color='#4ade80';
+      // Send alert to owner
+      sendOwnerAlert('upgrade',{name:name||email, tier:'pro (CSI FREE)', amount:'0', email});
+      loadCSIList();
+      document.getElementById('csi-email').value='';
+      document.getElementById('csi-name').value='';
+      document.getElementById('csi-income').value='';
+    } else {
+      resultEl.textContent='⚠️ User not found — check email';
+      resultEl.style.color='#fbbf24';
+    }
+  }catch(e){
+    resultEl.textContent='Error — try again';
+    resultEl.style.color='#f87171';
+  }
+}
+
+function loadCSIList(){
+  const el = document.getElementById('csi-list');
+  if(!el) return;
+  const log = JSON.parse(localStorage.getItem('rw_csi_log')||'[]');
+  if(!log.length){ el.textContent='No CSI grants yet'; return; }
+  el.innerHTML = log.slice(0,10).map(r=>`
+    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+      <div>
+        <div style="color:rgba(255,255,255,.8)">${r.name||r.email}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">${r.email}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:#4ade80">Free Pro</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)">${new Date(r.date).toLocaleDateString('en-ZA')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function generatePromoCard(){
+  const headline = document.getElementById('promo-headline')?.value||'Your money, your rules. 🇿🇦';
+  const body = document.getElementById('promo-body')?.value||'Track spending, debt and savings — free for 14 days.';
+  document.getElementById('owner-panel').style.display='none';
+  generateShareCard(headline, body);
+}
+
+// ══ DEBT INTERVENTION ═══════════════════════════════════════
+const DI_KEY = 'rw_di_last_shown';
+const DI_THRESHOLD_1 = 0.4;  // 40% — yellow alert
+const DI_THRESHOLD_2 = 0.6;  // 60% — orange alert
+const DI_THRESHOLD_3 = 0.8;  // 80% — red emergency
+
+function checkDebtIntervention(){
+  if(!user || !debts?.length) return;
+  const inc = Number(user.income_amount||0);
+  if(inc <= 0) return;
+  const totalDebt = debts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const dti = totalDebt / inc; // debt-to-income ratio (months of income)
+  const dtiPct = Math.round(dti * 100); // as % of monthly income
+
+  // Only show once per week per threshold level
+  const lastShown = localStorage.getItem(DI_KEY);
+  const weekAgo = Date.now() - 7*24*60*60*1000;
+  if(lastShown && Number(lastShown) > weekAgo) return;
+
+  let level = null;
+  if(dti >= DI_THRESHOLD_3) level = 'critical';
+  else if(dti >= DI_THRESHOLD_2) level = 'high';
+  else if(dti >= DI_THRESHOLD_1) level = 'moderate';
+  if(!level) return;
+
+  const name = (user.name||'').split(' ')[0] || 'Friend';
+  const minPayments = debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const minPct = inc > 0 ? Math.round(minPayments/inc*100) : 0;
+
+  let headline, message, steps, cardHeadline, cardBody;
+
+  if(level === 'critical'){
+    headline = `${name}, your debt is at ${dtiPct}% of your income`;
+    message = `Your total debt of R${Math.round(totalDebt).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income — and R${Math.round(minPayments).toLocaleString('en-ZA')} (${minPct}%) goes to minimum payments every month. This is a financial emergency. Here's your 3-step plan:`;
+    steps = [
+      {n:'1', icon:'🛑', title:'Stop new debt immediately', desc:'No new store accounts, loans or buy-now-pay-later. Every new debt makes this harder.'},
+      {n:'2', icon:'⚡', title:'Attack the smallest debt first', desc:`Pay R${Math.round(minPayments + 100).toLocaleString('en-ZA')}/mo on your smallest debt until it's gone. Then roll that payment onto the next.`},
+      {n:'3', icon:'📞', title:'Call your creditors', desc:'Ask for a payment holiday or reduced instalment. Most creditors would rather negotiate than write it off.'}
+    ];
+    cardHeadline = `${dtiPct}% of my income goes to debt 🚨`;
+    cardBody = `I'm taking control with MyRandWise's debt intervention plan. Small steps, big change. 💪`;
+  } else if(level === 'high'){
+    headline = `${name}, your debt is at ${dtiPct}% of your income`;
+    message = `Your debt of R${Math.round(totalDebt).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income. You're in the danger zone. Act now before it gets worse:`;
+    steps = [
+      {n:'1', icon:'🎯', title:'Focus on one debt at a time', desc:'Pick your smallest debt and throw everything at it. Don\'t spread payments — concentrate them.'},
+      {n:'2', icon:'✂️', title:'Cut one expense this month', desc:'Find R200–500 you can redirect to debt. Takeaways, subscriptions, data — one cut makes a difference.'},
+      {n:'3', icon:'📈', title:'Track every rand', desc:'Use MyRandWise daily. Awareness alone reduces spending by 15–20%.'}
+    ];
+    cardHeadline = `My debt is ${dtiPct}% of my income 📊`;
+    cardBody = `Using MyRandWise to track and attack my debt. Join me — free for 14 days. 🌱`;
+  } else {
+    headline = `${name}, your debt is at ${dtiPct}% of your income`;
+    message = `Your debt of R${Math.round(totalDebt).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income. You're in the moderate zone — but now is the time to act, before it grows:`;
+    steps = [
+      {n:'1', icon:'📋', title:'Know your full picture', desc:'List every debt with its interest rate. The one charging the most is costing you the most.'},
+      {n:'2', icon:'💡', title:'Pay R100 extra/month', desc:`Even R100 extra on your smallest debt saves you months. Use the Payoff Accelerator in MyRandWise to see exactly how much.`},
+      {n:'3', icon:'🛡️', title:'Build a R500 emergency fund', desc:'Before anything else — save R500. This stops you from needing new debt when something breaks.'}
+    ];
+    cardHeadline = `I just checked — my debt is ${dtiPct}% of my income`;
+    cardBody = `Getting on top of it with MyRandWise. Free SA finance app. 🇿🇦`;
+  }
+
+  // Store for share card
+  window._shareCardData = { cardHeadline, cardBody };
+
+  // Populate and show
+  document.getElementById('di-headline').textContent = headline;
+  document.getElementById('di-message').textContent = message;
+  document.getElementById('di-steps').innerHTML = steps.map(s=>`
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:14px">
+      <div style="width:32px;height:32px;background:#f0faf4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${s.icon}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:2px">${s.title}</div>
+        <div style="font-size:12px;color:#555;line-height:1.5">${s.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  localStorage.setItem(DI_KEY, Date.now().toString());
+  showDebtIntervention();
+}
+
+function showDebtIntervention(){
+  const overlay = document.getElementById('debt-intervention-overlay');
+  const sheet = document.getElementById('debt-intervention-sheet');
+  if(overlay && sheet){
+    overlay.style.display='flex';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
+  }
+}
+
+function closeDebtIntervention(){
+  const overlay = document.getElementById('debt-intervention-overlay');
+  const sheet = document.getElementById('debt-intervention-sheet');
+  if(sheet) sheet.style.transform='translateY(100%)';
+  setTimeout(()=>{ if(overlay) overlay.style.display='none'; },350);
+}
+
+// ══ SHAREABLE CARD ═══════════════════════════════════════════
+function generateShareCard(customHeadline, customBody){
+  const data = window._shareCardData || {};
+  const headline = customHeadline || data.cardHeadline || 'I\'m taking control of my money 💚';
+  const body = customBody || data.cardBody || 'Tracking my spending, debt and savings with MyRandWise. 🇿🇦';
+
+  document.getElementById('sc-headline').textContent = headline;
+  document.getElementById('sc-body').textContent = body;
+
+  closeDebtIntervention();
+  const overlay = document.getElementById('share-card-overlay');
+  if(overlay) overlay.style.display='flex';
+}
+
+function closeShareCard(){
+  const overlay = document.getElementById('share-card-overlay');
+  if(overlay) overlay.style.display='none';
+}
+
+function shareCard(){
+  const name = (user?.name||'').split(' ')[0]||'';
+  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://nyanisokhoza-code.github.io/randwise`;
+  if(navigator.share){
+    navigator.share({title:'MyRandWise',text,url:'https://nyanisokhoza-code.github.io/randwise'});
+  } else {
+    navigator.clipboard?.writeText(text).then(()=>showToast('✅ Copied — paste into WhatsApp or Instagram'));
+  }
+  // Instruct to screenshot
+  showToast('📸 Screenshot the card then share!');
+}
+
+// Milestone share cards — called from various places
+function shareDebtMilestone(debtName, amtPaid){
+  window._shareCardData = {
+    cardHeadline: `I just paid off ${debtName}! 🎉`,
+    cardBody: `R${Math.round(amtPaid).toLocaleString('en-ZA')} down. Debt freedom is real. Tracking with MyRandWise 🌱`
+  };
+  generateShareCard();
+}
+
+function shareSavingsMilestone(goalName, saved, target){
+  const pct = Math.round(saved/target*100);
+  window._shareCardData = {
+    cardHeadline: `${pct}% of the way to my ${goalName} goal 🎯`,
+    cardBody: `R${Math.round(saved).toLocaleString('en-ZA')} saved so far. Every rand counts. MyRandWise 🌱`
+  };
+  generateShareCard();
+}
+
 // ══ SHARE & EARN NUDGE ══════════════════════════════════════
 function showShareNudge(){
   const overlay=document.getElementById('share-nudge-overlay');
@@ -3962,6 +4231,28 @@ window.addEventListener('load',async()=>{
       <div id="tier-test-info" style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.5);min-height:16px"></div>
     </div>
 
+    <!-- CSI FREE PRO PROGRAMME -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#fbbf24;font-weight:700;letter-spacing:.5px;margin-bottom:4px">❤️ CSI FREE PRO PROGRAMME</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;line-height:1.6">Grant free Pro access to users earning under R1,500/mo. Enter their email to upgrade them. This is logged for impact reporting.</div>
+      <input id="csi-email" placeholder="User email address" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;margin-bottom:10px;box-sizing:border-box" type="email">
+      <input id="csi-name" placeholder="User name (for records)" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;margin-bottom:10px;box-sizing:border-box">
+      <input id="csi-income" placeholder="Monthly income (R)" type="number" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;margin-bottom:12px;box-sizing:border-box">
+      <button onclick="grantCSIPro()" style="width:100%;background:#fbbf24;color:#0d1f13;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:800;cursor:pointer">✅ Grant Free Pro</button>
+      <div id="csi-result" style="margin-top:10px;font-size:12px;color:#4ade80;min-height:16px"></div>
+      <div style="margin-top:14px;font-size:12px;color:#4ade80;font-weight:700;margin-bottom:8px">CSI recipients:</div>
+      <div id="csi-list" style="font-size:11px;color:rgba(255,255,255,.5)">Loading...</div>
+    </div>
+
+    <!-- GENERATE SHARE CARD -->
+    <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
+      <div style="font-size:12px;color:#4ade80;font-weight:700;letter-spacing:.5px;margin-bottom:4px">📸 GENERATE PROMO CARD</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:14px;line-height:1.6">Create a branded shareable card for social media promotion.</div>
+      <input id="promo-headline" placeholder="Headline (e.g. 65% of SA debt is avoidable)" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;margin-bottom:10px;box-sizing:border-box">
+      <input id="promo-body" placeholder="Body text" style="width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:13px;color:#fff;margin-bottom:12px;box-sizing:border-box">
+      <button onclick="generatePromoCard()" style="width:100%;background:#4ade80;color:#0d1f13;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:800;cursor:pointer">🎨 Preview Card</button>
+    </div>
+
     <!-- Live stats -->
     <div style="background:rgba(255,255,255,.07);border-radius:16px;padding:18px;margin-bottom:16px">
       <div style="font-size:12px;color:#4ade80;font-weight:700;letter-spacing:.5px;margin-bottom:12px">📊 LIVE STATS</div>
@@ -4529,7 +4820,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v60';
+const APP_VERSION = '2026-04-21-v61';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -4595,6 +4886,7 @@ async function openOwnerPanel(){
   document.getElementById('owner-panel').style.display='block';
   document.getElementById('owner-date').textContent='Session: '+new Date().toLocaleString('en-ZA');
   highlightTierBtn(user?.tier||'free');
+  loadCSIList();
   try{
     const users=await sbG('beta_testers?select=id,name,tier,created_at&order=created_at.desc&limit=50');
     const exps=await sbG('expenses?select=id');
