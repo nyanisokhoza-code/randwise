@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#1a7a4a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='75' x='12'>🌱</text></svg>">
-<title>RandWise</title>
+<title>MyRandWise</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -260,7 +260,7 @@ if('serviceWorker' in navigator){
   <div style="width:80px;height:80px;background:#fff;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#1a5c35;letter-spacing:-1px;flex-shrink:0">R</div>
   <div>
     <div style="font-size:12px;color:rgba(255,255,255,0.55);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">Update available</div>
-    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.2">RandWise just<br>got better 🌱</div>
+    <div style="font-size:26px;font-weight:900;color:#fff;line-height:1.2">MyRandWise just<br>got better 🌱</div>
   </div>
   <div id="update-whats-new" style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;width:100%;max-width:320px;text-align:left">
     <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">What's new in this update</div>
@@ -272,7 +272,7 @@ if('serviceWorker' in navigator){
     </div>
   </div>
   <button onclick="doAppUpdate()" style="background:#4ade80;color:#1a5c35;border:none;border-radius:14px;padding:18px 0;font-size:16px;font-weight:900;cursor:pointer;width:100%;max-width:320px;letter-spacing:.2px;font-family:inherit">Update now →</button>
-  <div style="font-size:11px;color:rgba(255,255,255,0.35);max-width:260px;line-height:1.6">Takes 2 seconds · Your data is safe<br>You must update to continue using RandWise</div>
+  <div style="font-size:11px;color:rgba(255,255,255,0.35);max-width:260px;line-height:1.6">Takes 2 seconds · Your data is safe<br>You must update to continue using MyRandWise</div>
 </div>
 <div id="app">
 
@@ -294,7 +294,7 @@ if('serviceWorker' in navigator){
         <div style="width:80px;height:80px;background:rgba(255,255,255,.12);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:40px">🌱</div>
       </div>
     </div>
-    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">RandWise</div>
+    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">MyRandWise</div>
     <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">Your money, your rules.</div>
     <!-- Loading dots -->
     <div style="display:flex;gap:6px;margin-top:32px">
@@ -459,7 +459,7 @@ if('serviceWorker' in navigator){
     <div id="reset-sent" style="display:none;font-size:13px;color:#1a7a4a;margin-bottom:12px;padding:12px;background:#e8f5ee;border-radius:10px"></div>
     <div id="login-help-btn" style="display:none;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:13px;margin-bottom:12px;text-align:center">
       <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:4px">Still can't get in?</div>
-      <div style="font-size:12px;color:#92400e;margin-bottom:10px;line-height:1.5">Tap below and the RandWise team will help you within 24 hours.</div>
+      <div style="font-size:12px;color:#92400e;margin-bottom:10px;line-height:1.5">Tap below and the MyRandWise team will help you within 24 hours.</div>
       <button onclick="requestLoginHelp()" style="background:#f59e0b;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🆘 Request login help</button>
     </div>
     <button id="l-btn" onclick="doLogin()"
@@ -467,7 +467,7 @@ if('serviceWorker' in navigator){
       Sign in →
     </button>
     <div style="background:#f5f5f0;border-radius:12px;padding:14px;font-size:12px;color:#888;line-height:1.7;text-align:center">
-      🔒 Your password is securely encrypted.<br>New to RandWise? Go back and tap Get Started.
+      🔒 Your password is securely encrypted.<br>New to MyRandWise? Go back and tap Get Started.
     </div>
   </div>
 </div>
@@ -627,7 +627,7 @@ if('serviceWorker' in navigator){
         <div id="income-gate" style="display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center">
           <div style="font-size:48px;margin-bottom:16px">💰</div>
           <div style="font-size:20px;font-weight:800;color:var(--t);margin-bottom:8px">Set your income first</div>
-          <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px;max-width:280px">Without your income, RandWise can't build your budget, track your spending, or help you save. Takes 10 seconds.</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px;max-width:280px">Without your income, MyRandWise can't build your budget, track your spending, or help you save. Takes 10 seconds.</div>
           <button onclick="switchTab('profile');setTimeout(openEditProfile,300)" style="background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px 32px;font-size:15px;font-weight:700;cursor:pointer;width:100%;max-width:300px">Set my income →</button>
         </div>
 
@@ -736,7 +736,7 @@ if('serviceWorker' in navigator){
         <div style="background:var(--gl);border-radius:14px;padding:16px;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px">🤝 Earn with referrals</div>
           <div style="font-size:12px;color:var(--g);line-height:1.6">Earn R10 when a friend goes Pro + R5/month for 6 months. Paid via Capitec Pay.</div>
-          <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share RandWise</button>
+          <button onclick="shareApp()" style="margin-top:12px;width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">📤 Share MyRandWise</button>
         </div>
 
 
@@ -764,6 +764,22 @@ if('serviceWorker' in navigator){
             </label>
           </div>
           <button id="change-pin-btn" onclick="openSetPin('change')" style="display:none;width:100%;padding:10px;background:#fff;border:1px solid #d1ead9;border-radius:10px;font-size:12px;font-weight:600;color:#1a5c35;cursor:pointer">Change PIN</button>
+        </div>
+
+        <!-- NOTIFICATIONS SECTION -->
+        <div style="background:#f0faf4;border-radius:14px;border:1px solid #d1ead9;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:12px">🔔 Notifications</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#1a1a1a">Spending reminders</div>
+              <div style="font-size:11px;color:#5a8a6a;margin-top:2px">Daily log reminder, budget alerts, payday</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+              <input type="checkbox" id="push-toggle" onchange="togglePushNotifications(this.checked)" style="opacity:0;width:0;height:0;position:absolute">
+              <span id="push-toggle-track" style="position:absolute;inset:0;background:#ccc;border-radius:12px;transition:background .2s"></span>
+              <span id="push-toggle-thumb" style="position:absolute;left:2px;top:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+            </label>
+          </div>
         </div>
         <div style="height:8px"></div>
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
@@ -1073,7 +1089,7 @@ if('serviceWorker' in navigator){
 <div class="sheet" id="debit-orders-sheet" style="max-height:80vh;overflow-y:auto">
   <div class="sh-handle"></div>
   <div class="sh-title">Debit orders</div>
-  <div style="font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.6">Log your monthly debit orders so RandWise can warn you before payday and track your total commitments.</div>
+  <div style="font-size:12px;color:var(--mu);margin-bottom:16px;line-height:1.6">Log your monthly debit orders so MyRandWise can warn you before payday and track your total commitments.</div>
   <div id="debit-orders-list"><div style="text-align:center;padding:20px;color:var(--mu);font-size:13px">Loading...</div></div>
   <div style="margin-top:12px">
     <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Add debit order</div>
@@ -1290,7 +1306,7 @@ if('serviceWorker' in navigator){
 
     <!-- Disclaimer -->
     <div style="background:#f5f5f0;border-radius:12px;padding:12px;margin-bottom:20px">
-      <div style="font-size:11px;color:#999;line-height:1.6;text-align:center">Estimates based on your RandWise data and current SA prime rate (11.5%). Not financial advice — consult a bond originator for a formal pre-approval assessment.</div>
+      <div style="font-size:11px;color:#999;line-height:1.6;text-align:center">Estimates based on your MyRandWise data and current SA prime rate (11.5%). Not financial advice — consult a bond originator for a formal pre-approval assessment.</div>
     </div>
   </div>
 </div>
@@ -1653,7 +1669,7 @@ async function logLoginFailure(email, reason, attempts){
 async function requestLoginHelp(){
   const email=document.getElementById('l-email').value.trim()||'unknown';
   sendOwnerAlert('login_help',{email});
-  showToast('✅ Help requested — the RandWise team will contact you shortly');
+  showToast('✅ Help requested — the MyRandWise team will contact you shortly');
   const helpEl=document.getElementById('login-help-btn');
   if(helpEl)helpEl.style.display='none';
 }
@@ -1988,7 +2004,7 @@ function switchTab(t){
   if(btn)btn.classList.add('act');
   if(t==='debt')loadDebtsPWA();
   if(t==='grow')loadGoalsPWA();
-  if(t==='profile'){updateBondPreview();initLock();}
+  if(t==='profile'){updateBondPreview();initLock();initPushToggle();}
   if(t==='import')initImportTab();
 }
 
@@ -2564,11 +2580,126 @@ async function deleteGoalPWA(id){
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 function shareApp(){
   const code=user?.referral_code||'';
-  const tx=`Hey! I'm using RandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\n${APP_URL}${code?'\n\nUse my code: '+code:''}`;
-  if(navigator.share)navigator.share({title:'RandWise',text:tx,url:APP_URL});
+  const tx=`Hey! I'm using MyRandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\n${APP_URL}${code?'\n\nUse my code: '+code:''}`;
+  if(navigator.share)navigator.share({title:'MyRandWise',text:tx,url:APP_URL});
   else window.open('https://wa.me/?text='+encodeURIComponent(tx));
 }
-function doSignOut(){if(confirm('Sign out of RandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
+function doSignOut(){if(confirm('Sign out of MyRandWise?')){localStorage.removeItem('rw_user');localStorage.removeItem('rw_token');localStorage.removeItem('rw_refresh');user=null;expenses=[];show('splash');}}
+
+// ══ PUSH NOTIFICATIONS ══════════════════════════════════════
+const PUSH_KEY = 'rw_push_enabled';
+
+async function requestPushPermission(){
+  if(!('Notification' in window)){
+    showToast('Push notifications not supported on this browser');
+    return false;
+  }
+  if(Notification.permission === 'granted') return true;
+  if(Notification.permission === 'denied'){
+    showToast('Notifications blocked — enable in browser settings');
+    return false;
+  }
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+async function enablePushNotifications(){
+  const granted = await requestPushPermission();
+  if(!granted) return;
+  localStorage.setItem(PUSH_KEY, '1');
+  showToast('✅ Notifications enabled');
+  updatePushToggle(true);
+  // Schedule first nudge
+  schedulePushNudges();
+}
+
+function disablePushNotifications(){
+  localStorage.removeItem(PUSH_KEY);
+  showToast('Notifications disabled');
+  updatePushToggle(false);
+}
+
+function isPushEnabled(){
+  return localStorage.getItem(PUSH_KEY) === '1' && Notification.permission === 'granted';
+}
+
+function updatePushToggle(enabled){
+  const toggle = document.getElementById('push-toggle');
+  const track = document.getElementById('push-toggle-track');
+  const thumb = document.getElementById('push-toggle-thumb');
+  if(toggle) toggle.checked = enabled;
+  if(track) track.style.background = enabled ? '#1a5c35' : '#ccc';
+  if(thumb) thumb.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)';
+}
+
+function togglePushNotifications(enabled){
+  if(enabled) enablePushNotifications();
+  else disablePushNotifications();
+}
+
+function initPushToggle(){
+  const enabled = isPushEnabled();
+  updatePushToggle(enabled);
+}
+
+function sendLocalNotification(title, body, icon){
+  if(!isPushEnabled()) return;
+  try{
+    new Notification(title, {
+      body,
+      icon: icon || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/><text y=".9em" font-size="80">🌱</text></svg>',
+      badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%231a7a4a"/></svg>',
+      tag: 'myrandwise',
+    });
+  }catch(e){ console.warn('Notification failed:', e); }
+}
+
+function schedulePushNudges(){
+  if(!isPushEnabled()) return;
+  const now = new Date();
+  const hour = now.getHours();
+  const inc = Number(user?.income_amount || 0);
+  const totalExp = expenses.reduce((s,e) => s + Number(e.amount||0), 0);
+  const weekBudget = Math.round(inc/4);
+  const pctUsed = weekBudget > 0 ? Math.round(totalExp/weekBudget*100) : 0;
+
+  // Evening reminder if no expenses logged today
+  const todayExp = expenses.filter(e => {
+    const d = new Date(e.logged_at || e.created_at);
+    return d.toDateString() === now.toDateString();
+  });
+
+  // Only schedule if in evening (after 6pm) and no expenses today
+  if(hour >= 18 && todayExp.length === 0){
+    setTimeout(()=>{
+      sendLocalNotification(
+        'Did you spend anything today? 💸',
+        'Log your expenses now to keep your budget on track.',
+      );
+    }, 5000);
+  }
+
+  // Weekly budget warning
+  if(pctUsed >= 80 && pctUsed < 100){
+    setTimeout(()=>{
+      sendLocalNotification(
+        `Budget alert — ${pctUsed}% used this week`,
+        `You've used R${totalExp.toLocaleString('en-ZA')} of your R${weekBudget.toLocaleString('en-ZA')} weekly budget.`,
+      );
+    }, 8000);
+  }
+
+  // Payday celebration
+  const payDay = user?.pay_day || 25;
+  if(now.getDate() === payDay){
+    setTimeout(()=>{
+      sendLocalNotification(
+        '🎉 Payday! Plan your month now',
+        'Your salary should be hitting. Open MyRandWise to allocate your budget.',
+      );
+    }, 3000);
+  }
+}
 
 // ══ WHAT'S NEW POPUP ════════════════════════════════════════
 const WHATS_NEW = {
@@ -3329,7 +3460,7 @@ function exportCSV(){
   const a=document.createElement('a');
   a.href=url;
   const month=new Date().toLocaleString('en-ZA',{month:'long',year:'numeric'});
-  a.download=`RandWise_Expenses_${month.replace(' ','_')}.csv`;
+  a.download=`MyRandWise_Expenses_${month.replace(' ','_')}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('✅ CSV downloaded');
@@ -3348,19 +3479,19 @@ function exportPDF(){
     const date=e.logged_at||e.created_at||'';
     return`<tr><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px">${date?new Date(date).toLocaleDateString('en-ZA'):''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px">${e.category||''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px;color:#333">${e.note||''}</td><td style="padding:5px 8px;border-bottom:1px solid #f0f0f0;font-size:12px;text-align:right;font-weight:600;color:#c62828">R${Number(e.amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr>`;
   }).join('');
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RandWise Report — ${month}</title><style>body{font-family:sans-serif;color:#333;padding:32px;max-width:700px;margin:0 auto}h1{color:#1a5c35;margin-bottom:4px}table{width:100%;border-collapse:collapse}th{background:#1a5c35;color:#fff;padding:8px;text-align:left;font-size:13px}.total{font-size:20px;font-weight:900;color:#1a5c35}.sub{font-size:13px;color:#5a8a6a;margin-bottom:24px}.section{margin-bottom:28px}.section h3{color:#1a5c35;border-bottom:2px solid #e8f5ee;padding-bottom:6px;margin-bottom:12px}.footer{margin-top:32px;font-size:11px;color:#999;text-align:center;border-top:1px solid #e8f5ee;padding-top:12px}</style></head><body>
-  <h1>🌱 RandWise</h1>
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>MyRandWise Report — ${month}</title><style>body{font-family:sans-serif;color:#333;padding:32px;max-width:700px;margin:0 auto}h1{color:#1a5c35;margin-bottom:4px}table{width:100%;border-collapse:collapse}th{background:#1a5c35;color:#fff;padding:8px;text-align:left;font-size:13px}.total{font-size:20px;font-weight:900;color:#1a5c35}.sub{font-size:13px;color:#5a8a6a;margin-bottom:24px}.section{margin-bottom:28px}.section h3{color:#1a5c35;border-bottom:2px solid #e8f5ee;padding-bottom:6px;margin-bottom:12px}.footer{margin-top:32px;font-size:11px;color:#999;text-align:center;border-top:1px solid #e8f5ee;padding-top:12px}</style></head><body>
+  <h1>🌱 MyRandWise</h1>
   <div class="sub">Expense Report — ${month} · ${user?.name||''}</div>
   <div class="section"><h3>Summary</h3><table><tr><td style="padding:8px 0;font-size:14px">Total expenses</td><td style="text-align:right" class="total">R${total.toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr><tr><td style="padding:8px 0;font-size:14px">Transactions</td><td style="text-align:right;font-size:18px;font-weight:700">${expenses.length}</td></tr><tr><td style="padding:8px 0;font-size:14px">Monthly income</td><td style="text-align:right;font-size:18px;font-weight:700;color:#1a5c35">R${Number(user?.income_amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr></table></div>
   <div class="section"><h3>By category</h3><table><tr><th>Category</th><th style="text-align:right">Total</th></tr>${catRows}</table></div>
   <div class="section"><h3>Transactions${expenses.length>50?' (latest 50)':''}</h3><table><tr><th>Date</th><th>Category</th><th>Note</th><th style="text-align:right">Amount</th></tr>${expRows}</table></div>
-  <div class="footer">Generated by RandWise · ${new Date().toLocaleDateString('en-ZA')} · Your money, your rules. 🇿🇦</div>
+  <div class="footer">Generated by MyRandWise · ${new Date().toLocaleDateString('en-ZA')} · Your money, your rules. 🇿🇦</div>
   </body></html>`;
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;
-  a.download=`RandWise_Report_${month.replace(' ','_')}.html`;
+  a.download=`MyRandWise_Report_${month.replace(' ','_')}.html`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('✅ PDF report downloaded — open in browser then print/save as PDF');
@@ -3431,6 +3562,7 @@ window.addEventListener('load',async()=>{
         try{renderDash();}catch{}
         show('main');
         startLockTimer();
+        setTimeout(()=>schedulePushNudges(), 3000);
         // Only show intro if user has never seen it
         const introSeen=localStorage.getItem('rw_intro_seen');
         if(!introSeen){
@@ -3455,7 +3587,7 @@ window.addEventListener('load',async()=>{
 <div id="upgrade-wall" style="display:none;position:fixed;inset:0;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
   <div style="font-size:56px;margin-bottom:12px" id="uw-icon">⏰</div>
   <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px" id="uw-title">Your free trial has ended</div>
-  <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:28px;max-width:300px" id="uw-sub">You've experienced what RandWise can do. Don't lose your data — upgrade to keep going.</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:28px;max-width:300px" id="uw-sub">You've experienced what MyRandWise can do. Don't lose your data — upgrade to keep going.</div>
   <div style="width:100%;max-width:320px;margin-bottom:24px">
     <div style="background:rgba(255,255,255,.1);border-radius:16px;padding:20px;margin-bottom:12px;border:2px solid #4ade80">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -3543,7 +3675,7 @@ window.addEventListener('load',async()=>{
 
     <!-- Build info -->
     <div style="text-align:center;padding:16px;font-size:11px;color:rgba(255,255,255,.3)">
-      RandWise PWA · Built by Nyaniso Khoza 🇿🇦<br>
+      MyRandWise PWA · Built by Nyaniso Khoza 🇿🇦<br>
       <span id="owner-date"></span>
     </div>
   </div>
@@ -3834,14 +3966,22 @@ function goToMaintenance(reason){
 }
 
 // Button unresponsiveness detection
-// If user taps any interactive element 3+ times with no response in 8 seconds → flag
+// If user taps any interactive element 5+ times with no response in 8 seconds → flag
+// Excludes PIN pad, lock screen, and any open sheets
 let _deadTapCount = 0;
 let _deadTapTimer = null;
 function trackDeadTap(){
+  // Never fire during PIN entry, lock screen, or open sheets
+  const lockVisible = document.getElementById('app-lock-screen')?.style?.display === 'flex';
+  const setPinOpen = document.getElementById('set-pin-sheet')?.classList?.contains('open');
+  const anySheetOpen = document.querySelector('.sheet.open');
+  const onPinPad = event?.target?.closest?.('#app-lock-screen, #set-pin-sheet');
+  if(lockVisible || setPinOpen || anySheetOpen || onPinPad) return;
+
   _deadTapCount++;
   clearTimeout(_deadTapTimer);
-  _deadTapTimer = setTimeout(()=>{ _deadTapCount=0; }, 8000);
-  if(_deadTapCount >= 5){
+  _deadTapTimer = setTimeout(()=>{ _deadTapCount=0; }, 15000);
+  if(_deadTapCount >= 10){
     _deadTapCount = 0;
     // Check if we're on main app (not splash)
     const mainEl = document.getElementById('main');
@@ -3971,13 +4111,13 @@ function showUpgradeWall(hardBlock){
   wall.style.display='flex';
   if(!hardBlock){
     document.getElementById('uw-icon').textContent='⭐';
-    document.getElementById('uw-title').textContent='Unlock the full RandWise';
+    document.getElementById('uw-title').textContent='Unlock the full MyRandWise';
     document.getElementById('uw-sub').textContent='You\'re on the free plan. Upgrade to Pro for bank imports, AI nudges, and more.';
     document.getElementById('uw-continue').style.display='block';
   } else {
     document.getElementById('uw-icon').textContent='⏰';
     document.getElementById('uw-title').textContent='Your free trial has ended';
-    document.getElementById('uw-sub').textContent='You\'ve experienced what RandWise can do. Don\'t lose your data — upgrade to keep going.';
+    document.getElementById('uw-sub').textContent='You\'ve experienced what MyRandWise can do. Don\'t lose your data — upgrade to keep going.';
     document.getElementById('uw-continue').style.display='none';
     // Intercept back button so users can't navigate away
     history.pushState(null,'',location.href);
@@ -3989,7 +4129,7 @@ function doUpgrade(plan){
   const sandbox=false;
   const base=sandbox?'https://sandbox.payfast.co.za/eng/process':'https://www.payfast.co.za/eng/process';
   const amt=plan==='premium'?'129.00':'49.00';
-  const name=plan==='premium'?'RandWise Premium':'RandWise Pro';
+  const name=plan==='premium'?'MyRandWise Premium':'MyRandWise Pro';
   const params=new URLSearchParams({merchant_id:sandbox?'10000100':mid,merchant_key:sandbox?'46f0cd694581a':mkey,return_url:APP_URL+'?paid=1',cancel_url:APP_URL,notify_url:APP_URL+'?payfast_notify=1',name_first:(user?.name||'User').split(' ')[0],email_address:user?.email||'',m_payment_id:user?.id||Date.now(),amount:amt,item_name:name});
   window.open(`${base}?${params.toString()}`,'_blank');
 }
@@ -4023,7 +4163,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-20-v48';
+const APP_VERSION = '2026-04-20-v50';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -4211,7 +4351,7 @@ function showIntro(){
   if(tier==='premium'||tier==='pro'){
     if(youFree)youFree.style.display='none';
     if(youPro)youPro.style.display='block';
-    cta.textContent=tier==='premium'?'Enter RandWise 👑':'Open my dashboard →';
+    cta.textContent=tier==='premium'?'Enter MyRandWise 👑':'Open my dashboard →';
   } else {
     // Free/trial user — on trial so they have Pro temporarily, show "You" on Pro with trial note
     if(youFree)youFree.style.display='none';
@@ -4436,7 +4576,7 @@ function fileToBase64(file) {
 }
 
 async function parseStatementWithClaude(base64Pdf, bank, monthLabel) {
-  const prompt = `You are a South African bank statement parser for the RandWise personal finance app.
+  const prompt = `You are a South African bank statement parser for the MyRandWise personal finance app.
 
 Analyse this ${bank} bank statement PDF for ${monthLabel}.
 
