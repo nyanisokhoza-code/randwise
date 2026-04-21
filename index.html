@@ -1944,6 +1944,13 @@ function hideErr(id){document.getElementById(id).style.display='none';}
 async function openDash(){
   show('main');
   startLockTimer();
+  // Reset scroll to top
+  setTimeout(()=>{
+    const dc=document.getElementById('dash-main-content');
+    if(dc) dc.scrollTop=0;
+    const tc=document.querySelector('.tab-content');
+    if(tc) tc.scrollTop=0;
+  },50);
   // Load both expenses and debts before rendering so smart budget is accurate
   await Promise.all([
     loadExp().catch(()=>{expenses=[];}),
@@ -2676,6 +2683,15 @@ function switchTab(t){
   document.getElementById('tp-'+t).classList.add('active');
   const btn=document.getElementById('tb-'+t);
   if(btn)btn.classList.add('act');
+  // Reset scroll to top
+  const pane=document.getElementById('tp-'+t);
+  if(pane) pane.scrollTop=0;
+  const tabContent=document.querySelector('.tab-content');
+  if(tabContent) tabContent.scrollTop=0;
+  if(t==='home'){
+    const dc=document.getElementById('dash-main-content');
+    if(dc) dc.scrollTop=0;
+  }
   if(t==='debt')loadDebtsPWA();
   if(t==='grow'){loadGoalsPWA();loadStokvelList();}
   if(t==='profile'){updateBondPreview();initLock();initPushToggle();}
@@ -5402,7 +5418,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v68';
+const APP_VERSION = '2026-04-21-v69';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
