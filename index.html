@@ -1666,7 +1666,7 @@ function getH(){
   return{'apikey':AK,'Authorization':'Bearer '+(tok||AK),'Content-Type':'application/json'};
 }
 const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
-let user=null,expenses=[],selectedCat=null;
+let user=null,expenses=[],selectedCat=null,debts=[];
 let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:''};
 // Auto-fill referral code from URL ?ref=
 (()=>{const p=new URLSearchParams(window.location.search);const rc=p.get('ref');if(rc){ob.referralCode=rc;const el=document.getElementById('r-ref');if(el)el.value=rc;}})();
@@ -1941,7 +1941,16 @@ function showErr(id,msg){const el=document.getElementById(id);el.style.display='
 function hideErr(id){document.getElementById(id).style.display='none';}
 
 // ── Dashboard ─────────────────────────────────────────────────
-async function openDash(){show('main');startLockTimer();await loadExp();renderDash();}
+async function openDash(){
+  show('main');
+  startLockTimer();
+  // Load both expenses and debts before rendering so smart budget is accurate
+  await Promise.all([
+    loadExp().catch(()=>{expenses=[];}),
+    sbG(`debts?tester_id=eq.${user?.id}&order=balance.asc`).then(d=>{debts=d||[];}).catch(()=>{debts=[];})
+  ]);
+  renderDash();
+}
 async function loadExp(){
   if(!user?.id)return;
   try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
@@ -2764,7 +2773,8 @@ function removeDebitOrder(i){
 async function loadDebtsPWA(){
   if(!user?.id)return;
   try{
-    const debts=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
+    const loadedDebts=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
+    debts=loadedDebts||[]; // Update global
     const el=document.getElementById('debt-list-pwa');
     if(!debts?.length){
       el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">💳</div><div style="font-size:14px;font-weight:600;color:var(--t)">No debts added yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first debt to start your payoff plan</div></div>';
@@ -5392,7 +5402,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v67';
+const APP_VERSION = '2026-04-21-v68';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
