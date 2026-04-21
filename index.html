@@ -738,11 +738,11 @@ if('serviceWorker' in navigator){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 14px 0">
 
             <!-- THIS WEEK -->
-            <div id="week-stat-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer;transition:background .3s,border-color .3s" onclick="openWeeklyPlanner()">
+            <div id="week-stat-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;transition:background .3s,border-color .3s">
               <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This week</div><button onclick="event.stopPropagation();showInfo('weekly-budget')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
-              <div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
+              <div onclick="openWeeklyPlanner()" style="cursor:pointer"><div style="font-size:22px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-.5px" id="stat-week-spent">R0</div>
               <div style="font-size:11px;color:#5a8a6a;margin-top:5px;font-weight:500" id="stat-week-label">Week 1 of 4 · R0/wk</div>
-              <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to see plan →</div>
+              <div style="font-size:10px;color:#2e7d32;margin-top:4px;font-weight:600">Tap to see plan →</div></div>
             </div>
 
             <!-- DEBIT ORDERS -->
@@ -754,7 +754,7 @@ if('serviceWorker' in navigator){
             </div>
 
             <!-- DEBT SCORE -->
-            <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px;cursor:pointer" onclick="switchTab('debt')">
+            <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
               <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div><button onclick="event.stopPropagation();showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
               <div style="display:flex;align-items:baseline;gap:3px">
                 <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
@@ -774,7 +774,7 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- NET WORTH CARD -->
-          <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px 16px;cursor:pointer" onclick="switchTab('grow')" id="net-worth-card">
+          <div style="margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:14px 16px" id="net-worth-card">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div>
                 <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Net worth</div><button onclick="event.stopPropagation();showInfo('net-worth')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
@@ -4969,7 +4969,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-21-v64';
+const APP_VERSION = '2026-04-21-v65';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
