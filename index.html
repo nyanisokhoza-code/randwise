@@ -30,6 +30,7 @@
 html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t);overscroll-behavior-y:auto}
 #app{height:100%;display:flex;flex-direction:column}
 .screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+@media(hover:hover){#main.active{overflow:visible}.tab-content{overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(26,122,74,.4) transparent}.tab-content::-webkit-scrollbar{width:5px}.tab-content::-webkit-scrollbar-track{background:transparent}.tab-content::-webkit-scrollbar-thumb{background:rgba(26,122,74,.4);border-radius:4px}}
 .screen.active{display:flex}
 
 /* SPLASH */
@@ -5493,7 +5494,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v84';
+const APP_VERSION = '2026-04-22-v85';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
