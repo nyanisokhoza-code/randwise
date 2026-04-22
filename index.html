@@ -2330,7 +2330,7 @@ async function renderDash(){
     return;
   } else {
     if(gate)gate.style.display='none';
-    if(mainContent){mainContent.style.display='block';mainContent.style.flex='1';}
+    if(mainContent){mainContent.style.display='flex';mainContent.style.flexDirection='column';mainContent.style.flex='1';}
   }
   set('ptier',user.tier||'free');
   set('pref',user.referral_code||'—');
@@ -2673,17 +2673,7 @@ async function saveExp(){
   const recKey = `rw_rec_suggested_${selectedCat?.n}_${Math.round(a/100)*100}`;
   if(!recurring && isMonthlyLooking && !localStorage.getItem(recKey)){
     localStorage.setItem(recKey,'1');
-    setTimeout(()=>{
-      if(confirm(`Add ${selectedCat?.e||''} ${selectedCat?.n} (R${a.toLocaleString('en-ZA')}) as a monthly recurring expense?\n\nThis improves your weekly budget accuracy.`)){
-        const recList=JSON.parse(localStorage.getItem('rw_recurring')||'[]');
-        const exists=recList.find(r=>r.category===selectedCat.n&&Math.abs(r.amount-a)<50);
-        if(!exists){
-          recList.push({category:selectedCat.n,category_id:selectedCat.id,emoji:selectedCat.e,amount:a,note:note||'',added:new Date().toISOString()});
-          localStorage.setItem('rw_recurring',JSON.stringify(recList));
-          showToast('✅ Added as recurring — budget updated');
-        }
-      }
-    }, 600);
+    // Silently add to recurring - no popup
   }
   btn.disabled=false;btn.textContent='Save expense';
   // Reset recurring toggle
@@ -5494,7 +5484,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v85';
+const APP_VERSION = '2026-04-22-v86';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
