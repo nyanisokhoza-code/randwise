@@ -122,6 +122,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .dash-s{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px}
 .avatar{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
 .dash-scroll{overflow-y:auto;padding:0 0 32px;flex:1}
+.dash-scroll::-webkit-scrollbar{width:5px}
+.dash-scroll::-webkit-scrollbar-track{background:transparent}
+.dash-scroll::-webkit-scrollbar-thumb{background:rgba(26,122,74,.35);border-radius:4px}
+@media(hover:none){.dash-scroll::-webkit-scrollbar{display:none}}
 .ring-card{background:var(--w);margin:16px;border-radius:18px;border:.5px solid var(--bd);padding:20px;display:flex;flex-direction:column;align-items:center}
 .ring-wrap{position:relative;width:180px;height:180px;margin-bottom:16px}
 .ring-wrap svg{transform:rotate(-90deg)}
@@ -5491,7 +5495,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v74';
+const APP_VERSION = '2026-04-22-v83';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
