@@ -1837,7 +1837,7 @@ async function doRegister(){
     sendOwnerAlert('new_user',{name:ob.name.trim(),email:ob.email.trim(),life_stage:ob.stage,income_amount:m,referred_by:ob.referralCode||null});
     // Celebration
     document.getElementById('done-t').textContent=`Welcome, ${ob.name.trim().split(' ')[0]}! 🎉`;
-    document.getElementById('done-s').textContent=`Your account is ready. Check your email to verify your account — you'll need it to log in on a new device.`;
+    document.getElementById('done-s').textContent=`Your account is ready! Check your inbox now — click the confirmation link from MyRandWise to activate your account.`;
     document.getElementById('done-inc').textContent=`Income: R${m.toLocaleString('en-ZA')}/month`;
     document.getElementById('done-gls').textContent=`${ob.goals.length} goal${ob.goals.length!==1?'s':''} tracked`;
     show('done');
@@ -1861,20 +1861,23 @@ async function doLogin(){
     if(!auth.access_token){
       loginAttempts++;
       const msg=auth.error_description||'';
-      const reason=msg.includes('Invalid login')||msg.includes('invalid')?'wrong_password':msg||'unknown';
-      const friendlyMsg=reason==='wrong_password'?
-        'Wrong email or password. If you recently reset your password, use your new one.':
-        msg||'Wrong email or password';
+      const reason=msg.includes('Invalid login')||msg.includes('invalid')||msg.includes('credentials')||msg.includes('password')?'wrong_password':
+        msg.includes('confirmed')||msg.includes('verify')||msg.includes('Email not confirmed')?'not_confirmed':
+        msg.includes('disabled')||msg.includes('banned')?'disabled':
+        msg||'unknown';
+      const friendlyMsg=reason==='wrong_password'?'Wrong email or password. Check your details and try again.':
+        reason==='not_confirmed'?'Your email is not confirmed yet. Check your inbox for a confirmation email from MyRandWise and click the link, then try again.':
+        reason==='disabled'?'This account has been disabled. Contact support@myrandwise.co.za':
+        reason==='unknown'?'Sign in failed. Check your email and password, or tap "Forgot password" below.':
+        msg;
       showErr('l-err',friendlyMsg);
       btn.disabled=false;btn.textContent='Sign in →';
       // Log to admin after first failure
       sendOwnerAlert('login_failed',{email,attempts:loginAttempts,reason});
       logLoginFailure(email, reason, loginAttempts);
-      // Show help button after 2 failures
-      if(loginAttempts>=2){
-        const helpEl=document.getElementById('login-help-btn');
-        if(helpEl)helpEl.style.display='block';
-      }
+      // Show help button after 1 failure
+      const helpEl=document.getElementById('login-help-btn');
+      if(helpEl)helpEl.style.display='block';
       return;
     }
     loginAttempts=0;
@@ -1900,7 +1903,12 @@ async function doLogin(){
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
     if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
-    try{await loadExp();}catch(ex){expenses=[];}
+    try{
+      await Promise.all([
+        loadExp().catch(()=>{expenses=[];}),
+        sbG(`debts?tester_id=eq.${user?.id}&order=balance.asc`).then(d=>{debts=d||[];}).catch(()=>{debts=[];})
+      ]);
+    }catch(ex){expenses=[];debts=[];}
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     show('main');
     try{setTimeout(showIntro,400);}catch(ex){}
@@ -2269,7 +2277,7 @@ function getSmartWeeklyBudget(){
   if(doTotal>0) breakdown.push({label:'Debit orders', amount:doTotal});
 
   // Debt minimum payments
-  const debtMin = (debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const debtMin = (typeof debts!=="undefined"?debts:[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
   if(debtMin>0) breakdown.push({label:'Debt minimums', amount:debtMin});
 
   // Recurring expenses from localStorage
@@ -2664,24 +2672,7 @@ async function saveExp(){
     localStorage.setItem('rw_share_nudge_shown','1');
     setTimeout(()=>showShareNudge(), 1500);
   }
-  // Suggest recurring for large/monthly-looking expenses
-  const monthlyLookingCats = ['Electricity','Water','Rent','Groceries','Airtime','Insurance','Transport','Gym','School fees','Loan payment'];
-  const isMonthlyLooking = monthlyLookingCats.includes(selectedCat?.n) || a >= 500;
-  const recKey = `rw_rec_suggested_${selectedCat?.n}_${Math.round(a/100)*100}`;
-  if(!recurring && isMonthlyLooking && !localStorage.getItem(recKey)){
-    localStorage.setItem(recKey,'1');
-    setTimeout(()=>{
-      if(confirm(`Add ${selectedCat?.e||''} ${selectedCat?.n} (R${a.toLocaleString('en-ZA')}) as a monthly recurring expense?\n\nThis improves your weekly budget accuracy.`)){
-        const recList=JSON.parse(localStorage.getItem('rw_recurring')||'[]');
-        const exists=recList.find(r=>r.category===selectedCat.n&&Math.abs(r.amount-a)<50);
-        if(!exists){
-          recList.push({category:selectedCat.n,category_id:selectedCat.id,emoji:selectedCat.e,amount:a,note:note||'',added:new Date().toISOString()});
-          localStorage.setItem('rw_recurring',JSON.stringify(recList));
-          showToast('✅ Added as recurring — budget updated');
-        }
-      }
-    }, 600);
-  }
+  // Recurring suggestion removed - was blocking Supabase saves
   btn.disabled=false;btn.textContent='Save expense';
   // Reset recurring toggle
   const recEl=document.getElementById('exp-recurring');
@@ -5491,7 +5482,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v90';
+const APP_VERSION = '2026-04-22-v93';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
