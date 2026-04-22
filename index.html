@@ -2331,7 +2331,7 @@ async function renderDash(){
     return;
   } else {
     if(gate)gate.style.display='none';
-    if(mainContent){mainContent.style.display='block';mainContent.style.flex='1';}
+    if(mainContent){mainContent.style.display='flex';mainContent.style.flex='1';}
   }
   set('ptier',user.tier||'free');
   set('pref',user.referral_code||'—');
@@ -5495,7 +5495,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v81';
+const APP_VERSION = '2026-04-22-v82';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
