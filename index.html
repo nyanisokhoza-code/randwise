@@ -2665,7 +2665,13 @@ async function saveExp(){
   try{
     await refreshTokenIfNeeded();
     const s=await sbP('expenses',d);
-    if(!s?.[0]){throw new Error('No response from server');}
+    // Catch Supabase errors (RLS, JWT, etc) - they return objects not arrays
+    if(s?.message||s?.error||s?.code){
+      const errMsg=s.message||s.hint||s?.error||JSON.stringify(s);
+      sendOwnerAlert('save_failed',{email:user?.email,error:errMsg,tester_id:user?.id});
+      throw new Error(errMsg);
+    }
+    if(!s?.[0]){throw new Error('Empty response from server');}
     expenses.unshift(s[0]);
     if(recurring){
       const recList=JSON.parse(localStorage.getItem('rw_recurring')||'[]');
@@ -2696,8 +2702,9 @@ async function saveExp(){
         showToast(`✅ R${a.toLocaleString('en-ZA')} saved`);
       } else { throw new Error('Retry failed'); }
     }catch(err2){
-      showToast('❌ Could not save — check your connection and try again');
-      console.error('saveExp failed:',err2);
+      showToast('❌ Could not save — ' + (err2.message||'try again'));
+      console.error('saveExp retry failed:',err2);
+      sendOwnerAlert('save_failed',{email:user?.email,error:err2.message,stage:'retry'});
     }
   }
   btn.disabled=false;btn.textContent='Save expense';
@@ -5530,7 +5537,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v96';
+const APP_VERSION = '2026-04-22-v97';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
