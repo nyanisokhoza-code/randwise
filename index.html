@@ -892,7 +892,7 @@ if('serviceWorker' in navigator){
           <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div style="font-size:15px;font-weight:700;color:var(--t)">Recent transactions</div>
-              <div style="font-size:12px;color:var(--g);font-weight:600">See all</div>
+              <div id="see-all-btn" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px" onclick="openSeeAll()">See all</div>
             </div>
             <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;overflow:hidden" id="exp-list">
               <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>
@@ -2376,7 +2376,10 @@ async function renderDash(){
 
   const ms=new Date(now.getFullYear(),now.getMonth(),1);
   const me=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=ms);
-  const spent=me.reduce((s,e)=>s+Number(e.amount),0),sp=Math.max(0,inc-spent);
+  const spent=me.reduce((s,e)=>s+Number(e.amount),0);
+  // sp = spendable = income minus fixed monthly commitments (debit orders + debt minimums + recurring)
+  // This is what's left from salary after all fixed costs - NOT after spending
+  const sp=Math.max(0,disposable); // disposable already = inc - fixed from getSmartWeeklyBudget()
   const {wb,disposable,fixed,breakdown:budgetBreakdown}=getSmartWeeklyBudget();
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
@@ -4758,6 +4761,43 @@ function exportPDF(){
       </div>
     </div>
   </div>
+
+<!-- ══ SEE ALL TRANSACTIONS SHEET ══════════════════════════════ -->
+<div id="see-all-screen" style="display:none;position:fixed;inset:0;background:#f7f6f2;z-index:300;display:none;flex-direction:column">
+  <!-- Header -->
+  <div style="background:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #eee;flex-shrink:0;padding-top:calc(env(safe-area-inset-top,0px) + 16px)">
+    <button onclick="closeSeeAll()" style="width:34px;height:34px;border-radius:10px;background:#f5f5f0;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+    <div style="font-size:17px;font-weight:800;color:#111">All transactions</div>
+    <div id="sa-count" style="font-size:12px;color:#888;margin-left:auto;background:#f5f5f0;padding:4px 10px;border-radius:20px">0 total</div>
+  </div>
+  <!-- Search -->
+  <div style="padding:10px 14px;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0">
+    <div style="position:relative">
+      <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5">🔍</span>
+      <input id="sa-search" type="text" placeholder="Search transactions..." oninput="renderSeeAll()"
+        style="width:100%;padding:10px 14px 10px 34px;background:#f5f5f0;border:none;border-radius:12px;font-size:14px;font-family:inherit;box-sizing:border-box">
+    </div>
+  </div>
+  <!-- Filter chips -->
+  <div id="sa-filters" style="display:flex;gap:8px;padding:10px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0"></div>
+  <!-- Summary bar -->
+  <div style="display:flex;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0">
+    <div style="flex:1;text-align:center;padding:10px">
+      <div id="sa-total" style="font-size:15px;font-weight:800;color:#c0392b">R0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Total spent</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:10px;border-left:1px solid #eee;border-right:1px solid #eee">
+      <div id="sa-txn-count" style="font-size:15px;font-weight:800;color:#111">0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Transactions</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:10px">
+      <div id="sa-avg" style="font-size:15px;font-weight:800;color:#1a7a4a">R0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Average</div>
+    </div>
+  </div>
+  <!-- Transaction list grouped by day -->
+  <div id="sa-list" style="overflow-y:auto;flex:1;padding-bottom:40px"></div>
+</div>
 </body></html>`;
   const blob=new Blob([html],{type:'text/html'});
   const url=URL.createObjectURL(blob);
@@ -5531,7 +5571,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v103';
+const APP_VERSION = '2026-04-23-v104';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6175,8 +6215,132 @@ async function doResetPassword(){
     btn.disabled=false; btn.textContent='Set new password →';
   }
 }
+
+// ══ SEE ALL TRANSACTIONS ════════════════════════════════════════
+let saFilter = 'all';
+
+function openSeeAll(){
+  const screen = document.getElementById('see-all-screen');
+  screen.style.display = 'flex';
+  document.getElementById('sa-search').value = '';
+  saFilter = 'all';
+  renderSeeAllFilters();
+  renderSeeAll();
+}
+
+function closeSeeAll(){
+  document.getElementById('see-all-screen').style.display = 'none';
+}
+
+function renderSeeAllFilters(){
+  const cats = [...new Set(expenses.map(e=>e.category))].filter(Boolean);
+  const el = document.getElementById('sa-filters');
+  el.innerHTML = ['All',...cats].map(c=>`
+    <button onclick="saFilter='${c==='All'?'all':c}';renderSeeAllFilters();renderSeeAll()"
+      style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:none;
+      background:${(c==='All'&&saFilter==='all')||(saFilter===c)?'#1a5c35':'#f0f0ec'};
+      color:${(c==='All'&&saFilter==='all')||(saFilter===c)?'#fff':'#555'}">${c}</button>
+  `).join('');
+}
+
+function renderSeeAll(){
+  const search = (document.getElementById('sa-search')?.value||'').toLowerCase();
+  let filtered = expenses;
+  if(saFilter !== 'all') filtered = filtered.filter(e=>e.category===saFilter);
+  if(search) filtered = filtered.filter(e=>(e.category||'').toLowerCase().includes(search)||(e.note||'').toLowerCase().includes(search));
+
+  // Summary
+  const total = filtered.reduce((s,e)=>s+Number(e.amount),0);
+  const avg = filtered.length ? Math.round(total/filtered.length) : 0;
+  document.getElementById('sa-count').textContent = expenses.length+' total';
+  document.getElementById('sa-total').textContent = 'R'+total.toLocaleString('en-ZA');
+  document.getElementById('sa-txn-count').textContent = filtered.length;
+  document.getElementById('sa-avg').textContent = 'R'+avg.toLocaleString('en-ZA');
+
+  // Group by day
+  const groups = {};
+  filtered.forEach(e=>{
+    const d = new Date(e.logged_at||e.created_at);
+    const key = d.toDateString();
+    if(!groups[key]) groups[key] = {date:d, items:[]};
+    groups[key].items.push(e);
+  });
+
+  const cm = CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+
+  const el = document.getElementById('sa-list');
+  if(!filtered.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:#888"><div style="font-size:32px;margin-bottom:12px">🔍</div><div style="font-size:15px;font-weight:600">No transactions found</div></div>';
+    return;
+  }
+
+  el.innerHTML = Object.keys(groups).sort((a,b)=>new Date(b)-new Date(a)).map(key=>{
+    const g = groups[key];
+    const dLabel = key===today?'Today':key===yesterday?'Yesterday':g.date.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long'});
+    const dayTotal = g.items.reduce((s,e)=>s+Number(e.amount),0);
+    const rows = g.items.map(e=>{
+      const c = cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
+      const t = new Date(e.logged_at||e.created_at).toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+      return`<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f5f0">
+        <div style="width:40px;height:40px;border-radius:12px;background:${c.c}20;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${e.emoji||c.e}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:#111">${e.category}</div>
+          <div style="font-size:11px;color:#888">${e.note||t}</div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#c0392b">-R${Number(e.amount).toLocaleString('en-ZA')}</div>
+        <button onclick="editExp('${e.id}')" style="background:none;border:none;font-size:13px;cursor:pointer;color:#888;padding:4px">✏️</button>
+        <button onclick="delExp('${e.id}');renderSeeAll();" style="background:none;border:none;font-size:14px;cursor:pointer;color:#ccc;padding:4px">×</button>
+      </div>`;
+    }).join('');
+    return`<div>
+      <div style="padding:8px 14px;background:#f0f0ec;font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:flex;justify-content:space-between;position:sticky;top:0">
+        <span>${dLabel}</span><span>-R${dayTotal.toLocaleString('en-ZA')}</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
 </script>
 
   <!-- Reset Password Screen -->
-  </body>
+  
+<!-- ══ SEE ALL TRANSACTIONS SHEET ══════════════════════════════ -->
+<div id="see-all-screen" style="display:none;position:fixed;inset:0;background:#f7f6f2;z-index:300;display:none;flex-direction:column">
+  <!-- Header -->
+  <div style="background:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #eee;flex-shrink:0;padding-top:calc(env(safe-area-inset-top,0px) + 16px)">
+    <button onclick="closeSeeAll()" style="width:34px;height:34px;border-radius:10px;background:#f5f5f0;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+    <div style="font-size:17px;font-weight:800;color:#111">All transactions</div>
+    <div id="sa-count" style="font-size:12px;color:#888;margin-left:auto;background:#f5f5f0;padding:4px 10px;border-radius:20px">0 total</div>
+  </div>
+  <!-- Search -->
+  <div style="padding:10px 14px;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0">
+    <div style="position:relative">
+      <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5">🔍</span>
+      <input id="sa-search" type="text" placeholder="Search transactions..." oninput="renderSeeAll()"
+        style="width:100%;padding:10px 14px 10px 34px;background:#f5f5f0;border:none;border-radius:12px;font-size:14px;font-family:inherit;box-sizing:border-box">
+    </div>
+  </div>
+  <!-- Filter chips -->
+  <div id="sa-filters" style="display:flex;gap:8px;padding:10px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0"></div>
+  <!-- Summary bar -->
+  <div style="display:flex;background:#fff;border-bottom:1px solid #f0f0ec;flex-shrink:0">
+    <div style="flex:1;text-align:center;padding:10px">
+      <div id="sa-total" style="font-size:15px;font-weight:800;color:#c0392b">R0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Total spent</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:10px;border-left:1px solid #eee;border-right:1px solid #eee">
+      <div id="sa-txn-count" style="font-size:15px;font-weight:800;color:#111">0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Transactions</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:10px">
+      <div id="sa-avg" style="font-size:15px;font-weight:800;color:#1a7a4a">R0</div>
+      <div style="font-size:10px;color:#888;font-weight:600">Average</div>
+    </div>
+  </div>
+  <!-- Transaction list grouped by day -->
+  <div id="sa-list" style="overflow-y:auto;flex:1;padding-bottom:40px"></div>
+</div>
+</body>
 </html>
