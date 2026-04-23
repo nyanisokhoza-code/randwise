@@ -2539,12 +2539,15 @@ async function renderDash(){
     else{dsCard.style.background='';dsCard.style.borderColor='';}
   }
 
-  // ── DEBIT ORDERS (expenses tagged as loan/insurance/rent) ──
-  const debitCats=['Loan payment','Insurance','Rent','Electricity','Stokvel'];
-  const debits=me.filter(e=>debitCats.includes(e.category));
-  const debitTotal=debits.reduce((s,e)=>s+Number(e.amount),0);
+  // ── DEBIT ORDERS — stored DOs + debt minimums only (no expense double-counting) ──
+  const storedDOsForCard=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+  const storedDOTotalForCard=storedDOsForCard.reduce((s,d)=>s+Number(d.amount||0),0);
+  const debtMinTotal=(typeof debts!=='undefined'?debts:[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const debitTotal=storedDOTotalForCard+debtMinTotal;
+  const debitCount=storedDOsForCard.length+(typeof debts!=='undefined'?debts:[]).filter(d=>Number(d.min_payment||0)>0).length;
+  const debits=[]; // keep for backward compat
   set('debit-count','R'+debitTotal.toLocaleString('en-ZA'));
-  set('debit-sub',`${debits.length} commitment${debits.length!==1?'s':''} this month`);
+  set('debit-sub',`${debitCount} commitment${debitCount!==1?'s':''} this month`);
   // Warn if payday is in next 5 days and debits are coming
   const today=now.getDate();
   // payDay already declared above
@@ -2612,13 +2615,11 @@ async function renderDash(){
   }
 
   // Debit orders — combine expense-based + locally stored debit orders
-  const storedDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-  const storedDOTotal=storedDOs.reduce((s,d)=>s+Number(d.amount||0),0);
-  const combinedDebitTotal=debitTotal+storedDOTotal;
-  const combinedDebitCount=debits.length+storedDOs.length;
-  set('stat-debits','R'+combinedDebitTotal.toLocaleString('en-ZA'));
+  // debitTotal already includes stored DOs + debt minimums from above
+  set('stat-debits','R'+debitTotal.toLocaleString('en-ZA'));
+  const combinedDebitCount=debitCount;
   const daysToP=Number(user.pay_day||25)>now.getDate()?Number(user.pay_day||25)-now.getDate():new Date(now.getFullYear(),now.getMonth()+1,0).getDate()-now.getDate()+Number(user.pay_day||25);
-  set('stat-debit-label',combinedDebitCount+` commitment${combinedDebitCount!==1?'s':''}${daysToP<=3?' · ⚠️ Payday in '+daysToP+'d':''}`);
+  set('stat-debit-label',debitCount+` commitment${debitCount!==1?'s':''}${daysToP<=3?' · ⚠️ Payday in '+daysToP+'d':''}`);
 
   // Update profile display
   const pdDisplay=document.getElementById('ppayday');
@@ -5570,7 +5571,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-23-v105';
+const APP_VERSION = '2026-04-23-v106';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6300,6 +6301,17 @@ function renderSeeAll(){
       ${rows}
     </div>`;
   }).join('');
+}
+
+function addDebtAsDebitOrder(id, name, amount){
+  const dos=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+  if(dos.find(d=>d.name===name)){showToast('Already added as debit order');return;}
+  dos.push({name, amount:Number(amount), addedFromDebt:true});
+  localStorage.setItem('rw_debit_orders',JSON.stringify(dos));
+  debitOrders=dos;
+  showToast('✅ '+name+' added as debit order');
+  loadDebtsPWA();
+  renderDash();
 }
 </script>
 
