@@ -2682,12 +2682,12 @@ async function saveExp(){
       await refreshTokenIfNeeded();
       const s=await sbP('expenses',d);
       if(s?.message||s?.error){
-        const errMsg=s.message||s.hint||JSON.stringify(s);
+        const errMsg=s.message||s.hint||s.code||JSON.stringify(s);
         sendOwnerAlert('save_failed',{email:user?.email,error:errMsg,tester_id:user?.id});
-        console.error('Expense save error:',errMsg);
-        expenses=expenses.filter(e=>e.id!==tid); // remove optimistic entry
+        console.error('Expense save error:',JSON.stringify(s));
+        expenses=expenses.filter(e=>e.id!==tid);
         renderDash();
-        showToast('⚠️ Could not save — please try again');
+        showToast('❌ ' + errMsg.substring(0,80));
       } else if(s?.[0]){
         expenses=expenses.map(e=>e.id===tid?s[0]:e);
         if(recurring){
@@ -5530,7 +5530,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-22-v98';
+const APP_VERSION = '2026-04-22-v99';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
