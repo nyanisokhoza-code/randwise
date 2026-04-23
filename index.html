@@ -2377,10 +2377,9 @@ async function renderDash(){
   const ms=new Date(now.getFullYear(),now.getMonth(),1);
   const me=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=ms);
   const spent=me.reduce((s,e)=>s+Number(e.amount),0);
-  // sp = spendable = income minus fixed monthly commitments (debit orders + debt minimums + recurring)
-  // This is what's left from salary after all fixed costs - NOT after spending
-  const sp=Math.max(0,disposable); // disposable already = inc - fixed from getSmartWeeklyBudget()
   const {wb,disposable,fixed,breakdown:budgetBreakdown}=getSmartWeeklyBudget();
+  // sp = spendable = income minus fixed monthly commitments (NOT minus all expenses)
+  const sp=Math.max(0,disposable);
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
 
@@ -5571,7 +5570,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-23-v104';
+const APP_VERSION = '2026-04-23-v105';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
