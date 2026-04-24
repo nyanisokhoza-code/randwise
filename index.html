@@ -463,6 +463,55 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- ABOUT MYRANDWISE INTRO -->
+<div id="about-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center">
+  <div id="about-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
+    <!-- Green hero header -->
+    <div style="background:linear-gradient(160deg,#0a3d20 0%,#1a7a4a 55%,#2d9e5f 100%);padding:32px 24px 28px;text-align:center;border-radius:24px 24px 0 0">
+      <div style="font-size:48px;margin-bottom:12px">🌱</div>
+      <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:6px">Welcome to MyRandWise</div>
+      <div style="font-size:14px;color:rgba(255,255,255,.8);line-height:1.6;max-width:280px;margin:0 auto">South Africa's personal finance app — built for our life 🇿🇦</div>
+    </div>
+    <!-- Body -->
+    <div style="padding:24px 24px 8px">
+      <div style="font-size:16px;font-weight:800;color:#1a5c35;margin-bottom:16px">Here's what MyRandWise does for you:</div>
+      <!-- Feature list -->
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px">
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💸</div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Track your spending</div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Log expenses in seconds. See exactly where your money goes each week.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:circle;font-size:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center">🧾</div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Smart weekly budget</div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Your budget is calculated after debit orders, debt payments and monthly needs — not just income ÷ 4.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚡</div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Debt payoff plan</div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">The snowball method shows you exactly which debt to attack first and when you'll be debt-free.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎯</div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Savings goals</div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Set goals — holiday, emergency fund, car — and watch your progress build month by month.</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🤝</div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Stokvel tracker <span style="font-size:11px;background:#534ab7;color:#fff;border-radius:20px;padding:2px 8px;vertical-align:middle">Premium</span></div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Track your stokvel group — who paid, whose turn it is, and total pot each month.</div></div>
+        </div>
+      </div>
+      <!-- Values -->
+      <div style="background:#f7f6f2;border-radius:16px;padding:16px;margin-bottom:24px">
+        <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:8px">Our promise to you</div>
+        <div style="font-size:13px;color:#5f5e5a;line-height:1.7">✅ No ads, ever<br>✅ Your data stays private<br>✅ Built in South Africa, for South Africans<br>✅ Free to start — no card needed</div>
+      </div>
+      <!-- CTA -->
+      <button onclick="closeAbout()" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;font-size:16px;font-weight:800;border:none;border-radius:16px;cursor:pointer;margin-bottom:12px;font-family:inherit">Let's get started 🌱</button>
+      <div style="text-align:center;padding-bottom:32px">
+        <span onclick="closeAbout()" style="font-size:13px;color:#888;cursor:pointer;font-weight:500">Skip intro</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- WHAT'S NEW POPUP -->
 <div id="whats-new-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:flex-end;justify-content:center">
   <div id="whats-new-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 40px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
@@ -1581,6 +1630,8 @@ if('serviceWorker' in navigator){
       <div style="font-size:12px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Left this week</div>
       <div style="font-size:48px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-2px" id="wp-left">R0</div>
       <div style="font-size:13px;color:#5a8a6a;margin-top:6px" id="wp-of-total">of R0 weekly budget</div>
+      <!-- Carry-over badge - hidden by default, shown by JS -->
+      <div id="wp-carryover-badge" style="display:none;margin:8px auto 0;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;width:fit-content;max-width:280px"></div>
       <div style="height:6px;background:#c8e6cf;border-radius:4px;overflow:hidden;margin:12px 24px 0">
         <div id="wp-progress-bar" style="height:100%;background:#1a5c35;border-radius:4px;transition:width .6s ease;width:0%"></div>
       </div>
@@ -2312,6 +2363,7 @@ async function renderDash(){
   setTimeout(loadAINudge, 1500);
   setTimeout(renderInsights, 300);
   setTimeout(checkDebtIntervention, 2000);
+  setTimeout(maybeShowAbout, 1200);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -4017,6 +4069,34 @@ document.addEventListener('click', e=>{
   const overlay = document.getElementById('whats-new-overlay');
   if(e.target === overlay) closeWhatsNew();
 });
+
+// ── About MyRandWise ─────────────────────────────────────────
+function showAbout(){
+  const overlay=document.getElementById('about-overlay');
+  const sheet=document.getElementById('about-sheet');
+  if(!overlay||!sheet)return;
+  overlay.style.display='flex';
+  requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; });
+}
+function closeAbout(){
+  const overlay=document.getElementById('about-overlay');
+  const sheet=document.getElementById('about-sheet');
+  if(sheet) sheet.style.transform='translateY(100%)';
+  setTimeout(()=>{ if(overlay) overlay.style.display='none'; }, 350);
+  localStorage.setItem('rw_about_seen','1');
+}
+// Show About to new users (first login, hasn't seen it)
+function maybeShowAbout(){
+  if(!localStorage.getItem('rw_about_seen')){
+    setTimeout(showAbout, 800);
+  }
+}
+// Close About on backdrop tap
+document.addEventListener('click', e=>{
+  const overlay=document.getElementById('about-overlay');
+  if(e.target===overlay) closeAbout();
+});
+
 const LOCK_KEY='rw_lock_enabled';
 const LOCK_PIN_KEY='rw_lock_pin';
 const LOCK_TIMEOUT=5*60*1000; // 5 minutes
@@ -4563,6 +4643,28 @@ function selectWeek(w){
   renderWeeklyPlanner(w);
 }
 
+function getWeekSpent(weekNum, year, month){
+  // Helper: get total spent for any week number
+  const wStartDay=(weekNum-1)*7+1;
+  const wEndDay=Math.min(weekNum*7, new Date(year,month+1,0).getDate());
+  const wStart=new Date(year,month,wStartDay,0,0,0,0);
+  const wEnd=new Date(year,month,wEndDay,23,59,59,999);
+  return expenses.filter(e=>{const d=new Date(e.logged_at||e.created_at);return d>=wStart&&d<=wEnd;}).reduce((s,e)=>s+Number(e.amount||0),0);
+}
+
+function getWeekCarryover(weekNum, wb, year, month){
+  // Calculate cumulative carry-over from previous weeks
+  // If Week 1 had R400 surplus, Week 2 gets +R400
+  // If Week 1 overspent by R200, Week 2 gets -R200
+  if(weekNum<=1) return 0;
+  let carry=0;
+  for(let w=1;w<weekNum;w++){
+    const spent=getWeekSpent(w, year, month);
+    carry += (wb - spent); // positive = surplus, negative = overspend
+  }
+  return Math.round(carry);
+}
+
 function renderWeeklyPlanner(weekNum){
   if(!user)return;
   const inc=Number(user.income_amount||0);
@@ -4579,6 +4681,10 @@ function renderWeeklyPlanner(weekNum){
   const weekEndDay=Math.min(w*7, new Date(year,month+1,0).getDate());
   const weekStart=new Date(year,month,weekStartDay,0,0,0,0);
   const weekEnd=new Date(year,month,weekEndDay,23,59,59,999);
+
+  // Carry-over from previous weeks
+  const carryover = getWeekCarryover(w, wb, year, month);
+  const effectiveWb = Math.max(0, wb + carryover); // total budget for this week including rollover
 
   // Days left (only relevant for current week)
   const dow=now.getDay();
@@ -4603,8 +4709,8 @@ function renderWeeklyPlanner(weekNum){
     return d>=weekStart&&d<=weekEnd;
   });
   const spent=weekExp.reduce((s,e)=>s+Number(e.amount||0),0);
-  const left=Math.max(0,wb-spent);
-  const pct=wb>0?Math.min(100,Math.round(spent/wb*100)):0;
+  const left=Math.max(0,effectiveWb-spent);
+  const pct=effectiveWb>0?Math.min(100,Math.round(spent/effectiveWb*100)):0;
 
   // Big number
   const wpLeft=document.getElementById('wp-left');
@@ -4612,9 +4718,29 @@ function renderWeeklyPlanner(weekNum){
   const wpBar=document.getElementById('wp-progress-bar');
   const wpSpent=document.getElementById('wp-spent');
   if(wpLeft)wpLeft.textContent='R'+left.toLocaleString('en-ZA');
-  if(wpOf)wpOf.textContent=`of R${wb.toLocaleString('en-ZA')} weekly budget`;
+  // Show carry-over in the "of total" label
+  let ofLabel=`of R${wb.toLocaleString('en-ZA')} weekly budget`;
+  if(carryover>0) ofLabel=`of R${effectiveWb.toLocaleString('en-ZA')} (R${wb.toLocaleString('en-ZA')} + R${carryover.toLocaleString('en-ZA')} rollover)`;
+  else if(carryover<0) ofLabel=`of R${effectiveWb.toLocaleString('en-ZA')} (R${wb.toLocaleString('en-ZA')} − R${Math.abs(carryover).toLocaleString('en-ZA')} overspend)`;
+  if(wpOf)wpOf.textContent=ofLabel;
   if(wpBar){wpBar.style.width=pct+'%';wpBar.style.background=pct>90?'#c62828':pct>70?'#f59e0b':'#1a5c35';}
   if(wpSpent)wpSpent.textContent='R'+Math.round(spent).toLocaleString('en-ZA');
+
+  // Carry-over badge
+  const badge=document.getElementById('wp-carryover-badge');
+  if(badge){
+    if(carryover>0){
+      badge.style.display='block';
+      badge.style.background='#e8f5e9';badge.style.color='#1a5c35';badge.style.border='1px solid #a5d6a7';
+      badge.textContent=`✅ +R${carryover.toLocaleString('en-ZA')} rollover from last week`;
+    } else if(carryover<0){
+      badge.style.display='block';
+      badge.style.background='#fdecea';badge.style.color='#a32d2d';badge.style.border='1px solid #f5c6c6';
+      badge.textContent=`⚠️ −R${Math.abs(carryover).toLocaleString('en-ZA')} overspend from last week`;
+    } else {
+      badge.style.display='none';
+    }
+  }
 
   // Daily left (only for current week)
   const dailyLeft=daysLeft>0?Math.round(left/daysLeft):0;
@@ -4623,7 +4749,7 @@ function renderWeeklyPlanner(weekNum){
   if(wpDailyLeft)wpDailyLeft.textContent=daysLeft>0?'R'+dailyLeft.toLocaleString('en-ZA'):'R0';
   if(wpDaysRem)wpDaysRem.textContent=w<currentWeek?'week complete':w>currentWeek?'week not started yet':daysLeft<=1?'for today':`for each of the next ${daysLeft} days`;
 
-  // Daily dots — show 7 days of selected week
+  // Daily dots — use effectiveWb for limit
   const DAYS=['M','T','W','T','F','Sa','Su'];
   const dailySpends=[0,0,0,0,0,0,0];
   weekExp.forEach(e=>{
@@ -4632,7 +4758,7 @@ function renderWeeklyPlanner(weekNum){
     if(di>=0&&di<7)dailySpends[di]+=Number(e.amount||0);
   });
   const todayIdx=w===currentWeek?mon:w<currentWeek?6:-1;
-  const dailyLimit=wb/7;
+  const dailyLimit=effectiveWb/7;
   const dotsEl=document.getElementById('wp-daily-dots');
   if(dotsEl){
     dotsEl.innerHTML=DAYS.map((d,i)=>{
@@ -4681,7 +4807,12 @@ function renderWeeklyPlanner(weekNum){
   if(rollEl&&rollText){
     if(w===currentWeek&&left>200&&daysLeft<=3){
       rollEl.style.display='block';
-      rollText.textContent=`You have R${Math.round(left).toLocaleString('en-ZA')} left this week. Save R${Math.round(left/2).toLocaleString('en-ZA')} and roll it into next week's budget for a head start.`;
+      rollText.textContent=`You have R${Math.round(left).toLocaleString('en-ZA')} left. Any amount not spent this week automatically rolls over to Week ${w<4?w+1:1}'s budget — so don't rush to spend it!`;
+    } else if(w<currentWeek&&carryover!==0){
+      rollEl.style.display='block';
+      rollText.textContent=carryover>0
+        ? `This week's R${Math.abs(carryover).toLocaleString('en-ZA')} surplus was rolled over to the following week.`
+        : `This week's R${Math.abs(carryover).toLocaleString('en-ZA')} overspend was deducted from the following week.`;
     } else {
       rollEl.style.display='none';
     }
@@ -5630,7 +5761,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v108';
+const APP_VERSION = '2026-04-24-v109';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
