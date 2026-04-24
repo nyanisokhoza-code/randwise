@@ -1,4 +1,4 @@
-const CACHE='rw-v86';
+const CACHE='rw-v117';
 const STATIC=['./manifest.json','./icon_192.png','./icon_512.png'];
 
 self.addEventListener('install',e=>{
@@ -36,3 +36,45 @@ self.addEventListener('fetch',e=>{
     })
   );
 });
+
+// ── Push Notifications ────────────────────────────────────────
+self.addEventListener('push',e=>{
+  let data={title:'MyRandWise 🌱',body:'You have a new update.',icon:'./icon_192.png',badge:'./icon_192.png',tag:'myrandwise-push',url:'./'};
+  try{
+    if(e.data) Object.assign(data, e.data.json());
+  }catch{}
+  e.waitUntil(
+    self.registration.showNotification(data.title,{
+      body: data.body,
+      icon: data.icon||'./icon_192.png',
+      badge: data.badge||'./icon_192.png',
+      tag: data.tag||'myrandwise-push',
+      renotify: true,
+      data:{ url: data.url||'./' },
+      actions:[
+        {action:'open', title:'Open app'},
+        {action:'dismiss', title:'Dismiss'}
+      ]
+    })
+  );
+});
+
+// Handle notification click — open the app
+self.addEventListener('notificationclick',e=>{
+  e.notification.close();
+  if(e.action==='dismiss') return;
+  const url=e.notification.data?.url||'./';
+  e.waitUntil(
+    clients.matchAll({type:'window',includeUncontrolled:true}).then(windowClients=>{
+      // If app already open, focus it
+      for(const client of windowClients){
+        if(client.url.includes('randwise')&&'focus' in client){
+          return client.focus();
+        }
+      }
+      // Otherwise open a new window
+      if(clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});
+

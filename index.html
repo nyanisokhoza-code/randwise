@@ -467,26 +467,52 @@ if('serviceWorker' in navigator){
 <div id="checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px">
     <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:36px;margin-bottom:12px">🌱</div>
-      <div style="font-size:20px;font-weight:900;color:#111;margin-bottom:8px">Quick monthly check-in</div>
-      <div style="font-size:14px;color:#888;line-height:1.5">How are you feeling about your finances compared to last month?</div>
+    <!-- Step 1: How are you feeling -->
+    <div id="checkin-step1">
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="font-size:36px;margin-bottom:12px">🌱</div>
+        <div style="font-size:20px;font-weight:900;color:#111;margin-bottom:8px">Quick monthly check-in</div>
+        <div style="font-size:14px;color:#888;line-height:1.5">How are you feeling about your finances compared to last month?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+        <button onclick="submitCheckin('better')" style="padding:16px;background:#eaf3de;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+          <span style="font-size:24px">😊</span>
+          <div><div>Better than last month</div><div style="font-size:12px;font-weight:400;color:#5a8a6a;margin-top:2px">I'm making progress</div></div>
+        </button>
+        <button onclick="submitCheckin('same')" style="padding:16px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+          <span style="font-size:24px">😐</span>
+          <div><div>About the same</div><div style="font-size:12px;font-weight:400;color:#888;margin-top:2px">Holding steady</div></div>
+        </button>
+        <button onclick="submitCheckin('worse')" style="padding:16px;background:#fdecea;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#a32d2d;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+          <span style="font-size:24px">😔</span>
+          <div><div>Harder than last month</div><div style="font-size:12px;font-weight:400;color:#c46060;margin-top:2px">Things are tough right now</div></div>
+        </button>
+      </div>
+      <button onclick="skipCheckin()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Skip for now</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-      <button onclick="submitCheckin('better')" style="padding:16px;background:#eaf3de;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
-        <span style="font-size:24px">😊</span>
-        <div><div>Better than last month</div><div style="font-size:12px;font-weight:400;color:#5a8a6a;margin-top:2px">I'm making progress</div></div>
-      </button>
-      <button onclick="submitCheckin('same')" style="padding:16px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
-        <span style="font-size:24px">😐</span>
-        <div><div>About the same</div><div style="font-size:12px;font-weight:400;color:#888;margin-top:2px">Holding steady</div></div>
-      </button>
-      <button onclick="submitCheckin('worse')" style="padding:16px;background:#fdecea;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#a32d2d;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
-        <span style="font-size:24px">😔</span>
-        <div><div>Harder than last month</div><div style="font-size:12px;font-weight:400;color:#c46060;margin-top:2px">Things are tough right now</div></div>
-      </button>
+    <!-- Step 2: Why worse (hidden until needed) -->
+    <div id="checkin-step2" style="display:none">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:10px">💚</div>
+        <div style="font-size:18px;font-weight:900;color:#111;margin-bottom:8px">We hear you</div>
+        <div style="font-size:14px;color:#888;line-height:1.5">What's making it harder? This helps us help you better.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+        <button onclick="submitWorseReason('unexpected')" style="padding:14px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:14px;font-weight:600;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit">
+          <span style="font-size:20px">💸</span> Unexpected expenses came up
+        </button>
+        <button onclick="submitWorseReason('income')" style="padding:14px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:14px;font-weight:600;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit">
+          <span style="font-size:20px">📉</span> My income was less than usual
+        </button>
+        <button onclick="submitWorseReason('debt')" style="padding:14px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:14px;font-weight:600;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit">
+          <span style="font-size:20px">😰</span> My debt feels overwhelming
+        </button>
+        <button onclick="submitWorseReason('overspent')" style="padding:14px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:14px;font-weight:600;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;font-family:inherit">
+          <span style="font-size:20px">🛒</span> I overspent on things I didn't need
+        </button>
+      </div>
+      <button onclick="skipWorseReason()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Prefer not to say</button>
     </div>
-    <button onclick="skipCheckin()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Skip for now</button>
   </div>
 </div>
 
@@ -1106,13 +1132,12 @@ if('serviceWorker' in navigator){
         <!-- Story consent -->
         <div style="background:#f7f6f2;border-radius:14px;padding:16px;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:#2c2c2a;margin-bottom:6px">🌱 Share your story</div>
-          <div style="font-size:12px;color:#888780;line-height:1.5;margin-bottom:12px">Would you be willing to share your MyRandWise journey to inspire other South Africans? We'll never share your salary or personal details — only your situation and results with your permission.</div>
+          <div style="font-size:12px;color:#888780;line-height:1.5;margin-bottom:12px">Would you be willing to share your MyRandWise journey to inspire other South Africans? We'll never share your salary or personal details.</div>
           <div style="display:flex;justify-content:space-between;align-items:center">
             <div style="font-size:13px;font-weight:600;color:#2c2c2a" id="story-consent-label">Not sharing yet</div>
             <div class="tog" id="story-consent-toggle" onclick="toggleStoryConsent()" style="background:#ccc"></div>
           </div>
         </div>
-
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
       </div>
     </div>
@@ -2889,7 +2914,7 @@ function switchTab(t){
   }
   if(t==='debt')loadDebtsPWA();
   if(t==='grow'){loadGoalsPWA();loadStokvelList();}
-  if(t==='profile'){updateBondPreview();initLock();initPushToggle();initStoryConsent();}
+  if(t==='profile'){updateBondPreview();initLock();initPushToggle();}
   if(t==='import')initImportTab();
 }
 
@@ -6129,7 +6154,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v116';
+const APP_VERSION = '2026-04-24-v117';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6843,15 +6868,19 @@ function saveCustomCat(){
 
 function loadCustomCats(){
   const saved=JSON.parse(localStorage.getItem('rw_custom_cats')||'[]');
-  // Deduplicate by id before loading
+  // Deduplicate by both id AND name (catches old Date.now() id duplicates)
   const seen=new Set();
-  const deduped=saved.filter(c=>{ if(seen.has(c.id)) return false; seen.add(c.id); return true; });
+  const seenNames=new Set();
+  const deduped=saved.filter(c=>{
+    const nameKey=c.l?.toLowerCase();
+    if(seen.has(c.id)||seenNames.has(nameKey)) return false;
+    seen.add(c.id); seenNames.add(nameKey); return true;
+  });
   if(deduped.length!==saved.length){
-    // Clean up duplicates in storage
     localStorage.setItem('rw_custom_cats',JSON.stringify(deduped));
   }
   deduped.forEach(c=>{
-    if(!CATS.find(x=>x.id===c.id)) CATS.push(c);
+    if(!CATS.find(x=>x.id===c.id||x.l?.toLowerCase()===c.l?.toLowerCase())) CATS.push(c);
   });
 }
 
@@ -6984,80 +7013,219 @@ function closeMonthlySummary(){
 }
 
 // ── Monthly Check-in ──────────────────────────────────────────
+const VAPID_PUBLIC_KEY = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U';
+
 function maybeShowCheckin(){
   if(!user?.id) return;
   const now=new Date();
   const monthKey=`rw_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
-  // Show once per month, on or after the 2nd
   if(now.getDate() < 2) return;
-  if(localStorage.getItem(monthKey)) return; // already answered this month
-  // Don't show same day as other popups
+  if(localStorage.getItem(monthKey)) return;
+  // Retry logic — if they skipped "why" 2 days ago, ask again once
+  const skippedWhy=localStorage.getItem('rw_checkin_skipped_why');
+  if(skippedWhy){
+    const skippedDaysAgo=(Date.now()-Number(skippedWhy))/86400000;
+    if(skippedDaysAgo < 2) return; // wait 2 days
+    if(skippedDaysAgo > 5) { localStorage.removeItem('rw_checkin_skipped_why'); return; } // gave up after 5 days
+    // Show step 2 directly (retry asking why)
+    const ov=document.getElementById('checkin-overlay');
+    if(ov){
+      document.getElementById('checkin-step1').style.display='none';
+      document.getElementById('checkin-step2').style.display='block';
+      ov.style.display='flex';
+    }
+    return;
+  }
   const lastPopup=localStorage.getItem('rw_last_popup');
-  if(lastPopup && (Date.now()-Number(lastPopup)) < 86400000) return;
+  if(lastPopup&&(Date.now()-Number(lastPopup))<86400000) return;
   setTimeout(()=>{
     const ov=document.getElementById('checkin-overlay');
-    if(ov) ov.style.display='flex';
-  }, 3000);
+    if(ov){
+      document.getElementById('checkin-step1').style.display='block';
+      document.getElementById('checkin-step2').style.display='none';
+      ov.style.display='flex';
+    }
+  },3500);
 }
 
 async function submitCheckin(feeling){
+  if(feeling==='worse'){
+    // Show step 2 — ask why
+    document.getElementById('checkin-step1').style.display='none';
+    document.getElementById('checkin-step2').style.display='block';
+    // Save the "worse" feeling now, reason comes next
+    window._pendingCheckinFeeling='worse';
+    return;
+  }
+  await _saveCheckin(feeling, null);
   const ov=document.getElementById('checkin-overlay');
   if(ov) ov.style.display='none';
-  const now=new Date();
-  const monthKey=`rw_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
-  localStorage.setItem(monthKey, feeling);
   localStorage.setItem('rw_last_popup', Date.now().toString());
-  // Save to Supabase
-  if(user?.id){
-    try{
-      await sbP('monthly_checkins', {
-        tester_id: user.id,
-        feeling,
-        month: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
-      });
-    }catch(e){ console.warn('Check-in save failed:', e); }
-  }
-  // Respond based on feeling
-  if(feeling==='better'){
-    showToast('🌱 That\'s great to hear! Keep going.');
-  } else if(feeling==='worse'){
-    showToast('💚 We\'re here to help. Check your debt plan.');
-    setTimeout(()=>switchTab('debt'), 1500);
-  } else {
-    showToast('👍 Steady progress is still progress.');
-  }
+  if(feeling==='better') showToast('🌱 Great to hear! Keep going.');
+  else showToast('👍 Steady progress is still progress.');
 }
 
-function skipCheckin(){
+async function submitWorseReason(reason){
+  await _saveCheckin('worse', reason);
   const ov=document.getElementById('checkin-overlay');
   if(ov) ov.style.display='none';
+  localStorage.removeItem('rw_checkin_skipped_why');
   localStorage.setItem('rw_last_popup', Date.now().toString());
+  // Personalised response based on reason
+  const responses={
+    unexpected:'💚 Unexpected expenses happen. Check your weekly budget to recover.',
+    income:'💚 Variable income is hard. Your snowball plan still works — even at minimum payments.',
+    debt:'💚 Debt can feel heavy. Open your Debt tab — your payoff plan is still on track.',
+    overspent:'💚 It happens. Next week is a fresh start. Your budget resets Monday.'
+  };
+  showToast(responses[reason]||'💚 Thank you for sharing. We\'re here to help.');
+  if(reason==='debt') setTimeout(()=>switchTab('debt'),1500);
+  // Send alert to owner
+  sendOwnerAlert(`Check-in: ${user?.name||'A user'} is feeling worse this month. Reason: ${reason}. Consider reaching out.`,'moderate');
+}
+
+async function skipWorseReason(){
+  // Record that they skipped — retry in 2 days
+  await _saveCheckin('worse', 'skipped');
+  localStorage.setItem('rw_checkin_skipped_why', Date.now().toString());
+  localStorage.setItem('rw_last_popup', Date.now().toString());
+  const ov=document.getElementById('checkin-overlay');
+  if(ov) ov.style.display='none';
+  showToast('💚 No worries. We\'ll check in again soon.');
+  // Still alert owner
+  sendOwnerAlert(`Check-in: ${user?.name||'A user'} is feeling worse this month but skipped the reason. Consider reaching out personally.`,'moderate');
+}
+
+async function skipCheckin(){
+  // Record skip — retry in 2 days
+  localStorage.setItem('rw_checkin_skipped_why', Date.now().toString());
+  localStorage.setItem('rw_last_popup', Date.now().toString());
+  const ov=document.getElementById('checkin-overlay');
+  if(ov) ov.style.display='none';
+}
+
+async function _saveCheckin(feeling, reason){
+  const now=new Date();
+  const monthKey=`rw_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+  localStorage.setItem(monthKey, feeling+(reason?':'+reason:''));
+  if(user?.id){
+    try{
+      await sbP('monthly_checkins',{
+        tester_id:user.id,
+        feeling,
+        reason: reason||null,
+        month:`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
+      });
+    }catch(e){console.warn('Check-in save failed:',e);}
+  }
 }
 
 // ── Story Consent ─────────────────────────────────────────────
 async function toggleStoryConsent(){
   if(!user?.id) return;
-  const current = user.story_consent || false;
-  const newVal = !current;
-  user.story_consent = newVal;
-  localStorage.setItem('rw_user', JSON.stringify(user));
-  // Update Supabase
+  const current=user.story_consent||false;
+  const newVal=!current;
+  user.story_consent=newVal;
+  localStorage.setItem('rw_user',JSON.stringify(user));
   try{
-    await sbPatch(`beta_testers?id=eq.${user.id}`, {
-      story_consent: newVal,
-      story_consent_at: newVal ? new Date().toISOString() : null
+    await sbPatch(`beta_testers?id=eq.${user.id}`,{
+      story_consent:newVal,
+      story_consent_at:newVal?new Date().toISOString():null
     });
-  }catch(e){ console.warn('Story consent save failed:', e); }
+  }catch(e){console.warn('Story consent save failed:',e);}
   initStoryConsent();
-  showToast(newVal ? '🌱 Thank you — your story can inspire others' : 'Story sharing turned off');
+  showToast(newVal?'🌱 Thank you — your story can inspire others':'Story sharing turned off');
 }
 
 function initStoryConsent(){
   const tog=document.getElementById('story-consent-toggle');
   const label=document.getElementById('story-consent-label');
   const on=user?.story_consent===true;
-  if(tog){ tog.style.background=on?'#1a7a4a':'#ccc'; }
-  if(label){ label.textContent=on?'✅ Happy to share my story':'Not sharing yet'; }
+  if(tog) tog.style.background=on?'#1a7a4a':'#ccc';
+  if(label) label.textContent=on?'✅ Happy to share my story':'Not sharing yet';
+}
+
+// ── Monthly Needs Supabase Sync ───────────────────────────────
+async function loadMonthlyNeedsFromSupabase(){
+  if(!user?.id) return;
+  try{
+    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs`);
+    const dbNeeds=rows?.[0]?.monthly_needs;
+    if(dbNeeds&&typeof dbNeeds==='object'){
+      if(dbNeeds.preset&&Object.keys(dbNeeds.preset).length>0){
+        localStorage.setItem('rw_monthly_needs',JSON.stringify(dbNeeds.preset));
+        localStorage.setItem('rw_needs_setup_done','1');
+      }
+      if(dbNeeds.custom&&dbNeeds.custom.length>0){
+        localStorage.setItem('rw_monthly_needs_custom',JSON.stringify(dbNeeds.custom));
+      }
+    } else {
+      const localNeeds=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+      const localCustom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+      if(Object.keys(localNeeds).length>0){
+        await sbPatch(`beta_testers?id=eq.${user.id}`,{
+          monthly_needs:{preset:localNeeds,custom:localCustom}
+        }).catch(()=>{});
+      }
+    }
+  }catch(e){console.warn('Could not load monthly needs from Supabase:',e);}
+}
+
+// ── Push Notifications (Web Push / VAPID) ─────────────────────
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
+
+async function requestPushPermission(){
+  if(!('Notification' in window)||!('serviceWorker' in navigator)){
+    showToast('Push notifications not supported on this browser');
+    return false;
+  }
+  const permission=await Notification.requestPermission();
+  if(permission!=='granted'){
+    showToast('Notifications blocked — enable in browser settings');
+    return false;
+  }
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    // Save subscription to Supabase
+    if(user?.id){
+      await sbPatch(`beta_testers?id=eq.${user.id}`,{
+        push_subscription:JSON.stringify(sub)
+      }).catch(()=>{});
+    }
+    localStorage.setItem('rw_push_subscribed','1');
+    showToast('🔔 Push notifications enabled');
+    return true;
+  }catch(e){
+    console.warn('Push subscription failed:',e);
+    showToast('Could not enable push notifications');
+    return false;
+  }
+}
+
+function initPushToggle(){
+  const tog=document.getElementById('push-toggle');
+  if(!tog) return;
+  const on=localStorage.getItem('rw_push_subscribed')==='1'||Notification.permission==='granted';
+  tog.style.background=on?'#1a7a4a':'#ccc';
+  tog.onclick=async()=>{
+    if(on){
+      localStorage.removeItem('rw_push_subscribed');
+      tog.style.background='#ccc';
+      showToast('Push notifications off');
+    } else {
+      await requestPushPermission();
+      initPushToggle();
+    }
+  };
 }
 
 
