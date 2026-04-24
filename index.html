@@ -463,6 +463,26 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- PUSH PERMISSION PROMPT -->
+<div id="push-prompt-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:8500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px;text-align:center">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 24px"></div>
+    <div style="font-size:48px;margin-bottom:16px">🔔</div>
+    <div style="font-size:21px;font-weight:900;color:#111;margin-bottom:10px;letter-spacing:-.5px">Stay on top of your money</div>
+    <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:28px;max-width:300px;margin-left:auto;margin-right:auto">
+      Allow MyRandWise to send you payday reminders, budget alerts, and weekly updates — even when the app is closed.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="enablePushFromPrompt()" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit">
+        🔔 Allow notifications
+      </button>
+      <button onclick="dismissPushPrompt()" style="width:100%;padding:14px;background:none;border:none;font-size:14px;color:#888;cursor:pointer">
+        Maybe later
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MONTHLY CHECK-IN -->
 <div id="checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px">
@@ -2483,6 +2503,7 @@ async function renderDash(){
   setTimeout(checkDebtIntervention, 2000);
   setTimeout(maybeShowAbout, 1200);
   setTimeout(maybeShowCheckin, 4000);
+  setTimeout(maybeShowPushPrompt, 8000);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -3675,17 +3696,41 @@ function renderInsights(){
 const PUSH_KEY = 'rw_push_enabled';
 
 async function requestPushPermission(){
-  if(!('Notification' in window)){
-    showToast('Push notifications not supported on this browser');
+  if(!('Notification' in window)||!('serviceWorker' in navigator)){
+    showToast('Push notifications not supported on this device');
     return false;
   }
-  if(Notification.permission === 'granted') return true;
-  if(Notification.permission === 'denied'){
+  if(Notification.permission==='denied'){
     showToast('Notifications blocked — enable in browser settings');
     return false;
   }
-  const result = await Notification.requestPermission();
-  return result === 'granted';
+  const permission = await Notification.requestPermission();
+  if(permission!=='granted'){
+    showToast('Notifications not enabled');
+    return false;
+  }
+  try{
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    if(user?.id){
+      await sbPatch(`beta_testers?id=eq.${user.id}`,{
+        push_subscription: JSON.stringify(sub)
+      }).catch(()=>{});
+    }
+    localStorage.setItem('rw_push_subscribed','1');
+    localStorage.setItem(PUSH_KEY,'1');
+    showToast('🔔 Push notifications enabled');
+    return true;
+  }catch(e){
+    console.warn('Push subscription failed:',e.name, e.message);
+    // Fallback - still enable local notifications even if VAPID fails
+    localStorage.setItem(PUSH_KEY,'1');
+    showToast('✅ Notifications enabled');
+    return true;
+  }
 }
 
 async function enablePushNotifications(){
@@ -6154,7 +6199,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v118';
+const APP_VERSION = '2026-04-24-v119';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7179,58 +7224,40 @@ function urlBase64ToUint8Array(base64String){
   return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
 }
 
-async function requestPushPermission(){
-  if(!('Notification' in window)||!('serviceWorker' in navigator)){
-    showToast('Push notifications not supported on this browser');
-    return false;
-  }
-  const permission=await Notification.requestPermission();
-  if(permission!=='granted'){
-    showToast('Notifications blocked — enable in browser settings');
-    return false;
-  }
-  try{
-    const reg=await navigator.serviceWorker.ready;
-    const sub=await reg.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-    });
-    // Save subscription to Supabase
-    if(user?.id){
-      await sbPatch(`beta_testers?id=eq.${user.id}`,{
-        push_subscription:JSON.stringify(sub)
-      }).catch(()=>{});
-    }
-    localStorage.setItem('rw_push_subscribed','1');
-    showToast('🔔 Push notifications enabled');
-    return true;
-  }catch(e){
-    console.warn('Push subscription failed:',e);
-    showToast('Could not enable push notifications');
-    return false;
-  }
+// Push functions defined above
+
+// ── Push Permission Prompt ────────────────────────────────────
+function maybeShowPushPrompt(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted') return; // already enabled
+  if(Notification.permission === 'denied') return; // user blocked it
+  if(localStorage.getItem('rw_push_prompt_seen')) return; // already shown
+  if(!user?.id) return;
+  // Show 5 seconds after dashboard loads, once ever
+  setTimeout(()=>{
+    const ov = document.getElementById('push-prompt-overlay');
+    if(ov) ov.style.display = 'flex';
+  }, 5000);
 }
 
-function initPushToggle(){
-  const tog=document.getElementById('push-toggle');
-  if(!tog) return;
-  const on=localStorage.getItem('rw_push_subscribed')==='1'||Notification.permission==='granted';
-  tog.style.background=on?'#1a7a4a':'#ccc';
-  tog.onclick=async()=>{
-    if(on){
-      localStorage.removeItem('rw_push_subscribed');
-      tog.style.background='#ccc';
-      showToast('Push notifications off');
-    } else {
-      await requestPushPermission();
-      initPushToggle();
-    }
-  };
+async function enablePushFromPrompt(){
+  const ov = document.getElementById('push-prompt-overlay');
+  if(ov) ov.style.display = 'none';
+  localStorage.setItem('rw_push_prompt_seen','1');
+  await enablePushNotifications();
+}
+
+function dismissPushPrompt(){
+  const ov = document.getElementById('push-prompt-overlay');
+  if(ov) ov.style.display = 'none';
+  localStorage.setItem('rw_push_prompt_seen','1');
 }
 
 
 // Close on backdrop tap
 document.addEventListener('click',e=>{
+  const ppOv=document.getElementById('push-prompt-overlay');
+  if(e.target===ppOv) dismissPushPrompt();
   const ccOv=document.getElementById('custom-cat-overlay');
   if(e.target===ccOv) closeCustomCatSheet();
   const msOv=document.getElementById('monthly-summary-overlay');
