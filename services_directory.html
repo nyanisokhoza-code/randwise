@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyRandWise — Services Directory</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --forest: #0d1f14;
+    --green: #1a5c35;
+    --mid: #2e7d32;
+    --lime: #4caf50;
+    --gold: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --orange: #f97316;
+    --text: #e8f5e9;
+    --muted: #6b9c75;
+    --card: #152b1e;
+    --border: #1e3a27;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--forest);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* PASSWORD GATE */
+  #gate {
+    position: fixed; inset: 0;
+    background: var(--forest);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    flex-direction: column; gap: 20px;
+  }
+  #gate .logo { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--text); }
+  #gate .logo span { color: #4caf50; }
+  #gate input {
+    background: var(--card); border: 1.5px solid var(--border);
+    color: var(--text); padding: 14px 20px; border-radius: 12px;
+    font-size: 15px; width: 280px; outline: none; text-align: center;
+    letter-spacing: 4px;
+  }
+  #gate input:focus { border-color: var(--lime); }
+  #gate button {
+    background: var(--green); color: #fff; border: none;
+    padding: 14px 32px; border-radius: 12px; font-size: 15px;
+    font-weight: 600; cursor: pointer; width: 280px;
+  }
+  #gate .err { color: #ef4444; font-size: 13px; display: none; }
+
+  /* MAIN */
+  #app { display: none; }
+
+  header {
+    background: linear-gradient(135deg, var(--forest) 0%, #1a3a22 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .hlogo { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+  .hlogo span { color: #4caf50; }
+  .htag { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .hbadge {
+    background: var(--card); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; color: var(--muted);
+  }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .page-sub { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 48px;
+  }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+  }
+  .stat-num { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--lime); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  /* SECTION */
+  .section { margin-bottom: 48px; }
+  .section-title {
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    color: var(--muted); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* SERVICE CARD */
+  .services-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .svc-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 24px;
+    transition: border-color .2s, transform .2s;
+    position: relative; overflow: hidden;
+  }
+  .svc-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 20px 20px 0 0;
+  }
+  .svc-card:hover { border-color: var(--mid); transform: translateY(-2px); }
+
+  .svc-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .svc-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .svc-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; }
+  .svc-category { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 1px; }
+
+  .svc-purpose {
+    font-size: 13px; color: #a5c9aa; line-height: 1.6; margin-bottom: 14px;
+  }
+
+  .svc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag {
+    background: rgba(255,255,255,.06); border: 1px solid var(--border);
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; color: var(--muted);
+  }
+
+  .svc-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--border);
+  }
+  .svc-cost { font-size: 13px; font-weight: 600; }
+  .svc-status {
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; letter-spacing: .5px;
+  }
+  .status-live { background: rgba(76,175,80,.15); color: #4caf50; }
+  .status-pending { background: rgba(245,158,11,.15); color: #f59e0b; }
+  .status-waiting { background: rgba(239,68,68,.15); color: #ef4444; }
+  .status-free { background: rgba(59,130,246,.15); color: #3b82f6; }
+
+  .svc-link {
+    display: block; margin-top: 12px;
+    color: var(--muted); font-size: 12px; text-decoration: none;
+    padding: 8px 14px; background: rgba(255,255,255,.04);
+    border-radius: 8px; border: 1px solid var(--border);
+    transition: color .2s, background .2s;
+  }
+  .svc-link:hover { color: var(--lime); background: rgba(76,175,80,.08); }
+
+  /* CREDENTIALS TABLE */
+  .creds-table {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .creds-table table { width: 100%; border-collapse: collapse; }
+  .creds-table th {
+    background: rgba(255,255,255,.04); padding: 12px 20px;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .creds-table td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .creds-table tr:last-child td { border-bottom: none; }
+  .creds-table tr:hover td { background: rgba(255,255,255,.02); }
+  .masked { font-family: monospace; color: var(--muted); letter-spacing: 2px; }
+  .reveal-btn {
+    background: none; border: none; color: var(--lime);
+    font-size: 11px; cursor: pointer; padding: 2px 6px;
+    border-radius: 4px; transition: background .2s;
+  }
+  .reveal-btn:hover { background: rgba(76,175,80,.1); }
+
+  /* MONTHLY COSTS */
+  .cost-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .cost-row:last-child { border-bottom: none; }
+  .cost-name { color: var(--text); }
+  .cost-amt { font-weight: 700; color: var(--lime); }
+  .cost-total {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; background: rgba(76,175,80,.08);
+    font-weight: 700; font-size: 14px;
+    border-top: 2px solid var(--lime);
+  }
+
+  /* COLOUR ACCENTS PER CARD */
+  .accent-green::before { background: #4caf50; }
+  .accent-gold::before { background: #f59e0b; }
+  .accent-blue::before { background: #3b82f6; }
+  .accent-purple::before { background: #8b5cf6; }
+  .accent-orange::before { background: #f97316; }
+  .accent-red::before { background: #ef4444; }
+  .accent-teal::before { background: #14b8a6; }
+  .accent-pink::before { background: #ec4899; }
+
+  @media(max-width:600px){
+    .stats-row { grid-template-columns: repeat(2,1fr); }
+    .services-grid { grid-template-columns: 1fr; }
+    header { padding: 16px 20px; }
+    main { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate">
+  <div>
+    <div class="logo">My<span>RandWise</span></div>
+    <div style="font-size:13px;color:#6b9c75;text-align:center;margin-top:4px;">Services Directory</div>
+  </div>
+  <input type="password" id="pin-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPin()">
+  <button onclick="checkPin()">Unlock →</button>
+  <div class="err" id="pin-err">Incorrect password</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div>
+      <div class="hlogo">My<span>RandWise</span></div>
+      <div class="htag">Services &amp; Infrastructure Directory</div>
+    </div>
+    <div class="hbadge">🔒 Confidential — NDA Required</div>
+  </header>
+
+  <main>
+    <div class="page-title">Services Directory</div>
+    <div class="page-sub">Every service, tool and platform powering MyRandWise — what it does, why we use it, what it costs.</div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Active services</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">R1,168</div>
+        <div class="stat-label">Monthly cost</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">7</div>
+        <div class="stat-label">Live ✅</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Pending ⏳</div>
+      </div>
+    </div>
+
+    <!-- HOSTING & INFRASTRUCTURE -->
+    <div class="section">
+      <div class="section-title">🏗 Hosting &amp; Infrastructure</div>
+      <div class="services-grid">
+
+        <div class="svc-card accent-purple">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(139,92,246,.15)">🐙</div>
+            <div>
+              <div class="svc-name">GitHub Pages</div>
+              <div class="svc-category">Web Hosting</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Hosts the entire MyRandWise PWA (index.html, sw.js, manifest.json and all HTML pages). Every git push automatically deploys to the live URL within ~2 minutes. Free, reliable, no servers to manage.</div>
+          <div class="svc-tags">
+            <span class="tag">PWA hosting</span>
+            <span class="tag">Auto-deploy</span>
+            <span class="tag">CDN</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost" style="color:#4caf50">FREE</div>
+            <div class="svc-status status-live">✅ LIVE</div>
+          </div>
+          <a href="https://github.com/nyanisokhoza-code/randwise" target="_blank" class="svc-link">github.com/nyanisokhoza-code/randwise →</a>
+        </div>
+
+        <div class="svc-card accent-green">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(76,175,80,.15)">⚡</div>
+            <div>
+              <div class="svc-name">Supabase</div>
+              <div class="svc-category">Backend / Database / Auth</div>
+            </div>
+          </div>
+          <div class="svc-purpose">The entire backend of MyRandWise. Stores all user data (expenses, debts, savings goals, beta testers). Handles authentication (login, register, password reset). Runs Edge Functions (bank parser, email alerts, AI nudges). Free tier is very generous.</div>
+          <div class="svc-tags">
+            <span class="tag">PostgreSQL database</span>
+            <span class="tag">Auth</span>
+            <span class="tag">Edge Functions</span>
+            <span class="tag">REST API</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost" style="color:#4caf50">FREE tier</div>
+            <div class="svc-status status-live">✅ LIVE</div>
+          </div>
+          <a href="https://supabase.com/dashboard/project/mmezkseblafurjolkfkt" target="_blank" class="svc-link">supabase.com dashboard →</a>
+        </div>
+
+        <div class="svc-card accent-blue">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(59,130,246,.15)">🌐</div>
+            <div>
+              <div class="svc-name">domains.co.za</div>
+              <div class="svc-category">Domain Registrar</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Registered and manages myrandwise.co.za. All DNS records (Resend email verification, SPF, DMARC) are managed here. Domain protection enabled — hides personal info from WHOIS lookups and prevents hijacking.</div>
+          <div class="svc-tags">
+            <span class="tag">myrandwise.co.za</span>
+            <span class="tag">DNS management</span>
+            <span class="tag">Domain protection</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost">R168/yr</div>
+            <div class="svc-status status-live">✅ LIVE</div>
+          </div>
+          <a href="https://domains.co.za" target="_blank" class="svc-link">domains.co.za →</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="section">
+      <div class="section-title">📧 Email</div>
+      <div class="services-grid">
+
+        <div class="svc-card accent-gold">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(245,158,11,.15)">✉️</div>
+            <div>
+              <div class="svc-name">Resend</div>
+              <div class="svc-category">Transactional Email</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Sends ALL automated emails from the app — password resets, email verification, owner alerts (new users, bug reports, upgrades). Uses our verified domain noreply@myrandwise.co.za so emails land in inbox, not spam. Connected to Supabase Auth via custom SMTP.</div>
+          <div class="svc-tags">
+            <span class="tag">noreply@myrandwise.co.za</span>
+            <span class="tag">Password reset</span>
+            <span class="tag">Owner alerts</span>
+            <span class="tag">Email verification</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost" style="color:#4caf50">FREE (3,000/mo)</div>
+            <div class="svc-status status-live">✅ LIVE</div>
+          </div>
+          <a href="https://resend.com/emails" target="_blank" class="svc-link">resend.com dashboard →</a>
+        </div>
+
+        <div class="svc-card accent-blue">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(59,130,246,.15)">📬</div>
+            <div>
+              <div class="svc-name">Zoho Mail</div>
+              <div class="svc-category">Business Email</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Provides real email addresses at myrandwise.co.za — support@myrandwise.co.za for user inquiries, nyaniso@myrandwise.co.za for founder communications. Free for up to 5 users. Accessed like Gmail at mail.zoho.com.</div>
+          <div class="svc-tags">
+            <span class="tag">support@myrandwise.co.za</span>
+            <span class="tag">nyaniso@myrandwise.co.za</span>
+            <span class="tag">Inbox for replies</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost" style="color:#4caf50">FREE</div>
+            <div class="svc-status status-pending">⏳ SETUP NEEDED</div>
+          </div>
+          <a href="https://mail.zoho.com" target="_blank" class="svc-link">mail.zoho.com →</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AI & PAYMENTS -->
+    <div class="section">
+      <div class="section-title">🤖 AI &amp; Payments</div>
+      <div class="services-grid">
+
+        <div class="svc-card accent-orange">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(249,115,22,.15)">🧠</div>
+            <div>
+              <div class="svc-name">Google Gemini</div>
+              <div class="svc-category">AI — Bank Statement Parser</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Powers the bank statement import feature. Users upload a PDF bank statement and Gemini reads every transaction, categorises it (Groceries, Transport, etc.) and returns structured JSON. Runs inside the parse-statement Supabase Edge Function. Free tier = 500 requests/day. <strong>Note: migrated from gemini-2.0-flash (deprecated March 2026) to gemini-2.5-flash.</strong></div>
+          <div class="svc-tags">
+            <span class="tag">parse-statement edge fn</span>
+            <span class="tag">PDF reading</span>
+            <span class="tag">Transaction categorisation</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost" style="color:#4caf50">FREE (1,500/day)</div>
+            <div class="svc-status status-live">✅ LIVE</div>
+          </div>
+          <a href="https://aistudio.google.com/apikey" target="_blank" class="svc-link">aistudio.google.com — API keys →</a>
+        </div>
+
+        <div class="svc-card accent-pink" style="--pink:#ec4899">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(236,72,153,.15)">🌿</div>
+            <div>
+              <div class="svc-name">Anthropic (Claude)</div>
+              <div class="svc-category">AI — Nudges &amp; Insights</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Powers the weekly AI nudge feature — a personalised financial tip shown on the dashboard based on the user's actual spending data. Runs via the ai-nudge Supabase Edge Function using Claude Haiku (fastest, cheapest). Needs $5 (~R90) credit top-up to activate.</div>
+          <div class="svc-tags">
+            <span class="tag">ai-nudge edge fn</span>
+            <span class="tag">Personalised tips</span>
+            <span class="tag">claude-haiku-4-5</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost">$5/top-up (~R90)</div>
+            <div class="svc-status status-waiting">⏳ NEEDS CREDITS</div>
+          </div>
+          <a href="https://console.anthropic.com/settings/billing" target="_blank" class="svc-link">console.anthropic.com — billing →</a>
+        </div>
+
+        <div class="svc-card accent-teal">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(20,184,166,.15)">💳</div>
+            <div>
+              <div class="svc-name">PayFast</div>
+              <div class="svc-category">Payments</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Handles all subscription payments — Pro (R49/mo) and Premium (R129/mo). South African payment gateway, accepts credit cards, EFT, Capitec Pay, SnapScan. Currently on sandbox (test mode) — waiting for PayFast account verification email before going live.</div>
+          <div class="svc-tags">
+            <span class="tag">Pro upgrades</span>
+            <span class="tag">Premium upgrades</span>
+            <span class="tag">Sandbox mode</span>
+          </div>
+          <div class="svc-meta">
+            <div class="svc-cost">3.5% per transaction</div>
+            <div class="svc-status status-waiting">🔴 SANDBOX ONLY</div>
+          </div>
+          <a href="https://www.payfast.co.za/merchant/settings" target="_blank" class="svc-link">payfast.co.za merchant →</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CREDENTIALS -->
+    <div class="section">
+      <div class="section-title">🔑 Key Credentials &amp; IDs</div>
+      <div class="creds-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Key / ID</th>
+              <th>Value</th>
+              <th>Where used</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Supabase</td>
+              <td>Project URL</td>
+              <td style="font-family:monospace;font-size:12px">https://mmezkseblafurjolkfkt.supabase.co</td>
+              <td>All API calls</td>
+            </tr>
+            <tr>
+              <td>Supabase</td>
+              <td>Anon Key (AK)</td>
+              <td><span class="masked" id="ak-val">eyJhbGci••••••••••••••••</span> <button class="reveal-btn" onclick="toggleReveal('ak-val','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg')">show</button></td>
+              <td>index.html (AK constant)</td>
+            </tr>
+            <tr>
+              <td>PayFast</td>
+              <td>Merchant ID</td>
+              <td style="font-family:monospace">17641839</td>
+              <td>doUpgrade() in index.html</td>
+            </tr>
+            <tr>
+              <td>PayFast</td>
+              <td>Merchant Key</td>
+              <td><span class="masked" id="pf-val">ggvw6iy•••••••</span> <button class="reveal-btn" onclick="toggleReveal('pf-val','ggvw6iyb2c213')">show</button></td>
+              <td>doUpgrade() in index.html</td>
+            </tr>
+            <tr>
+              <td>Owner Panel</td>
+              <td>PIN</td>
+              <td><span class="masked" id="pin-val">••••</span> <button class="reveal-btn" onclick="toggleReveal('pin-val','0826')">show</button></td>
+              <td>Tap avatar 5× in app</td>
+            </tr>
+            <tr>
+              <td>Resend</td>
+              <td>Sender domain</td>
+              <td style="font-family:monospace">noreply@myrandwise.co.za</td>
+              <td>Supabase SMTP + send-alert fn</td>
+            </tr>
+            <tr>
+              <td>App URL</td>
+              <td>GitHub Pages</td>
+              <td style="font-family:monospace;font-size:12px">https://nyanisokhoza-code.github.io/randwise</td>
+              <td>APP_URL in index.html</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MONTHLY COSTS -->
+    <div class="section">
+      <div class="section-title">💸 Monthly Running Costs</div>
+      <div class="creds-table">
+        <div class="cost-row"><span class="cost-name">GitHub Pages</span><span class="cost-amt">R0</span></div>
+        <div class="cost-row"><span class="cost-name">Supabase (free tier)</span><span class="cost-amt">R0</span></div>
+        <div class="cost-row"><span class="cost-name">Resend (free tier — 3,000 emails/mo)</span><span class="cost-amt">R0</span></div>
+        <div class="cost-row"><span class="cost-name">Google Gemini (free tier)</span><span class="cost-amt">R0</span></div>
+        <div class="cost-row"><span class="cost-name">Zoho Mail (free tier)</span><span class="cost-amt">R0</span></div>
+        <div class="cost-row"><span class="cost-name">myrandwise.co.za domain</span><span class="cost-amt">R14/mo (R168/yr)</span></div>
+        <div class="cost-row"><span class="cost-name">Claude Pro (development)</span><span class="cost-amt">R1,000/mo</span></div>
+        <div class="cost-row"><span class="cost-name">Anthropic API credits (AI nudges)</span><span class="cost-amt">R90 top-up (one-off)</span></div>
+        <div class="cost-total"><span>Total monthly (current)</span><span style="color:#4caf50">≈ R1,014/mo</span></div>
+      </div>
+    </div>
+
+    <!-- EDGE FUNCTIONS -->
+    <div class="section">
+      <div class="section-title">⚙️ Supabase Edge Functions</div>
+      <div class="services-grid">
+        <div class="svc-card accent-green">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(76,175,80,.15)">📄</div>
+            <div>
+              <div class="svc-name">parse-statement</div>
+              <div class="svc-category">Edge Function</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Receives a PDF bank statement + prompt from the app, sends it to Google Gemini 2.5 Flash, returns categorised transactions as JSON. Used in the Financial Health → Bank Import tab. Fixed 17 Apr 2026 — was using deprecated gemini-2.0-flash model.</div>
+          <div class="svc-tags"><span class="tag">Gemini 2.5 Flash</span><span class="tag">PDF parsing</span><span class="tag">JWT off</span></div>
+          <div class="svc-meta"><div class="svc-cost">GEMINI_API_KEY secret</div><div class="svc-status status-live">✅ DEPLOYED</div></div>
+        </div>
+        <div class="svc-card accent-gold">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(245,158,11,.15)">🔔</div>
+            <div>
+              <div class="svc-name">send-alert</div>
+              <div class="svc-category">Edge Function</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Receives alert events from the app (new user, bug report, login failure, upgrade) and sends a formatted email to the owner via Resend. Critical alerts flagged separately. 24h escalation system built in.</div>
+          <div class="svc-tags"><span class="tag">Resend API</span><span class="tag">Owner alerts</span><span class="tag">JWT off</span></div>
+          <div class="svc-meta"><div class="svc-cost">RESEND_API_KEY + OWNER_EMAIL</div><div class="svc-status status-live">✅ DEPLOYED</div></div>
+        </div>
+        <div class="svc-card accent-pink">
+          <div class="svc-top">
+            <div class="svc-icon" style="background:rgba(236,72,153,.15)">💡</div>
+            <div>
+              <div class="svc-name">ai-nudge</div>
+              <div class="svc-category">Edge Function</div>
+            </div>
+          </div>
+          <div class="svc-purpose">Receives user spending context (income, weekly spend, categories) and calls Claude Haiku to generate one personalised financial tip. Shown on the home dashboard. Falls back to a hardcoded tip if no API credits.</div>
+          <div class="svc-tags"><span class="tag">Claude Haiku</span><span class="tag">Weekly tip</span><span class="tag">JWT off</span></div>
+          <div class="svc-meta"><div class="svc-cost">ANTHROPIC_API_KEY secret</div><div class="svc-status status-pending">⏳ DEPLOY NEEDED</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- POPUPS & NOTIFICATIONS ADMIN -->
+    <div class="section">
+      <div class="section-title">🔔 Popups &amp; Notifications — Global Controls</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+          Settings saved to Supabase <code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px">app_config</code> table. Changes take effect within 30 seconds for all users — no app restart needed. Run the SQL below once to create all setting keys.
+        </div>
+
+        <!-- SQL Setup -->
+        <div style="margin-bottom:24px">
+          <div style="font-size:12px;font-weight:700;color:#4caf50;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">⚡ One-time SQL setup (run in Supabase SQL Editor)</div>
+          <pre style="background:#0a1a0f;border:1px solid var(--border);border-radius:10px;padding:16px;font-size:11px;color:#a5d6a7;overflow-x:auto;line-height:1.8">INSERT INTO app_config (key, value) VALUES
+  ('setting_daily_reminder', 'true'),
+  ('setting_debt_intervention', 'true'),
+  ('setting_debt_intervention_threshold', '60'),
+  ('setting_share_nudge', 'true'),
+  ('setting_share_nudge_frequency', 'weekly'),
+  ('setting_whats_new_popup', 'true'),
+  ('setting_about_screen', 'true'),
+  ('setting_monthly_recap', 'true'),
+  ('setting_upgrade_nudge', 'true'),
+  ('setting_upgrade_nudge_text', 'Unlock the full power of MyRandWise — from R49/mo')
+ON CONFLICT (key) DO NOTHING;</pre>
+        </div>
+
+        <!-- Controls grid -->
+        <div style="display:grid;gap:12px">
+
+          <!-- Daily reminder -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">🔔 Daily 8pm Expense Reminder</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">Fires at 8pm if user hasn't logged any expenses today. Personalised with their name.</div>
+              </div>
+              <span style="background:#1a5c35;color:#a5d6a7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;margin-left:12px">ON</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              To turn OFF: <span style="color:#4caf50">UPDATE app_config SET value='false' WHERE key='setting_daily_reminder';</span><br>
+              To turn ON: <span style="color:#4caf50">UPDATE app_config SET value='true' WHERE key='setting_daily_reminder';</span>
+            </div>
+          </div>
+
+          <!-- Debt intervention -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">⚡ Debt Intervention Popup</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">Shows when user's debt exceeds the threshold % of income. Max once per week per user.</div>
+              </div>
+              <span style="background:#1a5c35;color:#a5d6a7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;margin-left:12px">ON</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Threshold options: 40% (early warning) · 60% (default) · 80% (critical only)</div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              Change threshold: <span style="color:#4caf50">UPDATE app_config SET value='40' WHERE key='setting_debt_intervention_threshold';</span><br>
+              Turn off: <span style="color:#4caf50">UPDATE app_config SET value='false' WHERE key='setting_debt_intervention';</span>
+            </div>
+          </div>
+
+          <!-- Share nudge -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">🌱 Share &amp; Earn Nudge</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">Fires on Saturdays. Reminds users to share the app. Frequency: weekly / biweekly / monthly.</div>
+              </div>
+              <span style="background:#1a5c35;color:#a5d6a7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;margin-left:12px">ON</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              Set biweekly: <span style="color:#4caf50">UPDATE app_config SET value='biweekly' WHERE key='setting_share_nudge_frequency';</span><br>
+              Set monthly: <span style="color:#4caf50">UPDATE app_config SET value='monthly' WHERE key='setting_share_nudge_frequency';</span><br>
+              Turn off: <span style="color:#4caf50">UPDATE app_config SET value='false' WHERE key='setting_share_nudge';</span>
+            </div>
+          </div>
+
+          <!-- Whats new -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">✨ What's New Popup</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">Shows once per app version after an update. Never repeats for the same version.</div>
+              </div>
+              <span style="background:#1a5c35;color:#a5d6a7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;margin-left:12px">ON</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              Turn off: <span style="color:#4caf50">UPDATE app_config SET value='false' WHERE key='setting_whats_new_popup';</span>
+            </div>
+          </div>
+
+          <!-- About screen -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text)">📋 About MyRandWise Intro</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:3px">Shows once to new users on first login. Explains what the app does. Can be reset for all users.</div>
+              </div>
+              <span style="background:#1a5c35;color:#a5d6a7;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0;margin-left:12px">ON</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              Reset for all users (they'll see it once more): <span style="color:#f59e0b">DELETE FROM app_config WHERE key='setting_about_seen_reset'; INSERT INTO app_config VALUES ('setting_about_seen_reset', NOW()::text);</span><br>
+              Turn off completely: <span style="color:#4caf50">UPDATE app_config SET value='false' WHERE key='setting_about_screen';</span>
+            </div>
+          </div>
+
+          <!-- Upgrade nudge text -->
+          <div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:16px">
+            <div style="margin-bottom:10px">
+              <div style="font-size:14px;font-weight:700;color:var(--text)">🔒 Upgrade Nudge Message</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:3px">Text shown on Pro feature lock cards. Edit to match your current promotion or season.</div>
+            </div>
+            <div style="font-size:12px;color:#a5d6a7;background:#0a1a0f;border-radius:8px;padding:12px;margin-bottom:10px;font-style:italic">
+              Current: "Unlock the full power of MyRandWise — from R49/mo"
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:#0a1a0f;border-radius:8px;padding:10px;font-family:monospace">
+              Change text: <span style="color:#4caf50">UPDATE app_config SET value='Your new message here' WHERE key='setting_upgrade_nudge_text';</span><br>
+              Examples:<br>
+              · "Let the snowball method pay off your debt faster — R49/mo"<br>
+              · "Know exactly where your money goes — upgrade for R49"<br>
+              · "Pay off your car 5 years early — unlock Pro now"
+            </div>
+          </div>
+
+        </div><!-- end controls grid -->
+      </div>
+    </div><!-- end popups section -->
+
+    <div style="text-align:center;color:var(--muted);font-size:12px;margin-top:40px;padding-top:24px;border-top:1px solid var(--border)">
+      MyRandWise Services Directory · Confidential · NDA Required · Last updated April 2026
+    </div>
+  </main>
+</div>
+
+<script>
+const PASSWORD = 'RandWise2026';
+
+function checkPin(){
+  const val = document.getElementById('pin-input').value;
+  if(val === PASSWORD){
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } else {
+    document.getElementById('pin-err').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('pin-input').focus();
+  }
+}
+
+document.getElementById('pin-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkPin();
+});
+
+function toggleReveal(id, val){
+  const el = document.getElementById(id);
+  const btn = el.nextElementSibling;
+  if(btn.textContent === 'show'){
+    el.textContent = val;
+    el.style.color = '#e8f5e9';
+    el.style.letterSpacing = '0';
+    btn.textContent = 'hide';
+  } else {
+    el.textContent = id === 'ak-val' ? 'eyJhbGci••••••••••••••••' : '••••••••';
+    el.style.color = '';
+    el.style.letterSpacing = '';
+    btn.textContent = 'show';
+  }
+}
+</script>
+</body>
+</html>
