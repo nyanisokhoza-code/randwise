@@ -463,6 +463,33 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- MONTHLY CHECK-IN -->
+<div id="checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7000;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:36px;margin-bottom:12px">🌱</div>
+      <div style="font-size:20px;font-weight:900;color:#111;margin-bottom:8px">Quick monthly check-in</div>
+      <div style="font-size:14px;color:#888;line-height:1.5">How are you feeling about your finances compared to last month?</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <button onclick="submitCheckin('better')" style="padding:16px;background:#eaf3de;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+        <span style="font-size:24px">😊</span>
+        <div><div>Better than last month</div><div style="font-size:12px;font-weight:400;color:#5a8a6a;margin-top:2px">I'm making progress</div></div>
+      </button>
+      <button onclick="submitCheckin('same')" style="padding:16px;background:#f7f6f2;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#2c2c2a;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+        <span style="font-size:24px">😐</span>
+        <div><div>About the same</div><div style="font-size:12px;font-weight:400;color:#888;margin-top:2px">Holding steady</div></div>
+      </button>
+      <button onclick="submitCheckin('worse')" style="padding:16px;background:#fdecea;border:2px solid transparent;border-radius:14px;font-size:15px;font-weight:700;color:#a32d2d;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;font-family:inherit">
+        <span style="font-size:24px">😔</span>
+        <div><div>Harder than last month</div><div style="font-size:12px;font-weight:400;color:#c46060;margin-top:2px">Things are tough right now</div></div>
+      </button>
+    </div>
+    <button onclick="skipCheckin()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Skip for now</button>
+  </div>
+</div>
+
 <!-- CUSTOM CATEGORY SHEET -->
 <div id="custom-cat-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:6000;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 24px 40px">
@@ -1076,6 +1103,16 @@ if('serviceWorker' in navigator){
           <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
+        <!-- Story consent -->
+        <div style="background:#f7f6f2;border-radius:14px;padding:16px;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:#2c2c2a;margin-bottom:6px">🌱 Share your story</div>
+          <div style="font-size:12px;color:#888780;line-height:1.5;margin-bottom:12px">Would you be willing to share your MyRandWise journey to inspire other South Africans? We'll never share your salary or personal details — only your situation and results with your permission.</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:600;color:#2c2c2a" id="story-consent-label">Not sharing yet</div>
+            <div class="tog" id="story-consent-toggle" onclick="toggleStoryConsent()" style="background:#ccc"></div>
+          </div>
+        </div>
+
         <button onclick="doSignOut()" style="width:100%;padding:14px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:80px">Sign out</button>
       </div>
     </div>
@@ -2420,6 +2457,7 @@ async function renderDash(){
   setTimeout(renderInsights, 300);
   setTimeout(checkDebtIntervention, 2000);
   setTimeout(maybeShowAbout, 1200);
+  setTimeout(maybeShowCheckin, 4000);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -2851,7 +2889,7 @@ function switchTab(t){
   }
   if(t==='debt')loadDebtsPWA();
   if(t==='grow'){loadGoalsPWA();loadStokvelList();}
-  if(t==='profile'){updateBondPreview();initLock();initPushToggle();}
+  if(t==='profile'){updateBondPreview();initLock();initPushToggle();initStoryConsent();}
   if(t==='import')initImportTab();
 }
 
@@ -6091,7 +6129,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v115';
+const APP_VERSION = '2026-04-24-v116';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6944,6 +6982,85 @@ function closeMonthlySummary(){
   const ov=document.getElementById('monthly-summary-overlay');
   if(ov) ov.style.display='none';
 }
+
+// ── Monthly Check-in ──────────────────────────────────────────
+function maybeShowCheckin(){
+  if(!user?.id) return;
+  const now=new Date();
+  const monthKey=`rw_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+  // Show once per month, on or after the 2nd
+  if(now.getDate() < 2) return;
+  if(localStorage.getItem(monthKey)) return; // already answered this month
+  // Don't show same day as other popups
+  const lastPopup=localStorage.getItem('rw_last_popup');
+  if(lastPopup && (Date.now()-Number(lastPopup)) < 86400000) return;
+  setTimeout(()=>{
+    const ov=document.getElementById('checkin-overlay');
+    if(ov) ov.style.display='flex';
+  }, 3000);
+}
+
+async function submitCheckin(feeling){
+  const ov=document.getElementById('checkin-overlay');
+  if(ov) ov.style.display='none';
+  const now=new Date();
+  const monthKey=`rw_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+  localStorage.setItem(monthKey, feeling);
+  localStorage.setItem('rw_last_popup', Date.now().toString());
+  // Save to Supabase
+  if(user?.id){
+    try{
+      await sbP('monthly_checkins', {
+        tester_id: user.id,
+        feeling,
+        month: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`
+      });
+    }catch(e){ console.warn('Check-in save failed:', e); }
+  }
+  // Respond based on feeling
+  if(feeling==='better'){
+    showToast('🌱 That\'s great to hear! Keep going.');
+  } else if(feeling==='worse'){
+    showToast('💚 We\'re here to help. Check your debt plan.');
+    setTimeout(()=>switchTab('debt'), 1500);
+  } else {
+    showToast('👍 Steady progress is still progress.');
+  }
+}
+
+function skipCheckin(){
+  const ov=document.getElementById('checkin-overlay');
+  if(ov) ov.style.display='none';
+  localStorage.setItem('rw_last_popup', Date.now().toString());
+}
+
+// ── Story Consent ─────────────────────────────────────────────
+async function toggleStoryConsent(){
+  if(!user?.id) return;
+  const current = user.story_consent || false;
+  const newVal = !current;
+  user.story_consent = newVal;
+  localStorage.setItem('rw_user', JSON.stringify(user));
+  // Update Supabase
+  try{
+    await sbPatch(`beta_testers?id=eq.${user.id}`, {
+      story_consent: newVal,
+      story_consent_at: newVal ? new Date().toISOString() : null
+    });
+  }catch(e){ console.warn('Story consent save failed:', e); }
+  initStoryConsent();
+  showToast(newVal ? '🌱 Thank you — your story can inspire others' : 'Story sharing turned off');
+}
+
+function initStoryConsent(){
+  const tog=document.getElementById('story-consent-toggle');
+  const label=document.getElementById('story-consent-label');
+  const on=user?.story_consent===true;
+  if(tog){ tog.style.background=on?'#1a7a4a':'#ccc'; }
+  if(label){ label.textContent=on?'✅ Happy to share my story':'Not sharing yet'; }
+}
+
+
 // Close on backdrop tap
 document.addEventListener('click',e=>{
   const ccOv=document.getElementById('custom-cat-overlay');

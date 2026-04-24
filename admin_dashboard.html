@@ -97,6 +97,8 @@
   <div class="tab" onclick="showPage('referrals')">Referrals</div>
   <div class="tab" onclick="showPage('reserves')">Reserves</div>
   <div class="tab" onclick="showPage('alerts')">Alerts</div>
+  <div class="tab" onclick="showPage('roadmap')">🗺 Roadmap</div>
+  <div class="tab" onclick="showPage('impact');loadImpact()">💚 Impact</div>
 </div>
 
 <!-- OVERVIEW -->
@@ -318,6 +320,219 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ROADMAP PAGE -->
+<div class="page" id="page-roadmap">
+
+  <!-- Key fixes needed -->
+  <div class="card">
+    <h3>🔴 Fix immediately — broken or affecting users</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid #e8e6de">
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Issue</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Impact</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">Monthly needs stored in localStorage only</td>
+          <td style="padding:10px 8px;color:#888780">Different budget shown on different devices for same user</td>
+          <td style="padding:10px 8px"><span style="background:#fdecea;color:#a32d2d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">NEEDS FIX</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">Debt intervention — asset debt triggers emergency</td>
+          <td style="padding:10px 8px;color:#888780">Car loan & bond inflates DTI % — shows false emergency to users</td>
+          <td style="padding:10px 8px"><span style="background:#fdecea;color:#a32d2d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">NEEDS FIX</span></td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">Bank statement parser (Gemini quota)</td>
+          <td style="padding:10px 8px;color:#888780">Core Pro feature not working — blocked on R90 Anthropic credits</td>
+          <td style="padding:10px 8px"><span style="background:#faeeda;color:#ba7517;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">BLOCKED</span></td>
+        </tr>
+        <tr>
+          <td style="padding:10px 8px;font-weight:600">PC save error (recurring column)</td>
+          <td style="padding:10px 8px;color:#888780">Some users on PC may still get save errors — monitor</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">MONITORING</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Feature rollout -->
+  <div class="card">
+    <h3>🟡 Built — not released (queued for rollout)</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:14px">Features fully built and tested but held back until user base is large enough to validate and support them.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid #e8e6de">
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Feature</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Release at</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Tier</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">📊 Monthly summary</td>
+          <td style="padding:10px 8px">50 users</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
+          <td style="padding:10px 8px;color:#888780">Grade A-D, week breakdown, top categories, next month tip</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">🏷️ Custom categories</td>
+          <td style="padding:10px 8px">50 users</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
+          <td style="padding:10px 8px;color:#888780">Users add own emoji + name categories (Church, Braai, etc)</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">🤝 Stokvel tracker</td>
+          <td style="padding:10px 8px">25 users</td>
+          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
+          <td style="padding:10px 8px;color:#888780">Group members, contributions, payout order, pot total</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 8px;font-weight:600">📱 See All transactions</td>
+          <td style="padding:10px 8px">Already live</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
+          <td style="padding:10px 8px;color:#888780">Grouped by day, search, filter by category</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Planned features -->
+  <div class="card">
+    <h3>🔵 Planned — not built yet</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="border-bottom:2px solid #e8e6de">
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Feature</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Build at</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Tier</th>
+          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">📲 SMS auto-detect</td>
+          <td style="padding:10px 8px">100 users</td>
+          <td style="padding:10px 8px"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px">Pro</span></td>
+          <td style="padding:10px 8px;color:#888780">Needs proper APK with READ_SMS permission. Android only.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">📱 Device limit (1 per account)</td>
+          <td style="padding:10px 8px">50 users</td>
+          <td style="padding:10px 8px"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px">All</span></td>
+          <td style="padding:10px 8px;color:#888780">Netflix model. Free/Pro = 1 device. Premium = 2. Extra = R19/mo.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">🌙 Premium dark theme</td>
+          <td style="padding:10px 8px">25 users</td>
+          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
+          <td style="padding:10px 8px;color:#888780">Dark luxury experience. Pro and Premium look identical right now.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">👨‍👩‍👧 Family view</td>
+          <td style="padding:10px 8px">100 users</td>
+          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
+          <td style="padding:10px 8px;color:#888780">Shared household budget. Each member tracks separately, combined view.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">📅 Monthly needs → Supabase</td>
+          <td style="padding:10px 8px">Next session</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
+          <td style="padding:10px 8px;color:#888780">Move from localStorage to Supabase so it syncs across devices.</td>
+        </tr>
+        <tr style="border-bottom:1px solid #f0efe9">
+          <td style="padding:10px 8px;font-weight:600">🎯 CSI free Pro programme</td>
+          <td style="padding:10px 8px">When funded</td>
+          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Admin</span></td>
+          <td style="padding:10px 8px;color:#888780">Free Pro for users earning under R3,500/mo. 1 free per 25 paid users.</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 8px;font-weight:600">🏢 BizRandWise</td>
+          <td style="padding:10px 8px">Post 100 users</td>
+          <td style="padding:10px 8px"><span style="background:#f0efe9;color:#5f5e5a;padding:2px 8px;border-radius:10px;font-size:11px">Separate</span></td>
+          <td style="padding:10px 8px;color:#888780">Same codebase, business skin. Staff costs, profits, real-time company view.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Ground rules -->
+  <div class="card" style="background:#f7f6f2;border:none">
+    <h3>📋 Release rules</h3>
+    <div style="font-size:13px;color:#5f5e5a;line-height:1.8">
+      ✅ <strong>Fix immediately</strong> — anything broken that affects existing users<br>
+      ⏸️ <strong>Queue for rollout</strong> — new features wait until user milestone is reached<br>
+      🚫 <strong>Do not release</strong> features that require support you can't yet provide<br>
+      📊 <strong>Validate first</strong> — ask users what they want before building it<br>
+      💰 <strong>Revenue first</strong> — if it doesn't fix broken or convert free→paid, it waits
+    </div>
+  </div>
+
+</div>
+
+<!-- IMPACT PAGE -->
+<div class="page" id="page-impact">
+
+  <!-- Headline stats -->
+  <div class="card">
+    <h3>💚 MyRandWise Impact Dashboard</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:20px">How we're changing financial lives across South Africa. Updated every time you load this page.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px" id="impact-stats-grid">
+      <div style="background:#eaf3de;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:28px;font-weight:900;color:#1a5c35" id="impact-total-users">—</div>
+        <div style="font-size:12px;color:#5a8a6a;margin-top:4px">Total users</div>
+      </div>
+      <div style="background:#eaf3de;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:28px;font-weight:900;color:#1a5c35" id="impact-active-users">—</div>
+        <div style="font-size:12px;color:#5a8a6a;margin-top:4px">Active (last 7 days)</div>
+      </div>
+      <div style="background:#fdecea;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:22px;font-weight:900;color:#a32d2d" id="impact-total-debt">—</div>
+        <div style="font-size:12px;color:#c46060;margin-top:4px">Total debt tracked</div>
+      </div>
+      <div style="background:#eeedfe;border-radius:14px;padding:16px;text-align:center">
+        <div style="font-size:22px;font-weight:900;color:#534ab7" id="impact-total-savings">—</div>
+        <div style="font-size:12px;color:#534ab7;margin-top:4px;opacity:.7">Total savings goals</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly sentiment -->
+  <div class="card">
+    <h3>😊 How users are feeling this month</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:16px">Monthly check-in responses — how finances feel vs last month.</p>
+    <div id="sentiment-bars">
+      <div style="color:#888780;font-size:13px">Loading check-in data...</div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0efe9">
+      <div style="font-size:12px;color:#888780" id="sentiment-total">0 responses this month</div>
+    </div>
+  </div>
+
+  <!-- Story consent users -->
+  <div class="card">
+    <h3>🌱 Users who want to share their story</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:16px">These users have consented to share their MyRandWise journey for marketing and impact reporting.</p>
+    <div id="story-consent-list">
+      <div style="color:#888780;font-size:13px">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Check-in history -->
+  <div class="card">
+    <h3>📊 All check-in responses</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:16px">Full history of monthly sentiment check-ins across all users.</p>
+    <div id="checkin-history">
+      <div style="color:#888780;font-size:13px">Loading...</div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -695,6 +910,109 @@ async function loadData() {
   } catch (e) {
     console.error('Load failed:', e);
     document.getElementById('lastUpdated').textContent = 'Error loading data';
+  }
+}
+
+async function loadImpact(){
+  const h = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON };
+
+  // Load all users
+  const users = await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,email,created_at,last_active,story_consent,story_consent_at,income_amount,tier`, { headers: h }).then(r=>r.json()).catch(()=>[]);
+
+  // Load all debts
+  const debts = await fetch(`${SUPABASE_URL}/rest/v1/debts?select=balance,tester_id`, { headers: h }).then(r=>r.json()).catch(()=>[]);
+
+  // Load all savings goals
+  const goals = await fetch(`${SUPABASE_URL}/rest/v1/savings_goals?select=current_amount,target_amount`, { headers: h }).then(r=>r.json()).catch(()=>[]);
+
+  // Load check-ins
+  const checkins = await fetch(`${SUPABASE_URL}/rest/v1/monthly_checkins?select=*&order=created_at.desc`, { headers: h }).then(r=>r.json()).catch(()=>[]);
+
+  // Calculate stats
+  const totalUsers = users.length;
+  const sevenDaysAgo = new Date(Date.now() - 7*86400000).toISOString();
+  const activeUsers = users.filter(u => u.last_active && u.last_active > sevenDaysAgo).length;
+  const totalDebt = debts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const totalSavings = goals.reduce((s,g)=>s+Number(g.current_amount||0),0);
+
+  // Update stat cards
+  document.getElementById('impact-total-users').textContent = totalUsers;
+  document.getElementById('impact-active-users').textContent = activeUsers;
+  document.getElementById('impact-total-debt').textContent = 'R'+Math.round(totalDebt).toLocaleString('en-ZA');
+  document.getElementById('impact-total-savings').textContent = 'R'+Math.round(totalSavings).toLocaleString('en-ZA');
+
+  // Monthly sentiment
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthCheckins = checkins.filter(c=>c.month===thisMonth);
+  const better = monthCheckins.filter(c=>c.feeling==='better').length;
+  const same = monthCheckins.filter(c=>c.feeling==='same').length;
+  const worse = monthCheckins.filter(c=>c.feeling==='worse').length;
+  const total = monthCheckins.length;
+
+  const sentBars = document.getElementById('sentiment-bars');
+  if(total === 0){
+    sentBars.innerHTML = '<div style="color:#888780;font-size:13px;text-align:center;padding:20px">No check-ins yet this month — check back after the 2nd</div>';
+  } else {
+    const pctBetter = Math.round(better/total*100);
+    const pctSame = Math.round(same/total*100);
+    const pctWorse = Math.round(worse/total*100);
+    sentBars.innerHTML = `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😊 Better</span><span style="font-size:13px;font-weight:700;color:#1a5c35">${better} (${pctBetter}%)</span></div>
+        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctBetter}%;background:#1a7a4a;border-radius:4px"></div></div>
+      </div>
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😐 Same</span><span style="font-size:13px;font-weight:700;color:#ba7517">${same} (${pctSame}%)</span></div>
+        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctSame}%;background:#f59e0b;border-radius:4px"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😔 Worse</span><span style="font-size:13px;font-weight:700;color:#a32d2d">${worse} (${pctWorse}%)</span></div>
+        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctWorse}%;background:#c62828;border-radius:4px"></div></div>
+      </div>
+    `;
+  }
+  document.getElementById('sentiment-total').textContent = `${total} response${total!==1?'s':''} this month`;
+
+  // Story consent users
+  const consentUsers = users.filter(u=>u.story_consent===true);
+  const consentEl = document.getElementById('story-consent-list');
+  if(!consentUsers.length){
+    consentEl.innerHTML = '<div style="color:#888780;font-size:13px">No users have consented yet — they\'ll appear here once they toggle it on in their Profile</div>';
+  } else {
+    consentEl.innerHTML = consentUsers.map(u=>`
+      <div style="background:#eaf3de;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1a5c35">${u.name||'—'}</div>
+          <div style="font-size:12px;color:#5a8a6a">${u.email} · Consented ${u.story_consent_at?new Date(u.story_consent_at).toLocaleDateString('en-ZA'):''}</div>
+        </div>
+        <button onclick="copyToClipboard('${u.email}')" style="background:#1a7a4a;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">📋 Email</button>
+      </div>`).join('');
+  }
+
+  // Check-in history
+  const histEl = document.getElementById('checkin-history');
+  if(!checkins.length){
+    histEl.innerHTML = '<div style="color:#888780;font-size:13px">No check-ins yet</div>';
+  } else {
+    // Group by month
+    const byMonth = {};
+    checkins.forEach(c=>{
+      if(!byMonth[c.month]) byMonth[c.month] = {better:0,same:0,worse:0};
+      byMonth[c.month][c.feeling]++;
+    });
+    histEl.innerHTML = Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month, counts])=>{
+      const t = counts.better+counts.same+counts.worse;
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0efe9">
+        <div style="font-size:13px;font-weight:700;color:#2c2c2a">${month}</div>
+        <div style="display:flex;gap:12px;font-size:12px">
+          <span style="color:#1a5c35">😊 ${counts.better}</span>
+          <span style="color:#ba7517">😐 ${counts.same}</span>
+          <span style="color:#a32d2d">😔 ${counts.worse}</span>
+          <span style="color:#888780">${t} total</span>
+        </div>
+      </div>`;
+    }).join('');
   }
 }
 
