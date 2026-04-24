@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>RandWise — Your money, your rules 🇿🇦</title>
-<meta name="description" content="The South African personal finance app built for real life. Track spending, crush debt, grow savings. Free beta access now open.">
-<meta property="og:title" content="RandWise — Built for South Africa 🇿🇦">
-<meta property="og:description" content="Finally a money app that gets South African life. Free beta access — limited spots.">
-<meta property="og:image" content="https://via.placeholder.com/1200x630/1a7a4a/ffffff?text=RandWise+🇿🇦">
+<title>MyRandWise — Built for South African life 🇿🇦</title>
+<meta name="description" content="Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that. Track spending, crush debt, grow savings — built for South African life.">
+<meta property="og:title" content="MyRandWise — Built for South African life 🇿🇦">
+<meta property="og:description" content="Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that.">
+<meta property="og:image" content="https://via.placeholder.com/1200x630/1a7a4a/ffffff?text=MyRandWise+🇿🇦">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
@@ -131,6 +131,25 @@
     .price-cards { flex-direction: row; }
     .price-card { flex: 1; }
   }
+
+  /* User story cards */
+  .stories { background: white; }
+  .stories h2 { color: var(--text); }
+  .story-card { background: var(--bg); border-radius: 20px; padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .story-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--green); border-radius: 4px 0 0 4px; }
+  .story-avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
+  .story-name { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+  .story-role { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 14px; }
+  .story-situation { font-size: 14px; color: #5f5e5a; line-height: 1.7; margin-bottom: 14px; font-style: italic; border-left: none; }
+  .story-result { background: var(--greenLight); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--greenDark); font-weight: 600; line-height: 1.5; }
+  .story-result span { display: block; font-size: 11px; color: var(--green); font-weight: 500; margin-top: 4px; }
+  .story-tag { display: inline-block; background: rgba(26,122,74,0.1); color: var(--green); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+
+  /* Opening hook */
+  .hook { background: linear-gradient(160deg, #0d4a2a 0%, #1a7a4a 100%); padding: 40px 24px; text-align: center; }
+  .hook h2 { font-size: 24px; font-weight: 900; color: white; line-height: 1.3; margin-bottom: 16px; letter-spacing: -0.5px; }
+  .hook h2 em { color: #a8d96e; font-style: normal; }
+  .hook p { font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.7; max-width: 320px; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -139,16 +158,13 @@
 <div class="hero">
   <div class="logo">
     <div class="logo-icon">🌱</div>
-    <div class="logo-text">RandWise</div>
+    <div class="logo-text">MyRandWise</div>
   </div>
   <div class="beta-badge">🇿🇦 BETA — FREE ACCESS</div>
   <h1>Your money,<br><span>your rules.</span></h1>
   <p>The first personal finance app built specifically for South African life. Not American. Not European. <strong style="color:white">Ours.</strong></p>
-  <div style="display:flex;flex-direction:column;gap:12px;align-items:center;width:100%;max-width:320px;margin:0 auto">
-    <a href="#join" class="hero-cta" style="width:100%;text-align:center;box-sizing:border-box">Get free beta access →</a>
-    <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" download style="width:100%;text-align:center;box-sizing:border-box;background:rgba(255,255,255,.15);color:#fff;font-size:15px;font-weight:700;padding:15px 32px;border-radius:14px;border:1.5px solid rgba(255,255,255,.3);cursor:pointer;display:block;text-decoration:none;backdrop-filter:blur(4px)">⬇️ Download Android App</a>
-  </div>
-  <div class="hero-sub" style="margin-top:8px">No credit card. No catch. Cancel anytime.</div>
+  <a href="#join" class="hero-cta">Get free beta access →</a>
+  <div class="hero-sub">No credit card. No catch. Cancel anytime.</div>
   <div class="spots-badge">
     <div class="spots-dot"></div>
     <div class="spots-text">Beta spots filling up — join free today</div>
@@ -177,7 +193,7 @@
 
 <!-- Features -->
 <section class="features">
-  <h2>RandWise fixes this.</h2>
+  <h2>MyRandWise fixes this.</h2>
   <p class="sub">Built for South African life. All the tools you need, none of the noise.</p>
   <div class="feature-grid">
     <div class="feature-card">
@@ -234,7 +250,7 @@
 <!-- For who -->
 <section class="for-who">
   <h2>Built for real SA life.</h2>
-  <p class="sub">Whatever your life stage — RandWise was built with you in mind.</p>
+  <p class="sub">Whatever your life stage — MyRandWise was built with you in mind.</p>
   <div class="life-stages">
     <div class="life-stage"><div class="life-stage-emoji">🎓</div><div class="life-stage-name">Students</div></div>
     <div class="life-stage"><div class="life-stage-emoji">🏠</div><div class="life-stage-name">Domestic workers</div></div>
@@ -246,23 +262,77 @@
 </section>
 
 <!-- Testimonials -->
-<section class="testimonials">
-  <h2>What beta testers say.</h2>
-  <p class="sub">Real feedback from real South Africans during testing.</p>
-  <div class="testimonial-list">
-    <div class="testimonial">
-      <div class="testimonial-text">"RandWise helped me see where my money was actually going for the first time. Worth every cent."</div>
-      <div class="testimonial-author">— Beta tester, Domestic worker, Johannesburg</div>
+<!-- Opening hook -->
+<div class="hook">
+  <h2>Most of us get paid on the 25th and wonder where it all went <em>by the 10th.</em></h2>
+  <p>MyRandWise was built to fix that — for us, not for people who already have financial advisors. No jargon. No judgment. Just clarity about your money.</p>
+</div>
+
+<!-- User stories -->
+<section class="stories">
+  <h2>Real lives. Real situations.</h2>
+  <p class="sub">These are the people MyRandWise was built for.</p>
+
+  <!-- Thandi -->
+  <div class="story-card">
+    <div class="story-avatar" style="background:#eaf3de">🎓</div>
+    <div class="story-tag">Student · Cape Town</div>
+    <div class="story-name">Thandi, 22</div>
+    <div class="story-role">Education student, part-time waitress</div>
+    <div class="story-situation">
+      "I was getting R2,800 a month from waitressing and my NSFAS allowance. By week two I had nothing left — I didn't even know where it went. I'd buy airtime, grab food here and there, and suddenly it was gone. I felt too embarrassed to ask anyone for help because I thought it meant I was bad with money."
     </div>
-    <div class="testimonial">
-      <div class="testimonial-text">"I finally have a debt plan. The Debt Freedom Score showed me exactly which debt to tackle first. I'm R8,000 closer to being debt-free."</div>
-      <div class="testimonial-author">— Beta tester, Employed, Soweto</div>
-    </div>
-    <div class="testimonial">
-      <div class="testimonial-text">"As a student I never had a budget app that understood my life. RandWise just gets it."</div>
-      <div class="testimonial-author">— Beta tester, Student, Cape Town</div>
+    <div class="story-result">
+      🌱 After 3 weeks on MyRandWise, Thandi saw that R680/month was going to small food purchases she didn't even remember making. She set a weekly food budget and saved R400 in her first month — her first savings ever.
+      <span>Now building towards a R2,000 emergency fund.</span>
     </div>
   </div>
+
+  <!-- Sipho -->
+  <div class="story-card">
+    <div class="story-avatar" style="background:#fff8e1">🔧</div>
+    <div class="story-tag">Self-employed · Soweto</div>
+    <div class="story-name">Sipho, 34</div>
+    <div class="story-role">Freelance electrician, 3 kids</div>
+    <div class="story-situation">
+      "My income is never the same every month. Some months R12,000, some months R4,000. I had a store account, a furniture account, and a personal loan — I was just paying minimums and not getting anywhere. I didn't even know which one to focus on first. Every month felt like I was just surviving."
+    </div>
+    <div class="story-result">
+      ⚡ MyRandWise showed Sipho his debt snowball — the furniture account would be paid off in 8 months if he put just R200 extra per month on it. He cancelled two subscriptions he'd forgotten about and redirected that money to debt.
+      <span>Debt freedom score improved from 51 to 68 in 6 weeks.</span>
+    </div>
+  </div>
+
+  <!-- Nomsa -->
+  <div class="story-card">
+    <div class="story-avatar" style="background:#fdecea">🏠</div>
+    <div class="story-tag">Domestic worker · Johannesburg</div>
+    <div class="story-name">Nomsa, 41</div>
+    <div class="story-role">Domestic worker, supports family in Limpopo</div>
+    <div class="story-situation">
+      "I earn R5,500 a month. I send R1,500 home, I have my transport, food, and a clothing account. I borrowed from a mashonisa once when things were tight — biggest mistake of my life. I needed something simple, not a complicated banking app. Something that speaks to my life."
+    </div>
+    <div class="story-result">
+      🤝 MyRandWise showed Nomsa she had R300/month that wasn't allocated to anything — it was just disappearing. She set up a savings goal for her daughter's school uniform. She also used the Mashonisa calculator to see exactly what that loan had really cost her.
+      <span>First time she's ever seen her full financial picture in one place.</span>
+    </div>
+  </div>
+
+  <!-- Kagiso -->
+  <div class="story-card">
+    <div class="story-avatar" style="background:#eeedfe">💼</div>
+    <div class="story-tag">Professional · Pretoria</div>
+    <div class="story-name">Kagiso, 29</div>
+    <div class="story-role">Junior accountant, car loan, renting</div>
+    <div class="story-situation">
+      "I earn a decent salary but I felt like I had nothing to show for it. I had a car, a good job, but I couldn't save. I kept telling myself I'd start saving 'next month'. I tried Excel spreadsheets but I never kept them updated. I needed something that just told me what I could actually spend this week."
+    </div>
+    <div class="story-result">
+      📊 MyRandWise calculated Kagiso's real weekly budget after his car payment, insurance and rent — not just his salary divided by 4. He had R1,150 a week to spend, not the R3,200 he thought. That one number changed everything.
+      <span>Saved R4,800 in 3 months. First savings in 4 years.</span>
+    </div>
+  </div>
+
 </section>
 
 <!-- Pricing -->
@@ -376,10 +446,10 @@
 <!-- Footer -->
 <footer>
   <p>
-    🌱 <strong style="color:rgba(255,255,255,0.8)">RandWise</strong><br>
+    🌱 <strong style="color:rgba(255,255,255,0.8)">MyRandWise</strong><br>
     Your money, your rules. Built for South Africa 🇿🇦<br><br>
     <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a><br><br>
-    © 2026 RandWise · Nyaniso Khoza · POPIA Compliant
+    © 2026 MyRandWise · Nyaniso Khoza · POPIA Compliant
   </p>
 </footer>
 
@@ -388,7 +458,6 @@
   <button onclick="document.getElementById('join').scrollIntoView({behavior:'smooth'})">
     🎁 Join free beta →
   </button>
-  <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" download style="flex:1;padding:14px;background:#f0faf4;color:#1a5c35;font-size:14px;font-weight:700;border:1.5px solid #1a5c35;border-radius:12px;cursor:pointer;display:block;text-decoration:none;text-align:center;box-sizing:border-box">⬇️ Android APK</a>
 </div>
 
 <script>
@@ -405,8 +474,8 @@ if (refCode || refName) {
   const banner = document.createElement('div');
   banner.style.cssText = 'background:#27500a;color:#a8d96e;text-align:center;padding:12px 20px;font-size:14px;font-weight:600;';
   banner.textContent = refName
-    ? `🤝 ${refName} invited you to try RandWise for free!`
-    : '🤝 You were invited to try RandWise for free!';
+    ? `🤝 ${refName} invited you to try MyRandWise for free!`
+    : '🤝 You were invited to try MyRandWise for free!';
   document.body.insertBefore(banner, document.body.firstChild);
   // Show + auto-fill referral code field
   if (refCode) {
@@ -459,9 +528,9 @@ async function submitWaitlist() {
 }
 
 function shareApp() {
-  const text = `Hey! I just joined the RandWise beta — a free money app built specifically for South Africans 🇿🇦\n\nIt tracks spending, helps with debt, and teaches you how to grow your money.\n\nJoin free here 👇\nhttps://randwise.app`;
+  const text = `Hey! I just joined the MyRandWise beta — a free money app built specifically for South Africans 🇿🇦\n\nIt tracks spending, helps with debt, and teaches you how to grow your money.\n\nJoin free here 👇\nhttps://randwise.app`;
   if (navigator.share) {
-    navigator.share({ title: 'RandWise — Built for SA', text, url: 'https://randwise.app' });
+    navigator.share({ title: 'MyRandWise — Built for SA', text, url: 'https://randwise.app' });
   } else {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
   }
