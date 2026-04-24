@@ -2015,6 +2015,7 @@ async function doLogin(){
         sbG(`debts?tester_id=eq.${user?.id}&order=balance.asc`).then(d=>{debts=d||[];}).catch(()=>{debts=[];})
       ]);
     }catch(ex){expenses=[];debts=[];}
+    await loadMonthlyNeedsFromSupabase().catch(()=>{});
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     show('main');
     try{setTimeout(showIntro,400);}catch(ex){}
@@ -3946,9 +3947,28 @@ function checkDebtIntervention(){
   if(!user || !debts?.length) return;
   const inc = Number(user.income_amount||0);
   if(inc <= 0) return;
+
+  // Separate asset-backed debt (car, bond) from unsecured debt (store, personal loans)
+  // Asset debt is NOT an emergency — it's wealth-building or necessary
+  // Only unsecured debt ratio triggers the intervention
+  const ASSET_CATEGORIES = ['vehicle','bond','home loan','mortgage','car'];
+  const unsecuredDebts = debts.filter(d=>{
+    const cat = (d.category||d.name||'').toLowerCase();
+    return !ASSET_CATEGORIES.some(a => cat.includes(a));
+  });
+  const assetDebts = debts.filter(d=>{
+    const cat = (d.category||d.name||'').toLowerCase();
+    return ASSET_CATEGORIES.some(a => cat.includes(a));
+  });
+
   const totalDebt = debts.reduce((s,d)=>s+Number(d.balance||0),0);
-  const dti = totalDebt / inc;
+  const unsecuredTotal = unsecuredDebts.reduce((s,d)=>s+Number(d.balance||0),0);
+
+  // Use unsecured debt for DTI calculation
+  const dti = unsecuredTotal / inc;
   const dtiPct = Math.round(dti * 100);
+  const totalDtiPct = Math.round(totalDebt / inc * 100);
+
   // Use admin-configured threshold as the minimum trigger point
   const adminThreshold = Number(getSetting('debt_intervention_threshold'))/100 || 0.4;
   const t1 = Math.max(adminThreshold, 0.4);
@@ -3973,8 +3993,8 @@ function checkDebtIntervention(){
   let headline, message, steps, cardHeadline, cardBody;
 
   if(level === 'critical'){
-    headline = `${name}, your debt is at ${dtiPct}% of your income`;
-    message = `Your total debt of R${Math.round(totalDebt).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income — and R${Math.round(minPayments).toLocaleString('en-ZA')} (${minPct}%) goes to minimum payments every month. This is a financial emergency. Here's your 3-step plan:`;
+    headline = `${name}, your store debt is at ${dtiPct}% of your income`;
+    message = `Your unsecured debt (store accounts, loans) of R${Math.round(unsecuredTotal).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income — and R${Math.round(minPayments).toLocaleString('en-ZA')} (${minPct}%) goes to minimum payments every month. This needs urgent attention. Here's your 3-step plan:`;
     steps = [
       {n:'1', icon:'🛑', title:'Stop new debt immediately', desc:'No new store accounts, loans or buy-now-pay-later. Every new debt makes this harder.'},
       {n:'2', icon:'⚡', title:'Attack the smallest debt first', desc:`Pay R${Math.round(minPayments + 100).toLocaleString('en-ZA')}/mo on your smallest debt until it's gone. Then roll that payment onto the next.`},
@@ -3983,8 +4003,8 @@ function checkDebtIntervention(){
     cardHeadline = `${dtiPct}% of my income goes to debt 🚨`;
     cardBody = `I'm taking control with MyRandWise's debt intervention plan. Small steps, big change. 💪`;
   } else if(level === 'high'){
-    headline = `${name}, your debt is at ${dtiPct}% of your income`;
-    message = `Your debt of R${Math.round(totalDebt).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income. You're in the danger zone. Act now before it gets worse:`;
+    headline = `${name}, your store debt is at ${dtiPct}% of your income`;
+    message = `Your unsecured debt of R${Math.round(unsecuredTotal).toLocaleString('en-ZA')} is ${dtiPct}% of your monthly income. ${assetDebts.length > 0 ? `(Your car/bond of R${Math.round(assetDebts.reduce((s,d)=>s+Number(d.balance||0),0)).toLocaleString('en-ZA')} is asset-backed — that's separate.) ` : ''}You're in the danger zone. Act now before it gets worse:`;
     steps = [
       {n:'1', icon:'🎯', title:'Focus on one debt at a time', desc:'Pick your smallest debt and throw everything at it. Don\'t spread payments — concentrate them.'},
       {n:'2', icon:'✂️', title:'Cut one expense this month', desc:'Find R200–500 you can redirect to debt. Takeaways, subscriptions, data — one cut makes a difference.'},
@@ -5273,6 +5293,8 @@ window.addEventListener('load',async()=>{
           const d=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
           debts=Array.isArray(d)?d:[];
         }catch{debts=[];}
+        // Sync monthly needs from Supabase (cross-device sync)
+        await loadMonthlyNeedsFromSupabase().catch(()=>{});
         try{renderDash();}catch{}
         show('main');
         startLockTimer();
@@ -6066,7 +6088,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v113';
+const APP_VERSION = '2026-04-24-v114';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7075,15 +7097,24 @@ function updateNeedsTotal(){
   document.getElementById('needs-wb-preview').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk';
 }
 
-function saveMonthlyNeeds(){
+async function saveMonthlyNeeds(){
   const saved = {};
   NEEDS_PRESETS.forEach(p=>{
     const v = Number(document.getElementById('need_'+p.id)?.value||0);
     if(v>0) saved[p.id] = v;
   });
+  // Save to localStorage (immediate)
   localStorage.setItem('rw_monthly_needs', JSON.stringify(saved));
   localStorage.setItem('rw_monthly_needs_custom', JSON.stringify(customNeeds));
   localStorage.setItem('rw_needs_setup_done', '1');
+  // Save to Supabase (syncs across devices)
+  if(user?.id){
+    try{
+      await sbPatch(`beta_testers?id=eq.${user.id}`, {
+        monthly_needs: { preset: saved, custom: customNeeds }
+      });
+    }catch(e){ console.warn('Could not sync monthly needs to Supabase:', e); }
+  }
   document.getElementById('needs-overlay').style.display = 'none';
   showToast('✅ Monthly needs saved — budget updated');
   renderDash();
@@ -7092,6 +7123,34 @@ function saveMonthlyNeeds(){
 function skipMonthlyNeeds(){
   localStorage.setItem('rw_needs_setup_done', '1');
   document.getElementById('needs-overlay').style.display = 'none';
+}
+
+async function loadMonthlyNeedsFromSupabase(){
+  // Load monthly needs from Supabase and merge with localStorage
+  if(!user?.id) return;
+  try{
+    const rows = await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs`);
+    const dbNeeds = rows?.[0]?.monthly_needs;
+    if(dbNeeds && typeof dbNeeds === 'object'){
+      // Supabase has data — use it (authoritative, syncs across devices)
+      if(dbNeeds.preset && Object.keys(dbNeeds.preset).length > 0){
+        localStorage.setItem('rw_monthly_needs', JSON.stringify(dbNeeds.preset));
+        localStorage.setItem('rw_needs_setup_done', '1');
+      }
+      if(dbNeeds.custom && dbNeeds.custom.length > 0){
+        localStorage.setItem('rw_monthly_needs_custom', JSON.stringify(dbNeeds.custom));
+      }
+    } else {
+      // No Supabase data — if localStorage has data, push it up to Supabase
+      const localNeeds = JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+      const localCustom = JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+      if(Object.keys(localNeeds).length > 0){
+        await sbPatch(`beta_testers?id=eq.${user.id}`, {
+          monthly_needs: { preset: localNeeds, custom: localCustom }
+        }).catch(()=>{});
+      }
+    }
+  }catch(e){ console.warn('Could not load monthly needs from Supabase:', e); }
 }
 
 function checkNeedsSetup(){
