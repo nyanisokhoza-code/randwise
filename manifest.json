@@ -1,0 +1,117 @@
+{
+  "name": "MyRandWise",
+  "short_name": "MyRandWise",
+  "description": "South Africa's personal finance app. Track spending, crush debt, grow savings — built for real South African life.",
+  "start_url": "/randwise/",
+  "scope": "/randwise/",
+  "id": "/randwise/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#1a5c35",
+  "theme_color": "#1a5c35",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "categories": ["finance", "productivity", "utilities"],
+
+  "icons": [
+    {
+      "src": "icon_48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon_96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Log an expense",
+      "short_name": "Log expense",
+      "description": "Quickly log what you spent",
+      "url": "/randwise/?action=log_expense",
+      "icons": [{ "src": "icon_96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "My weekly budget",
+      "short_name": "Budget",
+      "description": "See your weekly spending plan",
+      "url": "/randwise/?action=weekly_planner",
+      "icons": [{ "src": "icon_96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "My debts",
+      "short_name": "Debts",
+      "description": "View your debt payoff plan",
+      "url": "/randwise/?action=debts",
+      "icons": [{ "src": "icon_96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Savings goals",
+      "short_name": "Savings",
+      "description": "Check your savings progress",
+      "url": "/randwise/?action=savings",
+      "icons": [{ "src": "icon_96.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "MyRandWise dashboard — track your money"
+    }
+  ],
+
+  "share_target": {
+    "action": "/randwise/",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+
+  "handle_links": "preferred",
+
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.myrandwise.app",
+      "id": "com.myrandwise.app"
+    },
+    {
+      "platform": "webapp",
+      "url": "https://nyanisokhoza-code.github.io/randwise/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false
+}
