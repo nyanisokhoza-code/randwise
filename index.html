@@ -463,6 +463,45 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- QUICK INCOME EDIT -->
+<div id="income-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:7500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:18px;font-weight:900;color:#111;margin-bottom:6px">Update your income</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px">Life changes — keep your budget accurate</div>
+    <div style="display:flex;align-items:center;gap:0;border:2px solid #1a7a4a;border-radius:14px;overflow:hidden;margin-bottom:20px">
+      <div style="padding:14px 16px;background:#eaf3de;font-size:18px;font-weight:800;color:#1a5c35">R</div>
+      <input id="quick-income-input" type="number" placeholder="0" style="flex:1;padding:14px;font-size:20px;font-weight:700;border:none;outline:none;font-family:inherit">
+    </div>
+    <button onclick="saveQuickIncome()" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit">Save income →</button>
+    <button onclick="closeQuickEditIncome()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer;margin-top:6px">Cancel</button>
+  </div>
+</div>
+
+<!-- EXPENSE SEARCH -->
+<div id="search-overlay" style="display:none;position:fixed;inset:0;background:#f7f6f2;z-index:600;flex-direction:column">
+  <div style="background:#1a7a4a;padding:16px;display:flex;align-items:center;gap:12px;position:sticky;top:0">
+    <button onclick="closeSearch()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;flex-shrink:0">‹</button>
+    <input id="search-input" type="text" placeholder="Search expenses..." autocomplete="off"
+      style="flex:1;padding:10px 14px;border-radius:10px;border:none;font-size:15px;font-family:inherit;outline:none"
+      oninput="renderSearchResults()">
+  </div>
+  <div style="padding:12px 16px;font-size:12px;color:#888780" id="search-count">Type to search</div>
+  <div id="search-results" style="overflow-y:auto;flex:1;padding:0 16px 80px"></div>
+</div>
+
+<!-- APP RATING PROMPT -->
+<div id="rating-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:24px;padding:28px 24px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">⭐</div>
+    <div style="font-size:20px;font-weight:900;color:#111;margin-bottom:8px">Enjoying MyRandWise?</div>
+    <div style="font-size:14px;color:#888;line-height:1.5;margin-bottom:24px">Your review helps other South Africans find the app and take control of their money 🇿🇦</div>
+    <button onclick="openAppRating()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px">⭐ Rate MyRandWise</button>
+    <button onclick="dismissRating()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Maybe later</button>
+    <button onclick="neverRating()" style="width:100%;padding:8px;background:none;border:none;font-size:11px;color:#ccc;cursor:pointer">Don't ask again</button>
+  </div>
+</div>
+
 <!-- PUSH PERMISSION PROMPT -->
 <div id="push-prompt-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:8500;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px;text-align:center">
@@ -934,7 +973,7 @@ if('serviceWorker' in navigator){
             </div>
             <div style="flex:1">
               <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
-              <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1" id="hdr-income">R0</div>
+              <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;cursor:pointer;display:flex;align-items:center;gap:6px" id="hdr-income" onclick="openQuickEditIncome()">R0 <span style="font-size:11px;opacity:.5">✏️</span></div>
               <div style="font-size:10px;color:rgba(255,255,255,.45);margin-top:5px">After commitments</div>
               <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
             </div>
@@ -1060,10 +1099,23 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- RECENT TRANSACTIONS -->
+          <!-- Referral card - shown periodically -->
+          <div id="referral-home-card" style="display:none;margin:0 14px 12px;background:linear-gradient(135deg,#0d4a2a,#1a7a4a);border-radius:16px;padding:16px;cursor:pointer" onclick="shareReferral()">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">🌱 Know someone who needs this?</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.7)">Share MyRandWise — earn when they upgrade</div>
+              </div>
+              <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;color:#fff;white-space:nowrap">Share →</div>
+            </div>
+          </div>
           <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div style="font-size:15px;font-weight:700;color:var(--t)">Recent transactions</div>
-              <div id="see-all-btn" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px" onclick="openSeeAll()">See all</div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <div style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px" onclick="openSearch()">🔍</div>
+                <div id="see-all-btn" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px" onclick="openSeeAll()">See all</div>
+              </div>
             </div>
             <div style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;overflow:hidden" id="exp-list">
               <div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>
@@ -2504,6 +2556,8 @@ async function renderDash(){
   setTimeout(maybeShowAbout, 1200);
   setTimeout(maybeShowCheckin, 4000);
   setTimeout(maybeShowPushPrompt, 8000);
+  checkAppRating();
+  setTimeout(initReferralCard, 500);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
   const h=new Date().getHours(),gr=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   const now=new Date();
@@ -6199,7 +6253,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v119';
+const APP_VERSION = '2026-04-24-v120';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7057,6 +7111,131 @@ function closeMonthlySummary(){
   if(ov) ov.style.display='none';
 }
 
+// ── Quick Income Edit ─────────────────────────────────────────
+function openQuickEditIncome(){
+  const ov=document.getElementById('income-edit-overlay');
+  const inp=document.getElementById('quick-income-input');
+  if(ov) ov.style.display='flex';
+  if(inp){ inp.value=Number(user?.income_amount||0)||''; inp.focus(); }
+}
+function closeQuickEditIncome(){
+  const ov=document.getElementById('income-edit-overlay');
+  if(ov) ov.style.display='none';
+}
+async function saveQuickIncome(){
+  const val=Number(document.getElementById('quick-income-input')?.value||0);
+  if(!val||val<100){ showToast('⚠️ Enter a valid income amount'); return; }
+  if(!user?.id) return;
+  user.income_amount=val;
+  localStorage.setItem('rw_user',JSON.stringify(user));
+  try{
+    await sbPatch(`beta_testers?id=eq.${user.id}`,{income_amount:val});
+    showToast('✅ Income updated');
+  }catch{ showToast('✅ Income updated (syncing...)'); }
+  closeQuickEditIncome();
+  // Reload debts then re-render with new income
+  sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`).then(d=>{debts=d||[];renderDash();}).catch(()=>renderDash());
+}
+
+// ── Expense Search ────────────────────────────────────────────
+function openSearch(){
+  const ov=document.getElementById('search-overlay');
+  if(ov){ ov.style.display='flex'; }
+  setTimeout(()=>document.getElementById('search-input')?.focus(),100);
+}
+function closeSearch(){
+  const ov=document.getElementById('search-overlay');
+  if(ov) ov.style.display='none';
+  const inp=document.getElementById('search-input');
+  if(inp) inp.value='';
+}
+function renderSearchResults(){
+  const query=(document.getElementById('search-input')?.value||'').toLowerCase().trim();
+  const countEl=document.getElementById('search-count');
+  const resultsEl=document.getElementById('search-results');
+  if(!resultsEl) return;
+  if(!query){ countEl.textContent='Type to search'; resultsEl.innerHTML=''; return; }
+  const matches=expenses.filter(e=>{
+    const cat=(e.category||'').toLowerCase();
+    const note=(e.note||'').toLowerCase();
+    const amt=String(e.amount||'');
+    return cat.includes(query)||note.includes(query)||amt.includes(query);
+  });
+  countEl.textContent=`${matches.length} result${matches.length!==1?'s':''}`;
+  if(!matches.length){
+    resultsEl.innerHTML=`<div style="text-align:center;padding:40px 20px;color:#888780"><div style="font-size:32px;margin-bottom:12px">🔍</div><div style="font-size:14px">No expenses matching "${query}"</div></div>`;
+    return;
+  }
+  const CATS_MAP={Groceries:'🛒',Transport:'🚗',Electricity:'⚡',Airtime:'📱','Eating out':'🍽️',Entertainment:'🎬',Medical:'💊',Clothing:'👕',Savings:'💰',Education:'📚',Insurance:'🛡️',Rent:'🏠',Other:'📦'};
+  resultsEl.innerHTML=matches.map(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    const dateStr=d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+    const emoji=CATS_MAP[e.category]||'📦';
+    return`<div style="background:#fff;border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:12px;background:#f7f6f2;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${emoji}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700;color:#2c2c2a">${e.category||'Other'}</div>
+        <div style="font-size:12px;color:#888780;margin-top:2px">${e.note||''} · ${dateStr}</div>
+      </div>
+      <div style="font-size:15px;font-weight:800;color:#a32d2d;flex-shrink:0">−R${Number(e.amount||0).toLocaleString('en-ZA')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── App Rating Prompt ─────────────────────────────────────────
+function checkAppRating(){
+  if(localStorage.getItem('rw_rated')||localStorage.getItem('rw_rate_never')) return;
+  const sessions=Number(localStorage.getItem('rw_session_count')||0)+1;
+  localStorage.setItem('rw_session_count',sessions);
+  // Show after 5 sessions
+  if(sessions===5||sessions===10||sessions===20){
+    setTimeout(()=>{
+      const ov=document.getElementById('rating-overlay');
+      if(ov) ov.style.display='flex';
+    },6000);
+  }
+}
+function openAppRating(){
+  localStorage.setItem('rw_rated','1');
+  const ov=document.getElementById('rating-overlay');
+  if(ov) ov.style.display='none';
+  // Open Play Store or app URL
+  window.open('https://play.google.com/store/apps/details?id=com.myrandwise.app','_blank');
+  // Fallback if not on Play Store yet
+  showToast('🌟 Thank you! Your support means everything.');
+}
+function dismissRating(){
+  const ov=document.getElementById('rating-overlay');
+  if(ov) ov.style.display='none';
+}
+function neverRating(){
+  localStorage.setItem('rw_rate_never','1');
+  const ov=document.getElementById('rating-overlay');
+  if(ov) ov.style.display='none';
+}
+
+// ── Referral Home Card ────────────────────────────────────────
+function initReferralCard(){
+  const card=document.getElementById('referral-home-card');
+  if(!card||!user?.referral_code) return;
+  // Show on every 3rd session
+  const sessions=Number(localStorage.getItem('rw_session_count')||0);
+  if(sessions%3===0) card.style.display='block';
+  else card.style.display='none';
+}
+function shareReferral(){
+  const code=user?.referral_code||'';
+  const name=user?.name?.split(' ')[0]||'';
+  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://nyanisokhoza-code.github.io/randwise?ref=${code}\n\nShared by a MyRandWise team member.`;
+  if(navigator.share){
+    navigator.share({ title:'MyRandWise 🌱', text:msg }).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(msg).then(()=>showToast('✅ Share message copied!')).catch(()=>{});
+  }
+}
+
+
+
 // ── Monthly Check-in ──────────────────────────────────────────
 const VAPID_PUBLIC_KEY = 'BFuQZpJQzod8ZpJjIkn-RTGmpM9Xrgop7R3EjUPsbPCuR3FECzqGchLLTXdyPgZKB8M1Xy2XQS9MGSp7Cgb82Gg';
 
@@ -7258,6 +7437,10 @@ function dismissPushPrompt(){
 document.addEventListener('click',e=>{
   const ppOv=document.getElementById('push-prompt-overlay');
   if(e.target===ppOv) dismissPushPrompt();
+  const ieOv=document.getElementById('income-edit-overlay');
+  if(e.target===ieOv) closeQuickEditIncome();
+  const rOv=document.getElementById('rating-overlay');
+  if(e.target===rOv) dismissRating();
   const ccOv=document.getElementById('custom-cat-overlay');
   if(e.target===ccOv) closeCustomCatSheet();
   const msOv=document.getElementById('monthly-summary-overlay');
