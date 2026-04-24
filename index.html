@@ -463,6 +463,40 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- CUSTOM CATEGORY SHEET -->
+<div id="custom-cat-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:6000;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:20px 24px 40px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:6px">Custom category</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px">Create a category that fits your life</div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px">EMOJI</label>
+      <input id="cc-emoji" type="text" maxlength="2" placeholder="💡" style="width:64px;padding:12px;text-align:center;font-size:24px;border:2px solid #e8e6de;border-radius:12px;outline:none;font-family:inherit">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px">CATEGORY NAME</label>
+      <input id="cc-name" type="text" placeholder="e.g. Church offering, Braai, Car wash" maxlength="20"
+        style="width:100%;padding:14px;font-size:15px;border:2px solid #e8e6de;border-radius:12px;outline:none;font-family:inherit">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeCustomCatSheet()" style="flex:1;padding:14px;border:2px solid #e8e6de;background:#fff;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;color:#555">Cancel</button>
+      <button onclick="saveCustomCat()" style="flex:2;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Add category</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY SUMMARY SHEET -->
+<div id="monthly-summary-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:6000;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+    <div style="padding:16px 24px 0;text-align:center">
+      <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-size:20px;font-weight:900;color:#111" id="ms-title">April summary 📊</div>
+      <div style="font-size:13px;color:#888;margin-top:4px;margin-bottom:20px" id="ms-subtitle">How did you do this month?</div>
+    </div>
+    <div id="ms-body" style="padding:0 24px 40px"></div>
+  </div>
+</div>
+
 <!-- ABOUT MYRANDWISE INTRO -->
 <div id="about-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9000;align-items:flex-end;justify-content:center">
   <div id="about-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)">
@@ -571,7 +605,19 @@ if('serviceWorker' in navigator){
     <button onclick="lockPinTap('7')" class="lbtn">7</button>
     <button onclick="lockPinTap('8')" class="lbtn">8</button>
     <button onclick="lockPinTap('9')" class="lbtn">9</button>
-    <button onclick="lockBiometric()" class="lbtn" id="lock-bio-btn" style="font-size:22px;background:rgba(255,255,255,.06)">👆</button>
+    <button onclick="lockBiometric()" class="lbtn" id="lock-bio-btn" style="background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 3.4"/>
+        <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+        <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+        <path d="M2 12a10 10 0 0 1 18-6"/>
+        <path d="M2 16h.01"/>
+        <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+        <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+        <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+        <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+      </svg>
+    </button>
     <button onclick="lockPinTap('0')" class="lbtn">0</button>
     <button onclick="lockPinBack()" class="lbtn" style="font-size:18px;background:rgba(255,255,255,.06)">⌫</button>
   </div>
@@ -933,7 +979,10 @@ if('serviceWorker' in navigator){
 
           <!-- SPENDING INSIGHTS -->
           <div style="padding:14px 14px 0" id="insights-section">
-            <div style="font-size:15px;font-weight:700;color:var(--t);margin-bottom:10px">💡 Spending insights</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div style="font-size:15px;font-weight:700;color:var(--t)">💡 Spending insights</div>
+              <div onclick="openMonthlySummary()" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px">📊 Monthly summary</div>
+            </div>
             <div id="insights-list"></div>
           </div>
 
@@ -1681,6 +1730,7 @@ if('serviceWorker' in navigator){
   <div class="sh-handle"></div>
   <div class="sh-title">Log an expense</div>
   <div class="cat-row" id="cat-row"></div>
+  <div style="text-align:right;margin:-8px 0 12px"><button onclick="openCustomCatSheet()" style="background:none;border:none;font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 8px">+ Custom category</button></div>
   <div class="amt-wrap"><div class="amt-r">R</div><input type="number" id="ea" class="amt-in" placeholder="0.00" oninput="chkSave()"></div>
   <div class="quick-row">
     <button class="qbtn" onclick="setAmt(20)">R20</button>
@@ -2795,6 +2845,8 @@ function switchTab(t){
   if(t==='home'){
     const dc=document.getElementById('dash-main-content');
     if(dc) dc.scrollTop=0;
+    // Always reload debts before rendering so smart budget is accurate
+    sbG(`debts?tester_id=eq.${user?.id}&order=balance.asc`).then(d=>{debts=d||[];renderDash();}).catch(()=>{renderDash();});
   }
   if(t==='debt')loadDebtsPWA();
   if(t==='grow'){loadGoalsPWA();loadStokvelList();}
@@ -4147,12 +4199,27 @@ function closeAbout(){
   const sheet=document.getElementById('about-sheet');
   if(sheet) sheet.style.transform='translateY(100%)';
   setTimeout(()=>{ if(overlay) overlay.style.display='none'; }, 350);
-  localStorage.setItem('rw_about_seen','1');
+  // Don't set permanent seen flag — we track by week count now
 }
 // Show About to new users (first login, hasn't seen it)
 function maybeShowAbout(){
   if(!getSetting('about_screen')) return;
-  if(!localStorage.getItem('rw_about_seen')){
+  const {tier, trialActive} = getTier();
+
+  // Never show to paid users
+  if(tier === 'pro' || tier === 'premium') return;
+
+  // For expired free users — never show (don't annoy them)
+  if(tier === 'free' && !trialActive) return;
+
+  // For trial users — show twice a week max
+  // Track: how many times shown this week
+  const now = new Date();
+  const weekKey = `rw_about_week_${now.getFullYear()}_W${Math.ceil(now.getDate()/7)}`;
+  const shownThisWeek = parseInt(localStorage.getItem(weekKey)||'0');
+
+  if(shownThisWeek < 2){
+    localStorage.setItem(weekKey, shownThisWeek + 1);
     setTimeout(showAbout, 800);
   }
 }
@@ -4304,27 +4371,79 @@ async function checkLockPin(){
 }
 
 async function lockBiometric(){
-  if(!window.PublicKeyCredential) return;
+  // Check basic support
+  if(!window.PublicKeyCredential){
+    showToast('Biometrics not supported on this device/browser');
+    return;
+  }
   try{
-    const available=await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-    if(!available){ showToast('Fingerprint not available on this device'); return; }
-    // Use credential get to trigger fingerprint
-    const credential=await navigator.credentials.get({
+    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+    if(!available){
+      showToast('No fingerprint sensor found — use your PIN');
+      return;
+    }
+
+    // Update subtitle to show we're waiting
+    const sub = document.getElementById('lock-subtitle');
+    if(sub) sub.textContent = 'Waiting for fingerprint...';
+
+    // PWA fingerprint approach: create a temporary credential to trigger biometric prompt
+    // We register a new credential each time (no server needed)
+    const userId = new TextEncoder().encode(user?.id || 'myrandwise-user');
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+
+    // Try to authenticate with any existing platform credential first
+    const assertResult = await navigator.credentials.get({
       publicKey:{
-        challenge: new Uint8Array(16),
-        timeout:60000,
-        userVerification:'required',
+        challenge,
+        timeout: 30000,
+        userVerification: 'required',
         rpId: window.location.hostname
       }
     }).catch(()=>null);
-    if(credential){
-      hideLockScreen();
+
+    if(assertResult){
+      // Fingerprint verified successfully
+      if(sub) sub.textContent = '✅ Fingerprint recognised';
+      setTimeout(()=>hideLockScreen(), 300);
+      return;
+    }
+
+    // No existing credential — register one now to trigger fingerprint
+    const regResult = await navigator.credentials.create({
+      publicKey:{
+        challenge,
+        rp:{ name:'MyRandWise', id: window.location.hostname },
+        user:{ id: userId, name: user?.email||'user', displayName: user?.name||'User' },
+        pubKeyCredParams:[{alg:-7,type:'public-key'},{alg:-257,type:'public-key'}],
+        authenticatorSelection:{
+          authenticatorAttachment:'platform',
+          userVerification:'required',
+          residentKey:'preferred'
+        },
+        timeout:30000
+      }
+    }).catch(()=>null);
+
+    if(regResult){
+      // Fingerprint registered and verified
+      if(sub) sub.textContent = '✅ Fingerprint set up';
+      setTimeout(()=>hideLockScreen(), 300);
     } else {
-      showToast('Fingerprint not recognised — use PIN');
+      if(sub) sub.textContent = 'Enter your PIN';
+      showToast('Fingerprint cancelled — use your PIN');
     }
   }catch(e){
-    // Biometric not set up or failed — fall back to PIN silently
-    console.warn('Biometric failed:',e.message);
+    const sub = document.getElementById('lock-subtitle');
+    if(sub) sub.textContent = 'Enter your PIN';
+    if(e.name === 'NotAllowedError'){
+      showToast('Fingerprint cancelled — use your PIN');
+    } else if(e.name === 'SecurityError'){
+      showToast('Fingerprint requires HTTPS — use your PIN');
+    } else {
+      console.warn('Biometric error:', e.name, e.message);
+      showToast('Fingerprint unavailable — use your PIN');
+    }
   }
 }
 
@@ -5089,6 +5208,7 @@ function exportPDF(){
 window.addEventListener('load',async()=>{
   // Load admin notification/popup settings from Supabase
   loadAppSettings(); // async, non-blocking
+  loadCustomCats(); // load any saved custom categories
 
   // App lock — init toggle state
   initLock();
@@ -5942,7 +6062,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v111';
+const APP_VERSION = '2026-04-24-v112';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6602,6 +6722,184 @@ function openSeeAll(){
 function closeSeeAll(){
   document.getElementById('see-all-screen').style.display = 'none';
 }
+
+// ── Custom Categories ─────────────────────────────────────────
+function openCustomCatSheet(){
+  const ov=document.getElementById('custom-cat-overlay');
+  if(ov){ ov.style.display='flex'; }
+  setTimeout(()=>{ document.getElementById('cc-name')?.focus(); },200);
+}
+function closeCustomCatSheet(){
+  const ov=document.getElementById('custom-cat-overlay');
+  if(ov) ov.style.display='none';
+  document.getElementById('cc-name').value='';
+  document.getElementById('cc-emoji').value='';
+}
+function saveCustomCat(){
+  const name=document.getElementById('cc-name').value.trim();
+  const emoji=document.getElementById('cc-emoji').value.trim()||'📦';
+  if(!name){ showToast('⚠️ Enter a category name'); return; }
+  // Add to CATS array
+  const id='custom_'+name.toLowerCase().replace(/\s+/g,'_')+Date.now();
+  const newCat={id,e:emoji,l:name,c:'#5f5e5a',custom:true};
+  CATS.push(newCat);
+  // Save to localStorage
+  const saved=JSON.parse(localStorage.getItem('rw_custom_cats')||'[]');
+  saved.push(newCat);
+  localStorage.setItem('rw_custom_cats',JSON.stringify(saved));
+  // Rebuild the category row and select the new one
+  openExpSheet();
+  closeCustomCatSheet();
+  // Auto-select the new category
+  setTimeout(()=>{
+    const el=document.querySelector(`[data-id="${id}"]`);
+    if(el) selectCat(el);
+  },100);
+  showToast(`✅ "${name}" added`);
+}
+function loadCustomCats(){
+  const saved=JSON.parse(localStorage.getItem('rw_custom_cats')||'[]');
+  saved.forEach(c=>{
+    if(!CATS.find(x=>x.id===c.id)) CATS.push(c);
+  });
+}
+
+// ── Monthly Summary ───────────────────────────────────────────
+function openMonthlySummary(){
+  const now=new Date();
+  const year=now.getFullYear();
+  const month=now.getMonth();
+  const monthName=now.toLocaleString('en-ZA',{month:'long'});
+  const daysInMonth=new Date(year,month+1,0).getDate();
+
+  // Filter this month's expenses
+  const monthStart=new Date(year,month,1);
+  const monthEnd=new Date(year,month,daysInMonth,23,59,59);
+  const monthExp=expenses.filter(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    return d>=monthStart&&d<=monthEnd;
+  });
+  const totalSpent=monthExp.reduce((s,e)=>s+Number(e.amount||0),0);
+
+  // Category breakdown
+  const cats={};
+  monthExp.forEach(e=>{const c=e.category||'Other';cats[c]=(cats[c]||0)+Number(e.amount||0);});
+  const topCats=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+
+  // Budget info
+  const {wb,disposable}=getSmartWeeklyBudget();
+  const monthlyBudget=disposable;
+  const budgetUsed=monthlyBudget>0?Math.round(totalSpent/monthlyBudget*100):0;
+  const saved=Math.max(0,monthlyBudget-totalSpent);
+  const over=Math.max(0,totalSpent-monthlyBudget);
+
+  // Debt payments this month (minimums × 1)
+  const totalDebtPayments=debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+
+  // Week breakdown
+  const weekTotals=[1,2,3,4].map(w=>{
+    const wStart=new Date(year,month,(w-1)*7+1,0,0,0);
+    const wEnd=new Date(year,month,Math.min(w*7,daysInMonth),23,59,59);
+    return monthExp.filter(e=>{const d=new Date(e.logged_at||e.created_at);return d>=wStart&&d<=wEnd;}).reduce((s,e)=>s+Number(e.amount||0),0);
+  });
+
+  // Grade
+  let grade,gradeColor,gradeMsg;
+  if(budgetUsed<=80){grade='A';gradeColor='#1a7a4a';gradeMsg='Excellent — you stayed well within budget';}
+  else if(budgetUsed<=100){grade='B';gradeColor='#639922';gradeMsg='Good — tight but you made it work';}
+  else if(budgetUsed<=120){grade='C';gradeColor='#ba7517';gradeMsg='Watch out — slightly over budget';}
+  else{grade='D';gradeColor='#a32d2d';gradeMsg='Over budget — let\'s plan better next month';}
+
+  document.getElementById('ms-title').textContent=`${monthName} summary 📊`;
+  document.getElementById('ms-subtitle').textContent=`${now.getDate()} of ${daysInMonth} days tracked`;
+
+  document.getElementById('ms-body').innerHTML=`
+    <!-- Grade card -->
+    <div style="background:${gradeColor};border-radius:16px;padding:20px;text-align:center;margin-bottom:16px;color:#fff">
+      <div style="font-size:48px;font-weight:900;line-height:1">${grade}</div>
+      <div style="font-size:13px;opacity:.85;margin-top:6px">${gradeMsg}</div>
+    </div>
+
+    <!-- Key numbers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:#f7f6f2;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#a32d2d">R${Math.round(totalSpent).toLocaleString('en-ZA')}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Total spent</div>
+      </div>
+      <div style="background:#f7f6f2;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:${saved>0?'#1a7a4a':'#a32d2d'}">${saved>0?'R'+Math.round(saved).toLocaleString('en-ZA'):'-R'+Math.round(over).toLocaleString('en-ZA')}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">${saved>0?'Saved':'Overspent'}</div>
+      </div>
+      <div style="background:#f7f6f2;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#534ab7">R${Math.round(totalDebtPayments).toLocaleString('en-ZA')}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Debt payments</div>
+      </div>
+      <div style="background:#f7f6f2;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;font-weight:800;color:#2c2c2a">${monthExp.length}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Transactions</div>
+      </div>
+    </div>
+
+    <!-- Week by week -->
+    <div style="background:#f7f6f2;border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Week by week</div>
+      ${weekTotals.map((amt,i)=>{
+        const pct=wb>0?Math.min(100,Math.round(amt/wb*100)):0;
+        const isOver=amt>wb&&wb>0;
+        return`<div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <div style="font-size:12px;color:#555">Week ${i+1}</div>
+            <div style="font-size:12px;font-weight:700;color:${isOver?'#a32d2d':'#1a7a4a'}">R${Math.round(amt).toLocaleString('en-ZA')}${isOver?' ⚠️':''}</div>
+          </div>
+          <div style="height:5px;background:#e0e0e0;border-radius:3px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${isOver?'#a32d2d':'#1a7a4a'};border-radius:3px"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Top spending categories -->
+    ${topCats.length?`
+    <div style="background:#f7f6f2;border-radius:14px;padding:14px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Top spending</div>
+      ${topCats.slice(0,5).map(([cat,amt])=>{
+        const pct=totalSpent>0?Math.round(amt/totalSpent*100):0;
+        return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:13px;flex:1;color:#2c2c2a;font-weight:600">${cat}</div>
+          <div style="font-size:12px;font-weight:700;color:#a32d2d">R${Math.round(amt).toLocaleString('en-ZA')}</div>
+          <div style="font-size:11px;color:#888;width:30px;text-align:right">${pct}%</div>
+        </div>`;
+      }).join('')}
+    </div>`:''}
+
+    <!-- Next month tip -->
+    <div style="background:#eaf3de;border-radius:14px;padding:14px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;color:#1a5c35;margin-bottom:4px">💡 For next month</div>
+      <div style="font-size:13px;color:#2d5a1e;line-height:1.5">
+        ${over>0?`You overspent by R${Math.round(over).toLocaleString('en-ZA')}. Try logging every expense the day you spend — it takes 20 seconds and makes a real difference.`
+        :topCats.length?`Your biggest spend was ${topCats[0][0]} at R${Math.round(topCats[0][1]).toLocaleString('en-ZA')}. Can you reduce it by 10% next month? That's R${Math.round(topCats[0][1]*0.1).toLocaleString('en-ZA')} back in your pocket.`
+        :'Keep logging every day — the more data, the more accurate your budget becomes.'}
+      </div>
+    </div>
+    <button onclick="closeMonthlySummary()" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:8px">Got it ✓</button>
+  `;
+
+  const ov=document.getElementById('monthly-summary-overlay');
+  if(ov){ ov.style.display='flex'; ov.scrollTop=0; }
+}
+function closeMonthlySummary(){
+  const ov=document.getElementById('monthly-summary-overlay');
+  if(ov) ov.style.display='none';
+}
+// Close on backdrop tap
+document.addEventListener('click',e=>{
+  const ccOv=document.getElementById('custom-cat-overlay');
+  if(e.target===ccOv) closeCustomCatSheet();
+  const msOv=document.getElementById('monthly-summary-overlay');
+  if(e.target===msOv) closeMonthlySummary();
+});
+
+
 
 function renderSeeAllFilters(){
   const cats = [...new Set(expenses.map(e=>e.category))].filter(Boolean);
