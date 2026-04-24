@@ -4274,10 +4274,13 @@ function initLock(){
   if(thumb) thumb.style.transform=enabled?'translateX(20px)':'translateX(0)';
   if(changeBtn) changeBtn.style.display=enabled?'block':'none';
 
-  // Check biometric support
+  // Fingerprint only works reliably in native APK, not PWA browser
+  // Hide it in browser to avoid confusion — will show in proper APK
   const bioBtn=document.getElementById('lock-bio-btn');
   if(bioBtn){
-    if(window.PublicKeyCredential){
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isAndroidApp = document.referrer.includes('android-app://');
+    if((isStandalone || isAndroidApp) && window.PublicKeyCredential){
       bioBtn.style.display='flex';
     } else {
       bioBtn.style.display='none';
@@ -6088,7 +6091,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v114';
+const APP_VERSION = '2026-04-24-v115';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -6765,27 +6768,51 @@ function saveCustomCat(){
   const name=document.getElementById('cc-name').value.trim();
   const emoji=document.getElementById('cc-emoji').value.trim()||'📦';
   if(!name){ showToast('⚠️ Enter a category name'); return; }
-  // Add to CATS array
-  const id='custom_'+name.toLowerCase().replace(/\s+/g,'_')+Date.now();
+
+  // Prevent duplicate names
+  const exists=CATS.find(c=>c.l.toLowerCase()===name.toLowerCase());
+  if(exists){ showToast('⚠️ That category already exists'); return; }
+
+  // Disable save button immediately to prevent double-tap
+  const btn=event?.target;
+  if(btn){ btn.disabled=true; btn.textContent='Adding...'; }
+
+  const id='custom_'+name.toLowerCase().replace(/\s+/g,'_');
   const newCat={id,e:emoji,l:name,c:'#5f5e5a',custom:true};
-  CATS.push(newCat);
-  // Save to localStorage
+
+  // Only add to CATS if not already there (prevent duplication on re-render)
+  if(!CATS.find(x=>x.id===id)) CATS.push(newCat);
+
+  // Save to localStorage — deduplicate before saving
   const saved=JSON.parse(localStorage.getItem('rw_custom_cats')||'[]');
-  saved.push(newCat);
-  localStorage.setItem('rw_custom_cats',JSON.stringify(saved));
-  // Rebuild the category row and select the new one
-  openExpSheet();
+  const deduped=saved.filter(c=>c.id!==id); // remove any existing with same id
+  deduped.push(newCat);
+  localStorage.setItem('rw_custom_cats',JSON.stringify(deduped));
+
   closeCustomCatSheet();
-  // Auto-select the new category
+
+  // Re-open expense sheet to show new category
   setTimeout(()=>{
-    const el=document.querySelector(`[data-id="${id}"]`);
-    if(el) selectCat(el);
-  },100);
+    openExpSheet();
+    setTimeout(()=>{
+      const el=document.querySelector(`[data-id="${id}"]`);
+      if(el) selectCat(el);
+    },100);
+  },50);
+
   showToast(`✅ "${name}" added`);
 }
+
 function loadCustomCats(){
   const saved=JSON.parse(localStorage.getItem('rw_custom_cats')||'[]');
-  saved.forEach(c=>{
+  // Deduplicate by id before loading
+  const seen=new Set();
+  const deduped=saved.filter(c=>{ if(seen.has(c.id)) return false; seen.add(c.id); return true; });
+  if(deduped.length!==saved.length){
+    // Clean up duplicates in storage
+    localStorage.setItem('rw_custom_cats',JSON.stringify(deduped));
+  }
+  deduped.forEach(c=>{
     if(!CATS.find(x=>x.id===c.id)) CATS.push(c);
   });
 }
