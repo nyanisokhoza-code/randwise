@@ -2550,6 +2550,17 @@ async function renderDash(){
   setTimeout(forceTop,200);
   setTimeout(forceTop,500);
   applyTierTheme();
+  // Handle PWA shortcut actions (log expense, view budget, debts, savings)
+  if(window._pendingShortcutAction){
+    const a = window._pendingShortcutAction;
+    window._pendingShortcutAction = null;
+    setTimeout(()=>{
+      if(a==='log_expense') openExpSheet();
+      else if(a==='weekly_planner') openWeeklyPlanner();
+      else if(a==='debts') switchTab('debt');
+      else if(a==='savings') switchTab('grow');
+    }, 500);
+  }
   setTimeout(loadAINudge, 1500);
   setTimeout(renderInsights, 300);
   setTimeout(checkDebtIntervention, 2000);
@@ -5395,6 +5406,11 @@ window.addEventListener('load',async()=>{
   loadAppSettings(); // async, non-blocking
   loadCustomCats(); // load any saved custom categories
 
+  // Handle PWA shortcuts (long-press icon on Android)
+  const _urlParams = new URLSearchParams(window.location.search);
+  const _shortcutAction = _urlParams.get('action');
+  if(_shortcutAction) window._pendingShortcutAction = _shortcutAction;
+
   // App lock — init toggle state
   initLock();
 
@@ -6253,7 +6269,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v120';
+const APP_VERSION = '2026-04-24-v121';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
