@@ -5269,6 +5269,10 @@ window.addEventListener('load',async()=>{
           if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
         }catch{}
         try{await loadExp();}catch{expenses=[];}
+        try{
+          const d=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
+          debts=Array.isArray(d)?d:[];
+        }catch{debts=[];}
         try{renderDash();}catch{}
         show('main');
         startLockTimer();
@@ -6062,7 +6066,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v112';
+const APP_VERSION = '2026-04-24-v113';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
