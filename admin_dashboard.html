@@ -99,6 +99,7 @@
   <div class="tab" onclick="showPage('alerts')">Alerts</div>
   <div class="tab" onclick="showPage('roadmap')">🗺 Roadmap</div>
   <div class="tab" onclick="showPage('impact');loadImpact()">💚 Impact</div>
+  <div class="tab" onclick="showPage('push')">🔔 Push</div>
 </div>
 
 <!-- OVERVIEW -->
@@ -535,6 +536,83 @@
 
 </div>
 
+<!-- PUSH NOTIFICATIONS PAGE -->
+<div class="page" id="page-push">
+
+  <div class="card">
+    <h3>🔔 Send Push Notification</h3>
+    <p style="font-size:12px;color:#888780;margin-bottom:20px">Send real push notifications to users' devices — even when the app is closed. Requires the <code style="background:rgba(0,0,0,.06);padding:2px 6px;border-radius:4px">send-push</code> Edge Function deployed in Supabase.</p>
+
+    <!-- Audience -->
+    <div style="margin-bottom:16px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Send to</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="push-aud-all" onclick="setPushAudience('all')" style="padding:8px 16px;border-radius:20px;border:2px solid #1a7a4a;background:#1a7a4a;color:#fff;font-size:13px;font-weight:700;cursor:pointer">All users</button>
+        <button id="push-aud-worse" onclick="setPushAudience('worse')" style="padding:8px 16px;border-radius:20px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer">😔 Feeling worse</button>
+        <button id="push-aud-one" onclick="setPushAudience('one')" style="padding:8px 16px;border-radius:20px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer">One user</button>
+      </div>
+    </div>
+
+    <!-- User ID field (shown only for "one") -->
+    <div id="push-userid-row" style="display:none;margin-bottom:16px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">User email</label>
+      <input id="push-user-email" type="email" placeholder="nyanisokhoza@gmail.com" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+    </div>
+
+    <!-- Title -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Notification title</label>
+      <input id="push-title" type="text" placeholder="MyRandWise 🌱" maxlength="50" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+    </div>
+
+    <!-- Body -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Message</label>
+      <textarea id="push-body" placeholder="Payday tomorrow — open MyRandWise to plan your month 🌱" maxlength="120" rows="3" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none;resize:none"></textarea>
+      <div style="font-size:11px;color:#888780;margin-top:4px">Keep it under 100 characters for best display</div>
+    </div>
+
+    <!-- Quick templates -->
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Quick templates</label>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button onclick="setPushTemplate('payday')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">💰 Payday reminder — "Plan your month before you spend it"</button>
+        <button onclick="setPushTemplate('budget')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">⚠️ Budget alert — "You're halfway through your weekly budget"</button>
+        <button onclick="setPushTemplate('worse')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">💚 Reach out to struggling users — "We noticed things are tough. We're here."</button>
+        <button onclick="setPushTemplate('feature')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">✨ New feature — "Something new is waiting for you in MyRandWise"</button>
+        <button onclick="setPushTemplate('log')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">📝 Daily log reminder — "Did you spend anything today? Log it in 20 seconds"</button>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div style="background:#1a1a2e;border-radius:16px;padding:16px;margin-bottom:20px">
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Preview on device</div>
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <img src="../icon_48.png" onerror="this.style.display='none'" style="width:36px;height:36px;border-radius:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#fff" id="push-preview-title">MyRandWise 🌱</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;line-height:1.4" id="push-preview-body">Your message will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Send button -->
+    <button onclick="sendPushNotification()" id="push-send-btn" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">
+      🔔 Send Push Notification
+    </button>
+    <div id="push-result" style="margin-top:12px;font-size:13px;text-align:center;color:#888780"></div>
+  </div>
+
+  <!-- Push stats -->
+  <div class="card">
+    <h3>📊 Push subscription stats</h3>
+    <div id="push-stats">
+      <button onclick="loadPushStats()" style="background:#1a7a4a;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Load stats</button>
+    </div>
+  </div>
+
+</div>
+
 <script>
 const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
@@ -912,6 +990,90 @@ async function loadData() {
     document.getElementById('lastUpdated').textContent = 'Error loading data';
   }
 }
+
+// ── Push Notification Admin ───────────────────────────────────
+let pushAudience = 'all';
+
+function setPushAudience(aud){
+  pushAudience = aud;
+  ['all','worse','one'].forEach(a=>{
+    const btn = document.getElementById('push-aud-'+a);
+    if(!btn) return;
+    const active = a === aud;
+    btn.style.background = active ? '#1a7a4a' : '#fff';
+    btn.style.color = active ? '#fff' : '#555';
+    btn.style.borderColor = active ? '#1a7a4a' : '#e8e6de';
+  });
+  document.getElementById('push-userid-row').style.display = aud==='one' ? 'block' : 'none';
+}
+
+function setPushTemplate(type){
+  const templates = {
+    payday:  { title: 'Payday is here 💰', body: 'Open MyRandWise and plan your month before you spend it.' },
+    budget:  { title: 'Budget check ⚠️', body: "You're halfway through your weekly budget. Tap to see where you stand." },
+    worse:   { title: 'We noticed things are tough 💚', body: 'MyRandWise is here to help. Open the app to see your debt plan.' },
+    feature: { title: 'Something new in MyRandWise ✨', body: "We've added new features to help you take control of your money." },
+    log:     { title: 'Did you spend anything today? 📝', body: 'Log your expenses in 20 seconds. Staying on track starts here.' },
+  };
+  const t = templates[type];
+  if(!t) return;
+  document.getElementById('push-title').value = t.title;
+  document.getElementById('push-body').value = t.body;
+  updatePushPreview();
+}
+
+function updatePushPreview(){
+  const title = document.getElementById('push-title')?.value || 'MyRandWise 🌱';
+  const body = document.getElementById('push-body')?.value || 'Your message will appear here';
+  const pt = document.getElementById('push-preview-title');
+  const pb = document.getElementById('push-preview-body');
+  if(pt) pt.textContent = title;
+  if(pb) pb.textContent = body;
+}
+
+setTimeout(()=>{
+  document.getElementById('push-title')?.addEventListener('input', updatePushPreview);
+  document.getElementById('push-body')?.addEventListener('input', updatePushPreview);
+}, 500);
+
+async function sendPushNotification(){
+  const title = document.getElementById('push-title').value.trim() || 'MyRandWise 🌱';
+  const body = document.getElementById('push-body').value.trim();
+  if(!body){ alert('Enter a message first'); return; }
+  const btn = document.getElementById('push-send-btn');
+  const result = document.getElementById('push-result');
+  btn.disabled = true; btn.textContent = 'Sending...'; result.textContent = '';
+  const payload = { title, body, url: './' };
+  if(pushAudience === 'one'){
+    const email = document.getElementById('push-user-email').value.trim();
+    if(!email){ alert('Enter a user email'); btn.disabled=false; btn.textContent='🔔 Send Push Notification'; return; }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?email=eq.${encodeURIComponent(email)}&select=id`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json()).catch(()=>[]);
+    if(!r[0]?.id){ result.textContent='❌ User not found'; btn.disabled=false; btn.textContent='🔔 Send Push Notification'; return; }
+    payload.user_id = r[0].id;
+  } else if(pushAudience === 'worse'){
+    payload.segment = 'worse';
+  } else {
+    payload.all = true;
+  }
+  try{
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-push`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data = await resp.json();
+    if(data.error){ result.innerHTML=`<span style="color:#a32d2d">❌ Error: ${data.error}</span>`; }
+    else{ result.innerHTML=`<span style="color:#1a5c35">✅ Sent to ${data.sent} user${data.sent!==1?'s':''} · ${data.failed||0} failed</span>`; }
+  }catch(e){ result.innerHTML=`<span style="color:#a32d2d">❌ ${e.message}</span>`; }
+  btn.disabled=false; btn.textContent='🔔 Send Push Notification';
+}
+
+async function loadPushStats(){
+  const el = document.getElementById('push-stats');
+  el.innerHTML='<div style="color:#888780;font-size:13px">Loading...</div>';
+  const h={'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON};
+  const users=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,push_subscription`,{headers:h}).then(r=>r.json()).catch(()=>[]);
+  const sub=users.filter(u=>u.push_subscription);
+  const nosub=users.filter(u=>!u.push_subscription);
+  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div style="background:#eaf3de;border-radius:12px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1a5c35">${sub.length}</div><div style="font-size:12px;color:#5a8a6a;margin-top:3px">Subscribed to push</div></div><div style="background:#f7f6f2;border-radius:12px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:900;color:#888780">${nosub.length}</div><div style="font-size:12px;color:#888780;margin-top:3px">Not subscribed</div></div></div>${sub.length?'<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Subscribed users</div>'+sub.map(u=>`<div style="font-size:13px;padding:8px 0;border-bottom:1px solid #f0efe9">${u.name||'—'}</div>`).join(''):'<div style="color:#888780;font-size:13px">No push subscribers yet.</div>'}`;
+}
+
 
 async function loadImpact(){
   const h = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON };
