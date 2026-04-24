@@ -1625,11 +1625,16 @@ if('serviceWorker' in navigator){
   </div>
 
   <div style="padding:16px">
+    <!-- Month overview strip - all 4 weeks at a glance -->
+    <div id="wp-month-overview" style="display:flex;gap:6px;margin-bottom:12px"></div>
+
     <!-- Left this week big number -->
     <div style="text-align:center;padding:20px 0 16px">
-      <div style="font-size:12px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Left this week</div>
+      <div style="font-size:12px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px" id="wp-left-label">Left this week</div>
       <div style="font-size:48px;font-weight:900;color:#1a5c35;line-height:1;letter-spacing:-2px" id="wp-left">R0</div>
       <div style="font-size:13px;color:#5a8a6a;margin-top:6px" id="wp-of-total">of R0 weekly budget</div>
+      <!-- Overspend detail (shown when over budget with rollover) -->
+      <div id="wp-overspend-detail" style="display:none;margin:6px auto 0;font-size:12px;color:#a32d2d;font-weight:600"></div>
       <!-- Carry-over badge - hidden by default, shown by JS -->
       <div id="wp-carryover-badge" style="display:none;margin:8px auto 0;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;width:fit-content;max-width:280px"></div>
       <div style="height:6px;background:#c8e6cf;border-radius:4px;overflow:hidden;margin:12px 24px 0">
@@ -2770,10 +2775,12 @@ async function delExp(id){expenses=expenses.filter(e=>e.id!==id);renderDash();if
 
 // ── Tabs ──────────────────────────────────────────────────────
 function switchTab(t){
-  // Guard: if trial expired, keep showing upgrade wall
-  if(user&&(user.tier||'free')==='free'&&user.created_at){
-    const days=Math.floor((Date.now()-new Date(user.created_at).getTime())/86400000);
-    if(days>=14){showUpgradeWall(true);return;}
+  // Guard: Pro-only tabs for expired free users
+  const {isPro, trialActive} = getTier();
+  const proOnlyTabs = ['import']; // only import is fully blocked for free
+  if(!isPro && proOnlyTabs.includes(t)){
+    showUpgradeWall(false);
+    return;
   }
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
@@ -3618,45 +3625,95 @@ function sendLocalNotification(title, body, icon){
 
 function schedulePushNudges(){
   if(!isPushEnabled()) return;
+  if(!getSetting('daily_reminder') && !getSetting('share_nudge')) return;
   const now = new Date();
   const hour = now.getHours();
-  const inc = Number(user?.income_amount || 0);
   const totalExp = expenses.reduce((s,e) => s + Number(e.amount||0), 0);
   const weekBudget = getSmartWeeklyBudget().wb;
   const pctUsed = weekBudget > 0 ? Math.round(totalExp/weekBudget*100) : 0;
+  const name = user?.name?.split(' ')[0] || 'there';
 
-  // Evening reminder if no expenses logged today
+  // Today's expenses
   const todayExp = expenses.filter(e => {
     const d = new Date(e.logged_at || e.created_at);
     return d.toDateString() === now.toDateString();
   });
+  const todayTotal = todayExp.reduce((s,e)=>s+Number(e.amount||0),0);
 
-  // Only schedule if in evening (after 6pm) and no expenses today
-  if(hour >= 18 && todayExp.length === 0){
-    setTimeout(()=>{
+  // Schedule 8pm daily reminder if user hasn't logged today
+  // Works when app is open. For background delivery, Service Worker handles it.
+  const msUntil8pm = (() => {
+    const target = new Date(now);
+    target.setHours(20, 0, 0, 0);
+    if(target <= now) return 0; // already past 8pm
+    return target.getTime() - now.getTime();
+  })();
+
+  if(todayExp.length === 0){
+    const delay = msUntil8pm > 0 ? msUntil8pm : 0;
+    if(msUntil8pm > 0){
+      // Schedule for exactly 8pm
+      setTimeout(()=>{
+        if(!isPushEnabled()) return;
+        const stillNoExp = expenses.filter(e=>new Date(e.logged_at||e.created_at).toDateString()===new Date().toDateString()).length===0;
+        if(stillNoExp){
+          sendLocalNotification(
+            `Hey ${name}, did you spend anything today? 💸`,
+            'Tap to log your expenses — it takes 20 seconds to stay on track.',
+          );
+        }
+      }, delay);
+    } else if(hour >= 20) {
+      // It's already past 8pm and nothing logged
       sendLocalNotification(
-        'Did you spend anything today? 💸',
-        'Log your expenses now to keep your budget on track.',
+        `Hey ${name}, did you spend anything today? 💸`,
+        'Tap to log your expenses — it takes 20 seconds to stay on track.',
       );
-    }, 5000);
+    }
   }
 
-  // Weekly budget warning
+  // Store notification schedule in localStorage for SW to check
+  const notifSchedule = {
+    dailyReminder: { hour: 20, enabled: todayExp.length === 0 },
+    userName: name,
+    weekBudget,
+    pctUsed,
+    payDay: user?.pay_day || 25,
+    lastScheduled: now.toISOString()
+  };
+  localStorage.setItem('rw_notif_schedule', JSON.stringify(notifSchedule));
+
+  // Weekly budget warning (fires immediately if already over)
   if(pctUsed >= 80 && pctUsed < 100){
     setTimeout(()=>{
       sendLocalNotification(
         `Budget alert — ${pctUsed}% used this week`,
-        `You've used R${totalExp.toLocaleString('en-ZA')} of your R${weekBudget.toLocaleString('en-ZA')} weekly budget.`,
+        `You have R${Math.max(0,weekBudget-totalExp).toLocaleString('en-ZA')} left. Slow down on spending.`,
       );
-    }, 8000);
+    }, 10000);
   }
 
-  // Payday celebration
+  // Share nudge — frequency controlled by admin
+  const shareFreqMap={'weekly':7,'biweekly':14,'monthly':30};
+  const shareFreqDays=shareFreqMap[getSetting('share_nudge_frequency')]||7;
+  const lastShareNudge = localStorage.getItem('rw_share_nudge_week');
+  const thisWeek = `${now.getFullYear()}-W${Math.ceil(now.getDate()/7)}`;
+  if(now.getDay() === 6 && lastShareNudge !== thisWeek){ // Saturday
+    localStorage.setItem('rw_share_nudge_week', thisWeek);
+    setTimeout(()=>{
+      sendLocalNotification(
+        'Know someone struggling with money? 🌱',
+        'Share MyRandWise — it could change their financial life.',
+      );
+    }, 15000);
+  }
+
+  // Payday
   const payDay = user?.pay_day || 25;
   if(now.getDate() === payDay){
     setTimeout(()=>{
       sendLocalNotification(
-        '🎉 Payday! Plan your month now',
+        `🎉 Payday, ${name}! Plan your month now`,
         'Your salary should be hitting. Open MyRandWise to allocate your budget.',
       );
     }, 3000);
@@ -3828,17 +3885,23 @@ function generatePromoCard(){
 
 // ══ DEBT INTERVENTION ═══════════════════════════════════════
 const DI_KEY = 'rw_di_last_shown';
-const DI_THRESHOLD_1 = 0.4;  // 40% — yellow alert
+const DI_THRESHOLD_1 = 0.4;  // 40% — yellow alert (base, overridden by admin setting)
 const DI_THRESHOLD_2 = 0.6;  // 60% — orange alert
 const DI_THRESHOLD_3 = 0.8;  // 80% — red emergency
 
 function checkDebtIntervention(){
+  if(!getSetting('debt_intervention')) return;
   if(!user || !debts?.length) return;
   const inc = Number(user.income_amount||0);
   if(inc <= 0) return;
   const totalDebt = debts.reduce((s,d)=>s+Number(d.balance||0),0);
-  const dti = totalDebt / inc; // debt-to-income ratio (months of income)
-  const dtiPct = Math.round(dti * 100); // as % of monthly income
+  const dti = totalDebt / inc;
+  const dtiPct = Math.round(dti * 100);
+  // Use admin-configured threshold as the minimum trigger point
+  const adminThreshold = Number(getSetting('debt_intervention_threshold'))/100 || 0.4;
+  const t1 = Math.max(adminThreshold, 0.4);
+  const t2 = Math.max(t1 + 0.2, 0.6);
+  const t3 = Math.max(t2 + 0.2, 0.8);
 
   // Only show once per week per threshold level
   const lastShown = localStorage.getItem(DI_KEY);
@@ -3846,9 +3909,9 @@ function checkDebtIntervention(){
   if(lastShown && Number(lastShown) > weekAgo) return;
 
   let level = null;
-  if(dti >= DI_THRESHOLD_3) level = 'critical';
-  else if(dti >= DI_THRESHOLD_2) level = 'high';
-  else if(dti >= DI_THRESHOLD_1) level = 'moderate';
+  if(dti >= t3) level = 'critical';
+  else if(dti >= t2) level = 'high';
+  else if(dti >= t1) level = 'moderate';
   if(!level) return;
 
   const name = (user.name||'').split(' ')[0] || 'Friend';
@@ -4021,6 +4084,7 @@ const WHATS_NEW = {
 };
 
 function showWhatsNew(version){
+  if(!getSetting('whats_new_popup')) return;
   const key='rw_wn_seen_'+version;
   if(localStorage.getItem(key)) return; // already seen
   localStorage.setItem(key,'1');
@@ -4087,6 +4151,7 @@ function closeAbout(){
 }
 // Show About to new users (first login, hasn't seen it)
 function maybeShowAbout(){
+  if(!getSetting('about_screen')) return;
   if(!localStorage.getItem('rw_about_seen')){
     setTimeout(showAbout, 800);
   }
@@ -4712,36 +4777,56 @@ function renderWeeklyPlanner(weekNum){
   const left=Math.max(0,effectiveWb-spent);
   const pct=effectiveWb>0?Math.min(100,Math.round(spent/effectiveWb*100)):0;
 
-  // Big number
+  // Month overview strip — all 4 weeks at a glance
+  const overviewEl=document.getElementById('wp-month-overview');
+  if(overviewEl){
+    overviewEl.innerHTML=[1,2,3,4].map(wk=>{
+      const wkSpent=getWeekSpent(wk,year,month);
+      const wkCarry=getWeekCarryover(wk,wb,year,month);
+      const wkBudget=Math.max(0,wb+wkCarry);
+      const isOver=wkSpent>wkBudget&&wkBudget>0;
+      const isEmpty=wkSpent===0&&wk>currentWeek;
+      const isCurrent=wk===currentWeek;
+      const bg=isCurrent?'rgba(255,255,255,0.25)':isOver?'rgba(198,40,40,0.3)':wkSpent>0?'rgba(255,255,255,0.12)':'rgba(255,255,255,0.07)';
+      const border=isCurrent?'2px solid rgba(255,255,255,0.6)':isOver?'2px solid rgba(198,40,40,0.5)':'2px solid transparent';
+      const label=isEmpty?'—':isOver?'-R'+Math.round(wkSpent-wkBudget).toLocaleString('en-ZA'):'R'+Math.round(wkSpent).toLocaleString('en-ZA');
+      const sublabel=isEmpty?'future':isOver?'over':'spent';
+      return`<div onclick="selectWeek(${wk})" style="flex:1;background:${bg};border:${border};border-radius:12px;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s"><div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;margin-bottom:2px">Wk ${wk}${isCurrent?' ●':''}</div><div style="font-size:12px;font-weight:800;color:${isOver?'#ff8a80':'#fff'}">${label}</div><div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:1px">${sublabel}</div></div>`;
+    }).join('');
+  }
+
+  // Big number — show overspend or left
   const wpLeft=document.getElementById('wp-left');
+  const wpLeftLabel=document.getElementById('wp-left-label');
   const wpOf=document.getElementById('wp-of-total');
   const wpBar=document.getElementById('wp-progress-bar');
   const wpSpent=document.getElementById('wp-spent');
-  if(wpLeft)wpLeft.textContent='R'+left.toLocaleString('en-ZA');
-  // Show carry-over in the "of total" label
-  let ofLabel=`of R${wb.toLocaleString('en-ZA')} weekly budget`;
-  if(carryover>0) ofLabel=`of R${effectiveWb.toLocaleString('en-ZA')} (R${wb.toLocaleString('en-ZA')} + R${carryover.toLocaleString('en-ZA')} rollover)`;
-  else if(carryover<0) ofLabel=`of R${effectiveWb.toLocaleString('en-ZA')} (R${wb.toLocaleString('en-ZA')} − R${Math.abs(carryover).toLocaleString('en-ZA')} overspend)`;
+  const overspend=spent>effectiveWb?Math.round(spent-effectiveWb):0;
+  if(overspend>0){
+    if(wpLeft){wpLeft.textContent='R'+overspend.toLocaleString('en-ZA');wpLeft.style.color='#c62828';}
+    if(wpLeftLabel)wpLeftLabel.textContent='Over budget by';
+    const ovDetail=document.getElementById('wp-overspend-detail');
+    if(ovDetail){ovDetail.style.display='block';ovDetail.textContent='Spent R'+spent.toLocaleString('en-ZA')+' of R'+effectiveWb.toLocaleString('en-ZA')+' available';}
+  } else {
+    if(wpLeft){wpLeft.textContent='R'+left.toLocaleString('en-ZA');wpLeft.style.color='#1a5c35';}
+    if(wpLeftLabel)wpLeftLabel.textContent='Left this week';
+    const ovDetail=document.getElementById('wp-overspend-detail');
+    if(ovDetail)ovDetail.style.display='none';
+  }
+  let ofLabel='of R'+wb.toLocaleString('en-ZA')+' weekly budget';
+  if(carryover>0) ofLabel='of R'+effectiveWb.toLocaleString('en-ZA')+' (R'+wb.toLocaleString('en-ZA')+' + R'+carryover.toLocaleString('en-ZA')+' rollover)';
+  else if(carryover<0) ofLabel='of R'+effectiveWb.toLocaleString('en-ZA')+' (R'+wb.toLocaleString('en-ZA')+' − R'+Math.abs(carryover).toLocaleString('en-ZA')+' carried over)';
   if(wpOf)wpOf.textContent=ofLabel;
-  if(wpBar){wpBar.style.width=pct+'%';wpBar.style.background=pct>90?'#c62828':pct>70?'#f59e0b':'#1a5c35';}
+  if(wpBar){wpBar.style.width=Math.min(100,pct)+'%';wpBar.style.background=pct>100?'#c62828':pct>70?'#f59e0b':'#1a5c35';}
   if(wpSpent)wpSpent.textContent='R'+Math.round(spent).toLocaleString('en-ZA');
 
   // Carry-over badge
   const badge=document.getElementById('wp-carryover-badge');
   if(badge){
-    if(carryover>0){
-      badge.style.display='block';
-      badge.style.background='#e8f5e9';badge.style.color='#1a5c35';badge.style.border='1px solid #a5d6a7';
-      badge.textContent=`✅ +R${carryover.toLocaleString('en-ZA')} rollover from last week`;
-    } else if(carryover<0){
-      badge.style.display='block';
-      badge.style.background='#fdecea';badge.style.color='#a32d2d';badge.style.border='1px solid #f5c6c6';
-      badge.textContent=`⚠️ −R${Math.abs(carryover).toLocaleString('en-ZA')} overspend from last week`;
-    } else {
-      badge.style.display='none';
-    }
+    if(carryover>0){badge.style.display='block';badge.style.background='#e8f5e9';badge.style.color='#1a5c35';badge.style.border='1px solid #a5d6a7';badge.textContent='✅ +R'+carryover.toLocaleString('en-ZA')+' rollover from last week';}
+    else if(carryover<0){badge.style.display='block';badge.style.background='#fdecea';badge.style.color='#a32d2d';badge.style.border='1px solid #f5c6c6';badge.textContent='⚠️ −R'+Math.abs(carryover).toLocaleString('en-ZA')+' overspend carried from last week';}
+    else{badge.style.display='none';}
   }
-
   // Daily left (only for current week)
   const dailyLeft=daysLeft>0?Math.round(left/daysLeft):0;
   const wpDailyLeft=document.getElementById('wp-daily-left');
@@ -5002,6 +5087,9 @@ function exportPDF(){
 
 // ── Auto-login ────────────────────────────────────────────────
 window.addEventListener('load',async()=>{
+  // Load admin notification/popup settings from Supabase
+  loadAppSettings(); // async, non-blocking
+
   // App lock — init toggle state
   initLock();
 
@@ -5480,18 +5568,55 @@ async function checkConnectivity(){
 }
 
 async function checkManualMaintenanceFlag(){
-  // Check Supabase for a manual maintenance flag set by admin
   try{
     const r = await fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
       headers:{'apikey':AK,'Authorization':'Bearer '+AK},
       signal:AbortSignal.timeout(4000)
     });
-    if(r.ok){
-      const data = await r.json();
-      return data?.[0]?.value === 'true';
-    }
+    if(r.ok){const data=await r.json();return data?.[0]?.value==='true';}
   }catch{}
   return false;
+}
+
+// Global notification/popup settings loaded from app_config
+let APP_SETTINGS = {
+  daily_reminder: true,
+  debt_intervention: true,
+  debt_intervention_threshold: 60,
+  share_nudge: true,
+  share_nudge_frequency: 'weekly',
+  whats_new_popup: true,
+  about_screen: true,
+  monthly_recap: true,
+  upgrade_nudge: true,
+  upgrade_nudge_text: "Unlock the full power of MyRandWise — from R49/mo"
+};
+
+async function loadAppSettings(){
+  try{
+    const r=await fetch(`${SB}/rest/v1/app_config?key=like.setting_*&select=key,value`,{
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK},
+      signal:AbortSignal.timeout(4000)
+    });
+    if(r.ok){
+      const data=await r.json();
+      data.forEach(row=>{
+        const k=row.key.replace('setting_','');
+        if(k in APP_SETTINGS){
+          // Parse booleans, numbers and strings
+          const v=row.value;
+          if(v==='true')APP_SETTINGS[k]=true;
+          else if(v==='false')APP_SETTINGS[k]=false;
+          else if(!isNaN(Number(v))&&v!=='')APP_SETTINGS[k]=Number(v);
+          else APP_SETTINGS[k]=v;
+        }
+      });
+    }
+  }catch(e){console.warn('Could not load app settings, using defaults',e);}
+}
+
+function getSetting(key){
+  return APP_SETTINGS[key]??true;
 }
 
 function goToMaintenance(reason){
@@ -5605,37 +5730,93 @@ function getTier(){
 }
 
 function applyTierTheme(){
-  const{tier,trialActive,isPro}=getTier();
+  const{tier,trialActive,trialDays,isPro,isPremium}=getTier();
   const root=document.getElementById('app');
   if(!root)return;
   root.classList.remove('theme-free','theme-pro','theme-premium');
-  if(tier==='premium')root.classList.add('theme-premium');
-  else if(tier==='pro'||trialActive)root.classList.add('theme-pro');
+  if(isPremium)root.classList.add('theme-premium');
+  else if(isPro)root.classList.add('theme-pro');
   else root.classList.add('theme-free');
-  // Show/hide Pro-gated features
+
+  // Trial / upgrade banner
+  const trialBanner=document.getElementById('trial');
+  if(trialBanner){
+    if(tier==='free'&&trialActive){
+      trialBanner.style.display='flex';
+      const trialT=document.getElementById('trial-t');
+      const trialC=document.getElementById('trial-c');
+      if(trialDays<=3){
+        trialBanner.style.background='#ffebee';trialBanner.style.borderBottom='.5px solid #ffcdd2';
+        if(trialT){trialT.textContent=`⚠️ ${trialDays} day${trialDays!==1?'s':''} left — expires soon!`;trialT.style.color='#c62828';}
+        if(trialC)trialC.style.color='#c62828';
+      } else if(trialDays<=5){
+        trialBanner.style.background='#fffde7';trialBanner.style.borderBottom='.5px solid #fff176';
+        if(trialT){trialT.textContent=`🕐 ${trialDays} days left — upgrade soon`;trialT.style.color='#f57f17';}
+        if(trialC)trialC.style.color='#f57f17';
+      } else {
+        trialBanner.style.background='';trialBanner.style.borderBottom='';
+        if(trialT){trialT.textContent=`🎁 ${trialDays} day${trialDays!==1?'s':''} left in your free trial`;trialT.style.color='';}
+      }
+      const trialCBtn=document.getElementById('trial-c');
+      if(trialCBtn)trialCBtn.onclick=()=>showUpgradeWall(false);
+    } else if(tier==='free'&&!trialActive){
+      // Trial expired — soft nudge, not hard block
+      trialBanner.style.display='flex';
+      trialBanner.style.background='#f3e5f5';trialBanner.style.borderBottom='.5px solid #ce93d8';
+      const trialT=document.getElementById('trial-t');
+      const trialC=document.getElementById('trial-c');
+      if(trialT){trialT.textContent='🔓 Free plan — tap to unlock Pro features';trialT.style.color='#6a1b9a';}
+      if(trialC){trialC.textContent='Upgrade →';trialC.style.color='#6a1b9a';trialC.onclick=()=>showUpgradeWall(false);}
+    } else {
+      trialBanner.style.display='none';
+    }
+  }
+
+  // Pro-gated features (soft lock — user sees blurred card, taps to upgrade)
   const proFeatures=['daily-dots-row','stat-debt-card','stat-goal-card','snowball-card','debt-score-card','debt-total-bar'];
   proFeatures.forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
     if(!isPro){
-      // Wrap in locked overlay if not already
       if(!el.querySelector('.tier-lock-overlay')){
-        el.style.position='relative';
-        el.style.overflow='hidden';
-        const overlay=document.createElement('div');
-        overlay.className='tier-lock-overlay';
-        overlay.style.cssText='position:absolute;inset:0;background:rgba(240,250,244,0.85);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:14px;z-index:10';
-        overlay.innerHTML=`<div style="font-size:18px;margin-bottom:4px">🔒</div><div style="font-size:11px;font-weight:700;color:#1a5c35">Pro feature</div><div style="font-size:10px;color:#5a8a6a;margin-top:2px">Tap to upgrade</div>`;
-        overlay.onclick=()=>showUpgradeWall(false);
-        el.appendChild(overlay);
+        el.style.position='relative';el.style.overflow='hidden';
+        const ov=document.createElement('div');
+        ov.className='tier-lock-overlay';
+        ov.style.cssText='position:absolute;inset:0;background:rgba(240,250,244,0.88);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:14px;z-index:10';
+        const nudgeMsg=getSetting('upgrade_nudge')?`<div style="font-size:10px;color:#1a5c35;margin-top:5px;line-height:1.4;text-align:center;padding:0 6px;font-weight:600">${getSetting('upgrade_nudge_text')}</div>`:'<div style="font-size:10px;color:#5a8a6a;margin-top:2px">Tap to upgrade</div>';
+        ov.innerHTML='<div style="font-size:20px;margin-bottom:4px">🔒</div><div style="font-size:12px;font-weight:700;color:#1a5c35">Pro feature</div>'+nudgeMsg;
+        ov.onclick=()=>showUpgradeWall(false);
+        el.appendChild(ov);
       }
     } else {
-      // Remove lock overlay if exists
-      const overlay=el.querySelector('.tier-lock-overlay');
-      if(overlay)overlay.remove();
+      const ov=el.querySelector('.tier-lock-overlay');
+      if(ov)ov.remove();
       el.style.overflow='';
     }
   });
+
+  // Premium-gated: stokvel
+  const premiumFeatures=['stokvel-section'];
+  premiumFeatures.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    if(!isPremium){
+      if(!el.querySelector('.tier-lock-overlay')){
+        el.style.position='relative';el.style.overflow='hidden';
+        const ov=document.createElement('div');
+        ov.className='tier-lock-overlay';
+        ov.style.cssText='position:absolute;inset:0;background:rgba(237,233,254,0.88);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;border-radius:14px;z-index:10';
+        ov.innerHTML='<div style="font-size:20px;margin-bottom:4px">👑</div><div style="font-size:12px;font-weight:700;color:#534ab7">Premium feature</div><div style="font-size:10px;color:#534ab7;margin-top:2px;opacity:.7">Tap to upgrade</div>';
+        ov.onclick=()=>showUpgradeWall(false);
+        el.appendChild(ov);
+      }
+    } else {
+      const ov=el.querySelector('.tier-lock-overlay');
+      if(ov)ov.remove();
+      el.style.overflow='';
+    }
+  });
+
   // Import tab lock
   const importLock=document.getElementById('import-lock-banner');
   if(importLock)importLock.style.display=isPro?'none':'block';
@@ -5761,7 +5942,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v109';
+const APP_VERSION = '2026-04-24-v111';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
