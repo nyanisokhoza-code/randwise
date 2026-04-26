@@ -224,6 +224,15 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .err-msg{font-size:12px;color:var(--r);margin-bottom:10px;line-height:1.5;display:none}
 .reset-sent{background:var(--gl);border-radius:12px;padding:12px;font-size:13px;color:var(--gd);line-height:1.6;text-align:center;margin-bottom:12px;display:none}
+  @keyframes confettiFall{
+    0%{transform:translateY(0) rotate(0deg);opacity:1;}
+    100%{transform:translateY(100vh) rotate(720deg);opacity:0;}
+  }
+  @keyframes bounceIn{
+    0%{transform:scale(.5);opacity:0;}
+    70%{transform:scale(1.05);}
+    100%{transform:scale(1);opacity:1;}
+  }
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
 </head>
@@ -2550,17 +2559,6 @@ async function renderDash(){
   setTimeout(forceTop,200);
   setTimeout(forceTop,500);
   applyTierTheme();
-  // Handle PWA shortcut actions (log expense, view budget, debts, savings)
-  if(window._pendingShortcutAction){
-    const a = window._pendingShortcutAction;
-    window._pendingShortcutAction = null;
-    setTimeout(()=>{
-      if(a==='log_expense') openExpSheet();
-      else if(a==='weekly_planner') openWeeklyPlanner();
-      else if(a==='debts') switchTab('debt');
-      else if(a==='savings') switchTab('grow');
-    }, 500);
-  }
   setTimeout(loadAINudge, 1500);
   setTimeout(renderInsights, 300);
   setTimeout(checkDebtIntervention, 2000);
@@ -2781,25 +2779,59 @@ async function renderDash(){
     }
   }
 
-  // ── DEBT SCORE ─────────────────────────────────────────────
-  const totalDebt=expenses.filter(e=>e.category==='Loan payment'||e.category_id==='loan').reduce((s,e)=>s+Number(e.amount),0);
-  const debtRatio=inc>0?Math.min(totalDebt/inc,1):0;
-  const rawScore=Math.max(0,Math.round((1-debtRatio)*70+(sp/Math.max(inc,1))*30));
+  // ── DEBT SCORE — transparent 4-component calculation ──────
+  const debtListForScore=(typeof debts!=='undefined'&&Array.isArray(debts))?debts:[];
+  const totalDebtForScore=debtListForScore.reduce((s,d)=>s+Number(d.balance||0),0);
+  const totalMinPayments=debtListForScore.reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const numDebts=debtListForScore.length;
+
+  // Component 1: Debt-to-income ratio (40% weight)
+  // Good: debt < 3x income. Bad: debt > 10x income
+  const dtiMonths=inc>0?totalDebtForScore/inc:0;
+  const dtiScore=dtiMonths<=0?100:dtiMonths<=3?90:dtiMonths<=6?75:dtiMonths<=10?55:dtiMonths<=20?35:15;
+  const dtiLabel=dtiMonths<=3?'Excellent':dtiMonths<=6?'Good':dtiMonths<=10?'Fair':dtiMonths<=20?'High':'Very high';
+
+  // Component 2: Minimum payments vs income (30% weight)
+  // Good: min payments < 20% of income. Bad: > 40%
+  const minPctOfIncome=inc>0?(totalMinPayments/inc)*100:0;
+  const minScore=minPctOfIncome<=0?100:minPctOfIncome<=10?95:minPctOfIncome<=20?75:minPctOfIncome<=30?55:minPctOfIncome<=40?35:15;
+  const minLabel=minPctOfIncome<=10?'Excellent':minPctOfIncome<=20?'Good':minPctOfIncome<=30?'Fair':minPctOfIncome<=40?'High':'Critical';
+
+  // Component 3: Number of debts (20% weight)
+  const numScore=numDebts===0?100:numDebts===1?90:numDebts===2?75:numDebts===3?55:numDebts<=5?35:15;
+  const numLabel=numDebts===0?'Debt free':numDebts===1?'Excellent':numDebts===2?'Good':numDebts===3?'Fair':numDebts<=5?'High':'Critical';
+
+  // Component 4: Payoff progress (10% weight)
+  // Based on whether debts are being reduced vs just paying minimums
+  const hasExtraPayments=debtListForScore.some(d=>Number(d.extra_payment||0)>0);
+  const progressScore=numDebts===0?100:hasExtraPayments?80:60;
+  const progressLabel=numDebts===0?'Debt free':hasExtraPayments?'Actively paying':'Minimums only';
+
+  // Weighted total
+  const rawScore=Math.round(dtiScore*0.4 + minScore*0.3 + numScore*0.2 + progressScore*0.1);
   const debtScore=Math.min(100,Math.max(0,rawScore));
   const scoreColor=debtScore>=70?'var(--g)':debtScore>=40?'var(--a)':'var(--r)';
   const scoreLabel=debtScore>=70?'💚 Good standing':debtScore>=40?'🟡 Getting there':'🔴 Needs attention';
+
   const dsNum=document.getElementById('debt-score-num');
   if(dsNum){dsNum.textContent=debtScore;dsNum.style.color=scoreColor;}
   const dsBar=document.getElementById('debt-score-bar');
   if(dsBar){dsBar.style.width=debtScore+'%';dsBar.style.background=scoreColor.replace('var(--g)','#1a7a4a').replace('var(--a)','#ba7517').replace('var(--r)','#a32d2d');}
   set('debt-score-label',scoreLabel);
-  // Color the debt score card based on score
+
+  // Store breakdown for the ⓘ tooltip
+  window._debtScoreBreakdown={dtiScore,dtiLabel,dtiMonths:Math.round(dtiMonths*10)/10,minScore,minLabel,minPct:Math.round(minPctOfIncome),numScore,numLabel,numDebts,progressScore,progressLabel,total:debtScore};
+
+  // Color the debt score card
   const dsCard=document.getElementById('stat-debt-card');
   if(dsCard){
     if(debtScore<40){dsCard.style.background='#fff5f5';dsCard.style.borderColor='#ffcdd2';}
     else if(debtScore<70){dsCard.style.background='#fffde7';dsCard.style.borderColor='#fff176';}
     else{dsCard.style.background='';dsCard.style.borderColor='';}
   }
+
+  // Check for debt payoff celebration
+  checkDebtPayoffCelebration();
 
   // ── DEBIT ORDERS — manual DOs + debt minimums (no double counting) ──
   const storedDOsForCard=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
@@ -4021,15 +4053,44 @@ function showInfo(key){
   if(!info) return;
   document.getElementById('info-icon').textContent = info.icon;
   document.getElementById('info-title').textContent = info.title;
-  document.getElementById('info-body').textContent = info.body;
-  const exEl = document.getElementById('info-example');
-  const exText = document.getElementById('info-example-text');
-  if(info.example){
-    exText.textContent = info.example;
-    exEl.style.display='block';
+
+  // Special handling for debt score — show real breakdown
+  if(key === 'debt-score' && window._debtScoreBreakdown){
+    const b = window._debtScoreBreakdown;
+    const scoreColor = b.total>=70?'#1a7a4a':b.total>=40?'#ba7517':'#a32d2d';
+    const componentRow = (label, score, detail, weight) => {
+      const c = score>=75?'#1a7a4a':score>=50?'#ba7517':'#a32d2d';
+      const pct = Math.round(score);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0efe9">
+        <div><div style="font-size:13px;font-weight:700;color:#2c2c2a">${label}</div><div style="font-size:11px;color:#888;margin-top:1px">${detail}</div></div>
+        <div style="text-align:right"><div style="font-size:14px;font-weight:800;color:${c}">${pct}/100</div><div style="font-size:10px;color:#888">${weight}% weight</div></div>
+      </div>`;
+    };
+    document.getElementById('info-body').innerHTML = `
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="font-size:36px;font-weight:900;color:${scoreColor}">${b.total}/100</div>
+        <div style="font-size:12px;color:#888;margin-top:4px">Your debt freedom score</div>
+      </div>
+      <div style="margin-bottom:4px">
+        ${componentRow('Debt vs income', b.dtiScore, `${b.dtiMonths}× your monthly income — ${b.dtiLabel}`, 40)}
+        ${componentRow('Monthly payments', b.minScore, `${b.minPct}% of income on minimums — ${b.minLabel}`, 30)}
+        ${componentRow('Number of debts', b.numScore, `${b.numDebts} debt${b.numDebts!==1?'s':''} — ${b.numLabel}`, 20)}
+        ${componentRow('Payoff progress', b.progressScore, b.progressLabel, 10)}
+      </div>
+      <div style="font-size:12px;color:#888;margin-top:10px;line-height:1.5">100 = completely debt-free. Pay more than minimums to improve your score faster.</div>
+    `;
+    document.getElementById('info-body').style.fontSize = '13px';
+    const exEl = document.getElementById('info-example');
+    if(exEl) exEl.style.display='none';
   } else {
-    exEl.style.display='none';
+    document.getElementById('info-body').textContent = info.body;
+    document.getElementById('info-body').style.fontSize = '';
+    const exEl = document.getElementById('info-example');
+    const exText = document.getElementById('info-example-text');
+    if(info.example){ exText.textContent=info.example; exEl.style.display='block'; }
+    else { if(exEl) exEl.style.display='none'; }
   }
+
   document.getElementById('info-ov').classList.add('open');
   document.getElementById('info-sheet').classList.add('open');
 }
@@ -4114,6 +4175,74 @@ const DI_KEY = 'rw_di_last_shown';
 const DI_THRESHOLD_1 = 0.4;  // 40% — yellow alert (base, overridden by admin setting)
 const DI_THRESHOLD_2 = 0.6;  // 60% — orange alert
 const DI_THRESHOLD_3 = 0.8;  // 80% — red emergency
+
+// ── Debt Payoff Celebration ───────────────────────────────────
+function checkDebtPayoffCelebration(){
+  if(!debts?.length) return;
+  const celebratedKey = 'rw_celebrated_debts';
+  const celebrated = JSON.parse(localStorage.getItem(celebratedKey)||'[]');
+
+  debts.forEach(d=>{
+    const bal = Number(d.balance||0);
+    const id = d.id;
+    if(bal <= 0 && id && !celebrated.includes(id)){
+      // New debt paid off!
+      celebrated.push(id);
+      localStorage.setItem(celebratedKey, JSON.stringify(celebrated));
+
+      // Find next debt for snowball message
+      const remaining = debts.filter(x=>Number(x.balance||0)>0).sort((a,b)=>Number(a.balance)-Number(b.balance));
+      const nextDebt = remaining[0];
+      const freedAmount = Number(d.min_payment||0);
+
+      // Show celebration sheet
+      setTimeout(()=>showDebtCelebration(d.name||'Debt', freedAmount, nextDebt), 500);
+    }
+  });
+}
+
+function showDebtCelebration(debtName, freedAmount, nextDebt){
+  // Create confetti + celebration overlay
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  ov.innerHTML = `
+    <div style="background:#fff;border-radius:24px;padding:32px 24px;max-width:340px;width:100%;text-align:center;animation:bounceIn .5s ease">
+      <div style="font-size:64px;margin-bottom:8px">🎉</div>
+      <div style="font-size:22px;font-weight:900;color:#1a5c35;margin-bottom:8px;letter-spacing:-.5px">${debtName} PAID OFF!</div>
+      <div style="font-size:14px;color:#888;line-height:1.6;margin-bottom:20px">
+        You just eliminated a debt. That took discipline and consistency — this is a real achievement. 🌱
+      </div>
+      ${freedAmount > 0 ? `
+      <div style="background:#eaf3de;border-radius:14px;padding:14px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:4px">💰 R${freedAmount.toLocaleString('en-ZA')}/mo freed up</div>
+        <div style="font-size:12px;color:#5a8a6a;line-height:1.5">
+          ${nextDebt
+            ? `Roll this onto <strong>${nextDebt.name}</strong> and pay it off ${Math.round(Number(nextDebt.balance||0)/(Number(nextDebt.min_payment||0)+freedAmount))} months faster.`
+            : 'Put this into savings or your emergency fund — you\'ve earned it.'}
+        </div>
+      </div>` : ''}
+      <button onclick="this.closest('[style*=fixed]').remove()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">Keep going 💪</button>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click', e=>{ if(e.target===ov) ov.remove(); });
+
+  // Launch confetti
+  launchConfetti();
+
+  // Send owner alert
+  sendOwnerAlert(`🎉 ${user?.name||'A user'} just paid off their ${debtName}! R${freedAmount}/mo freed up.`, 'low');
+}
+
+function launchConfetti(){
+  const colors=['#1a7a4a','#a5d6a7','#fbbf24','#f59e0b','#34d399','#fff'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    const size=Math.random()*10+5;
+    el.style.cssText=`position:fixed;top:-20px;left:${Math.random()*100}vw;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};border-radius:${Math.random()>0.5?'50%':'2px'};z-index:10000;pointer-events:none;animation:confettiFall ${Math.random()*2+1.5}s ease forwards`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 4000);
+  }
+}
 
 function checkDebtIntervention(){
   if(!getSetting('debt_intervention')) return;
@@ -5406,11 +5535,6 @@ window.addEventListener('load',async()=>{
   loadAppSettings(); // async, non-blocking
   loadCustomCats(); // load any saved custom categories
 
-  // Handle PWA shortcuts (long-press icon on Android)
-  const _urlParams = new URLSearchParams(window.location.search);
-  const _shortcutAction = _urlParams.get('action');
-  if(_shortcutAction) window._pendingShortcutAction = _shortcutAction;
-
   // App lock — init toggle state
   initLock();
 
@@ -6269,7 +6393,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-24-v121';
+const APP_VERSION = '2026-04-26-v122';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
