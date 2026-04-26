@@ -584,6 +584,59 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- PREMIUM UPGRADE SHEET -->
+<div id="premium-upgrade-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 20px 48px;max-height:90vh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div style="width:48px;height:48px;background:#eeedfe;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">★</div>
+      <div>
+        <div style="font-size:18px;font-weight:900;color:#111;line-height:1.2" id="prem-headline">Premium feature</div>
+        <div style="font-size:12px;color:#888;margin-top:3px" id="prem-subline">Unlock the full picture</div>
+      </div>
+    </div>
+    <!-- Personalised stat highlight -->
+    <div id="prem-stat-box" style="background:#eeedfe;border-left:3px solid #534ab7;border-radius:0 12px 12px 0;padding:12px 14px;margin-bottom:18px;display:none">
+      <div style="font-size:13px;color:#3c3489;line-height:1.6" id="prem-stat-text"></div>
+    </div>
+    <!-- Feature list -->
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Premium includes</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px">
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#2c2c2a">Visual debt timeline — every debt checked off one by one</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#2c2c2a">Payoff scenarios — "what if I pay R500 extra?"</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#2c2c2a">Bank statement import — FNB, Capitec, Absa, Nedbank, Standard Bank</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#2c2c2a">Monthly financial report PDF — your full money picture</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#2c2c2a">Stokvel tracker — group contributions, payout order, pot total</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#f7f6f2;border-radius:10px">
+        <div style="width:7px;height:7px;border-radius:50%;background:#534ab7;flex-shrink:0;margin-top:4px"></div>
+        <div style="font-size:13px;color:#888">Family view — coming soon</div>
+      </div>
+    </div>
+    <!-- Early adopter pricing -->
+    <div style="background:#eeedfe;border-radius:12px;padding:12px 14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:14px;font-weight:800;color:#3c3489">Early adopter price — R129/mo</div>
+      <div style="font-size:12px;color:#7f77dd;margin-top:3px">Locked in for your first 6 months · Cancel anytime</div>
+    </div>
+    <button onclick="startPremiumUpgrade()" style="width:100%;padding:16px;background:#534ab7;color:#eeedfe;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:10px">Upgrade to Premium — R129/mo</button>
+    <button onclick="closePremiumSheet()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">Maybe later</button>
+  </div>
+</div>
+
 <!-- PUSH PERMISSION PROMPT -->
 <div id="push-prompt-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:8500;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:28px 24px 48px;text-align:center">
@@ -723,7 +776,7 @@ if('serviceWorker' in navigator){
         </div>
         <div style="display:flex;align-items:flex-start;gap:14px">
           <div style="width:40px;height:40px;border-radius:12px;background:#eaf3de;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🤝</div>
-          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Stokvel tracker <span style="font-size:11px;background:#534ab7;color:#fff;border-radius:20px;padding:2px 8px;vertical-align:middle">Premium</span></div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Track your stokvel group — who paid, whose turn it is, and total pot each month.</div></div>
+          <div><div style="font-size:14px;font-weight:700;color:#2c2c2a">Stokvel tracker <span onclick="openPremiumSheet('stokvel')" style="background:#eeedfe;color:#3c3489;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle;cursor:pointer">PREMIUM</span></div><div style="font-size:13px;color:#888;margin-top:2px;line-height:1.5">Track your stokvel group — who paid, whose turn it is, and total pot each month.</div></div>
         </div>
       </div>
       <!-- Values -->
@@ -1093,7 +1146,10 @@ if('serviceWorker' in navigator){
 
             <!-- DEBT SCORE -->
             <div id="stat-debt-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:15px 14px">
-              <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Debt score</div><button onclick="event.stopPropagation();showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:4px"><div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Debt score</div><button onclick="event.stopPropagation();showInfo('debt-score')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
+                <span style="background:#eaf3de;color:#3b6d11;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px">PRO</span>
+              </div>
               <div style="display:flex;align-items:baseline;gap:3px">
                 <div style="font-size:22px;font-weight:900;line-height:1;letter-spacing:-.5px" id="debt-score-num">—</div>
                 <div style="font-size:12px;color:#5a8a6a;font-weight:600">/100</div>
@@ -1324,7 +1380,7 @@ if('serviceWorker' in navigator){
 
         <!-- SNOWBALL STRATEGY CARD -->
         <div id="snowball-card" style="background:#fff8e1;border:1px solid #fbbf24;border-radius:16px;padding:16px;margin-bottom:12px;display:none">
-          <div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">⚡ Snowball payoff plan</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:11px;color:#92400e;font-weight:700;text-transform:uppercase;letter-spacing:.8px">⚡ Snowball payoff plan</div><span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px">PRO</span></div>
           <div id="snowball-content"></div>
           <div style="margin-top:10px;padding-top:10px;border-top:1px solid #fde68a">
             <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px">💡 How snowball works</div>
@@ -1421,7 +1477,7 @@ if('serviceWorker' in navigator){
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Tools to build a stronger financial future</div>
 
         <!-- BANK IMPORT SECTION -->
-        <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">📄 Bank statement import</div>
+        <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">📄 Bank statement import <span onclick="openPremiumSheet('bank')" style="background:#eeedfe;color:#3c3489;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;vertical-align:middle;cursor:pointer;letter-spacing:0;text-transform:none">PREMIUM</span></div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Upload your bank PDF — we read and categorise every transaction automatically</div>
 
         <!-- Pro lock banner for free users -->
@@ -1439,7 +1495,7 @@ if('serviceWorker' in navigator){
           <div style="background:linear-gradient(135deg,#fff8e1,#fffde7);border:1px solid #f9a825;border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start">
             <div style="font-size:24px;flex-shrink:0">🔧</div>
             <div>
-              <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:3px">Coming soon — bank import is being upgraded</div>
+              <div style="font-size:13px;font-weight:700;color:#e65100;margin-bottom:3px" onclick="openPremiumSheet('bank')" style="cursor:pointer">Premium feature — Bank statement import</div>
               <div style="font-size:12px;color:#bf360c;line-height:1.6">We're upgrading our AI to read statements more accurately. This feature will be back shortly. Log expenses manually using the + button for now.</div>
             </div>
           </div>
@@ -6745,7 +6801,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v126';
+const APP_VERSION = '2026-04-26-v127';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7090,6 +7146,10 @@ function updateBankTips() {
 }
 
 function triggerFileInput() {
+  if(user?.tier!=='premium'&&user?.tier!=='pro'){
+    openPremiumSheet('bank');
+    return;
+  }
   document.getElementById('pdf-file-input').click();
 }
 
@@ -7601,6 +7661,89 @@ function openMonthlySummary(){
 function closeMonthlySummary(){
   const ov=document.getElementById('monthly-summary-overlay');
   if(ov) ov.style.display='none';
+}
+
+
+// ── Premium Upgrade Sheet ─────────────────────────────────────
+function openPremiumSheet(feature){
+  const ov = document.getElementById('premium-upgrade-overlay');
+  const headline = document.getElementById('prem-headline');
+  const subline = document.getElementById('prem-subline');
+  const statBox = document.getElementById('prem-stat-box');
+  const statText = document.getElementById('prem-stat-stat-text');
+
+  // Personalise based on which feature triggered it
+  const totalDebt = (debts||[]).reduce((s,d)=>s+Number(d.balance||0),0);
+  const totalMin = (debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const numDebts = (debts||[]).length;
+  const expCount = (expenses||[]).length;
+  const inc = Number(user?.income_amount||0);
+
+  // Calculate rough payoff months
+  let payoffMonths = 0;
+  if(totalDebt>0&&totalMin>0){
+    let rem=totalDebt; let m=0;
+    const avgRate=(debts||[]).length>0?(debts||[]).reduce((s,d)=>s+Number(d.interest_rate||0),0)/(debts||[]).length/100/12:0;
+    while(rem>0&&m<600){rem=rem*(1+avgRate)-totalMin;m++;if(rem<0)rem=0;}
+    payoffMonths=m;
+  }
+  const payoffYears=Math.floor(payoffMonths/12);
+  const payoffMo=payoffMonths%12;
+  const payoffStr=payoffYears>0?payoffYears+'y '+(payoffMo>0?payoffMo+'mo':''):payoffMonths+'mo';
+
+  // Extra payment savings estimate
+  const extraPay=Math.round(totalMin*0.1)||500;
+  let payoffMonthsExtra=0;
+  if(totalDebt>0&&(totalMin+extraPay)>0){
+    let rem=totalDebt;let m=0;
+    const avgRate=(debts||[]).length>0?(debts||[]).reduce((s,d)=>s+Number(d.interest_rate||0),0)/(debts||[]).length/100/12:0;
+    while(rem>0&&m<600){rem=rem*(1+avgRate)-(totalMin+extraPay);m++;if(rem<0)rem=0;}
+    payoffMonthsExtra=m;
+  }
+  const monthsSaved=payoffMonths-payoffMonthsExtra;
+
+  const statEl = document.getElementById('prem-stat-text');
+
+  if(feature==='bank'){
+    if(headline) headline.textContent='Stop logging manually.';
+    if(subline) subline.textContent='Upload once. Everything categorised.';
+    if(statEl) statEl.innerHTML=`You've logged <strong>${expCount} expense${expCount!==1?'s':''}</strong> manually. Bank import catches every transaction automatically — including the ones you forgot to log.`;
+    if(statBox) statBox.style.display='block';
+  } else if(feature==='stokvel'){
+    if(headline) headline.textContent='Stokvel tracker';
+    if(subline) subline.textContent='Your group. Your money. In one place.';
+    if(statEl) statEl.innerHTML=`Track contributions, payout order and the total pot for your stokvel group. No more WhatsApp confusion about whose turn it is.`;
+    if(statBox) statBox.style.display='block';
+  } else if(feature==='timeline'){
+    if(headline) headline.textContent=`You're ${payoffMonths<=0?'debt free':'working on it'}.`;
+    if(subline) subline.textContent='The timeline shows exactly how fast things change.';
+    if(totalDebt>0&&statEl){
+      statEl.innerHTML=`You have <strong>${numDebts} debt${numDebts!==1?'s':''}</strong> totalling <strong>R${Math.round(totalDebt).toLocaleString('en-ZA')}</strong>. At minimums: debt free in <strong>${payoffStr}</strong>.${monthsSaved>0?` Pay R${extraPay.toLocaleString('en-ZA')} extra/mo and cut <strong>${Math.round(monthsSaved)} months</strong> off that.`:''}`;
+      if(statBox) statBox.style.display='block';
+    }
+  } else if(feature==='report'){
+    if(headline) headline.textContent='Your full money picture.';
+    if(subline) subline.textContent='One PDF. Every month. Ready to share.';
+    if(statEl) statEl.innerHTML=`A monthly report showing your income, spending by category, debt progress and savings — formatted professionally. Share with a financial advisor or just keep for your records.`;
+    if(statBox) statBox.style.display='block';
+  } else {
+    if(headline) headline.textContent='Premium feature';
+    if(subline) subline.textContent='Unlock the full picture';
+    if(statBox) statBox.style.display='none';
+  }
+
+  if(ov) ov.style.display='flex';
+}
+
+function closePremiumSheet(){
+  const ov=document.getElementById('premium-upgrade-overlay');
+  if(ov) ov.style.display='none';
+}
+
+function startPremiumUpgrade(){
+  closePremiumSheet();
+  // Trigger the existing upgrade flow but for Premium
+  showUpgradeWall(true); // true = premium
 }
 
 // ── Debt Payment Logging ──────────────────────────────────────
@@ -8213,6 +8356,8 @@ document.addEventListener('click',e=>{
   if(e.target===ppOv) dismissPushPrompt();
   const ieOv=document.getElementById('income-edit-overlay');
   if(e.target===ieOv) closeQuickEditIncome();
+  const puOv=document.getElementById('premium-upgrade-overlay');
+  if(e.target===puOv) closePremiumSheet();
   const rOv=document.getElementById('rating-overlay');
   if(e.target===rOv) dismissRating();
   const ccOv=document.getElementById('custom-cat-overlay');
