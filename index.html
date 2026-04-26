@@ -472,6 +472,79 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- DEBT PAYMENT SHEET -->
+<div id="payment-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7800;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:18px;font-weight:900;color:#111;margin-bottom:4px" id="payment-debt-name">Mark payment</div>
+    <div style="font-size:13px;color:#888;margin-bottom:20px">How much did you pay towards this debt?</div>
+    <div style="display:flex;align-items:center;gap:0;border:2px solid #1a7a4a;border-radius:14px;overflow:hidden;margin-bottom:12px">
+      <div style="padding:14px 16px;background:#eaf3de;font-size:18px;font-weight:800;color:#1a5c35">R</div>
+      <input id="payment-amount-input" type="number" placeholder="0" style="flex:1;padding:14px;font-size:20px;font-weight:700;border:none;outline:none;font-family:inherit">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px" id="payment-quick-btns"></div>
+    <div style="margin-bottom:16px">
+      <input id="payment-note" type="text" placeholder="Note (optional — e.g. paid via EFT)" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
+    </div>
+    <!-- Couldn't pay option -->
+    <div style="background:#fdecea;border-radius:12px;padding:12px;margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#a32d2d;margin-bottom:8px">Couldn't make this payment?</div>
+      <div style="display:flex;flex-direction:column;gap:6px" id="couldnt-pay-reasons">
+        <button onclick="logCantPay('no_money')" style="padding:10px;background:#fff;border:1px solid #ffcdd2;border-radius:8px;font-size:12px;font-weight:600;color:#a32d2d;cursor:pointer;text-align:left;font-family:inherit">💸 Didn't have the money this month</button>
+        <button onclick="logCantPay('forgot')" style="padding:10px;background:#fff;border:1px solid #ffcdd2;border-radius:8px;font-size:12px;font-weight:600;color:#a32d2d;cursor:pointer;text-align:left;font-family:inherit">🤔 Forgot to pay</button>
+        <button onclick="logCantPay('partial')" style="padding:10px;background:#fff;border:1px solid #ffcdd2;border-radius:8px;font-size:12px;font-weight:600;color:#a32d2d;cursor:pointer;text-align:left;font-family:inherit">⚠️ Only paid part of it</button>
+      </div>
+    </div>
+    <button onclick="confirmPayment()" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit">✅ Confirm payment</button>
+    <button onclick="closePaymentSheet()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer;margin-top:6px">Cancel</button>
+  </div>
+</div>
+
+<!-- INCOME CHECK-IN (every 3 months) -->
+<div id="income-checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7600;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:32px;text-align:center;margin-bottom:12px">💰</div>
+    <div style="font-size:18px;font-weight:900;color:#111;text-align:center;margin-bottom:8px">Has your income changed?</div>
+    <div style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:24px">It's been 3 months — a lot can change. Keeping your income accurate keeps your budget accurate.</div>
+    <div style="background:#f7f6f2;border-radius:12px;padding:14px;text-align:center;margin-bottom:20px">
+      <div style="font-size:12px;color:#888;margin-bottom:4px">Your current income on record</div>
+      <div style="font-size:24px;font-weight:900;color:#1a5c35" id="income-checkin-current">R0</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmIncomeUnchanged()" style="padding:14px;background:#eaf3de;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;font-family:inherit">✅ Still the same amount</button>
+      <button onclick="openQuickEditIncome();closeIncomeCheckin()" style="padding:14px;background:#f7f6f2;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#2c2c2a;cursor:pointer;font-family:inherit">✏️ It has changed — update it</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONTHLY NEEDS CHECK-IN (every 3 months) -->
+<div id="needs-checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7500;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:32px;text-align:center;margin-bottom:12px">🛒</div>
+    <div style="font-size:18px;font-weight:900;color:#111;text-align:center;margin-bottom:8px">Do your monthly costs still look right?</div>
+    <div style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:20px">Costs go up over time. Let's make sure your budget reflects reality.</div>
+    <div id="needs-checkin-list" style="margin-bottom:20px"></div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmNeedsUnchanged()" style="padding:14px;background:#eaf3de;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;font-family:inherit">✅ These amounts are still correct</button>
+      <button onclick="closeNeedsCheckin();showMonthlyNeedsSetup()" style="padding:14px;background:#f7f6f2;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#2c2c2a;cursor:pointer;font-family:inherit">✏️ Some have changed — update them</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYDAY PAYMENT CHECK-IN -->
+<div id="payday-checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7700;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px;max-height:85vh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:32px;text-align:center;margin-bottom:12px">💳</div>
+    <div style="font-size:18px;font-weight:900;color:#111;text-align:center;margin-bottom:6px" id="payday-checkin-title">Payday check-in</div>
+    <div style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:20px">Have you made your debt payments this month? Confirming keeps your numbers accurate.</div>
+    <div id="payday-debt-list" style="margin-bottom:16px"></div>
+    <button onclick="closePaydayCheckin()" style="width:100%;padding:12px;background:none;border:none;font-size:13px;color:#888;cursor:pointer">I'll do this later</button>
+  </div>
+</div>
+
 <!-- QUICK INCOME EDIT -->
 <div id="income-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:7500;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
@@ -1594,15 +1667,84 @@ if('serviceWorker' in navigator){
     <!-- VEHICLE / BOND SPECIFIC FIELDS -->
     <div id="debt-vehicle-fields" style="display:none">
       <div style="font-size:10px;color:#aaa;line-height:1.5;padding:8px 10px;background:#f7f6f2;border-radius:8px;margin-bottom:12px">⚖️ Vehicle finance calculations are estimates only. Actual repayments may differ based on your credit profile, bank terms, and fees. Not financial advice.</div>
-      <div style="background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:12px 14px;margin-bottom:14px">
-        <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:2px">🚗 Vehicle finance tip</div>
-        <div style="font-size:11px;color:#92400e;line-height:1.6">The balance shown on statements may differ from your settlement amount. Call your bank for the exact settlement figure before making any decisions.</div>
+
+      <!-- Are you adding existing or new finance? -->
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button id="veh-mode-existing" onclick="setVehicleMode('existing')" style="flex:1;padding:10px;border-radius:12px;border:2px solid #1a7a4a;background:#1a7a4a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Existing loan</button>
+        <button id="veh-mode-new" onclick="setVehicleMode('new')" style="flex:1;padding:10px;border-radius:12px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">New purchase</button>
       </div>
-      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Remaining months on loan <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
-      <input type="number" id="debt-months-remaining" class="auth-in" placeholder="e.g. 48" min="1" max="360" style="margin-bottom:14px">
-      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Balloon payment (R) <span style="font-weight:400;color:var(--mu)">(if applicable)</span></div>
-      <input type="number" id="debt-balloon" class="auth-in" placeholder="e.g. 80000" style="margin-bottom:6px">
-      <div style="font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.6">⚠️ A balloon payment is a large lump sum due at the end of your loan term. If you have one, we'll warn you when it's approaching.</div>
+
+      <!-- EXISTING LOAN fields -->
+      <div id="veh-existing-fields">
+        <div style="background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:2px">🚗 Vehicle finance tip</div>
+          <div style="font-size:11px;color:#92400e;line-height:1.6">The balance shown on statements may differ from your settlement amount. Call your bank for the exact settlement figure before making any decisions.</div>
+        </div>
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Remaining months on loan <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
+        <input type="number" id="debt-months-remaining" class="auth-in" placeholder="e.g. 48" min="1" max="360" style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Balloon payment (R) <span style="font-weight:400;color:var(--mu)">(if applicable)</span></div>
+        <input type="number" id="debt-balloon" class="auth-in" placeholder="e.g. 80000" style="margin-bottom:6px">
+        <div style="font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.6">⚠️ A balloon payment is a large lump sum due at the end of your loan term. If you have one, we'll warn you when it's approaching.</div>
+      </div>
+
+      <!-- NEW PURCHASE calculator -->
+      <div id="veh-new-fields" style="display:none">
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Purchase price (R)</div>
+        <input type="number" id="veh-price" class="auth-in" placeholder="e.g. 300000" oninput="calcVehicle()" style="margin-bottom:14px">
+
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">What is the car worth today? (R) <span style="font-weight:400;color:var(--mu)">(for net worth)</span></div>
+        <div style="font-size:11px;color:var(--mu);margin-bottom:6px">Check on Cars.co.za or OLX for your model. This is used to calculate your real net worth.</div>
+        <input type="number" id="veh-current-value" class="auth-in" placeholder="e.g. 280000" style="margin-bottom:14px">
+
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Deposit (R) <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
+        <input type="number" id="veh-deposit" class="auth-in" placeholder="e.g. 30000" oninput="calcVehicle()" style="margin-bottom:14px">
+
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Interest rate (% per year)</div>
+        <input type="number" id="veh-rate" class="auth-in" placeholder="e.g. 15" value="15" step="0.5" oninput="calcVehicle()" style="margin-bottom:14px">
+
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Loan term</div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button class="veh-term-btn" onclick="setVehicleTerm(48)" style="flex:1;padding:10px;border-radius:10px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">4 years</button>
+          <button class="veh-term-btn active-term" onclick="setVehicleTerm(60)" style="flex:1;padding:10px;border-radius:10px;border:2px solid #1a7a4a;background:#1a7a4a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">5 years</button>
+          <button class="veh-term-btn" onclick="setVehicleTerm(72)" style="flex:1;padding:10px;border-radius:10px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">6 years</button>
+          <button class="veh-term-btn" onclick="setVehicleTerm(84)" style="flex:1;padding:10px;border-radius:10px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">7 years</button>
+        </div>
+        <input type="hidden" id="veh-term" value="60">
+
+        <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Balloon payment (R) <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
+        <input type="number" id="veh-balloon-new" class="auth-in" placeholder="e.g. 60000" oninput="calcVehicle()" style="margin-bottom:6px">
+        <div style="font-size:11px;color:var(--mu);margin-bottom:14px;line-height:1.6">A balloon reduces your monthly payment but increases your total cost — and you owe a large lump sum at the end.</div>
+
+        <!-- Live calculation results -->
+        <div id="veh-calc-result" style="display:none;background:#f0faf4;border:1px solid #a5d6a7;border-radius:16px;padding:16px;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:700;color:#1a5c35;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">💰 Your vehicle finance breakdown</div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #d4edda">
+            <span style="font-size:13px;color:#2c2c2a">Monthly payment</span>
+            <span style="font-size:16px;font-weight:900;color:#1a5c35" id="veh-monthly">R0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #d4edda">
+            <span style="font-size:13px;color:#2c2c2a">Amount financed</span>
+            <span style="font-size:13px;font-weight:700;color:#2c2c2a" id="veh-financed">R0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #d4edda">
+            <span style="font-size:13px;color:#2c2c2a">Total interest paid</span>
+            <span style="font-size:13px;font-weight:700;color:#a32d2d" id="veh-interest">R0</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #d4edda">
+            <span style="font-size:13px;font-weight:700;color:#2c2c2a">Total cost of car</span>
+            <span style="font-size:15px;font-weight:900;color:#a32d2d" id="veh-total">R0</span>
+          </div>
+          <div id="veh-balloon-warning" style="display:none;background:#fff8e1;border:1px solid #fbbf24;border-radius:10px;padding:10px;margin-top:10px">
+            <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:3px">⚠️ Balloon payment warning</div>
+            <div style="font-size:11px;color:#92400e;line-height:1.5" id="veh-balloon-msg"></div>
+          </div>
+          <div id="veh-no-balloon-compare" style="display:none;background:#eeedfe;border-radius:10px;padding:10px;margin-top:10px">
+            <div style="font-size:11px;color:#534ab7;line-height:1.5" id="veh-compare-msg"></div>
+          </div>
+        </div>
+
+        <button onclick="applyVehicleCalc()" style="width:100%;padding:13px;background:#f0faf4;color:#1a5c35;border:1px solid #a5d6a7;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:14px">Use these numbers for my debt →</button>
+      </div>
     </div>
 
     <!-- BOND SPECIFIC FIELDS -->
@@ -2570,6 +2712,9 @@ async function renderDash(){
   setTimeout(maybeShowAbout, 1200);
   setTimeout(maybeShowCheckin, 4000);
   setTimeout(maybeShowPushPrompt, 8000);
+  setTimeout(maybeShowPaydayCheckin, 3000);
+  setTimeout(maybeShowIncomeCheckin, 10000);
+  setTimeout(maybeShowNeedsCheckin, 12000);
   checkAppRating();
   setTimeout(initReferralCard, 500);
   const inc=Number(user.income_amount||0),name=user.name||'there',init=name[0]?.toUpperCase()||'U';
@@ -2747,22 +2892,28 @@ async function renderDash(){
     // ── NET WORTH CARD ─────────────────────────────────────
     try{
       const allGoals=await sbG(`savings_goals?tester_id=eq.${user.id}&select=saved`);
-      const allDebts=await sbG(`debts?tester_id=eq.${user.id}&select=balance`);
+      const allDebts=await sbG(`debts?tester_id=eq.${user.id}&select=balance,category,vehicle_value,property_value`);
       const totalSavings=(allGoals||[]).reduce((s,g)=>s+Number(g.saved||0),0);
       const totalDebt=(allDebts||[]).reduce((s,d)=>s+Number(d.balance||0),0);
-      const netWorth=totalSavings-totalDebt;
+      // Add vehicle values and property equity as assets
+      const totalVehicleValue=(allDebts||[]).filter(d=>d.category==='Vehicle'||d.category==='vehicle').reduce((s,d)=>s+Number(d.vehicle_value||0),0);
+      const totalPropertyValue=(allDebts||[]).filter(d=>d.category==='Bond/Home loan'||d.category==='bond').reduce((s,d)=>s+Number(d.property_value||0),0);
+      const totalAssets=totalSavings+totalVehicleValue+totalPropertyValue;
+      const netWorth=totalAssets-totalDebt;
       const nwEl=document.getElementById('net-worth-amt');
       const nwCard=document.getElementById('net-worth-card');
       if(nwEl){
-        nwEl.textContent='R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
+        nwEl.textContent=(netWorth<0?'-':'')+'R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
         nwEl.style.color=netWorth>=0?'#1a5c35':'#c62828';
-        if(netWorth<0) nwEl.textContent='-R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
       }
-      set('nw-savings','R'+Math.round(totalSavings).toLocaleString('en-ZA'));
+      set('nw-savings','R'+Math.round(totalAssets).toLocaleString('en-ZA'));
       set('nw-debt','R'+Math.round(totalDebt).toLocaleString('en-ZA'));
+      // Update labels
+      const savLabel=document.getElementById('nw-savings-label');
+      if(savLabel) savLabel.textContent=totalVehicleValue>0||totalPropertyValue>0?'Assets':'Savings';
       const sub=document.getElementById('net-worth-sub');
-      if(sub) sub.textContent=netWorth>=0?'↑ Growing — keep it up':'↓ Debt exceeds savings — focus on debt';
-      if(nwCard) nwCard.style.display=(totalSavings>0||totalDebt>0)?'block':'none';
+      if(sub) sub.textContent=netWorth>=0?'↑ Growing — keep it up':'↓ Debt exceeds assets — focus on debt';
+      if(nwCard) nwCard.style.display=(totalAssets>0||totalDebt>0)?'block':'none';
     }catch{}
   }catch(e){console.warn('Savings goal home card error:',e);}
 
@@ -3236,12 +3387,17 @@ async function loadDebtsPWA(){
         ${d.balloon_payment>0?`<div style="background:#fff3e0;border:1px solid #ffb74d;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:11px;color:#e65100">⚠️ Balloon payment: R${Math.round(d.balloon_payment).toLocaleString('en-ZA')} due at end of term</div>`:''}
         ${d.property_value>0?`<div style="background:#e8f5e9;border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:11px;color:#1b5e20">🏠 Property value: R${Math.round(d.property_value).toLocaleString('en-ZA')} · Equity: R${Math.round(Math.max(0,d.property_value-bal)).toLocaleString('en-ZA')}</div>`:''}
         ${orig>bal?`<div style="height:4px;background:#e8f5ee;border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="height:100%;background:#1a5c35;border-radius:3px;width:${pct}%"></div></div><div style="font-size:10px;color:#5a8a6a">${pct}% paid off</div>`:''}
+        <div style="font-size:10px;color:#888;margin-top:4px" id="last-payment-${d.id}">Loading payment history...</div>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button onclick="deleteDebtPWA('${d.id}')" style="flex:1;padding:7px;background:#fee2e2;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">🗑 Remove</button>
-          <button onclick="openEditDebtPWA('${d.id}',${bal})" style="flex:1;padding:7px;background:#f0faf4;color:#1a5c35;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️ Update balance</button>
+          <button onclick="openPaymentSheet('${d.id}','${(d.name||'Debt').replace(/'/g,"\\'")}',${Number(d.min_payment||0)},${bal})" style="flex:2;padding:7px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">💳 Mark payment</button>
+          <button onclick="deleteDebtPWA('${d.id}')" style="flex:1;padding:7px;background:#fee2e2;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">🗑</button>
+          <button onclick="openEditDebtPWA('${d.id}',${bal})" style="flex:1;padding:7px;background:#f0faf4;color:#1a5c35;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️</button>
         </div>
       </div>`;
     }).join('');
+
+    // Load last payment info for each debt
+    debts.forEach(d=>{ setTimeout(()=>loadLastPayment(d.id),100); });
 
     // ── PAYOFF ACCELERATOR ─────────────────────────────────────
     renderPayoffAccelerator(debts, totalOwed, totalMin, inc);
@@ -3432,6 +3588,134 @@ function onDebtCatChange(){
   if(isMash) calcMashonisa();
 }
 
+// ── Vehicle Finance Calculator ────────────────────────────────
+let _vehMode = 'existing';
+
+function setVehicleMode(mode){
+  _vehMode = mode;
+  document.getElementById('veh-existing-fields').style.display = mode==='existing'?'block':'none';
+  document.getElementById('veh-new-fields').style.display = mode==='new'?'block':'none';
+  const btnEx = document.getElementById('veh-mode-existing');
+  const btnNew = document.getElementById('veh-mode-new');
+  if(btnEx){ btnEx.style.background=mode==='existing'?'#1a7a4a':'#fff'; btnEx.style.color=mode==='existing'?'#fff':'#555'; btnEx.style.borderColor=mode==='existing'?'#1a7a4a':'#e8e6de'; }
+  if(btnNew){ btnNew.style.background=mode==='new'?'#1a7a4a':'#fff'; btnNew.style.color=mode==='new'?'#fff':'#555'; btnNew.style.borderColor=mode==='new'?'#1a7a4a':'#e8e6de'; }
+  if(mode==='new') calcVehicle();
+}
+
+function setVehicleTerm(months){
+  document.getElementById('veh-term').value = months;
+  document.querySelectorAll('.veh-term-btn').forEach(b=>{
+    const active = b.textContent.includes(months/12);
+    b.style.background = active?'#1a7a4a':'#fff';
+    b.style.color = active?'#fff':'#555';
+    b.style.borderColor = active?'#1a7a4a':'#e8e6de';
+    b.style.fontWeight = active?'700':'600';
+  });
+  calcVehicle();
+}
+
+function calcVehicle(){
+  const price = parseFloat(document.getElementById('veh-price')?.value)||0;
+  const deposit = parseFloat(document.getElementById('veh-deposit')?.value)||0;
+  const rate = parseFloat(document.getElementById('veh-rate')?.value)||15;
+  const term = parseInt(document.getElementById('veh-term')?.value)||60;
+  const balloon = parseFloat(document.getElementById('veh-balloon-new')?.value)||0;
+  const result = document.getElementById('veh-calc-result');
+
+  if(!price || price < 1000){ if(result) result.style.display='none'; return; }
+
+  const financed = price - deposit;
+  const monthlyRate = rate / 100 / 12;
+
+  // Calculate monthly payment using amortization formula
+  // With balloon: treat balloon as future value
+  let monthly;
+  if(balloon > 0 && balloon < financed){
+    // PMT formula with future value (balloon)
+    if(monthlyRate === 0){
+      monthly = (financed - balloon) / term;
+    } else {
+      monthly = (financed * monthlyRate - balloon * monthlyRate / Math.pow(1+monthlyRate, term)) / (1 - Math.pow(1+monthlyRate, -term));
+    }
+  } else {
+    // Standard PMT formula
+    if(monthlyRate === 0){
+      monthly = financed / term;
+    } else {
+      monthly = financed * monthlyRate / (1 - Math.pow(1+monthlyRate, -term));
+    }
+  }
+
+  monthly = Math.round(monthly);
+  const totalPaid = (monthly * term) + balloon;
+  const totalInterest = totalPaid - financed;
+  const totalCost = price - deposit + totalInterest; // what you actually pay total
+
+  // Without balloon comparison
+  let monthlyNoBalloon = 0;
+  if(balloon > 0){
+    if(monthlyRate === 0){
+      monthlyNoBalloon = financed / term;
+    } else {
+      monthlyNoBalloon = financed * monthlyRate / (1 - Math.pow(1+monthlyRate, -term));
+    }
+    monthlyNoBalloon = Math.round(monthlyNoBalloon);
+  }
+
+  // Update display
+  const fmt = n => 'R'+Math.round(n).toLocaleString('en-ZA');
+  document.getElementById('veh-monthly').textContent = fmt(monthly)+'/mo';
+  document.getElementById('veh-financed').textContent = fmt(financed);
+  document.getElementById('veh-interest').textContent = fmt(totalInterest);
+  document.getElementById('veh-total').textContent = fmt(totalCost);
+
+  // Balloon warning
+  const balloonWarn = document.getElementById('veh-balloon-warning');
+  const balloonMsg = document.getElementById('veh-balloon-msg');
+  if(balloon > 0 && balloonWarn && balloonMsg){
+    const balloonDate = new Date();
+    balloonDate.setMonth(balloonDate.getMonth() + term);
+    const balloonDateStr = balloonDate.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
+    balloonMsg.innerHTML = `Your balloon payment of <strong>${fmt(balloon)}</strong> is due in <strong>${balloonDateStr}</strong>. You need to have this money available — either save for it now or refinance before then. Your monthly payment is <strong>${fmt(monthly)}</strong> lower than without the balloon, but your total cost is <strong>${fmt((monthly*term+balloon) - (monthlyNoBalloon*term))}</strong> more.`;
+    balloonWarn.style.display = 'block';
+  } else if(balloonWarn){
+    balloonWarn.style.display = 'none';
+  }
+
+  // No-balloon comparison
+  const compareEl = document.getElementById('veh-no-balloon-compare');
+  const compareMsg = document.getElementById('veh-compare-msg');
+  if(balloon > 0 && compareEl && compareMsg){
+    compareMsg.innerHTML = `💡 Without the balloon, your monthly would be <strong>${fmt(monthlyNoBalloon)}/mo</strong> (+${fmt(monthlyNoBalloon-monthly)}/mo more) but you'd save <strong>${fmt((monthly*term+balloon)-(monthlyNoBalloon*term))}</strong> in total cost and owe nothing at the end.`;
+    compareEl.style.display = 'block';
+  } else if(compareEl){
+    compareEl.style.display = 'none';
+  }
+
+  if(result) result.style.display = 'block';
+
+  // Store for "Use these numbers" button
+  window._vehCalcResult = { balance: financed, minPayment: monthly, rate, monthsRemaining: term, balloon, vehicleValue: parseFloat(document.getElementById('veh-current-value')?.value)||0 };
+}
+
+function applyVehicleCalc(){
+  if(!window._vehCalcResult) return;
+  const r = window._vehCalcResult;
+  const balEl = document.getElementById('debt-balance');
+  const minEl = document.getElementById('debt-min');
+  const rateEl = document.getElementById('debt-rate');
+  const monthsEl = document.getElementById('debt-months-remaining');
+  const balloonEl = document.getElementById('debt-balloon');
+  if(balEl) balEl.value = r.balance;
+  if(minEl) minEl.value = r.minPayment;
+  if(rateEl) rateEl.value = r.rate;
+  if(monthsEl) monthsEl.value = r.monthsRemaining;
+  if(balloonEl) balloonEl.value = r.balloon||'';
+  // Switch back to existing mode to show the filled fields
+  setVehicleMode('existing');
+  showToast('✅ Numbers applied — review and save your debt');
+}
+
 function calcMashonisa(){
   const borrowed=parseFloat(document.getElementById('mash-borrowed')?.value)||0;
   const ratePerHundred=parseFloat(document.getElementById('mash-rate')?.value)||30;
@@ -3510,7 +3794,8 @@ async function saveDebtPWA(){
       interest_rate:rate||null,
       months_remaining:finalMonths,
       balloon_payment:balloon||null,
-      property_value:propertyValue||null
+      property_value:propertyValue||null,
+      vehicle_value:window._vehCalcResult?.vehicleValue||null
     });
     closeAddDebtPWA();loadDebtsPWA();showToast('✅ Debt added');
     ['debt-name','debt-balance','debt-min','debt-rate','debt-months-remaining','debt-balloon','debt-bond-months','debt-property-value'].forEach(id=>{
@@ -4059,33 +4344,54 @@ function showInfo(key){
   document.getElementById('info-icon').textContent = info.icon;
   document.getElementById('info-title').textContent = info.title;
 
-  // Special handling for debt score — show real breakdown
+  // Special handling for debt score — show real plain English breakdown
   if(key === 'debt-score' && window._debtScoreBreakdown){
     const b = window._debtScoreBreakdown;
     const scoreColor = b.total>=70?'#1a7a4a':b.total>=40?'#ba7517':'#a32d2d';
-    const componentRow = (label, score, detail, weight) => {
-      const c = score>=75?'#1a7a4a':score>=50?'#ba7517':'#a32d2d';
-      const pct = Math.round(score);
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0efe9">
-        <div><div style="font-size:13px;font-weight:700;color:#2c2c2a">${label}</div><div style="font-size:11px;color:#888;margin-top:1px">${detail}</div></div>
-        <div style="text-align:right"><div style="font-size:14px;font-weight:800;color:${c}">${pct}/100</div><div style="font-size:10px;color:#888">${weight}% weight</div></div>
+    const scoreLabel = b.total>=70?'Good standing':b.total>=40?'Getting there':'Needs attention';
+
+    const row = (emoji, label, value, status, meaning) => {
+      const statusColor = status==='Good'||status==='Excellent'?'#1a5c35':status==='Fair'?'#ba7517':'#a32d2d';
+      const statusBg = status==='Good'||status==='Excellent'?'#eaf3de':status==='Fair'?'#fef3c7':'#fdecea';
+      return `<div style="padding:12px 0;border-bottom:1px solid #f0efe9">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <div style="font-size:13px;font-weight:700;color:#2c2c2a">${emoji} ${label}</div>
+          <span style="background:${statusBg};color:${statusColor};font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">${status}</span>
+        </div>
+        <div style="font-size:12px;color:#5f5e5a;margin-bottom:2px">${value}</div>
+        <div style="font-size:11px;color:#888">${meaning}</div>
       </div>`;
     };
+
     document.getElementById('info-body').innerHTML = `
-      <div style="text-align:center;margin-bottom:12px">
-        <div style="font-size:36px;font-weight:900;color:${scoreColor}">${b.total}/100</div>
-        <div style="font-size:12px;color:#888;margin-top:4px">Your debt freedom score</div>
+      <div style="text-align:center;margin-bottom:16px;padding:16px;background:#f7f6f2;border-radius:14px">
+        <div style="font-size:42px;font-weight:900;color:${scoreColor};line-height:1">${b.total}</div>
+        <div style="font-size:11px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.5px">out of 100 — ${scoreLabel}</div>
       </div>
-      <div style="margin-bottom:4px">
-        ${componentRow('Debt vs income', b.dtiScore, `${b.dtiMonths}× your monthly income — ${b.dtiLabel}`, 40)}
-        ${componentRow('Monthly payments', b.minScore, `${b.minPct}% of income on minimums — ${b.minLabel}`, 30)}
-        ${componentRow('Number of debts', b.numScore, `${b.numDebts} debt${b.numDebts!==1?'s':''} — ${b.numLabel}`, 20)}
-        ${componentRow('Payoff progress', b.progressScore, b.progressLabel, 10)}
-      </div>
-      <div style="font-size:12px;color:#888;margin-top:10px;line-height:1.5">100 = completely debt-free. Pay more than minimums to improve your score faster.</div>
+      ${row('💳','Monthly debt payments',
+        `R${(b.minPct*Number(b.dtiMonths>0?(b.total||1):1)||0).toLocaleString?.()??''} — ${b.minPct}% of your income goes to minimum payments`,
+        b.minPct<=10?'Excellent':b.minPct<=20?'Good':b.minPct<=30?'Fair':'High',
+        b.minPct<=20?'Under 20% is healthy. You have room to breathe.':b.minPct<=30?'Getting tight. Try to avoid taking on new debt.':'Over 30% is a strain. Focus on paying down debt.'
+      )}
+      ${row('📅','Time to debt free',
+        b.dtiMonths<=0?'No debt — congratulations!':`At minimum payments, your debt is ${b.dtiMonths}× your monthly income`,
+        b.dtiMonths<=0?'Excellent':b.dtiMonths<=6?'Good':b.dtiMonths<=12?'Fair':'High',
+        b.dtiMonths<=0?'You have no debt tracked.':b.dtiMonths<=6?'Your debt is manageable relative to your income.':b.dtiMonths<=12?'Your debt is significant but manageable with a plan.':'Your debt is large relative to income. A payoff plan is essential.'
+      )}
+      ${row('🔢','Number of debts',
+        `${b.numDebts} active debt${b.numDebts!==1?'s':''}`,
+        b.numDebts===0?'Excellent':b.numDebts<=2?'Good':b.numDebts<=3?'Fair':'High',
+        b.numDebts===0?'Debt free!':b.numDebts<=2?'Few debts are easier to manage and pay off.':b.numDebts<=3?'Consider consolidating to simplify payments.':'Multiple debts make it hard to make progress. Target the smallest first.'
+      )}
+      ${row('📈','Payoff progress',
+        b.progressLabel,
+        b.numDebts===0?'Excellent':b.progressLabel==='Actively paying'?'Good':'Fair',
+        b.numDebts===0?'No debts tracked.':b.progressLabel==='Actively paying'?'Paying more than minimums speeds up your payoff significantly.':'Paying only minimums means slow progress. Even R100 extra per month makes a difference.'
+      )}
+      <div style="font-size:11px;color:#aaa;padding-top:10px;line-height:1.5">⚖️ This score is an estimate for educational purposes only. Not financial advice.</div>
     `;
-    document.getElementById('info-body').style.fontSize = '13px';
-    const exEl = document.getElementById('info-example');
+    document.getElementById('info-body').style.fontSize='13px';
+    const exEl=document.getElementById('info-example');
     if(exEl) exEl.style.display='none';
   } else {
     document.getElementById('info-body').textContent = info.body;
@@ -6398,7 +6704,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v123';
+const APP_VERSION = '2026-04-26-v125';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7255,6 +7561,288 @@ function closeMonthlySummary(){
   const ov=document.getElementById('monthly-summary-overlay');
   if(ov) ov.style.display='none';
 }
+
+// ── Debt Payment Logging ──────────────────────────────────────
+let _paymentDebtId=null, _paymentDebtName='', _paymentDebtMin=0, _paymentDebtBal=0;
+
+function openPaymentSheet(debtId, debtName, minPayment, balance){
+  _paymentDebtId=debtId;
+  _paymentDebtName=debtName;
+  _paymentDebtMin=Number(minPayment||0);
+  _paymentDebtBal=Number(balance||0);
+  const ov=document.getElementById('payment-overlay');
+  const nameEl=document.getElementById('payment-debt-name');
+  const inp=document.getElementById('payment-amount-input');
+  const btns=document.getElementById('payment-quick-btns');
+  if(nameEl) nameEl.textContent='Pay '+debtName;
+  if(inp){ inp.value=_paymentDebtMin||''; inp.focus(); }
+  // Quick amount buttons
+  if(btns && _paymentDebtMin>0){
+    const amounts=[_paymentDebtMin, Math.round(_paymentDebtMin*1.5), _paymentDebtMin*2];
+    btns.innerHTML=amounts.map(a=>`<button onclick="document.getElementById('payment-amount-input').value=${a}" style="flex:1;padding:8px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">R${a.toLocaleString('en-ZA')}</button>`).join('');
+  }
+  if(ov) ov.style.display='flex';
+}
+
+function closePaymentSheet(){
+  const ov=document.getElementById('payment-overlay');
+  if(ov) ov.style.display='none';
+  _paymentDebtId=null;
+}
+
+async function confirmPayment(){
+  const amount=Number(document.getElementById('payment-amount-input')?.value||0);
+  if(!amount||amount<=0){ showToast('⚠️ Enter the amount you paid'); return; }
+  if(!_paymentDebtId||!user?.id) return;
+  const note=document.getElementById('payment-note')?.value||'';
+  const newBal=Math.max(0, _paymentDebtBal-amount);
+  try{
+    // Log payment
+    await sbP('debt_payments',{
+      tester_id:user.id,
+      debt_id:_paymentDebtId,
+      amount,
+      note:note||null,
+      paid_at:new Date().toISOString()
+    });
+    // Reduce debt balance
+    await sbPatch(`debts?id=eq.${_paymentDebtId}`,{ balance:newBal });
+    // Update local debts array
+    const idx=debts.findIndex(d=>d.id===_paymentDebtId);
+    if(idx>=0) debts[idx].balance=newBal;
+    closePaymentSheet();
+    showToast(`✅ R${amount.toLocaleString('en-ZA')} payment recorded on ${_paymentDebtName}`);
+    // Reload debt tab
+    loadDebtsPWA();
+    // Check for celebration
+    if(newBal<=0) setTimeout(()=>checkDebtPayoffCelebration(),500);
+    // Mark this month as paid for this debt
+    const monthKey=`rw_paid_${_paymentDebtId}_${new Date().getFullYear()}_${new Date().getMonth()+1}`;
+    localStorage.setItem(monthKey,'paid:'+amount);
+  }catch(e){
+    showToast('Could not save payment. Try again.');
+  }
+}
+
+async function logCantPay(reason){
+  if(!_paymentDebtId||!user?.id) return;
+  const monthKey=`rw_paid_${_paymentDebtId}_${new Date().getFullYear()}_${new Date().getMonth()+1}`;
+  localStorage.setItem(monthKey,'missed:'+reason);
+  // Log as missed payment
+  try{
+    await sbP('debt_payments',{
+      tester_id:user.id,
+      debt_id:_paymentDebtId,
+      amount:0,
+      note:'missed:'+reason,
+      paid_at:new Date().toISOString()
+    });
+  }catch{}
+  closePaymentSheet();
+  const msgs={
+    no_money:'💚 We understand. Focus on essentials this month. Come back when you can.',
+    forgot:'💡 Tip: set a reminder on your phone for next month.',
+    partial:'Enter how much you did pay and we\'ll update your balance.'
+  };
+  if(reason==='partial'){
+    // Re-open for partial entry
+    openPaymentSheet(_paymentDebtId,_paymentDebtName,_paymentDebtMin,_paymentDebtBal);
+    showToast('Enter the partial amount you paid');
+  } else {
+    showToast(msgs[reason]||'Noted.');
+  }
+}
+
+async function loadLastPayment(debtId){
+  const el=document.getElementById('last-payment-'+debtId);
+  if(!el||!user?.id) return;
+  try{
+    const payments=await sbG(`debt_payments?debt_id=eq.${debtId}&order=paid_at.desc&limit=1`);
+    if(payments?.length){
+      const p=payments[0];
+      const date=new Date(p.paid_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+      if(Number(p.amount)>0){
+        el.textContent=`Last payment: R${Number(p.amount).toLocaleString('en-ZA')} on ${date}`;
+        el.style.color='#1a5c35';
+      } else {
+        el.textContent=`Missed payment recorded: ${date}`;
+        el.style.color='#ba7517';
+      }
+    } else {
+      el.textContent='No payments recorded yet';
+      el.style.color='#aaa';
+    }
+  }catch{
+    el.textContent='';
+  }
+}
+
+// ── Payday Payment Check-in ───────────────────────────────────
+function maybeShowPaydayCheckin(){
+  if(!user?.id||!debts?.length) return;
+  const now=new Date();
+  const payDay=Number(user.pay_day||25);
+  const today=now.getDate();
+  const monthKey=`rw_payday_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+  // Show on payday+1 and payday+3 if not done
+  const daysAfterPay=today-payDay;
+  if(daysAfterPay!==1&&daysAfterPay!==3) return;
+  if(localStorage.getItem(monthKey)==='done') return;
+  // Check for previous month unpaid debts first
+  const prevMonth=now.getMonth()===0?12:now.getMonth();
+  const prevYear=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();
+  const unpaidPrev=debts.filter(d=>{
+    const key=`rw_paid_${d.id}_${prevYear}_${prevMonth}`;
+    return !localStorage.getItem(key);
+  });
+  setTimeout(()=>showPaydayCheckin(unpaidPrev.length>0?'prev':'current'),2000);
+}
+
+function showPaydayCheckin(mode){
+  const ov=document.getElementById('payday-checkin-overlay');
+  const title=document.getElementById('payday-checkin-title');
+  const list=document.getElementById('payday-debt-list');
+  if(!ov||!list) return;
+  const now=new Date();
+  const prevMonth=now.getMonth()===0?12:now.getMonth();
+  const prevYear=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();
+  const prevMonthName=new Date(prevYear,prevMonth-1,1).toLocaleString('en-ZA',{month:'long'});
+  if(mode==='prev'&&title){
+    title.textContent=`First — let's close out ${prevMonthName}`;
+  }
+  // Show debts needing payment confirmation
+  const targetYear=mode==='prev'?prevYear:now.getFullYear();
+  const targetMonth=mode==='prev'?prevMonth:now.getMonth()+1;
+  const pending=debts.filter(d=>{
+    const key=`rw_paid_${d.id}_${targetYear}_${targetMonth}`;
+    return !localStorage.getItem(key);
+  });
+  if(!pending.length){
+    closePaydayCheckin();
+    showToast('✅ All debt payments confirmed for this month!');
+    return;
+  }
+  list.innerHTML=pending.map(d=>`
+    <div style="background:#f7f6f2;border-radius:14px;padding:14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#2c2c2a">${d.name||'Debt'}</div>
+          <div style="font-size:12px;color:#888">Minimum: R${Number(d.min_payment||0).toLocaleString('en-ZA')}/mo</div>
+        </div>
+        <div style="font-size:14px;font-weight:800;color:#c62828">R${Number(d.balance||0).toLocaleString('en-ZA')}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="quickConfirmPayment('${d.id}','${(d.name||'').replace(/'/g,"\\'")}',${Number(d.min_payment||0)},${Number(d.balance||0)},${targetYear},${targetMonth})" style="flex:2;padding:10px;background:#1a7a4a;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">✅ Paid R${Number(d.min_payment||0).toLocaleString('en-ZA')}</button>
+        <button onclick="quickMissedPayment('${d.id}',${targetYear},${targetMonth})" style="flex:1;padding:10px;background:#fdecea;color:#a32d2d;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">❌ Missed</button>
+      </div>
+    </div>`).join('');
+  ov.style.display='flex';
+}
+
+async function quickConfirmPayment(debtId,debtName,minPay,bal,year,month){
+  const newBal=Math.max(0,bal-minPay);
+  const monthKey=`rw_paid_${debtId}_${year}_${month}`;
+  localStorage.setItem(monthKey,'paid:'+minPay);
+  try{
+    await sbP('debt_payments',{tester_id:user.id,debt_id:debtId,amount:minPay,note:'confirmed via payday checkin',paid_at:new Date().toISOString()});
+    await sbPatch(`debts?id=eq.${debtId}`,{balance:newBal});
+    const idx=debts.findIndex(d=>d.id===debtId);
+    if(idx>=0) debts[idx].balance=newBal;
+  }catch{}
+  // Refresh the payday checkin list
+  const now=new Date();
+  const mode=year<now.getFullYear()||(year===now.getFullYear()&&month<now.getMonth()+1)?'prev':'current';
+  showPaydayCheckin(mode);
+}
+
+async function quickMissedPayment(debtId,year,month){
+  const monthKey=`rw_paid_${debtId}_${year}_${month}`;
+  localStorage.setItem(monthKey,'missed');
+  try{ await sbP('debt_payments',{tester_id:user.id,debt_id:debtId,amount:0,note:'missed - confirmed via payday checkin',paid_at:new Date().toISOString()}); }catch{}
+  const now=new Date();
+  const mode=year<now.getFullYear()||(year===now.getFullYear()&&month<now.getMonth()+1)?'prev':'current';
+  showPaydayCheckin(mode);
+}
+
+function closePaydayCheckin(){
+  const ov=document.getElementById('payday-checkin-overlay');
+  if(ov) ov.style.display='none';
+  const now=new Date();
+  const monthKey=`rw_payday_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+  localStorage.setItem(monthKey,'done');
+}
+
+// ── Income Check-in (every 3 months) ─────────────────────────
+function maybeShowIncomeCheckin(){
+  if(!user?.id) return;
+  const lastCheckin=localStorage.getItem('rw_income_checkin_date');
+  const now=Date.now();
+  const threeMonths=90*24*60*60*1000;
+  if(lastCheckin&&(now-Number(lastCheckin))<threeMonths) return;
+  // Don't show on same day as other prompts
+  const lastPopup=localStorage.getItem('rw_last_popup');
+  if(lastPopup&&(now-Number(lastPopup))<86400000) return;
+  setTimeout(()=>{
+    const ov=document.getElementById('income-checkin-overlay');
+    const el=document.getElementById('income-checkin-current');
+    if(el) el.textContent='R'+Number(user.income_amount||0).toLocaleString('en-ZA');
+    if(ov) ov.style.display='flex';
+    localStorage.setItem('rw_last_popup',now.toString());
+  },5000);
+}
+
+async function confirmIncomeUnchanged(){
+  localStorage.setItem('rw_income_checkin_date',Date.now().toString());
+  try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{last_income_checkin:new Date().toISOString()}); }catch{}
+  closeIncomeCheckin();
+  showToast('✅ Income confirmed — budget stays accurate');
+}
+
+function closeIncomeCheckin(){
+  const ov=document.getElementById('income-checkin-overlay');
+  if(ov) ov.style.display='none';
+}
+
+// ── Monthly Needs Check-in (every 3 months) ──────────────────
+function maybeShowNeedsCheckin(){
+  if(!user?.id) return;
+  const lastCheckin=localStorage.getItem('rw_needs_checkin_date');
+  const now=Date.now();
+  const threeMonths=90*24*60*60*1000;
+  if(lastCheckin&&(now-Number(lastCheckin))<threeMonths) return;
+  if(!localStorage.getItem('rw_needs_setup_done')) return; // hasn't set up needs yet
+  const lastPopup=localStorage.getItem('rw_last_popup');
+  if(lastPopup&&(now-Number(lastPopup))<86400000) return;
+  setTimeout(()=>{
+    const ov=document.getElementById('needs-checkin-overlay');
+    const list=document.getElementById('needs-checkin-list');
+    const needs=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+    if(!Object.keys(needs).length) return;
+    if(list){
+      list.innerHTML=Object.entries(needs).map(([k,v])=>`
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0efe9">
+          <div style="font-size:13px;color:#2c2c2a;text-transform:capitalize">${k}</div>
+          <div style="font-size:13px;font-weight:700;color:#1a5c35">R${Number(v).toLocaleString('en-ZA')}/mo</div>
+        </div>`).join('');
+    }
+    if(ov) ov.style.display='flex';
+    localStorage.setItem('rw_last_popup',now.toString());
+  },7000);
+}
+
+async function confirmNeedsUnchanged(){
+  localStorage.setItem('rw_needs_checkin_date',Date.now().toString());
+  try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{last_needs_checkin:new Date().toISOString()}); }catch{}
+  closeNeedsCheckin();
+  showToast('✅ Monthly costs confirmed — budget stays accurate');
+}
+
+function closeNeedsCheckin(){
+  const ov=document.getElementById('needs-checkin-overlay');
+  if(ov) ov.style.display='none';
+}
+
+
 
 // ── Quick Income Edit ─────────────────────────────────────────
 function openQuickEditIncome(){
