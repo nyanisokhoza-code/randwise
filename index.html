@@ -2743,21 +2743,11 @@ function getSmartWeeklyBudget(){
   const needsTotal = needsPresetTotal + needsCustomTotal;
   if(needsTotal>0) breakdown.push({label:'Monthly needs', amount:needsTotal});
 
-  // Recurring expenses (expenses marked as recurring)
-  const allExp = (typeof expenses!=='undefined'&&Array.isArray(expenses))?expenses:[];
-  const recurringExp = allExp.filter(e=>e.recurring===true||e.recurring==='true'||e.is_recurring===true);
-  // Group by category and take most recent amount per category
-  const recurringMap = {};
-  recurringExp.forEach(e=>{
-    const cat = e.category||'Recurring';
-    if(!recurringMap[cat]||new Date(e.logged_at||e.created_at)>new Date(recurringMap[cat].logged_at||recurringMap[cat].created_at)){
-      recurringMap[cat]=e;
-    }
-  });
-  const recurringTotal = Object.values(recurringMap).reduce((s,e)=>s+Number(e.amount||0),0);
-  if(recurringTotal>0) breakdown.push({label:'Recurring expenses', amount:recurringTotal});
+  // NOTE: Recurring expenses are intentionally NOT included here
+  // They overlap with monthly needs (e.g. Electricity is both a recurring expense AND a monthly need)
+  // Including both would double-count and show wrong budget numbers
 
-  const fixed = doTotal + debtMin + needsTotal + recurringTotal;
+  const fixed = doTotal + debtMin + needsTotal;
   const disposable = Math.max(0, inc - fixed);
   const wb = Math.round(disposable/4);
 
@@ -6801,7 +6791,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v127';
+const APP_VERSION = '2026-04-26-v128';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
