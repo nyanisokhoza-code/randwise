@@ -1146,6 +1146,7 @@ if('serviceWorker' in navigator){
             <button onclick="openEditProfile()" style="background:#f5f5f0;border:1px solid #e0e0e0;color:#333;font-size:12px;font-weight:600;padding:7px 18px;border-radius:20px;cursor:pointer">✏️ Edit profile</button>
           </div>
           <div style="font-size:10px;color:var(--mu);margin-top:8px;text-align:center" id="p-version"></div>
+          <div style="font-size:10px;color:#aaa;line-height:1.5;text-align:center;padding:8px 0;margin-top:4px">MyRandWise provides financial education and calculation tools, not financial advice. Figures are estimates for informational purposes only. We are not a registered Financial Services Provider (FSP). Consult a qualified financial advisor before making major financial decisions.</div>
         </div>
         <div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);overflow:hidden;margin-bottom:14px">
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Account tier</span><span style="background:var(--bg2);color:var(--mu);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px" id="ptier">Free</span></div>
@@ -1278,6 +1279,8 @@ if('serviceWorker' in navigator){
           <div style="font-size:13px;color:#4ade80;font-weight:700;margin-top:6px" id="debt-free-date"></div>
         </div>
 
+        <div style="font-size:10px;color:#aaa;line-height:1.5;padding:10px 14px;border-top:1px solid #f0efe9;margin-top:-4px;margin-bottom:12px">⚖️ <em>Debt calculations are estimates based on fixed interest rates. Actual payoff may vary. Not financial advice.</em></div>
+
         <!-- PAYOFF ACCELERATOR -->
         <div id="payoff-accelerator" style="display:none;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px">
           <div style="display:flex;align-items:center;gap:4px"><div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">⚡ Payoff accelerator</div><button onclick="event.stopPropagation();showInfo('payoff-accelerator')" style="background:none;border:none;width:18px;height:18px;border-radius:50%;background:rgba(90,138,106,.2);color:#5a8a6a;font-size:10px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:4px;flex-shrink:0;line-height:1">i</button></div>
@@ -1306,7 +1309,8 @@ if('serviceWorker' in navigator){
 
         <button onclick="openAddDebtPWA()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">+ Add a debt</button>
       </div>
-    </div>
+
+      <div style="font-size:10px;color:#aaa;line-height:1.5;padding:12px 14px;border-top:1px solid #f0efe9;margin-top:4px">⚖️ <em>MyRandWise provides financial education tools, not financial advice. Figures are estimates only. We are not a registered FSP. Consult a qualified financial advisor before making major financial decisions.</em></div>    </div>
 
     <!-- GROW TAB -->
     <div class="tab-pane" id="tp-grow">
@@ -1589,6 +1593,7 @@ if('serviceWorker' in navigator){
 
     <!-- VEHICLE / BOND SPECIFIC FIELDS -->
     <div id="debt-vehicle-fields" style="display:none">
+      <div style="font-size:10px;color:#aaa;line-height:1.5;padding:8px 10px;background:#f7f6f2;border-radius:8px;margin-bottom:12px">⚖️ Vehicle finance calculations are estimates only. Actual repayments may differ based on your credit profile, bank terms, and fees. Not financial advice.</div>
       <div style="background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:12px 14px;margin-bottom:14px">
         <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:2px">🚗 Vehicle finance tip</div>
         <div style="font-size:11px;color:#92400e;line-height:1.6">The balance shown on statements may differ from your settlement amount. Call your bank for the exact settlement figure before making any decisions.</div>
@@ -4038,7 +4043,7 @@ const INFO = {
     icon: '🏠',
     title: 'Bond Readiness Score',
     body: 'Your bond readiness score tells you how likely a bank is to approve your home loan application. It looks at your income, debt, savings, and spending habits. A score above 70 means you have a good chance of approval.',
-    example: 'Banks look at:\n• Income stability (job type)\n• Debt-to-income ratio\n• Savings / deposit\n• Monthly spending patterns\n• Existing debt repayments'
+    example: 'Banks look at:\n• Income stability (job type)\n• Debt-to-income ratio\n• Savings / deposit\n• Monthly spending patterns\n• Existing debt repayments\n\n⚖️ This score is an estimate for educational purposes only. MyRandWise is not a registered FSP. Consult a bond originator or financial advisor for a formal assessment.'
   },
   'mashonisa': {
     icon: '⚠️',
@@ -5412,7 +5417,7 @@ function exportPDF(){
   <div class="section"><h3>Summary</h3><table><tr><td style="padding:8px 0;font-size:14px">Total expenses</td><td style="text-align:right" class="total">R${total.toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr><tr><td style="padding:8px 0;font-size:14px">Transactions</td><td style="text-align:right;font-size:18px;font-weight:700">${expenses.length}</td></tr><tr><td style="padding:8px 0;font-size:14px">Monthly income</td><td style="text-align:right;font-size:18px;font-weight:700;color:#1a5c35">R${Number(user?.income_amount||0).toLocaleString('en-ZA',{minimumFractionDigits:2})}</td></tr></table></div>
   <div class="section"><h3>By category</h3><table><tr><th>Category</th><th style="text-align:right">Total</th></tr>${catRows}</table></div>
   <div class="section"><h3>Transactions${expenses.length>50?' (latest 50)':''}</h3><table><tr><th>Date</th><th>Category</th><th>Note</th><th style="text-align:right">Amount</th></tr>${expRows}</table></div>
-  <div class="footer">Generated by MyRandWise · ${new Date().toLocaleDateString('en-ZA')} · Your money, your rules. 🇿🇦</div>
+  <div class="footer">Generated by MyRandWise · ${new Date().toLocaleDateString('en-ZA')} · Your money, your rules. 🇿🇦<br><br>⚖️ This report is for informational purposes only. MyRandWise is not a registered Financial Services Provider (FSP). Figures shown are estimates based on data you have entered. This is not financial advice. Consult a qualified financial advisor before making major financial decisions.</div>
   
   <!-- Reset Password Screen -->
   <div class="screen" id="reset-screen" style="background:#f7f6f2;align-items:center;justify-content:center;padding:24px">
@@ -6393,7 +6398,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v122';
+const APP_VERSION = '2026-04-26-v123';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
