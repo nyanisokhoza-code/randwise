@@ -2687,7 +2687,21 @@ function getSmartWeeklyBudget(){
   const needsTotal = needsPresetTotal + needsCustomTotal;
   if(needsTotal>0) breakdown.push({label:'Monthly needs', amount:needsTotal});
 
-  const fixed = doTotal + debtMin + needsTotal;
+  // Recurring expenses (expenses marked as recurring)
+  const allExp = (typeof expenses!=='undefined'&&Array.isArray(expenses))?expenses:[];
+  const recurringExp = allExp.filter(e=>e.recurring===true||e.recurring==='true'||e.is_recurring===true);
+  // Group by category and take most recent amount per category
+  const recurringMap = {};
+  recurringExp.forEach(e=>{
+    const cat = e.category||'Recurring';
+    if(!recurringMap[cat]||new Date(e.logged_at||e.created_at)>new Date(recurringMap[cat].logged_at||recurringMap[cat].created_at)){
+      recurringMap[cat]=e;
+    }
+  });
+  const recurringTotal = Object.values(recurringMap).reduce((s,e)=>s+Number(e.amount||0),0);
+  if(recurringTotal>0) breakdown.push({label:'Recurring expenses', amount:recurringTotal});
+
+  const fixed = doTotal + debtMin + needsTotal + recurringTotal;
   const disposable = Math.max(0, inc - fixed);
   const wb = Math.round(disposable/4);
 
@@ -2976,7 +2990,30 @@ async function renderDash(){
   set('debt-score-label',scoreLabel);
 
   // Store breakdown for the ⓘ tooltip
-  window._debtScoreBreakdown={dtiScore,dtiLabel,dtiMonths:Math.round(dtiMonths*10)/10,minScore,minLabel,minPct:Math.round(minPctOfIncome),numScore,numLabel,numDebts,progressScore,progressLabel,total:debtScore};
+  // Calculate real payoff time in months (for plain English display)
+  let payoffMonths = 0;
+  if(totalDebtForScore > 0 && totalMinPayments > 0){
+    // Simple simulation of payoff at minimum payments
+    let remaining = totalDebtForScore;
+    let months = 0;
+    const avgRate = debtListForScore.length > 0
+      ? debtListForScore.reduce((s,d)=>s+Number(d.interest_rate||0),0)/debtListForScore.length/100/12
+      : 0;
+    while(remaining > 0 && months < 600){
+      remaining = remaining*(1+avgRate) - totalMinPayments;
+      months++;
+      if(remaining < 0) remaining = 0;
+    }
+    payoffMonths = months;
+  }
+  const payoffYears = Math.floor(payoffMonths/12);
+  const payoffRemMonths = payoffMonths%12;
+  const payoffStr = payoffMonths<=0?'No debt':
+    payoffYears>0?(payoffYears+' year'+(payoffYears!==1?'s':'')+
+    (payoffRemMonths>0?' '+payoffRemMonths+' month'+(payoffRemMonths!==1?'s':''):'')):
+    (payoffMonths+' month'+(payoffMonths!==1?'s':''));
+
+  window._debtScoreBreakdown={dtiScore,dtiLabel,dtiMonths:Math.round(dtiMonths*10)/10,minScore,minLabel,minPct:Math.round(minPctOfIncome),numScore,numLabel,numDebts,progressScore,progressLabel,total:debtScore,payoffMonths,payoffStr,totalMinPayments};
 
   // Color the debt score card
   const dsCard=document.getElementById('stat-debt-card');
@@ -4369,14 +4406,18 @@ function showInfo(key){
         <div style="font-size:11px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.5px">out of 100 — ${scoreLabel}</div>
       </div>
       ${row('💳','Monthly debt payments',
-        `R${(b.minPct*Number(b.dtiMonths>0?(b.total||1):1)||0).toLocaleString?.()??''} — ${b.minPct}% of your income goes to minimum payments`,
+        `R${Math.round(b.totalMinPayments||0).toLocaleString('en-ZA')}/mo — ${b.minPct}% of your income goes to minimum payments`,
         b.minPct<=10?'Excellent':b.minPct<=20?'Good':b.minPct<=30?'Fair':'High',
         b.minPct<=20?'Under 20% is healthy. You have room to breathe.':b.minPct<=30?'Getting tight. Try to avoid taking on new debt.':'Over 30% is a strain. Focus on paying down debt.'
       )}
       ${row('📅','Time to debt free',
-        b.dtiMonths<=0?'No debt — congratulations!':`At minimum payments, your debt is ${b.dtiMonths}× your monthly income`,
-        b.dtiMonths<=0?'Excellent':b.dtiMonths<=6?'Good':b.dtiMonths<=12?'Fair':'High',
-        b.dtiMonths<=0?'You have no debt tracked.':b.dtiMonths<=6?'Your debt is manageable relative to your income.':b.dtiMonths<=12?'Your debt is significant but manageable with a plan.':'Your debt is large relative to income. A payoff plan is essential.'
+        b.payoffMonths<=0?'No debt — congratulations!':
+          `Debt free in ${b.payoffStr} at R${Math.round(b.totalMinPayments).toLocaleString('en-ZA')}/mo minimum payments`,
+        b.payoffMonths<=0?'Excellent':b.payoffMonths<=36?'Good':b.payoffMonths<=84?'Fair':'High',
+        b.payoffMonths<=0?'You have no debt — great work!':
+        b.payoffMonths<=36?'Under 3 years — strong position. Extra payments will finish it faster.':
+        b.payoffMonths<=84?'Under 7 years — manageable. Try paying a little extra on your smallest debt.':
+        `Over 7 years at minimums only. Even R${Math.round((b.totalMinPayments||0)*0.1).toLocaleString('en-ZA')} extra per month cuts this significantly.`
       )}
       ${row('🔢','Number of debts',
         `${b.numDebts} active debt${b.numDebts!==1?'s':''}`,
@@ -6704,7 +6745,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v125';
+const APP_VERSION = '2026-04-26-v126';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
