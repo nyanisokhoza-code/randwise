@@ -3369,6 +3369,7 @@ function removeDebitOrder(i){
 // ── Debt PWA ──────────────────────────────────────────────────
 async function loadDebtsPWA(){
   if(!user?.id)return;
+  const inc = Number(user?.income_amount||0); // defined at function scope so all blocks can use it
   try{
     const loadedDebts=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
     debts=loadedDebts||[]; // Update global
@@ -6963,7 +6964,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v143';
+const APP_VERSION = '2026-04-27-v144';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
