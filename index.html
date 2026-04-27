@@ -3495,78 +3495,51 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   const splitEl=document.getElementById('split-strategy-text');
   const bondEl=document.getElementById('bond-score-debt-tab');
   if(!timelineEl||!accEl||!scenEl)return;
-
   if(!debts?.length){timelineEl.style.display='none';accEl.style.display='none';return;}
 
-  // Real amortization — accounts for interest rate
-  function monthsToPayoffAmort(balance, minPay, extraPay=0, annualRate=0){
+  // Amortization helpers
+  function calcMonths(balance,minPay,extra,annualRate){
     if(balance<=0)return 0;
-    const payment=minPay+extraPay;
-    if(payment<=0)return 999;
-    const monthlyRate=annualRate/100/12;
-    if(monthlyRate<=0) return Math.min(360,Math.ceil(balance/payment));
-    if(payment<=balance*monthlyRate) return 360; // Payment doesn't cover interest
-    return Math.min(360,Math.ceil(-Math.log(1-(monthlyRate*balance/payment))/Math.log(1+monthlyRate)));
+    const pay=minPay+extra;
+    if(pay<=0)return 600;
+    const r=annualRate/100/12;
+    let bal=balance,m=0;
+    while(bal>0.01&&m<600){bal=bal*(1+r)-pay;if(bal<0)bal=0;m++;}
+    return m;
   }
-
-  // Total interest paid calculation
-  function totalInterestPaid(balance, minPay, extraPay=0, annualRate=0){
+  function calcInterestTotal(balance,minPay,extra,annualRate){
     if(balance<=0||annualRate<=0)return 0;
-    const payment=minPay+extraPay;
-    const monthlyRate=annualRate/100/12;
-    let bal=balance, totalInt=0, months=0;
-    while(bal>0&&months<360){
-      const interest=bal*monthlyRate;
-      totalInt+=interest;
-      bal=bal+interest-payment;
-      if(bal<0)bal=0;
-      months++;
-    }
-    return Math.round(totalInt);
+    const pay=minPay+extra;const r=annualRate/100/12;
+    let bal=balance,total=0,m=0;
+    while(bal>0.01&&m<600){const i=bal*r;total+=i;bal=bal+i-pay;if(bal<0)bal=0;m++;}
+    return Math.round(total);
   }
-
-  // Snowball: pay off smallest first, roll payment to next
-  function snowballMonths(debtList, extraPay=0){
+  function snowballMonths(debtList,extra){
     const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
-    let balances=sorted.map(d=>Number(d.balance||0));
-    const minPayments=sorted.map(d=>Math.max(Number(d.min_payment||0),50));
-    const rates=sorted.map(d=>Number(d.interest_rate||0)/100/12);
-    let extra=extraPay;
-    let totalMonths=0;
-
-    for(let i=0;i<sorted.length;i++){
-      // Pay off debt i with min + rolling extra
-      let bal=balances[i];
-      const rate=rates[i];
-      const pay=minPayments[i]+extra;
-      let months=0;
-      while(bal>0.01&&months<360){
-        const interest=bal*rate;
-        bal=bal+interest-pay;
-        if(bal<0)bal=0;
-        months++;
-      }
-      totalMonths+=months;
-      // Roll this debt's minimum into extra for next debt
-      extra+=minPayments[i];
+    let roll=extra,total=0;
+    for(const d of sorted){
+      const bal=Number(d.balance||0);
+      const min=Math.max(Number(d.min_payment||0),50);
+      const r=Number(d.interest_rate||0)/100/12;
+      let b=bal,pay=min+roll,m=0;
+      while(b>0.01&&m<600){b=b*(1+r)-pay;if(b<0)b=0;m++;}
+      total+=m;roll+=min;
     }
-    return totalMonths;
-  }
-
-  function snowballInterest(debtList, extraPay=0){
-    let total=0;
-    debtList.forEach(d=>{
-      total+=totalInterestPaid(Number(d.balance||0),Number(d.min_payment||50),extraPay,Number(d.interest_rate||0));
-    });
     return total;
   }
+  function snowballInterest(debtList,extra){
+    return debtList.reduce((s,d)=>s+calcInterestTotal(Number(d.balance||0),Math.max(Number(d.min_payment||0),50),extra,Number(d.interest_rate||0)),0);
+  }
 
+  // Split debts: asset-backed vs unsecured
+  const ASSET_CATS=['Vehicle','vehicle','Bond/Home loan','bond','home loan','mortgage'];
+  const assetDebts=debts.filter(d=>ASSET_CATS.some(c=>(d.category||'').toLowerCase().includes(c.toLowerCase())));
+  const storeDebts=debts.filter(d=>!ASSET_CATS.some(c=>(d.category||'').toLowerCase().includes(c.toLowerCase())));
+  const storeTotal=storeDebts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const assetTotal=assetDebts.reduce((s,d)=>s+Number(d.balance||0),0);
+  const storeMin=storeDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const storeMonthsMin=storeDebts.length?snowballMonths(storeDebts,0):0;
   const totalMonthsMin=snowballMonths(debts,0);
-  const extra100=snowballMonths(debts,100);
-  const extra200=snowballMonths(debts,200);
-  const intMin=snowballInterest(debts,0);
-  const int100=snowballInterest(debts,100);
-  const int200=snowballInterest(debts,200);
 
   // Debt free timeline
   timelineEl.style.display='block';
@@ -3574,50 +3547,79 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   const freeLabelEl=document.getElementById('debt-free-label');
   if(freeMonthsEl){
     freeMonthsEl.textContent=totalMonthsMin>60?Math.round(totalMonthsMin/12)+' years':totalMonthsMin+' months';
-    // Add calendar date
     const freeDate=new Date();
     freeDate.setMonth(freeDate.getMonth()+totalMonthsMin);
-    const freeDateStr=freeDate.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
     const dateEl=document.getElementById('debt-free-date');
-    if(dateEl) dateEl.textContent='Debt free: '+freeDateStr;
+    if(dateEl) dateEl.textContent='Debt free: '+freeDate.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
   }
   if(freeLabelEl)freeLabelEl.textContent='paying only minimums (R'+totalMin.toLocaleString('en-ZA')+'/mo)';
 
-  // Accelerator scenarios with real interest data
   accEl.style.display='block';
-  const scenarios=[
-    {label:'Minimum payments',extra:0,months:totalMonthsMin,interest:intMin,color:'#c62828',bg:'#fee2e2'},
-    {label:'Pay R100 extra/mo',extra:100,months:extra100,interest:int100,color:'#f59e0b',bg:'#fff8e1'},
-    {label:'Pay R200 extra/mo',extra:200,months:extra200,interest:int200,color:'#2e7d32',bg:'#e8f5ee'},
-  ];
-  scenEl.innerHTML=scenarios.map((s,i)=>{
-    const monthsSaved=i>0?totalMonthsMin-s.months:0;
-    const intSaved=i>0?intMin-s.interest:0;
-    const fmtMonths=s.months>=60?Math.round(s.months/12)+' yrs':s.months+' mo';
-    let insight='';
-    if(i===0) insight=`<div style="font-size:11px;color:#c62828;line-height:1.6">Costs the most<br>in interest over time</div>`;
-    if(i===1&&intSaved>0) insight=`<div style="font-size:11px;color:#92400e;line-height:1.6">Saves <strong>R${intSaved.toLocaleString('en-ZA')}</strong> interest<br>& ${monthsSaved} months sooner</div>`;
-    if(i===2&&intSaved>0) insight=`<div style="font-size:11px;color:#1a5c35;line-height:1.6"><strong>Best choice</strong> — saves<br>R${intSaved.toLocaleString('en-ZA')} in interest</div>`;
-    return`<div style="display:flex;align-items:center;padding:10px 0;${i<2?'border-bottom:1px solid #d1ead9':''}">
-      <div style="flex:1.2">
-        <div style="font-size:13px;font-weight:700;color:#1a5c35">${s.label}</div>
-        <div style="font-size:11px;color:#5a8a6a;margin-top:2px">R${(totalMin+s.extra).toLocaleString('en-ZA')}/mo total</div>
-      </div>
-      <div style="flex:1;text-align:center;padding:0 6px">${insight}</div>
-      <div style="background:${s.bg};padding:6px 12px;border-radius:20px;text-align:right;flex-shrink:0">
-        <div style="font-size:13px;font-weight:800;color:${s.color}">${fmtMonths}</div>
-        ${monthsSaved>0?`<div style="font-size:10px;color:#2e7d32;font-weight:700">${monthsSaved} mo faster</div>`:''}
-      </div>
-    </div>`;
-  }).join('');
 
-  // Dad's split strategy
-  const spare=Math.max(0,Math.round((inc-totalMin)*0.15));
-  const debtHalf=Math.round(spare/2);
-  const saveHalf=Math.round(spare/2);
-  if(splitEl)splitEl.textContent=`Pay R${debtHalf.toLocaleString('en-ZA')} extra towards debt AND save R${saveHalf.toLocaleString('en-ZA')} as a buffer — every month. If something goes wrong, your savings cover the debt. You finish debt faster AND stay protected.`;
+  // Free money available (income minus all commitments)
+  const freePerMonth=Math.max(0,inc-totalMin);
+  const storeMonthsStr=m=>m<=0?'Already paid':m<12?m+' months':Math.floor(m/12)+'y '+(m%12?m%12+'mo':'');
 
-  // Update bond score on debt tab
+  // Build the new smart accelerator HTML
+  scenEl.innerHTML=`
+    ${storeDebts.length>0&&assetDebts.length>0?`
+    <div style="background:#f7f6f2;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Your debt — two different pictures</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e8e6de">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#2c2c2a">Store debts (${storeDebts.map(d=>d.name||d.category).join(', ')})</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">R${Math.round(storeTotal).toLocaleString('en-ZA')} · R${storeMin.toLocaleString('en-ZA')}/mo minimums</div>
+          <div style="height:4px;background:#e8e6de;border-radius:2px;margin-top:5px;width:160px;overflow:hidden"><div style="height:100%;background:#1a7a4a;border-radius:2px;width:${Math.min(100,Math.round(storeTotal/totalOwed*100))}%"></div></div>
+        </div>
+        <span style="background:#eaf3de;color:#1a5c35;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">${storeMonthsStr(storeMonthsMin)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#2c2c2a">${assetDebts.map(d=>d.name||d.category).join(', ')}</div>
+          <div style="font-size:11px;color:#888;margin-top:2px">R${Math.round(assetTotal).toLocaleString('en-ZA')} · Asset-backed debt</div>
+          <div style="height:4px;background:#e8e6de;border-radius:2px;margin-top:5px;width:160px;overflow:hidden"><div style="height:100%;background:#a32d2d;border-radius:2px;width:${Math.min(100,Math.round(assetTotal/totalOwed*100))}%"></div></div>
+        </div>
+        <span style="background:#fdecea;color:#a32d2d;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px">Long-term</span>
+      </div>
+      <div style="font-size:11px;color:#888;line-height:1.5;margin-top:8px;padding-top:8px;border-top:1px solid #e8e6de">Your store debts are gone in ${storeMonthsStr(storeMonthsMin)} at minimums. The car loan creates the long timeline — it's asset-backed, not a crisis. Focus extra payments on store debts first.</div>
+    </div>`:``}
+
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;color:#888;margin-bottom:10px">You have <strong style="color:#1a7a4a">R${freePerMonth.toLocaleString('en-ZA')}/mo</strong> free after all commitments. How much extra to put towards debt?</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <input type="range" id="acc-slider" min="0" max="${Math.min(freePerMonth,2000)}" value="${Math.round(freePerMonth*0.12)}" step="50"
+          oninput="updateAccelerator(this.value,${JSON.stringify(debts).replace(/"/g,"'")})"
+          style="flex:1;height:4px;border-radius:2px;accent-color:#1a7a4a">
+        <span style="font-size:14px;font-weight:700;color:#1a7a4a;min-width:60px;text-align:right" id="acc-slider-val">R${Math.round(freePerMonth*0.12).toLocaleString('en-ZA')}</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.10)};updateAccelerator(${Math.round(freePerMonth*0.10)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">10%<br>R${Math.round(freePerMonth*0.10).toLocaleString('en-ZA')}</button>
+        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.25)};updateAccelerator(${Math.round(freePerMonth*0.25)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">25%<br>R${Math.round(freePerMonth*0.25).toLocaleString('en-ZA')}</button>
+        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.50)};updateAccelerator(${Math.round(freePerMonth*0.50)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#1a5c35">50%<br>R${Math.round(freePerMonth*0.50).toLocaleString('en-ZA')}</button>
+      </div>
+      <div id="acc-result" style="background:#f0faf4;border-radius:12px;padding:14px;border:1px solid #d1ead9">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div><div style="font-size:12px;color:#5a8a6a;margin-bottom:2px">Store debts clear in</div><div style="font-size:22px;font-weight:900;color:#1a5c35" id="acc-store-result">—</div></div>
+          <div style="text-align:right"><div style="font-size:12px;color:#5a8a6a;margin-bottom:2px">Interest saved</div><div style="font-size:22px;font-weight:900;color:#1a5c35" id="acc-int-saved">—</div></div>
+        </div>
+        <div style="font-size:12px;color:#5a8a6a;line-height:1.6" id="acc-detail">—</div>
+      </div>
+    </div>
+
+    <div style="background:#eaf3de;border-radius:12px;padding:14px;border:1px solid #a5d6a7">
+      <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recommended: snowball + roll strategy</div>
+      <div style="font-size:12px;color:#1a5c35;line-height:1.6" id="snowball-recommendation">Pay extra on your smallest debt first. When it's gone, roll that payment onto the next one. Each debt you clear frees up more money for the next.</div>
+    </div>
+  `;
+
+  // Initialize the accelerator display
+  const initExtra=Math.round(freePerMonth*0.12);
+  updateAccelerator(initExtra,debts);
+
+  // Split strategy
+  const spare=Math.max(0,Math.round(freePerMonth*0.15));
+  if(splitEl)splitEl.textContent=`Pay R${Math.round(spare/2).toLocaleString('en-ZA')} extra towards debt AND save R${Math.round(spare/2).toLocaleString('en-ZA')} as a buffer — every month. If something goes wrong, your savings cover the debt. You finish debt faster AND stay protected.`;
+
   if(bondEl){
     const dti=inc>0?(totalMin/inc*100):0;
     let score=50;
@@ -3627,6 +3629,79 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
     bondEl.textContent=score;
   }
 }
+
+function updateAccelerator(extra,debts){
+  extra=Number(extra)||0;
+  const sliderVal=document.getElementById('acc-slider-val');
+  if(sliderVal) sliderVal.textContent='R'+Math.round(extra).toLocaleString('en-ZA');
+
+  const ASSET_CATS=['Vehicle','vehicle','Bond/Home loan','bond','home loan','mortgage'];
+  const storeDebts=(debts||[]).filter(d=>!ASSET_CATS.some(c=>(d.category||'').toLowerCase().includes(c.toLowerCase())));
+  const storeMin=storeDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const totalMin=(debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
+  const inc=Number(window.user?.income_amount||0);
+  const freePerMonth=Math.max(0,inc-totalMin);
+
+  function snowballMonths(dl,ex){
+    const sorted=[...dl].sort((a,b)=>Number(a.balance)-Number(b.balance));
+    let roll=ex,total=0;
+    for(const d of sorted){
+      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);const r=Number(d.interest_rate||0)/100/12;
+      let b=bal,pay=min+roll,m=0;
+      while(b>0.01&&m<600){b=b*(1+r)-pay;if(b<0)b=0;m++;}
+      total+=m;roll+=min;
+    }
+    return total;
+  }
+  function snowballInterest(dl,ex){
+    return dl.reduce((s,d)=>{
+      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);const r=Number(d.interest_rate||0)/100/12;
+      if(bal<=0||r<=0)return s;
+      const pay=min+ex;let b=bal,total=0,m=0;
+      while(b>0.01&&m<600){const i=b*r;total+=i;b=b+i-pay;if(b<0)b=0;m++;}
+      return s+Math.round(total);
+    },0);
+  }
+
+  const storeMonths=storeDebts.length?snowballMonths(storeDebts,extra):0;
+  const storeMonthsBase=storeDebts.length?snowballMonths(storeDebts,0):0;
+  const intBase=snowballInterest(storeDebts,0);
+  const intNew=snowballInterest(storeDebts,extra);
+  const intSaved=Math.max(0,intBase-intNew);
+  const monthsSaved=Math.max(0,storeMonthsBase-storeMonths);
+
+  const fmt=m=>m<=0?'Already paid':m<12?m+' mo':Math.floor(m/12)+'y '+(m%12?m%12+'mo':'');
+  const storeEl=document.getElementById('acc-store-result');
+  const intEl=document.getElementById('acc-int-saved');
+  const detailEl=document.getElementById('acc-detail');
+  const recEl=document.getElementById('snowball-recommendation');
+
+  if(storeEl) storeEl.textContent=storeDebts.length?fmt(storeMonths):'No store debts';
+  if(intEl) intEl.textContent='R'+intSaved.toLocaleString('en-ZA');
+
+  const pct=freePerMonth>0?Math.round(extra/freePerMonth*100):0;
+  let detail='',rec='';
+  if(extra===0){
+    detail=`No extra payment — store debts take ${fmt(storeMonthsBase)} at minimums only.`;
+    rec=`Pay extra on your smallest debt first. When it's gone, roll that payment onto the next. Each debt cleared frees up more money.`;
+  } else if(pct<=15){
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of your free money). Manageable — store debts done ${monthsSaved} months sooner. You still have R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo for living.`;
+    rec=`Put R${Math.round(extra).toLocaleString('en-ZA')} extra onto ${storeDebts[0]?.name||'your smallest debt'} first. Once paid off, roll that payment onto the next debt automatically.`;
+  } else if(pct<=30){
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Strong pace — store debts gone ${monthsSaved} months sooner, saves R${intSaved.toLocaleString('en-ZA')} in interest. Leaves R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo for other expenses.`;
+    rec=`Good balance between aggression and safety. Attack ${storeDebts[0]?.name||'smallest debt'} with R${Math.round(extra).toLocaleString('en-ZA')} extra. Roll when done.`;
+  } else if(pct<=60){
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Aggressive — store debts eliminated fast, saves R${intSaved.toLocaleString('en-ZA')} interest. Keep an emergency buffer of at least R1,000.`;
+    rec=`Aggressive snowball — ${storeDebts[0]?.name||'smallest debt'} first with R${Math.round(extra).toLocaleString('en-ZA')} extra. You'll be store-debt free in ${fmt(storeMonths)}.`;
+  } else {
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Maximum attack — only R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo left for other spending. Only sustainable if you have no unexpected expenses.`;
+    rec=`Maximum attack mode. Every spare rand goes to debt. Make sure you have at least R500 emergency buffer before committing to this.`;
+  }
+
+  if(detailEl) detailEl.textContent=detail;
+  if(recEl) recEl.textContent=rec;
+}
+
 
 async function deleteDebtPWA(id){
   if(!window._confirmDebt) { showToast('Tap remove again to confirm'); window._confirmDebt=setTimeout(()=>{window._confirmDebt=null;},3000); return; } window._confirmDebt=null;
@@ -6791,7 +6866,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v128';
+const APP_VERSION = '2026-04-26-v129';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -8107,7 +8182,7 @@ function openAppRating(){
   const ov=document.getElementById('rating-overlay');
   if(ov) ov.style.display='none';
   // Open Play Store or app URL
-  window.open('https://play.google.com/store/apps/details?id=com.myrandwise.app','_blank');
+  window.open('https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk','_blank');
   // Fallback if not on Play Store yet
   showToast('🌟 Thank you! Your support means everything.');
 }
