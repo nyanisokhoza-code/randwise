@@ -17,24 +17,24 @@ if (hash && hash.includes('access_token')) {
   
   if (type === 'recovery') {
     window.location.replace(
-      'https://nyanisokhoza-code.github.io/randwise/reset-password.html' + hash
+      'https://myrandwise.co.za/reset-password.html' + hash
     );
   } else {
     window.location.replace(
-      'https://nyanisokhoza-code.github.io/randwise/' + hash
+      'https://myrandwise.co.za/' + hash
     );
   }
 } else if (hash && hash.includes('error=access_denied')) {
   // Expired or invalid link — send back to app with message
   window.location.replace(
-    'https://nyanisokhoza-code.github.io/randwise/reset-password.html?expired=1'
+    'https://myrandwise.co.za/reset-password.html?expired=1'
   );
 } else {
-  window.location.replace('https://nyanisokhoza-code.github.io/randwise/');
+  window.location.replace('https://myrandwise.co.za/');
 }
 </script>
 <noscript>
-  <meta http-equiv="refresh" content="0;url=https://nyanisokhoza-code.github.io/randwise/">
+  <meta http-equiv="refresh" content="0;url=https://myrandwise.co.za/">
 </noscript>
 </head>
 <body></body>
