@@ -3486,7 +3486,10 @@ async function loadDebtsPWA(){
     debts.forEach(d=>{ setTimeout(()=>loadLastPayment(d.id),100); });
 
     // ── PAYOFF ACCELERATOR ─────────────────────────────────────
-    renderPayoffAccelerator(debts, totalOwed, totalMin, inc);
+    // Use real disposable income (after all commitments) not raw income
+    const {disposable:accDisposable} = getSmartWeeklyBudget();
+    const accInc = accDisposable > 0 ? accDisposable : Number(inc);
+    renderPayoffAccelerator(debts, totalOwed, totalMin, accInc);
 
   }catch(e){document.getElementById('debt-list-pwa').innerHTML='<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">Could not load debts</div>';}
 }
@@ -3703,7 +3706,8 @@ function updateAccelerator(extra,debts){
     detail=`No extra payment — store debts take ${fmt(storeMonthsBase)} at minimums only.`;
     rec=`Pay extra on your smallest debt first. When it's gone, roll that payment onto the next. Each debt cleared frees up more money.`;
   } else if(pct<=15){
-    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of your free money). Manageable — store debts done ${monthsSaved} months sooner. You still have R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo for living.`;
+    const leftover1=freePerMonth-extra;
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of your free money). Manageable — store debts done ${monthsSaved} months sooner.${leftover1>0?` You still have R${Math.round(leftover1).toLocaleString('en-ZA')}/mo for living.`:' ⚠️ This uses most of your free money — consider a lower amount.'}` ;
     rec=`Put R${Math.round(extra).toLocaleString('en-ZA')} extra onto ${storeDebts[0]?.name||'your smallest debt'} first. Once paid off, roll that payment onto the next debt automatically.`;
   } else if(pct<=30){
     const leftover2=freePerMonth-extra;
@@ -6887,7 +6891,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v132';
+const APP_VERSION = '2026-04-27-v133';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
