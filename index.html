@@ -3125,9 +3125,10 @@ async function renderDash(){
   }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
-  // ── BUDGET BREAKDOWN CARD ──────────────────────────────────
+  // ── BUDGET BREAKDOWN CARD (Pro only) ───────────────────────
   const bbCard = document.getElementById('budget-breakdown-card');
-  if(bbCard && budgetBreakdown && budgetBreakdown.length > 0){
+  const {isPro:bbIsPro} = getTier();
+  if(bbCard && budgetBreakdown && budgetBreakdown.length > 0 && bbIsPro){
     bbCard.style.display='block';
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
@@ -3640,7 +3641,11 @@ function updateAccelerator(extra,debts){
   const storeMin=storeDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
   const totalMin=(debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
   const inc=Number(window.user?.income_amount||0);
-  const freePerMonth=Math.max(0,inc-totalMin);
+  // Use actual spendable (after debt minimums AND monthly needs) so slider never goes negative
+  const needsData=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+  const customNeedsAcc=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+  const needsTotal=Object.values(needsData).reduce((s,v)=>s+Number(v||0),0)+customNeedsAcc.reduce((s,v)=>s+Number(v.amount||0),0);
+  const freePerMonth=Math.max(0,inc-totalMin-needsTotal);
 
   function snowballMonths(dl,ex){
     const sorted=[...dl].sort((a,b)=>Number(a.balance)-Number(b.balance));
@@ -3688,13 +3693,14 @@ function updateAccelerator(extra,debts){
     detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of your free money). Manageable — store debts done ${monthsSaved} months sooner. You still have R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo for living.`;
     rec=`Put R${Math.round(extra).toLocaleString('en-ZA')} extra onto ${storeDebts[0]?.name||'your smallest debt'} first. Once paid off, roll that payment onto the next debt automatically.`;
   } else if(pct<=30){
-    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Strong pace — store debts gone ${monthsSaved} months sooner, saves R${intSaved.toLocaleString('en-ZA')} in interest. Leaves R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo for other expenses.`;
+    const leftover2=freePerMonth-extra;
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Strong pace — store debts gone ${monthsSaved} months sooner, saves R${intSaved.toLocaleString('en-ZA')} in interest.${leftover2>0?` Leaves R${Math.round(leftover2).toLocaleString('en-ZA')}/mo for other expenses.`:' ⚠️ Adjust slider down if you need breathing room.'}`;
     rec=`Good balance between aggression and safety. Attack ${storeDebts[0]?.name||'smallest debt'} with R${Math.round(extra).toLocaleString('en-ZA')} extra. Roll when done.`;
   } else if(pct<=60){
     detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Aggressive — store debts eliminated fast, saves R${intSaved.toLocaleString('en-ZA')} interest. Keep an emergency buffer of at least R1,000.`;
     rec=`Aggressive snowball — ${storeDebts[0]?.name||'smallest debt'} first with R${Math.round(extra).toLocaleString('en-ZA')} extra. You'll be store-debt free in ${fmt(storeMonths)}.`;
   } else {
-    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Maximum attack — only R${(freePerMonth-extra).toLocaleString('en-ZA')}/mo left for other spending. Only sustainable if you have no unexpected expenses.`;
+    detail=`R${Math.round(extra).toLocaleString('en-ZA')} extra/mo (${pct}% of free money). Maximum attack — only R${Math.max(0,Math.round(freePerMonth-extra)).toLocaleString('en-ZA')}/mo left for other spending.${freePerMonth-extra<0?' ⚠️ This exceeds your free money — only do this if you have other income sources.':''} Only sustainable if you have no unexpected expenses.`;
     rec=`Maximum attack mode. Every spare rand goes to debt. Make sure you have at least R500 emergency buffer before committing to this.`;
   }
 
@@ -5677,13 +5683,15 @@ function renderWeeklyPlanner(weekNum){
   const weekOfMonth=currentWeek;
   const tabsEl=document.getElementById('wp-week-tabs');
   if(tabsEl){
-    tabsEl.innerHTML=[1,2,3,4].map(wk=>`<div onclick="selectWeek(${wk})" style="flex-shrink:0;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;background:${wk===w?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)'};color:#fff;white-space:nowrap">Week ${wk}${wk===currentWeek?' — now':''}</div>`).join('');
+    tabsEl.innerHTML=[1,2,3,4].map(wk=>{ const sd=new Date(year,month,(wk-1)*7+1); const ed=new Date(year,month,Math.min(wk*7,new Date(year,month+1,0).getDate())); const lbl=sd.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})+' – '+ed.toLocaleDateString('en-ZA',{day:'numeric',month:'short'}); return `<div onclick="selectWeek(${wk})" style="flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:${wk===w?'rgba(255,255,255,0.25)':'rgba(255,255,255,0.1)'};color:#fff;white-space:nowrap">W${wk}${wk===currentWeek?' ✦':''}<br><span style='font-size:9px;font-weight:400;opacity:.8'>${lbl}</span></div>`; }).join('');
   }
 
-  // Title
+  // Title with date range
   const monthName=now.toLocaleString('en-ZA',{month:'long',year:'numeric'});
   const el=document.getElementById('wp-title');
-  if(el)el.textContent=`${monthName} — Week ${w}`;
+  const wStartFmt=weekStart.toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+  const wEndFmt=weekEnd.toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+  if(el)el.textContent=`Week ${w} · ${wStartFmt} – ${wEndFmt}`;
 
   // Filter expenses for selected week
   const weekExp=expenses.filter(e=>{
@@ -6866,7 +6874,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-26-v129';
+const APP_VERSION = '2026-04-27-v130';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7905,20 +7913,26 @@ async function logCantPay(reason){
 async function loadLastPayment(debtId){
   const el=document.getElementById('last-payment-'+debtId);
   if(!el||!user?.id) return;
+  const now=new Date();
+  const monthName=now.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
   try{
     const payments=await sbG(`debt_payments?debt_id=eq.${debtId}&order=paid_at.desc&limit=1`);
     if(payments?.length){
       const p=payments[0];
-      const date=new Date(p.paid_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+      const pDate=new Date(p.paid_at);
+      const date=pDate.toLocaleDateString('en-ZA',{day:'numeric',month:'short'});
+      const pMonth=pDate.getMonth(); const pYear=pDate.getFullYear();
+      const isThisMonth=pMonth===now.getMonth()&&pYear===now.getFullYear();
+      const monthLabel=pDate.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
       if(Number(p.amount)>0){
-        el.textContent=`Last payment: R${Number(p.amount).toLocaleString('en-ZA')} on ${date}`;
-        el.style.color='#1a5c35';
+        el.innerHTML=`✅ ${isThisMonth?'Paid this month':'Last paid'}: R${Number(p.amount).toLocaleString('en-ZA')} on ${date}${!isThisMonth?' ('+monthLabel+')':''}`;
+        el.style.color=isThisMonth?'#1a5c35':'#888';
       } else {
-        el.textContent=`Missed payment recorded: ${date}`;
+        el.innerHTML=`⚠️ ${isThisMonth?'Missed this month':'Missed payment'}: ${date}${!isThisMonth?' ('+monthLabel+')':''}`;
         el.style.color='#ba7517';
       }
     } else {
-      el.textContent='No payments recorded yet';
+      el.textContent=`${monthName} — no payments recorded yet`;
       el.style.color='#aaa';
     }
   }catch{
