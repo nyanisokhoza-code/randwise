@@ -306,7 +306,7 @@ if('serviceWorker' in navigator){
       </svg>
       <!-- Real circle logo -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <img src="https://myrandwise.co.za/icon_192.png" width="108" height="108"
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="108" height="108"
           style="border-radius:50%;object-fit:cover"
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
@@ -324,7 +324,7 @@ if('serviceWorker' in navigator){
 
   <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
-    <div class="s-logo"><img src="https://myrandwise.co.za/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
+    <div class="s-logo"><img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
     <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
     <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
@@ -426,7 +426,7 @@ if('serviceWorker' in navigator){
       <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(74,222,128,.05)"></div>
       <!-- Logo -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <img src="https://myrandwise.co.za/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
         <div>
           <div style="font-size:14px;font-weight:800;color:#fff">MyRandWise</div>
           <div style="font-size:10px;color:rgba(255,255,255,.5)">Your money, your rules. 🇿🇦</div>
@@ -1338,7 +1338,7 @@ if('serviceWorker' in navigator){
           <div style="position:absolute;right:-10px;top:-10px;font-size:60px;opacity:.08">📱</div>
           <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:4px">📱 Android App</div>
           <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">Download the native Android app — installs directly, works faster, no browser needed.</div>
-          <a href="https://myrandwise.co.za/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
+          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
           <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
@@ -2107,7 +2107,7 @@ if('serviceWorker' in navigator){
 
 <script>
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
-const APP_URL='https://myrandwise.co.za';
+const APP_URL='https://nyanisokhoza-code.github.io/randwise';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 // Always use user JWT when available so RLS policies work correctly
 async function refreshTokenIfNeeded(){
@@ -2289,6 +2289,8 @@ async function doRegister(){
     if(user)localStorage.setItem('rw_user',JSON.stringify(user));
     // Fire alert email to owner (non-blocking)
     sendOwnerAlert('new_user',{name:ob.name.trim(),email:ob.email.trim(),life_stage:ob.stage,income_amount:m,referred_by:ob.referralCode||null});
+    // Goal-triggered welcome email (non-blocking)
+    sendGoalWelcomeEmail(ob.name.trim(), ob.email.trim().toLowerCase(), ob.goals).catch(()=>{});
     // Celebration
     document.getElementById('done-t').textContent=`Welcome, ${ob.name.trim().split(' ')[0]}! 🎉`;
     document.getElementById('done-s').textContent=`Your account is ready! Check your inbox now — click the confirmation link from MyRandWise to activate your account.`;
@@ -2356,6 +2358,8 @@ async function doLogin(){
     }
     localStorage.setItem('rw_user',JSON.stringify(user));
     localStorage.setItem('rw_token',auth.access_token);
+    // Track last active
+    sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});
     if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
     try{
       await Promise.all([
@@ -5039,9 +5043,9 @@ function closeShareCard(){
 
 function shareCard(){
   const name = (user?.name||'').split(' ')[0]||'';
-  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://myrandwise.co.za`;
+  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://nyanisokhoza-code.github.io/randwise`;
   if(navigator.share){
-    navigator.share({title:'MyRandWise',text,url:'https://myrandwise.co.za'});
+    navigator.share({title:'MyRandWise',text,url:'https://nyanisokhoza-code.github.io/randwise'});
   } else {
     navigator.clipboard?.writeText(text).then(()=>showToast('✅ Copied — paste into WhatsApp or Instagram'));
   }
@@ -6249,7 +6253,7 @@ window.addEventListener('load',async()=>{
         // Load data FIRST, then show main — no flash
         try{
           const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
-          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));}
+          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});}
         }catch{}
         try{await loadExp();}catch{expenses=[];}
         try{
@@ -6435,6 +6439,205 @@ document.getElementById('splash')?.addEventListener('click', (e)=>{
 });
 
 // ══ REPORT ISSUE ════════════════════════════════════════════
+
+// ── Goal-triggered welcome email ─────────────────────────────
+async function sendGoalWelcomeEmail(name, email, goals){
+  if(!email||!goals||!goals.length) return;
+  const firstName = name.split(' ')[0];
+
+  // Pick the single most specific goal to lead with
+  const priority = [
+    'Pay off my debt',
+    'Save for a home',
+    'Save for education',
+    'Start investing',
+    'Build an emergency fund',
+    'Make my money last the whole month',
+    'Provide for my family',
+    'Know where my money goes',
+    'Save for a holiday',
+    'Understand my spending'
+  ];
+  const lead = priority.find(p => goals.includes(p)) || goals[0];
+
+  const templates = {
+    'Pay off my debt': {
+      subject: `${firstName}, here's your debt-free plan — MyRandWise`,
+      headline: `You said you want to pay off your debt. Here's exactly how.`,
+      body: `Most people with debt don't have a plan — they just pay minimums and hope for the best. That's why it takes 8 years instead of 3.
+
+MyRandWise shows you the snowball method: attack your smallest debt first with every extra rand, then roll that payment onto the next one. It's not magic — it's math. And it works.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise and go to the Debt tab</li>
+<li>Add each debt — name, balance, minimum payment</li>
+<li>See your Debt Score and your payoff timeline</li>
+<li>Use the Payoff Accelerator to see what even R200/mo extra does</li>
+</ol>
+
+One user added their debts and saw they could be debt-free 4 years sooner by moving R300/mo. That's R300 they already had — they just didn't know where to put it.`,
+      cta: 'See my debt-free date →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'Save for a home': {
+      subject: `${firstName}, your home deposit plan starts here — MyRandWise`,
+      headline: `You said you want to save for a home. Let's make it real.`,
+      body: `Saving for a home in South Africa feels impossible until you have a number. Most people guess — "I need like R100,000?" — and never actually start.
+
+MyRandWise gives you a Bond Readiness Score and shows you exactly how much to save each month to hit your deposit target by a specific date.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise and check your Bond Readiness Score (under Grow)</li>
+<li>Create a "Home deposit" savings goal with your target amount</li>
+<li>The app will tell you: save R X/mo → ready in Y months</li>
+<li>Watch your score improve as your savings grow</li>
+</ol>
+
+The average first-time buyer in South Africa needs R80,000–R150,000 for a deposit. Break that down to a monthly number and it becomes a plan, not a dream.`,
+      cta: 'Check my bond readiness →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'Save for education': {
+      subject: `${firstName}, a plan for education fees that actually works — MyRandWise`,
+      headline: `Education in South Africa is expensive. Here's how to stay ahead of it.`,
+      body: `Whether it's your own studies or your child's, education costs don't wait. Fees go up every year. Bursaries aren't guaranteed. The only thing that helps is starting early with a plan.
+
+MyRandWise helps you set a specific savings goal — "R45,000 by February 2027" — and shows you exactly what to put away each month to get there. No spreadsheet required.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise and go to the Grow tab</li>
+<li>Create a new savings goal — name it "Education fees" or "Fees 2027"</li>
+<li>Set your target amount and date</li>
+<li>MyRandWise will tell you exactly how much to save monthly</li>
+</ol>
+
+The earlier you start, the smaller the monthly amount. R500/mo for 3 years beats R2,000/mo for 9 months — and your stress levels will thank you.`,
+      cta: 'Set my education goal →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'Start investing': {
+      subject: `${firstName}, you want to invest — here's where to start — MyRandWise`,
+      headline: `Investing isn't just for wealthy people. Here's the honest starting point.`,
+      body: `The hardest part of investing isn't choosing the right ETF. It's knowing if you actually have money to invest — after debt, after bills, after life.
+
+MyRandWise shows you your real disposable income: what's left after every commitment. That number is your investing starting point. Even R200/mo in a TFSA, started today, is worth more than R5,000/mo started in 5 years.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise — look at "After commitments" on the home screen</li>
+<li>That's your real free money. Even 10% of it goes a long way.</li>
+<li>Use the Payoff Accelerator to clear any debt first — debt interest beats investment returns</li>
+<li>Once debt is clear, that freed money becomes your investment budget</li>
+</ol>
+
+South Africa's TFSA (Tax-Free Savings Account) lets you invest R36,000/year completely tax-free. That's the first account every South African should have.`,
+      cta: 'See my free money →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'Build an emergency fund': {
+      subject: `${firstName}, one unexpected bill shouldn't derail everything — MyRandWise`,
+      headline: `An emergency fund is the most important financial move you can make.`,
+      body: `Before investing. Before extra debt payments. Before anything else: 3 months of expenses in a savings account you don't touch.
+
+Why? Because without it, one car repair or medical bill puts you back on credit. With it, you handle it and move on.
+
+MyRandWise helps you calculate exactly what 3 months of your expenses looks like — and how many months it takes to get there from what you can actually save.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise and check your monthly expenses total</li>
+<li>Multiply by 3 — that's your emergency fund target</li>
+<li>Create a "Emergency fund" goal in the Grow tab</li>
+<li>Set your monthly saving amount and watch the timeline</li>
+</ol>
+
+Most South Africans could build a 3-month emergency fund in under 18 months with R500–R1,000/mo. Start with whatever you have.`,
+      cta: 'Build my emergency fund →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'Make my money last the whole month': {
+      subject: `${firstName}, why your money runs out — and how to fix it — MyRandWise`,
+      headline: `You're not spending too much. You just don't know where it's going yet.`,
+      body: `Most people who feel broke at month-end aren't actually spending irresponsibly. They're spending in the dark — no clear picture of what's left after bills and debt.
+
+MyRandWise shows you the number nobody tells you: what's actually yours after every debit order, every minimum payment, every regular expense. That number is your real budget — not your salary.
+
+<strong>What to do right now:</strong>
+<ol>
+<li>Open MyRandWise — the home screen shows "After commitments"</li>
+<li>That's what you actually have left to spend this month</li>
+<li>Log your expenses as you go — takes 10 seconds each</li>
+<li>The weekly planner breaks your free money into 4 manageable weeks</li>
+</ol>
+
+Users who log expenses for just 2 weeks say they find R800–R2,000 they didn't know they were spending. Not to guilt-trip — to choose.`,
+      cta: 'See what I actually have →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    },
+    'default': {
+      subject: `${firstName}, your MyRandWise plan is ready`,
+      headline: `You've got goals. Here's how MyRandWise helps you reach them.`,
+      body: `You signed up with ${goals.length} goal${goals.length!==1?'s':''} in mind: <strong>${goals.join(', ')}</strong>.
+
+Every feature in MyRandWise was built around goals exactly like yours. Here's where to start:
+
+<strong>This week:</strong>
+<ol>
+<li>Check your "After commitments" number on the home screen — that's your real free money</li>
+<li>Log your first expenses to see where your money actually goes</li>
+<li>Add your debts in the Debt tab if you have any</li>
+<li>Set your first savings goal in the Grow tab</li>
+</ol>
+
+The app gets more useful the more you use it. Most users see their full financial picture clearly within 2 weeks.`,
+      cta: 'Open MyRandWise →',
+      cta_url: 'https://myrandwise.co.za/randwise/'
+    }
+  };
+
+  const t = templates[lead] || templates['default'];
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f5f5f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<div style="max-width:580px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e8e8e0">
+  <div style="background:#1a5c35;padding:28px 32px">
+    <div style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.3px">MyRandWise</div>
+    <div style="font-size:12px;color:#a8d5b8;margin-top:2px">Your money. Your plan.</div>
+  </div>
+  <div style="padding:32px">
+    <p style="font-size:15px;color:#888;margin:0 0 8px">Hi ${firstName},</p>
+    <h2 style="font-size:20px;font-weight:700;color:#1a1a18;margin:0 0 20px;line-height:1.3">${t.headline}</h2>
+    <div style="font-size:14px;color:#444;line-height:1.8">${t.body.replace(/
+/g,'<br>')}</div>
+    <div style="margin:28px 0">
+      <a href="${t.cta_url}" style="display:inline-block;background:#1a5c35;color:#ffffff;padding:14px 28px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none">${t.cta}</a>
+    </div>
+    <hr style="border:none;border-top:1px solid #f0f0e8;margin:24px 0">
+    <p style="font-size:12px;color:#aaa;margin:0;line-height:1.7">You're getting this because you signed up for MyRandWise and selected goals during onboarding. If you have questions, reply to this email.<br><br>MyRandWise · <a href="https://myrandwise.co.za/randwise/" style="color:#1a5c35">myrandwise.co.za</a></p>
+  </div>
+</div>
+</body>
+</html>`;
+
+  try{
+    await fetch('https://api.resend.com/emails',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS'},
+      body:JSON.stringify({
+        from:'MyRandWise <support@myrandwise.co.za>',
+        to:[email],
+        subject: t.subject,
+        html
+      })
+    });
+  }catch(e){ console.warn('Goal welcome email failed:',e); }
+}
+
 async function sendOwnerAlert(type, data){
   // Severity classification
   const critical = ['login_failed','login_help','reset_failed','duplicate_attempt',
@@ -7057,7 +7260,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v148';
+const APP_VERSION = '2026-04-28-v151';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8409,7 +8612,7 @@ function openAppRating(){
   const ov=document.getElementById('rating-overlay');
   if(ov) ov.style.display='none';
   // Open Play Store or app URL
-  window.open('https://myrandwise.co.za/MyRandWise.apk','_blank');
+  window.open('https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk','_blank');
   // Fallback if not on Play Store yet
   showToast('🌟 Thank you! Your support means everything.');
 }
@@ -8435,7 +8638,7 @@ function initReferralCard(){
 function shareReferral(){
   const code=user?.referral_code||'';
   const name=user?.name?.split(' ')[0]||'';
-  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://myrandwise.co.za?ref=${code}\n\nShared by a MyRandWise team member.`;
+  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://nyanisokhoza-code.github.io/randwise?ref=${code}\n\nShared by a MyRandWise team member.`;
   if(navigator.share){
     navigator.share({ title:'MyRandWise 🌱', text:msg }).catch(()=>{});
   } else {
