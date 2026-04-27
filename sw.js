@@ -1,4 +1,4 @@
-const CACHE='rw-v132';
+const CACHE='rw-v136';
 const STATIC=['./manifest.json','./icon_192.png','./icon_512.png'];
 
 self.addEventListener('install',e=>{
@@ -16,7 +16,7 @@ self.addEventListener('activate',e=>{
 self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);
   // index.html - always fetch fresh from network, never cache
-  if(url.pathname.endsWith('/')||url.pathname.endsWith('/index.html')||url.pathname.endsWith('/randwise')||url.pathname.endsWith('/randwise/')){
+  if(url.pathname.endsWith('/')||url.pathname.endsWith('/index.html')||url.pathname.endsWith('/randwise')||url.pathname.endsWith('/randwise/')||url.hostname==='myrandwise.co.za'){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./index.html')));
     return;
   }
