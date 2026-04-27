@@ -3549,15 +3549,13 @@ async function loadDebtsPWA(){
       const accMin = accDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
       // Use value calculated inside try/catch where inc was in scope
       const accInc2 = window._pendingAccInc > 0 ? window._pendingAccInc : Number(user?.income_amount||0);
-      console.log('[ACC] final accInc2:', accInc2, '| _pendingAccInc:', window._pendingAccInc);
       renderPayoffAccelerator(accDebts, accOwed, accMin, accInc2);
     }
   } catch(e2) { console.error('Accelerator error:', e2); }
 }
 
 function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
-  console.log('[ACC] renderPayoffAccelerator called with inc:', inc);
-  console.log('[ACC] window._accFreePerMonth before set:', window._accFreePerMonth);
+
   const timelineEl=document.getElementById('debt-free-timeline');
   const accEl=document.getElementById('payoff-accelerator');
   const scenEl=document.getElementById('accelerator-scenarios');
@@ -6964,7 +6962,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v144';
+const APP_VERSION = '2026-04-27-v145';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
