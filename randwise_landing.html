@@ -520,6 +520,8 @@ async function submitWaitlist() {
     });
     document.getElementById('form-container').style.display = 'none';
     document.getElementById('success-state').classList.add('show');
+    // Redirect to app after 3 seconds
+    setTimeout(() => { window.location.href = 'https://myrandwise.co.za/randwise/'; }, 3000);
   } catch {
     btn.disabled = false;
     btn.textContent = 'Join free beta →';
@@ -528,9 +530,9 @@ async function submitWaitlist() {
 }
 
 function shareApp() {
-  const text = `Hey! I just joined the MyRandWise beta — a free money app built specifically for South Africans 🇿🇦\n\nIt tracks spending, helps with debt, and teaches you how to grow your money.\n\nJoin free here 👇\nhttps://randwise.app`;
+  const text = `Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that 🇿🇦\n\nTrack spending, crush debt, grow savings — built for South African life.\n\nTry free here 👇\nhttps://myrandwise.co.za/randwise/`;
   if (navigator.share) {
-    navigator.share({ title: 'MyRandWise — Built for SA', text, url: 'https://randwise.app' });
+    navigator.share({ title: 'MyRandWise — Built for SA', text, url: 'https://myrandwise.co.za/randwise/' });
   } else {
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
   }
