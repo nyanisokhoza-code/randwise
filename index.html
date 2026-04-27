@@ -1362,11 +1362,11 @@ if('serviceWorker' in navigator){
         <div style="font-size:18px;font-weight:800;margin-bottom:2px">Your debts</div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:14px">Track what you owe and build a payoff plan</div>
 
-        <!-- DEBT FREEDOM SCORE CARD -->
+        <!-- DEBT SCORE CARD -->
         <div id="debt-score-card" style="background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:16px;margin-bottom:12px;display:none">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
             <div>
-              <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt freedom score</div>
+              <div style="font-size:11px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px">Debt score</div>
               <div style="display:flex;align-items:baseline;gap:4px">
                 <div style="font-size:32px;font-weight:900;color:#1a5c35;line-height:1" id="debt-tab-score">—</div>
                 <div style="font-size:14px;color:#5a8a6a;font-weight:600">/100</div>
@@ -3384,28 +3384,50 @@ async function loadDebtsPWA(){
     const totalOwed=debts.reduce((s,d)=>s+Number(d.balance||0),0);
     const totalMin=debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
     const totalOrig=debts.reduce((s,d)=>s+Number(d.original_balance||d.balance||0),0);
-    // ── DEBT FREEDOM SCORE ─────────────────────────────────────
-    const inc=user?.income_amount||0;
-    const dti=inc>0?totalOwed/inc:0;
-    const progress=totalOrig>0?Math.max(0,(totalOrig-totalOwed)/totalOrig):0;
-    let score=100;
-    if(dti>12)score-=40;else if(dti>6)score-=25;else if(dti>3)score-=15;else if(dti>1)score-=8;
-    score+=Math.round(progress*30);
-    score=Math.max(5,Math.min(100,score));
+    // ── DEBT SCORE — unified 5-component calculation (same as home screen) ──
+    const incForScore = Number(user?.income_amount||0);
+    const progress = totalOrig>0?Math.max(0,(totalOrig-totalOwed)/totalOrig):0;
+
+    // Component 1: DTI ratio (30%)
+    const dtiM = incForScore>0?totalOwed/incForScore:0;
+    const dtiS = dtiM<=0?100:dtiM<=3?90:dtiM<=6?75:dtiM<=10?55:dtiM<=20?35:15;
+
+    // Component 2: Payment burden (25%)
+    const minPct2 = incForScore>0?(totalMin/incForScore)*100:0;
+    const minS2 = minPct2<=0?100:minPct2<=10?95:minPct2<=20?75:minPct2<=30?55:minPct2<=40?35:15;
+
+    // Component 3: Payoff progress (25%)
+    const progS = Math.round(progress*100);
+    const progressScore2 = progS===0?20:progS<=5?35:progS<=15?55:progS<=30?70:progS<=60?85:100;
+
+    // Component 4: Number of debts (10%)
+    const numS2 = debts.length===0?100:debts.length===1?90:debts.length===2?75:debts.length===3?55:debts.length<=5?35:15;
+
+    // Component 5: Payment consistency — did they mark any payments? (10%)
+    const hasPayments = debts.some(d=>d._lastPayment);
+    const consistencyS = debts.length===0?100:hasPayments?85:50;
+
+    const unifiedScore = Math.min(100,Math.max(5,Math.round(dtiS*0.30 + minS2*0.25 + progressScore2*0.25 + numS2*0.10 + consistencyS*0.10)));
     const scoreEl=document.getElementById('debt-tab-score');
     const scoreBar=document.getElementById('debt-tab-bar');
     const scoreBadge=document.getElementById('debt-tab-badge');
     const scoreSummary=document.getElementById('debt-tab-summary');
     const scoreCard=document.getElementById('debt-score-card');
-    if(scoreEl)scoreEl.textContent=score;
-    if(scoreBar)scoreBar.style.width=score+'%';
+    if(scoreEl)scoreEl.textContent=unifiedScore;
+    if(scoreBar)scoreBar.style.width=unifiedScore+'%';
     if(scoreBadge){
-      if(score>=75){scoreBadge.textContent='🟢 Good standing';scoreBadge.style.background='#c8e6cf';scoreBadge.style.color='#1a5c35';}
-      else if(score>=50){scoreBadge.textContent='🟡 Improving';scoreBadge.style.background='#fff9c4';scoreBadge.style.color='#92400e';}
+      if(unifiedScore>=70){scoreBadge.textContent='🟢 Good standing';scoreBadge.style.background='#c8e6cf';scoreBadge.style.color='#1a5c35';}
+      else if(unifiedScore>=45){scoreBadge.textContent='🟡 Improving';scoreBadge.style.background='#fff9c4';scoreBadge.style.color='#92400e';}
       else{scoreBadge.textContent='🔴 Needs attention';scoreBadge.style.background='#ffcdd2';scoreBadge.style.color='#c62828';}
     }
-    if(scoreSummary)scoreSummary.textContent=`R${Math.round(totalOwed).toLocaleString('en-ZA')} total across ${debts.length} debt${debts.length!==1?'s':''}. ${progress>0?Math.round(progress*100)+'% paid off overall.':'Start paying to improve your score.'}`;
+    if(scoreSummary)scoreSummary.textContent=`R${Math.round(totalOwed).toLocaleString('en-ZA')} total across ${debts.length} debt${debts.length!==1?'s':''}. ${progress>0?Math.round(progress*100)+'% paid off overall.':'Start paying to build your score.'}`;
     if(scoreCard)scoreCard.style.display='block';
+    // Sync home screen debt score card to same value
+    const dsNum2=document.getElementById('debt-score-num');
+    const scoreColor2=unifiedScore>=70?'#1a7a4a':unifiedScore>=45?'#ba7517':'#a32d2d';
+    if(dsNum2){dsNum2.textContent=unifiedScore;dsNum2.style.color=scoreColor2;}
+    const dsBar2=document.getElementById('debt-score-bar');
+    if(dsBar2){dsBar2.style.width=unifiedScore+'%';dsBar2.style.background=scoreColor2;}
     // ── TOTALS BAR ─────────────────────────────────────────────
     const totalBar=document.getElementById('debt-total-bar');
     const totalAmt=document.getElementById('debt-total-amt');
@@ -3487,7 +3509,15 @@ async function loadDebtsPWA(){
 
     // ── PAYOFF ACCELERATOR ─────────────────────────────────────
     // Use real disposable income (after all commitments) not raw income
-    const {disposable:accDisposable} = getSmartWeeklyBudget();
+    // Calculate real disposable using freshly loaded debts (not global which may be stale)
+    const freshDebtMin = debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+    const storedDOs2 = JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+    const manualDOs2 = storedDOs2.filter(d=>!d.addedFromDebt);
+    const doTotal2 = manualDOs2.reduce((s,d)=>s+Number(d.amount||0),0);
+    const savedNeeds2 = JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+    const customNeeds2 = JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+    const needsTotal2 = Object.values(savedNeeds2).reduce((s,v)=>s+Number(v),0) + customNeeds2.reduce((s,n)=>s+Number(n.amount||0),0);
+    const accDisposable = Math.max(0, Number(inc) - freshDebtMin - doTotal2 - needsTotal2);
     const accInc = accDisposable > 0 ? accDisposable : Number(inc);
     renderPayoffAccelerator(debts, totalOwed, totalMin, accInc);
 
@@ -4459,8 +4489,8 @@ const INFO = {
   },
   'debt-score': {
     icon: '🎯',
-    title: 'Debt Freedom Score',
-    body: 'Your Debt Freedom Score (0–100) measures how healthy your debt situation is. It looks at how much debt you have compared to your income, and how much you\'ve paid off. 100 means debt-free. Below 50 means your debt is a serious burden.',
+    title: 'Debt Score',
+    body: 'Your Debt Score (0–100) measures how healthy your debt situation is. It looks at how much debt you have compared to your income, and how much you\'ve paid off. 100 means debt-free. Below 50 means your debt is a serious burden.',
     example: 'Score 80–100: Excellent — debt is manageable\nScore 60–79: Good — keep paying\nScore 40–59: Caution — debt is growing\nScore 0–39: Danger — need a plan now'
   },
   'snowball': {
@@ -6891,7 +6921,35 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v133';
+const APP_VERSION = '2026-04-27-v134';
+
+// ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
+// Pings Supabase every 3 days with a lightweight query
+// This keeps the project active even during quiet periods
+(function keepSupabaseAlive(){
+  const key = 'rw_last_ping';
+  const now = Date.now();
+  const last = Number(localStorage.getItem(key)||0);
+  const threeDays = 3*24*60*60*1000;
+  if(now - last > threeDays){
+    // Lightweight ping — just read the app_config table
+    fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK}
+    }).then(()=>{
+      localStorage.setItem(key, now);
+    }).catch(()=>{});
+  }
+  // Check again every 24 hours while app is open
+  setInterval(()=>{
+    const n=Date.now();
+    const l=Number(localStorage.getItem(key)||0);
+    if(n-l>threeDays){
+      fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
+        headers:{'apikey':AK,'Authorization':'Bearer '+AK}
+      }).then(()=>localStorage.setItem(key,n)).catch(()=>{});
+    }
+  }, 24*60*60*1000);
+})();
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
