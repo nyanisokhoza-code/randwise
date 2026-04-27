@@ -3540,6 +3540,9 @@ async function loadDebtsPWA(){
       // Try Supabase monthly needs first, fall back to localStorage
       let needsTotal3 = 0;
       const dbNeeds3 = user?.monthly_needs;
+      console.log('[ACC] user.monthly_needs:', JSON.stringify(dbNeeds3));
+      console.log('[ACC] user.income_amount:', user?.income_amount);
+      console.log('[ACC] freshMin2:', freshMin2);
       if(dbNeeds3?.preset && Object.keys(dbNeeds3.preset).length > 0){
         needsTotal3 = Object.values(dbNeeds3.preset).reduce((s,v)=>s+Number(v||0),0);
         if(dbNeeds3.custom) needsTotal3 += dbNeeds3.custom.reduce((s,v)=>s+Number(v.amount||0),0);
@@ -3554,12 +3557,15 @@ async function loadDebtsPWA(){
       const accInc2 = accInc3 > 0 ? accInc3 : Number(user?.income_amount||0);
       const accOwed = accDebts.reduce((s,d)=>s+Number(d.balance||0),0);
       const accMin = accDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
+      console.log('[ACC] final accInc2 passed to accelerator:', accInc2);
       renderPayoffAccelerator(accDebts, accOwed, accMin, accInc2);
     }
   } catch(e2) { console.error('Accelerator error:', e2); }
 }
 
 function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
+  console.log('[ACC] renderPayoffAccelerator called with inc:', inc);
+  console.log('[ACC] window._accFreePerMonth before set:', window._accFreePerMonth);
   const timelineEl=document.getElementById('debt-free-timeline');
   const accEl=document.getElementById('payoff-accelerator');
   const scenEl=document.getElementById('accelerator-scenarios');
@@ -6966,7 +6972,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v139';
+const APP_VERSION = '2026-04-27-v140';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
