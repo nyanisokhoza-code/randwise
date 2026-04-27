@@ -3483,7 +3483,8 @@ async function loadDebtsPWA(){
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div style="flex:1">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
-              ${isFirst?'<span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">ATTACK FIRST</span>':''}
+              ${isFirst?'<span style="background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">ATTACK FIRST</span>':(i===1?'<span style="background:#e0f2fe;color:#0369a1;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">UP NEXT</span>':'')}
+              ${(()=>{const p=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');return p&&p.attack_debt_id===d.id?'<span style="background:#1a7a4a;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">🎯 +R'+Number(p.extra).toLocaleString("en-ZA")+'/mo plan</span>':''})()}
               <div style="font-size:14px;font-weight:700">${d.name||d.category||'Debt'}</div>
             </div>
             <div style="font-size:11px;color:var(--mu)">${d.category||''}${d.interest_rate>0?' · '+d.interest_rate+'% p.a.':''}${d.months_remaining>0?' · '+d.months_remaining+' months left':''}</div>
@@ -3709,6 +3710,14 @@ function setAccPct(pct){
   const val = Math.round(fpm * pct);
   const slider = document.getElementById('acc-slider');
   if(slider){ slider.value = val; }
+  // Clear committed state when changing amount
+  const savedPlan = JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
+  if(savedPlan && savedPlan.extra !== val){
+    const badge = document.getElementById('acc-committed-badge');
+    const btn = document.getElementById('acc-commit-btn');
+    if(badge) badge.style.display='none';
+    if(btn) btn.style.display='block';
+  }
   updateAccelerator(val, window._accDebts);
   // Highlight active button
   ['acc-btn-10','acc-btn-25','acc-btn-50'].forEach(id=>{
@@ -3761,8 +3770,10 @@ function updateAccelerator(extra,debts){
   }
   function snowballInterest(dl,ex){
     return dl.reduce((s,d)=>{
-      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);const r=Number(d.interest_rate||0)/100/12;
-      if(bal<=0||r<=0)return s;
+      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);
+      const rate=Number(d.interest_rate||0)||20; // default 20% if no rate set
+      const r=rate/100/12;
+      if(bal<=0)return s;
       const pay=min+ex;let b=bal,total=0,m=0;
       while(b>0.01&&m<600){const i=b*r;total+=i;b=b+i-pay;if(b<0)b=0;m++;}
       return s+Math.round(total);
@@ -7046,7 +7057,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v147';
+const APP_VERSION = '2026-04-27-v148';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
