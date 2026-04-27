@@ -3633,7 +3633,7 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
 
   // Build the new smart accelerator HTML
   window._accDebts = debts; // store globally so buttons can reference without JSON.stringify
-  window._accFreePerMonth = Math.max(0,inc-totalMin); // store for setAccPct
+  window._accFreePerMonth = Math.max(0,inc); // inc is already disposable (after debts+needs), store directly
   scenEl.innerHTML=`
     ${storeDebts.length>0&&assetDebts.length>0?`
     <div style="background:#f7f6f2;border-radius:12px;padding:12px 14px;margin-bottom:14px">
@@ -3723,10 +3723,14 @@ function updateAccelerator(extra,debts){
   const totalMin=(debts||[]).reduce((s,d)=>s+Number(d.min_payment||0),0);
   const inc=Number(window.user?.income_amount||0);
   // Use actual spendable (after debt minimums AND monthly needs) so slider never goes negative
-  const needsData=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
-  const customNeedsAcc=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
-  const needsTotal=Object.values(needsData).reduce((s,v)=>s+Number(v||0),0)+customNeedsAcc.reduce((s,v)=>s+Number(v.amount||0),0);
-  const freePerMonth=Math.max(0,inc-totalMin-needsTotal);
+  // Use stored freePerMonth from renderPayoffAccelerator — don't recalculate from localStorage
+  // This ensures APK users without localStorage still get correct value
+  const freePerMonth = window._accFreePerMonth > 0 ? window._accFreePerMonth : (()=>{
+    const needsData=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+    const customNeedsAcc=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+    const needsTotal=Object.values(needsData).reduce((s,v)=>s+Number(v||0),0)+customNeedsAcc.reduce((s,v)=>s+Number(v.amount||0),0);
+    return Math.max(0,inc-totalMin-needsTotal);
+  })();
 
   function snowballMonths(dl,ex){
     const sorted=[...dl].sort((a,b)=>Number(a.balance)-Number(b.balance));
@@ -6962,7 +6966,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v138';
+const APP_VERSION = '2026-04-27-v139';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
