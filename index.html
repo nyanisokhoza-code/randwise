@@ -3623,8 +3623,8 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
 
   accEl.style.display='block';
 
-  // Free money available (income minus all commitments)
-  const freePerMonth=Math.max(0,inc-totalMin);
+  // inc is already disposable (after debts+needs subtracted before call)
+  const freePerMonth=Math.max(0,inc);
   const storeMonthsStr=m=>m<=0?'Already paid':m<12?m+' months':Math.floor(m/12)+'y '+(m%12?m%12+'mo':'');
 
   // Build the new smart accelerator HTML
@@ -6962,7 +6962,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v145';
+const APP_VERSION = '2026-04-27-v146';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
