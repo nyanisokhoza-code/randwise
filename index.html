@@ -306,7 +306,7 @@ if('serviceWorker' in navigator){
       </svg>
       <!-- Real circle logo -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <img src="https://myrandwise.co.za/icon_192.png" width="108" height="108"
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="108" height="108"
           style="border-radius:50%;object-fit:cover"
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
@@ -324,7 +324,7 @@ if('serviceWorker' in navigator){
 
   <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
-    <div class="s-logo"><img src="https://myrandwise.co.za/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
+    <div class="s-logo"><img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
     <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
     <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
@@ -426,7 +426,7 @@ if('serviceWorker' in navigator){
       <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(74,222,128,.05)"></div>
       <!-- Logo -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <img src="https://myrandwise.co.za/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
+        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
         <div>
           <div style="font-size:14px;font-weight:800;color:#fff">MyRandWise</div>
           <div style="font-size:10px;color:rgba(255,255,255,.5)">Your money, your rules. 🇿🇦</div>
@@ -1338,7 +1338,7 @@ if('serviceWorker' in navigator){
           <div style="position:absolute;right:-10px;top:-10px;font-size:60px;opacity:.08">📱</div>
           <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:4px">📱 Android App</div>
           <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">Download the native Android app — installs directly, works faster, no browser needed.</div>
-          <a href="https://myrandwise.co.za/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
+          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
           <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
@@ -2107,7 +2107,7 @@ if('serviceWorker' in navigator){
 
 <script>
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
-const APP_URL='https://myrandwise.co.za';
+const APP_URL='https://nyanisokhoza-code.github.io/randwise';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 // Always use user JWT when available so RLS policies work correctly
 async function refreshTokenIfNeeded(){
@@ -4165,7 +4165,7 @@ async function deleteGoalPWA(id){
 
 
 // ── Utils ─────────────────────────────────────────────────────
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function shareApp(){
   const code=user?.referral_code||'';
   const tx=`Hey! I'm using MyRandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\n${APP_URL}${code?'\n\nUse my code: '+code:''}`;
@@ -4926,9 +4926,9 @@ function closeShareCard(){
 
 function shareCard(){
   const name = (user?.name||'').split(' ')[0]||'';
-  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://myrandwise.co.za`;
+  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://nyanisokhoza-code.github.io/randwise`;
   if(navigator.share){
-    navigator.share({title:'MyRandWise',text,url:'https://myrandwise.co.za'});
+    navigator.share({title:'MyRandWise',text,url:'https://nyanisokhoza-code.github.io/randwise'});
   } else {
     navigator.clipboard?.writeText(text).then(()=>showToast('✅ Copied — paste into WhatsApp or Instagram'));
   }
@@ -6487,8 +6487,8 @@ function hardRefresh(){
 }
 
 // ══ PULL TO REFRESH ═════════════════════════════════════════
-let ptr_startY=0,ptr_pulling=false;
-const ptr_threshold=80;
+let ptr_startY=0,ptr_pulling=false,ptr_lastRefresh=0;
+const ptr_threshold=120; // Increased from 80 to reduce accidental triggers
 function getScrollContainer(){
   // Get the actual scroll container - tab-content or the active tab's inner div
   const tc=document.querySelector('.tab-content');
@@ -6507,7 +6507,9 @@ document.addEventListener('touchmove',e=>{
 document.addEventListener('touchend',e=>{
   if(ptr_pulling&&ptr_startY>0){
     const dy=e.changedTouches[0].clientY-ptr_startY;
-    if(dy>ptr_threshold&&user?.id){
+    const now2=Date.now();
+    if(dy>ptr_threshold&&user?.id&&(now2-ptr_lastRefresh)>10000){
+      ptr_lastRefresh=now2;
       showToast('🔄 Refreshing...');
       Promise.all([
         loadExp().catch(()=>{}),
@@ -6938,7 +6940,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v136';
+const APP_VERSION = '2026-04-27-v137';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8289,7 +8291,7 @@ function openAppRating(){
   const ov=document.getElementById('rating-overlay');
   if(ov) ov.style.display='none';
   // Open Play Store or app URL
-  window.open('https://myrandwise.co.za/MyRandWise.apk','_blank');
+  window.open('https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk','_blank');
   // Fallback if not on Play Store yet
   showToast('🌟 Thank you! Your support means everything.');
 }
@@ -8315,7 +8317,7 @@ function initReferralCard(){
 function shareReferral(){
   const code=user?.referral_code||'';
   const name=user?.name?.split(' ')[0]||'';
-  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://myrandwise.co.za?ref=${code}\n\nShared by a MyRandWise team member.`;
+  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://nyanisokhoza-code.github.io/randwise?ref=${code}\n\nShared by a MyRandWise team member.`;
   if(navigator.share){
     navigator.share({ title:'MyRandWise 🌱', text:msg }).catch(()=>{});
   } else {
@@ -8512,7 +8514,25 @@ async function enablePushFromPrompt(){
   const ov = document.getElementById('push-prompt-overlay');
   if(ov) ov.style.display = 'none';
   localStorage.setItem('rw_push_prompt_seen','1');
-  await enablePushNotifications();
+  
+  // Check if permission was previously denied
+  if(Notification.permission === 'denied'){
+    showPushBlockedGuide();
+    return;
+  }
+  
+  try {
+    await enablePushNotifications();
+  } catch(e) {
+    // If blocked by overlay or other issue, show manual guide
+    showPushBlockedGuide();
+  }
+}
+
+function showPushBlockedGuide(){
+  // Show a simple in-app guide instead of failing silently
+  const msg = `To enable notifications:\n\n1. Tap the 🔒 or ⓘ in your browser address bar\n2. Tap Site settings\n3. Tap Notifications → Allow\n\nThen come back to the app.`;
+  showToast('ℹ️ To enable: tap the lock icon in your browser → Site settings → Notifications → Allow', 6000);
 }
 
 function dismissPushPrompt(){
