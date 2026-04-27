@@ -3664,7 +3664,7 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
       <div style="display:flex;gap:6px;margin-bottom:14px">
         <button onclick="setAccPct(0.10)" id="acc-btn-10" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">10%<br>R${Math.round(freePerMonth*0.10).toLocaleString('en-ZA')}</button>
         <button onclick="setAccPct(0.25)" id="acc-btn-25" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">25%<br>R${Math.round(freePerMonth*0.25).toLocaleString('en-ZA')}</button>
-        <button onclick="setAccPct(0.50)" id="acc-btn-50" style="flex:1;padding:8px 4px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#1a5c35">50%<br>R${Math.round(freePerMonth*0.50).toLocaleString('en-ZA')}</button>
+        <button onclick="setAccPct(0.50)" id="acc-btn-50" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">50%<br>R${Math.round(freePerMonth*0.50).toLocaleString('en-ZA')}</button>
       </div>
       <div id="acc-result" style="background:#f0faf4;border-radius:12px;padding:14px;border:1px solid #d1ead9">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
@@ -3678,6 +3678,11 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
     <div style="background:#eaf3de;border-radius:12px;padding:14px;border:1px solid #a5d6a7">
       <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Recommended: snowball + roll strategy</div>
       <div style="font-size:12px;color:#1a5c35;line-height:1.6" id="snowball-recommendation">Pay extra on your smallest debt first. When it's gone, roll that payment onto the next one. Each debt you clear frees up more money for the next.</div>
+      <div id="acc-commit-section" style="margin-top:12px;display:none">
+        <div style="font-size:11px;color:#27500a;background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;line-height:1.6" id="acc-commit-explain"></div>
+        <button onclick="commitToAcceleratorPlan()" id="acc-commit-btn" style="width:100%;padding:12px;background:#1a7a4a;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer">✅ Commit to this plan</button>
+        <div id="acc-committed-badge" style="display:none;text-align:center;padding:10px;font-size:12px;color:#1a5c35;font-weight:700">🎯 You're on this plan — committed!</div>
+      </div>
     </div>
   `;
 
@@ -3705,6 +3710,21 @@ function setAccPct(pct){
   const slider = document.getElementById('acc-slider');
   if(slider){ slider.value = val; }
   updateAccelerator(val, window._accDebts);
+  // Highlight active button
+  ['acc-btn-10','acc-btn-25','acc-btn-50'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    btn.style.background = '#f7f6f2';
+    btn.style.border = '1px solid #e8e6de';
+    btn.style.color = '#5f5e5a';
+  });
+  const pctMap = {0.10:'acc-btn-10', 0.25:'acc-btn-25', 0.50:'acc-btn-50'};
+  const activeBtn = document.getElementById(pctMap[pct]);
+  if(activeBtn){
+    activeBtn.style.background = '#eaf3de';
+    activeBtn.style.border = '1px solid #a5d6a7';
+    activeBtn.style.color = '#1a5c35';
+  }
 }
 
 function updateAccelerator(extra,debts){
@@ -3788,8 +3808,72 @@ function updateAccelerator(extra,debts){
 
   if(detailEl) detailEl.textContent=detail;
   if(recEl) recEl.textContent=rec;
+
+  // Show commit section when extra > 0
+  const commitSection = document.getElementById('acc-commit-section');
+  const commitExplain = document.getElementById('acc-commit-explain');
+  const committedBadge = document.getElementById('acc-committed-badge');
+  const commitBtn = document.getElementById('acc-commit-btn');
+
+  if(commitSection && extra > 0 && storeDebts.length > 0){
+    commitSection.style.display = 'block';
+    // Check if already committed to this amount
+    const savedPlan = JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
+    const isCommitted = savedPlan && savedPlan.extra === Number(extra);
+    if(committedBadge) committedBadge.style.display = isCommitted ? 'block' : 'none';
+    if(commitBtn) commitBtn.style.display = isCommitted ? 'none' : 'block';
+
+    // Plain English snowball explanation
+    const attackDebt = storeDebts[0];
+    const otherDebts = storeDebts.slice(1);
+    let explain = `Put R${Math.round(extra).toLocaleString('en-ZA')} extra onto ${attackDebt?.name||'MTN'} every month.`;
+    explain += ` Their minimum is R${Number(attackDebt?.min_payment||0).toLocaleString('en-ZA')}/mo — you'll pay R${(Number(attackDebt?.min_payment||0)+Number(extra)).toLocaleString('en-ZA')}/mo total.`;
+    if(otherDebts.length > 0) explain += ` ${otherDebts.map(d=>d.name).join(' and ')} get minimums only for now.`;
+    explain += ` Once ${attackDebt?.name||'MTN'} is paid off, roll that full R${(Number(attackDebt?.min_payment||0)+Number(extra)).toLocaleString('en-ZA')} onto the next debt.`;
+    if(commitExplain) commitExplain.textContent = explain;
+  } else if(commitSection) {
+    commitSection.style.display = 'none';
+  }
 }
 
+
+async function commitToAcceleratorPlan(){
+  const slider = document.getElementById('acc-slider');
+  const extra = Number(slider?.value || 0);
+  if(!extra || !user?.id) return;
+
+  const attackDebt = (window._accDebts||[]).filter(d=>{
+    const ASSET=['Vehicle','vehicle','Bond','bond','mortgage'];
+    return !ASSET.some(c=>(d.category||'').toLowerCase().includes(c.toLowerCase()));
+  })[0];
+
+  const plan = {
+    extra,
+    attack_debt_id: attackDebt?.id,
+    attack_debt_name: attackDebt?.name,
+    committed_at: new Date().toISOString()
+  };
+
+  // Save locally
+  localStorage.setItem('rw_acc_plan', JSON.stringify(plan));
+
+  // Save to Supabase
+  try {
+    await fetch(`${SB}/rest/v1/beta_testers?id=eq.${user.id}`,{
+      method:'PATCH',
+      headers:{...getH(),'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({ accelerator_plan: plan })
+    });
+  } catch(e){ console.warn('Could not save plan to Supabase:', e); }
+
+  // Update UI
+  const commitBtn = document.getElementById('acc-commit-btn');
+  const committedBadge = document.getElementById('acc-committed-badge');
+  if(commitBtn) commitBtn.style.display = 'none';
+  if(committedBadge) committedBadge.style.display = 'block';
+
+  showToast(`🎯 Plan set! Put R${extra.toLocaleString('en-ZA')} extra onto ${attackDebt?.name||'your debt'} each month.`);
+}
 
 async function deleteDebtPWA(id){
   if(!window._confirmDebt) { showToast('Tap remove again to confirm'); window._confirmDebt=setTimeout(()=>{window._confirmDebt=null;},3000); return; } window._confirmDebt=null;
@@ -6962,7 +7046,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v146';
+const APP_VERSION = '2026-04-27-v147';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
