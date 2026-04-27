@@ -3562,6 +3562,8 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   const storeMonthsStr=m=>m<=0?'Already paid':m<12?m+' months':Math.floor(m/12)+'y '+(m%12?m%12+'mo':'');
 
   // Build the new smart accelerator HTML
+  window._accDebts = debts; // store globally so buttons can reference without JSON.stringify
+  window._accFreePerMonth = Math.max(0,inc-totalMin); // store for setAccPct
   scenEl.innerHTML=`
     ${storeDebts.length>0&&assetDebts.length>0?`
     <div style="background:#f7f6f2;border-radius:12px;padding:12px 14px;margin-bottom:14px">
@@ -3589,14 +3591,14 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
       <div style="font-size:12px;color:#888;margin-bottom:10px">You have <strong style="color:#1a7a4a">R${freePerMonth.toLocaleString('en-ZA')}/mo</strong> free after all commitments. How much extra to put towards debt?</div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         <input type="range" id="acc-slider" min="0" max="${Math.min(freePerMonth,2000)}" value="${Math.round(freePerMonth*0.12)}" step="50"
-          oninput="updateAccelerator(this.value,${JSON.stringify(debts).replace(/"/g,"'")})"
+          oninput="updateAccelerator(this.value,window._accDebts)"
           style="flex:1;height:4px;border-radius:2px;accent-color:#1a7a4a">
         <span style="font-size:14px;font-weight:700;color:#1a7a4a;min-width:60px;text-align:right" id="acc-slider-val">R${Math.round(freePerMonth*0.12).toLocaleString('en-ZA')}</span>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:14px">
-        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.10)};updateAccelerator(${Math.round(freePerMonth*0.10)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">10%<br>R${Math.round(freePerMonth*0.10).toLocaleString('en-ZA')}</button>
-        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.25)};updateAccelerator(${Math.round(freePerMonth*0.25)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">25%<br>R${Math.round(freePerMonth*0.25).toLocaleString('en-ZA')}</button>
-        <button onclick="document.getElementById('acc-slider').value=${Math.round(freePerMonth*0.50)};updateAccelerator(${Math.round(freePerMonth*0.50)},${JSON.stringify(debts).replace(/"/g,"'")})" style="flex:1;padding:8px 4px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#1a5c35">50%<br>R${Math.round(freePerMonth*0.50).toLocaleString('en-ZA')}</button>
+        <button onclick="setAccPct(0.10)" id="acc-btn-10" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">10%<br>R${Math.round(freePerMonth*0.10).toLocaleString('en-ZA')}</button>
+        <button onclick="setAccPct(0.25)" id="acc-btn-25" style="flex:1;padding:8px 4px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#5f5e5a">25%<br>R${Math.round(freePerMonth*0.25).toLocaleString('en-ZA')}</button>
+        <button onclick="setAccPct(0.50)" id="acc-btn-50" style="flex:1;padding:8px 4px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;color:#1a5c35">50%<br>R${Math.round(freePerMonth*0.50).toLocaleString('en-ZA')}</button>
       </div>
       <div id="acc-result" style="background:#f0faf4;border-radius:12px;padding:14px;border:1px solid #d1ead9">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
@@ -3631,7 +3633,16 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
   }
 }
 
+function setAccPct(pct){
+  const fpm = window._accFreePerMonth || 0;
+  const val = Math.round(fpm * pct);
+  const slider = document.getElementById('acc-slider');
+  if(slider){ slider.value = val; }
+  updateAccelerator(val, window._accDebts);
+}
+
 function updateAccelerator(extra,debts){
+  debts = debts || window._accDebts || [];
   extra=Number(extra)||0;
   const sliderVal=document.getElementById('acc-slider-val');
   if(sliderVal) sliderVal.textContent='R'+Math.round(extra).toLocaleString('en-ZA');
@@ -6874,7 +6885,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v130';
+const APP_VERSION = '2026-04-27-v131';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');
@@ -7877,7 +7888,8 @@ async function confirmPayment(){
     const monthKey=`rw_paid_${_paymentDebtId}_${new Date().getFullYear()}_${new Date().getMonth()+1}`;
     localStorage.setItem(monthKey,'paid:'+amount);
   }catch(e){
-    showToast('Could not save payment. Try again.');
+    console.error('Payment save error:', e);
+    showToast('Could not save payment: '+(e?.message||e||'unknown error'));
   }
 }
 
