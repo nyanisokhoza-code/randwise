@@ -1452,15 +1452,15 @@ async function sendEmailCampaign() {
 
     if(!targets.length) { statusEl.textContent = 'No users in this segment.'; sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
 
-    const confirmed = confirm(\`Send to \${targets.length} user\${targets.length!==1?'s':''}? Subject: "\${subject}"\`);
+    const confirmed = confirm(`Send to ${targets.length} user${targets.length!==1?'s':''}? Subject: "${subject}"`);
     if(!confirmed) { sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
 
-    sendBtn.textContent = \`⏳ Sending 0/\${targets.length}...\`;
+    sendBtn.textContent = `⏳ Sending 0/${targets.length}...`;
     let sent = 0, failed = 0;
 
     for(const u of targets) {
       const name = (u.name||'there').split(' ')[0];
-      const personalBody = body.replace(/\{name\}/g, name) + (link ? \`\n\n👉 \${link}\` : '');
+      const personalBody = body.replace(/\{name\}/g, name) + (link ? `\n\n👉 ${link}` : '');
       const personalSubject = subject.replace(/\{name\}/g, name);
 
       try {
@@ -1471,7 +1471,7 @@ async function sendEmailCampaign() {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: \`\${fromName} <onboarding@resend.dev>\`,
+            from: `${fromName} <onboarding@resend.dev>`,
             to: [u.email],
             subject: personalSubject,
             text: personalBody
@@ -1480,19 +1480,19 @@ async function sendEmailCampaign() {
         sent++;
       } catch(e) { failed++; }
 
-      sendBtn.textContent = \`⏳ Sending \${sent}/\${targets.length}...\`;
+      sendBtn.textContent = `⏳ Sending ${sent}/${targets.length}...`;
       await new Promise(r=>setTimeout(r,200)); // rate limit
     }
 
     const logEl = document.getElementById('email-log');
     const logEntry = document.createElement('div');
     logEntry.style.cssText = 'padding:10px;background:#f7f6f2;border-radius:8px;margin-bottom:8px;font-size:12px';
-    logEntry.innerHTML = \`<strong>\${new Date().toLocaleString('en-ZA')}</strong> — "\${subject}" → \${sent} sent\${failed>0?' ('+failed+' failed)':''} · \${to} segment\`;
+    logEntry.innerHTML = `<strong>${new Date().toLocaleString('en-ZA')}</strong> — "${subject}" → ${sent} sent${failed>0?' ('+failed+' failed)':''} · ${to} segment`;
     logEl.insertBefore(logEntry, logEl.firstChild);
     if(logEl.textContent === 'No emails sent yet this session.') logEl.innerHTML = '';
     logEl.insertBefore(logEntry, logEl.firstChild);
 
-    statusEl.textContent = \`✅ \${sent} email\${sent!==1?'s':''} sent\${failed>0?' · '+failed+' failed':''}\`;
+    statusEl.textContent = `✅ ${sent} email${sent!==1?'s':''} sent${failed>0?' · '+failed+' failed':''}`;
     statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
     sendBtn.textContent = '📤 Send emails';
     sendBtn.disabled = false;
@@ -1506,8 +1506,8 @@ async function sendEmailCampaign() {
 }
 
 async function sbFetch(path) {
-  const r = await fetch(\`\${SUPABASE_URL}/rest/v1/\${path}\`, {
-    headers: { 'apikey': SUPABASE_ANON, 'Authorization': \`Bearer \${SUPABASE_ANON}\` }
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
   });
   return r.json();
 }
