@@ -241,9 +241,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/randwise/sw.js', {scope:'/randwise/'})
     .then(reg => {
-      // Check for updates every 60 seconds while app is open
-      setInterval(() => reg.update(), 60000);
-      // When new SW is waiting, activate it immediately
+      // Check for updates every 30 seconds while app is open
+      setInterval(() => reg.update(), 30000);
+      // When new SW is waiting, activate it immediately — no user action needed
       reg.addEventListener('updatefound', () => {
         const newSW = reg.installing;
         newSW.addEventListener('statechange', () => {
@@ -253,16 +253,18 @@ if('serviceWorker' in navigator){
         });
       });
     }).catch(()=>{});
-  // When SW activates new version, reload smoothly after page is ready
+  // When SW activates — reload for ALL users automatically
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    // Only reload if user is not logged in — avoid login flash for existing users
-    const hasSession = localStorage.getItem('rw_user') && localStorage.getItem('rw_token');
-    if(!hasSession){
-      if(document.readyState === 'complete'){
-        window.location.reload();
-      } else {
-        window.addEventListener('load', () => window.location.reload());
-      }
+    // Show a subtle banner instead of a jarring reload
+    // Only reload if no sheet/overlay is open (don't interrupt mid-action)
+    const overlayOpen = document.querySelector('[id$="-overlay"][style*="flex"]') ||
+                        document.querySelector('[id$="-sheet"][style*="flex"]');
+    if(!overlayOpen){
+      // Soft reload — preserves scroll position
+      window.location.reload();
+    } else {
+      // Overlay is open — wait until it closes then reload
+      window._pendingUpdate = true;
     }
   });
 }
@@ -3179,7 +3181,7 @@ function openSheet(){
   document.getElementById('ov').classList.add('open');document.getElementById('sheet').classList.add('open');
   setTimeout(()=>document.getElementById('ea').focus(),400);
 }
-function closeSheet(){document.getElementById('ov').classList.remove('open');document.getElementById('sheet').classList.remove('open');}
+function closeSheet(){document.getElementById('ov').classList.remove('open');document.getElementById('sheet').classList.remove('open');if(window._pendingUpdate){window._pendingUpdate=false;setTimeout(()=>window.location.reload(),400);}}
 function selectCat(el){document.querySelectorAll('.cat-p').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');selectedCat={id:el.dataset.id,e:el.dataset.e,n:el.dataset.n,c:el.dataset.c};chkSave();}
 function setAmt(v){document.getElementById('ea').value=v;chkSave();}
 function chkSave(){const a=parseFloat(document.getElementById('ea').value);document.getElementById('save-btn').disabled=!selectedCat||!a||a<=0;}
@@ -6885,7 +6887,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v131';
+const APP_VERSION = '2026-04-27-v132';
 (()=>{
   try {
     const stored = localStorage.getItem('rw_app_version');

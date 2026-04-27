@@ -1,4 +1,4 @@
-const CACHE='rw-v117';
+const CACHE='rw-v132';
 const STATIC=['./manifest.json','./icon_192.png','./icon_512.png'];
 
 self.addEventListener('install',e=>{
@@ -78,3 +78,7 @@ self.addEventListener('notificationclick',e=>{
   );
 });
 
+// ── Message handler — activate new SW immediately ────────────
+self.addEventListener('message', e => {
+  if(e.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
