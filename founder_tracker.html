@@ -132,6 +132,58 @@ body{background:var(--paper);color:var(--ink);font-family:var(--sans);min-height
 </style>
 </head>
 <body>
+<div id="rw-auth-wall" style="position:fixed;inset:0;background:#0d3d22;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif">
+  <div style="background:#1a5c35;border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="font-size:48px;margin-bottom:16px">🌱</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px">MyRandWise Admin</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:28px">Enter password to continue</div>
+    <input id="rw-pw-input" type="password" placeholder="Password" 
+      style="width:100%;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:15px;outline:none;box-sizing:border-box;margin-bottom:12px;font-family:inherit"
+      onkeydown="if(event.key==='Enter')rwCheckAuth()">
+    <div id="rw-pw-error" style="color:#ff8a80;font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <button onclick="rwCheckAuth()" style="width:100%;padding:14px;background:#4ade80;color:#0d3d22;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer">Unlock →</button>
+    <div id="rw-lockout-timer" style="color:rgba(255,255,255,.5);font-size:12px;margin-top:12px"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const HASH='c368098d5d663f46273e7e74fe7d116931beb1270eb5d339abc0382bb8e9a66a';
+  const SK='rw_admin_auth',AK='rw_auth_attempts',LK='rw_auth_lockout';
+  if(sessionStorage.getItem(SK)===HASH){document.getElementById('rw-auth-wall').style.display='none';return;}
+  checkLock();
+  async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  function checkLock(){
+    const l=Number(localStorage.getItem(LK)||0),now=Date.now();
+    if(l>now){
+      const s=Math.ceil((l-now)/1000);
+      document.getElementById('rw-pw-input').disabled=true;
+      document.getElementById('rw-lockout-timer').textContent='Too many attempts. Try again in '+s+'s';
+      setTimeout(checkLock,1000);
+    } else {
+      document.getElementById('rw-pw-input').disabled=false;
+      document.getElementById('rw-lockout-timer').textContent='';
+      localStorage.removeItem(LK);
+    }
+  }
+  window.rwCheckAuth=async function(){
+    if(Number(localStorage.getItem(LK)||0)>Date.now())return;
+    const h=await hashStr(document.getElementById('rw-pw-input').value);
+    if(h===HASH){
+      sessionStorage.setItem(SK,HASH);
+      localStorage.removeItem(AK);localStorage.removeItem(LK);
+      document.getElementById('rw-auth-wall').style.display='none';
+    } else {
+      let a=Number(localStorage.getItem(AK)||0)+1;
+      localStorage.setItem(AK,a);
+      const r=3-a;
+      if(r<=0){localStorage.setItem(LK,Date.now()+30000);localStorage.removeItem(AK);document.getElementById('rw-pw-error').textContent='Too many attempts. Locked for 30 seconds.';checkLock();}
+      else document.getElementById('rw-pw-error').textContent='Incorrect password. '+r+' attempt'+(r!==1?'s':'')+' remaining.';
+      document.getElementById('rw-pw-input').value='';document.getElementById('rw-pw-input').focus();
+    }
+  };
+  document.getElementById('rw-pw-input').focus();
+})();
+</script>
 
 <div id="lock">
   <div class="lock-logo">Rand<span>Wise</span></div>
@@ -457,7 +509,8 @@ const SEED = {
     {id:'d24',date:'2026-04-22',start:'01:49',end:'17:14',hours:15,rate:417,desc:'[DEV] Apr 22 — Scroll bug root cause fixed (display:block killing flex:1), RLS policies audited and cleaned (7 tables, 31 conflicting policies → 1 clean policy each), recurring column added to expenses table, expenses now saving correctly, debit orders showing debt minimums automatically, bottom padding fixed on all pages (content no longer hidden behind tab bar), login failures investigated, data persistence confirmed'},
     {id:'d25',date:'2026-04-22',start:'23:29',end:'00:06',hours:1,rate:417,desc:'[DEV] Apr 22 late — saveExp fixed (toast after Supabase confirm not before), error surfacing added to show exact Supabase error, pull-to-refresh fixed to check correct scroll container'},
     {id:'d26',date:'2026-04-23',start:'00:02',end:'13:07',hours:13,rate:417,desc:'[DEV] Apr 23 — Login root cause found (reset-password.html 404 — fixed to handle inside index.html), forgot password flow rebuilt, browser confirm() popups replaced with in-app UI, maintenance redirect fixed, unsafe user.id calls guarded, all alert() removed, smart weekly budget (income − debit orders − debt minimums − monthly needs ÷ 4), See All transactions screen built (grouped by day, search, filter), debit orders now show debt minimum payments automatically, monthly needs setup sheet built for existing users, trial reset SQL run for all users'},
-    {id:'d27',date:'2026-04-24',start:'14:47',end:'23:59',hours:9,rate:417,desc:'[DEV] Apr 24 — Weekly carry-over built (previous week surplus/deficit rolls into next week), month overview strip (all 4 weeks at a glance), overspend clarity when rollover involved, About MyRandWise intro screen built (new users, once-only), free tier properly fixed (no hard block after trial — soft lock overlays with upgrade nudge), 8pm daily reminder improved (scheduled to exact time), share nudge weekly on Saturdays, admin popup/notification controls built in services directory (6 global switches via SQL), app_config settings system (loadAppSettings + getSetting), admin segment drill-down built (tap any segment → full user list with Grant Pro / Copy email / Copy phone actions), founder tracker updated'},
+    {id:'d27',date:'2026-04-24',start:'14:47',end:'20:30',hours:6,rate:417,desc:'[DEV] Apr 24 morning — Weekly carry-over (previous week surplus/deficit rolls forward), month overview strip (all 4 weeks), overspend clarity with rollover, About MyRandWise intro (twice/week during trial), free tier soft-lock fix (no hard block), 8pm reminder scheduled to exact time, share nudge weekly Saturdays, admin popup controls in services directory, app_config settings system, admin segment drill-down with Grant Pro/Copy email actions, admin Roadmap tab built'},
+    {id:'d28',date:'2026-04-24',start:'20:30',end:'23:59',hours:3.5,rate:417,desc:'[DEV] Apr 24 evening — Race condition root cause found (auto-login never loaded debts before renderDash — fixed v113), fingerprint lock SVG icon + improved WebAuthn biometric flow, duplicate MTN debt diagnosed and cleaned via SQL, two-account (gmail vs hotmail) confusion resolved, monthly needs localStorage vs Supabase sync issue diagnosed, monthly needs manually synced on PC, debt intervention false emergency fix noted (car/bond inflates DTI — roadmap), custom categories built (+ custom button, localStorage), monthly summary built (grade A-D, week breakdown, top categories), admin Roadmap tab finalised with fix/queued/planned sections and release rules'},
   ],
   get sessions(){ return [...this._sessions, ...this.devSessions]; },
   _sessions: [],
