@@ -3,1304 +3,1948 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RandWise Admin</title>
+<title>RandWise — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f7f6f2; color: #2c2c2a; }
-  .topbar { background: #1a7a4a; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
-  .topbar h1 { font-size: 18px; font-weight: 700; }
-  .topbar span { font-size: 12px; opacity: 0.8; }
-  .tabs { display: flex; background: white; border-bottom: 1px solid #e8e6de; padding: 0 24px; overflow-x: auto; }
-  .tab { padding: 14px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: #888780; white-space: nowrap; }
-  .tab.active { color: #1a7a4a; border-bottom-color: #1a7a4a; }
-  .page { display: none; padding: 24px; max-width: 1200px; margin: 0 auto; }
-  .page.active { display: block; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
-  .stat-card { background: white; border-radius: 14px; padding: 16px; border: 0.5px solid #e8e6de; }
-  .stat-val { font-size: 28px; font-weight: 800; }
-  .stat-label { font-size: 11px; color: #888780; margin-top: 4px; }
-  .card { background: white; border-radius: 14px; border: 0.5px solid #e8e6de; padding: 20px; margin-bottom: 16px; }
-  .card h3 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: #2c2c2a; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th { text-align: left; padding: 8px 12px; background: #f7f6f2; color: #888780; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-  td { padding: 10px 12px; border-bottom: 0.5px solid #f0efe9; }
-  tr:last-child td { border-bottom: none; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-  .badge.free { background: #f0efe9; color: #888780; }
-  .badge.pro { background: #eaf3de; color: #1a7a4a; }
-  .badge.premium { background: #eeedfe; color: #534ab7; }
-  .segment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-  .segment { background: #f7f6f2; border-radius: 12px; padding: 14px; border: 1px solid #e8e6de; cursor: pointer; transition: all 0.15s; }
-  .segment:hover { background: #eaf3de; border-color: #1a7a4a; }
-  .segment h4 { font-size: 13px; font-weight: 700; }
-  .segment p { font-size: 11px; color: #888780; margin-top: 3px; }
-  .segment .seg-count { font-size: 22px; font-weight: 800; color: #1a7a4a; margin-top: 6px; }
-  .milestone { display: flex; align-items: flex-start; gap: 14px; padding: 14px 0; border-bottom: 0.5px solid #f0efe9; }
-  .milestone:last-child { border-bottom: none; }
-  .milestone-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-  .milestone-icon.done { background: #eaf3de; }
-  .milestone-icon.pending { background: #f0efe9; }
-  .milestone-icon.locked { background: #f7f6f2; opacity: 0.5; }
-  .milestone-body { flex: 1; }
-  .milestone-title { font-size: 13px; font-weight: 700; }
-  .milestone-desc { font-size: 12px; color: #888780; margin-top: 2px; }
-  .milestone-progress { margin-top: 6px; height: 4px; background: #f0efe9; border-radius: 2px; }
-  .milestone-fill { height: 4px; background: #1a7a4a; border-radius: 2px; transition: width 0.5s; }
-  .milestone-status { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
-  .milestone-status.done { background: #eaf3de; color: #1a7a4a; }
-  .milestone-status.pending { background: #faeeda; color: #ba7517; }
-  .milestone-status.locked { background: #f0efe9; color: #888780; }
-  .referral-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 0.5px solid #f0efe9; }
-  .referral-row:last-child { border-bottom: none; }
-  .pay-btn { background: #1a7a4a; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .pay-btn:disabled { background: #f0efe9; color: #888780; cursor: not-allowed; }
-  .alert-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid #f0efe9; }
+  :root {
+    --green:      #1a7a4a;
+    --green-l:    #eaf3de;
+    --green-d:    #0d3d24;
+    --green-mid:  #639922;
+    --purple:     #534ab7;
+    --purple-l:   #eeedfe;
+    --red:        #a32d2d;
+    --red-l:      #fdecea;
+    --amber:      #ba7517;
+    --amber-l:    #faeeda;
+    --white:      #ffffff;
+    --bg:         #f4f3ee;
+    --bg2:        #eeede6;
+    --border:     #e0ddd4;
+    --text:       #1e1e1a;
+    --mid:        #5a5a52;
+    --muted:      #8a8a7e;
+    --hint:       #b8b8aa;
+    --sidebar-w:  240px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── Sidebar ──────────────────────────── */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--green-d);
+    min-height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar-brand-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    padding: 8px 20px 4px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    margin: 1px 0;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-item.active {
+    background: rgba(168,217,110,0.12);
+    color: #a8d96e;
+    border-left-color: #a8d96e;
+    font-weight: 600;
+  }
+
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(168,217,110,0.15);
+    border: 1px solid rgba(168,217,110,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: #a8d96e;
+    font-weight: 600;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #a8d96e;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Main content ─────────────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .refresh-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+
+  .last-updated {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .content {
+    padding: 28px 32px;
+    flex: 1;
+  }
+
+  /* ── Tab pages ─────────────────────────── */
+  .tab-page { display: none; }
+  .tab-page.active { display: block; }
+
+  /* ── Stat cards ────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Cards ─────────────────────────────── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title span { color: var(--muted); font-weight: 400; font-size: 12px; }
+
+  /* ── Table ─────────────────────────────── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .data-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--bg2);
+    color: var(--text);
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg); }
+
+  /* ── Badges ────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-free    { background: var(--bg2); color: var(--mid); }
+  .badge-pro     { background: var(--green-l); color: var(--green); }
+  .badge-premium { background: var(--purple-l); color: var(--purple); }
+  .badge-new     { background: var(--amber-l); color: var(--amber); }
+
+  /* ── Progress bars ─────────────────────── */
+  .progress-wrap { background: var(--bg2); border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+  /* ── Grid 2col ─────────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Segment pills ─────────────────────── */
+  .segment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .segment-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .segment-card:hover, .segment-card.active {
+    border-color: var(--green);
+    background: var(--green-l);
+  }
+
+  .segment-emoji { font-size: 24px; margin-bottom: 8px; }
+  .segment-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .segment-count { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── AI suggestions ────────────────────── */
+  .suggestion-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .suggestion-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .suggestion-body { flex: 1; }
+  .suggestion-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .suggestion-desc { font-size: 12px; color: var(--mid); line-height: 1.5; }
+  .suggestion-meta { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+  .suggestion-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+  .btn-approve {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-dismiss {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Referral table ────────────────────── */
+  .pay-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .pay-btn:disabled {
+    background: var(--bg2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  /* ── Timeline ──────────────────────────── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -21px; top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--white);
+  }
+
+  .timeline-date { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 2px; }
+  .timeline-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .timeline-desc { font-size: 12px; color: var(--mid); }
+
+  /* ── Reserves ──────────────────────────── */
+  .reserve-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
+  .reserve-item:last-child { border-bottom: none; }
+  .reserve-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .reserve-purpose { font-size: 11px; color: var(--muted); }
+  .reserve-amount { font-size: 15px; font-weight: 700; color: var(--green); font-family: 'DM Mono', monospace; }
+
+  /* ── Team payments ─────────────────────── */
+  .team-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .team-avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .team-info { flex: 1; }
+  .team-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .team-role { font-size: 11px; color: var(--muted); }
+  .team-equity { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* ── Alerts ────────────────────────────── */
+  .alert-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
   .alert-row:last-child { border-bottom: none; }
-  .toggle { position: relative; width: 44px; height: 24px; }
+
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+  }
   .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e8e6de; border-radius: 24px; transition: 0.3s; }
-  .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-  input:checked + .slider { background: #1a7a4a; }
-  input:checked + .slider:before { transform: translateX(20px); }
-  .bar-track { height: 8px; background: #f0efe9; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-  .bar-fill { height: 8px; border-radius: 4px; transition: width 0.5s; }
-  #lastUpdated { font-size: 11px; color: rgba(255,255,255,0.7); }
-  .easyequities-banner { background: linear-gradient(135deg, #1a7a4a, #639922); border-radius: 14px; padding: 20px; color: white; margin-bottom: 16px; }
-  .easyequities-banner h3 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-  .easyequities-banner p { font-size: 13px; opacity: 0.9; line-height: 1.5; }
-  .easyequities-banner .progress-info { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-  .easyequities-banner .big-num { font-size: 32px; font-weight: 800; }
-  .easyequities-banner .big-label { font-size: 12px; opacity: 0.8; }
-  .reserves-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-  .reserve-card { background: #f7f6f2; border-radius: 12px; padding: 14px; }
-  .reserve-val { font-size: 20px; font-weight: 800; color: #1a7a4a; }
-  .reserve-label { font-size: 11px; color: #888780; margin-top: 2px; }
-  .reserve-target { font-size: 11px; color: #888780; margin-top: 6px; }
-  @media (max-width: 600px) { .page { padding: 16px; } .grid { grid-template-columns: repeat(2, 1fr); } }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 99px;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--green); }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  /* ── Pitch / financials ─────────────────── */
+  .metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { font-size: 12px; color: var(--mid); }
+  .metric-value { font-size: 13px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
+
+  /* ── Loading ───────────────────────────── */
+  .loading {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 12px;
+    padding: 16px 0;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Empty state ───────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .search-bar:focus { outline: none; border-color: var(--green); }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--mid);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* POPIA tag */
+  .popia-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--green-l); color: var(--green);
+    border: 1px solid rgba(26,122,74,0.2);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .grid2 { grid-template-columns: 1fr; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div>
-    <h1>🌱 RandWise Admin</h1>
-    <div style="font-size:11px;opacity:0.7;margin-top:2px">Owner: Nyaniso Khoza</div>
-  </div>
-  <span id="lastUpdated">Loading...</span>
-</div>
-
-<div class="tabs">
-  <div class="tab active" onclick="showPage('overview')">Overview</div>
-  <div class="tab" onclick="showPage('users')">Users</div>
-  <div class="tab" onclick="showPage('segments')">Segments</div>
-  <div class="tab" onclick="showPage('milestones')">Milestones</div>
-  <div class="tab" onclick="showPage('referrals')">Referrals</div>
-  <div class="tab" onclick="showPage('reserves')">Reserves</div>
-  <div class="tab" onclick="showPage('alerts')">Alerts</div>
-  <div class="tab" onclick="showPage('roadmap')">🗺 Roadmap</div>
-  <div class="tab" onclick="showPage('impact');loadImpact()">💚 Impact</div>
-  <div class="tab" onclick="showPage('push')">🔔 Push</div>
-</div>
-
-<!-- OVERVIEW -->
-<div class="page active" id="page-overview">
-  <div class="grid" id="stats-grid">
-    <div class="stat-card"><div class="stat-val" id="stat-total">—</div><div class="stat-label">Total users</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="stat-paid">—</div><div class="stat-label">Paid users</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#534ab7" id="stat-premium">—</div><div class="stat-label">Premium</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#ba7517" id="stat-expenses">—</div><div class="stat-label">Expenses logged</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="stat-mrr">R0</div><div class="stat-label">Est. MRR</div></div>
-    <div class="stat-card"><div class="stat-val" id="stat-days">—</div><div class="stat-label">Days since launch</div></div>
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">RandWise</div>
+    <div class="sidebar-brand-sub">Admin Dashboard</div>
   </div>
 
-  <div class="card">
-    <h3>Recent registrations</h3>
-    <table>
-      <thead><tr><th>Name</th><th>Life stage</th><th>Tier</th><th>Referral code</th><th>Registered</th></tr></thead>
-      <tbody id="recent-tbody"><tr><td colspan="5" style="color:#888780;text-align:center;padding:20px">Loading...</td></tr></tbody>
-    </table>
-  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showTab('overview',this)">
+      <span class="nav-icon">📊</span> Overview
+    </div>
+    <div class="nav-item" onclick="showTab('users',this)">
+      <span class="nav-icon">👥</span> Users
+    </div>
+    <div class="nav-item" onclick="showTab('segments',this)">
+      <span class="nav-icon">🎯</span> Segments
+    </div>
 
-  <div class="card">
-    <h3>Life stage breakdown</h3>
-    <div id="stage-breakdown"></div>
-  </div>
-</div>
+    <div class="nav-section" style="margin-top:8px">Business</div>
+    <div class="nav-item" onclick="showTab('referrals',this)">
+      <span class="nav-icon">🤝</span> Referrals
+    </div>
+    <div class="nav-item" onclick="showTab('revenue',this)">
+      <span class="nav-icon">💰</span> Revenue & Financials
+    </div>
+    <div class="nav-item" onclick="showTab('reserves',this)">
+      <span class="nav-icon">🏦</span> Reserves & Team
+    </div>
 
-<!-- USERS -->
-<div class="page" id="page-users">
-  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-    <input id="search-input" type="text" placeholder="Search by name..." oninput="filterUsers()" style="flex:1;min-width:200px;padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2">
-    <select id="tier-filter" onchange="filterUsers()" style="padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2">
-      <option value="">All tiers</option>
-      <option value="free">Free</option>
-      <option value="pro">Pro</option>
-      <option value="premium">Premium</option>
-    </select>
-  </div>
-  <div class="card" style="padding:0;overflow:hidden">
-    <table>
-      <thead><tr><th>Name</th><th>Stage</th><th>Income</th><th>Tier</th><th>Code</th><th>Joined</th></tr></thead>
-      <tbody id="users-tbody"><tr><td colspan="6" style="color:#888780;text-align:center;padding:20px">Loading...</td></tr></tbody>
-    </table>
-  </div>
-</div>
+    <div class="nav-section" style="margin-top:8px">Intelligence</div>
+    <div class="nav-item" onclick="showTab('ai',this)">
+      <span class="nav-icon">🤖</span> AI Suggestions
+    </div>
+    <div class="nav-item" onclick="showTab('build',this)">
+      <span class="nav-icon">⏱️</span> Build Tracker
+    </div>
 
-<!-- SEGMENTS -->
-<div class="page" id="page-segments">
-  <div class="card">
-    <h3>User segments</h3>
-    <div class="segment-grid" id="segments-grid">
-      <div class="segment" onclick="openSegment('new')"><h4>🆕 New (last 7 days)</h4><p>Recently registered</p><div class="seg-count" id="seg-new">—</div></div>
-      <div class="segment" onclick="openSegment('student')"><h4>🎓 Students</h4><p>Student / Learner stage</p><div class="seg-count" id="seg-student">—</div></div>
-      <div class="segment" onclick="openSegment('domestic')"><h4>🏠 Domestic workers</h4><p>Domestic worker stage</p><div class="seg-count" id="seg-domestic">—</div></div>
-      <div class="segment" onclick="openSegment('employed')"><h4>💼 Employed</h4><p>Full/Part-time employed</p><div class="seg-count" id="seg-employed">—</div></div>
-      <div class="segment" onclick="openSegment('self')"><h4>🏪 Self-employed</h4><p>Freelancer / Business owner</p><div class="seg-count" id="seg-self">—</div></div>
-      <div class="segment" onclick="openSegment('pensioner')"><h4>👴 Pensioners</h4><p>Retired / Pensioner stage</p><div class="seg-count" id="seg-pensioner">—</div></div>
-      <div class="segment" onclick="openSegment('pro')"><h4>💳 Pro users</h4><p>Paying Pro subscribers</p><div class="seg-count" id="seg-pro">—</div></div>
-      <div class="segment" onclick="openSegment('premium')"><h4>👑 Premium users</h4><p>Premium subscribers</p><div class="seg-count" id="seg-prem">—</div></div>
+    <div class="nav-section" style="margin-top:8px">Settings</div>
+    <div class="nav-item" onclick="showTab('alerts',this)">
+      <span class="nav-icon">🔔</span> Alerts
+    </div>
+    <div class="nav-item" onclick="showTab('legal',this)">
+      <span class="nav-icon">📄</span> Legal & POPIA
+    </div>
+    <div class="nav-item" onclick="showTab('email',this)">
+      <span class="nav-icon">✉️</span> Email Users
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live · Supabase
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Overview</div>
+    <div class="topbar-right">
+      <div class="last-updated" id="last-updated">Loading...</div>
+      <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
   </div>
 
-  <!-- SEGMENT DRILL-DOWN OVERLAY -->
-  <div id="seg-drilldown" style="display:none;position:fixed;inset:0;background:#fff;z-index:500;overflow-y:auto">
-    <div style="background:#1a7a4a;padding:16px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:10">
-      <button onclick="closeSegment()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer">‹</button>
-      <div>
-        <div style="font-size:16px;font-weight:800;color:#fff" id="seg-drill-title">Segment</div>
-        <div style="font-size:12px;color:rgba(255,255,255,.75)" id="seg-drill-sub">0 users</div>
+  <div class="content">
+
+    <!-- ── OVERVIEW ─────────────────────── -->
+    <div id="tab-overview" class="tab-page active">
+      <div class="stats-grid" id="overview-stats">
+        <div class="loading"><div class="spinner"></div> Loading...</div>
       </div>
-    </div>
-    <div style="padding:16px" id="seg-drill-body"></div>
-  </div>
-
-  <div class="card">
-    <h3>Tier distribution</h3>
-    <div id="tier-dist"></div>
-  </div>
-</div>
-
-<!-- MILESTONES -->
-<div class="page" id="page-milestones">
-
-  <!-- EasyEquities banner -->
-  <div class="easyequities-banner" id="easy-banner">
-    <h3>🎯 EasyEquities Partnership Opportunity</h3>
-    <p>Once you hit 500 users, contact EasyEquities to become an introducer partner. Earn R50–R150 per funded account your users open.</p>
-    <div class="progress-info">
-      <div>
-        <div class="big-num" id="easy-count">0</div>
-        <div class="big-label">of 500 users needed</div>
-      </div>
-      <div style="flex:1">
-        <div style="height:8px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden">
-          <div id="easy-fill" style="height:8px;background:white;border-radius:4px;width:0%;transition:width 0.5s"></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th></tr></thead>
+            <tbody id="recent-users-body"></tbody>
+          </table>
         </div>
-        <div id="easy-label" style="font-size:11px;opacity:0.8;margin-top:4px">Building towards partnership...</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Growth milestones</h3>
-    <div id="milestones-list"></div>
-  </div>
-
-  <div class="card">
-    <h3>Business milestones</h3>
-    <div id="biz-milestones"></div>
-  </div>
-</div>
-
-<!-- REFERRALS -->
-<div class="page" id="page-referrals">
-  <div class="grid">
-    <div class="stat-card"><div class="stat-val" id="ref-total">—</div><div class="stat-label">Total referrers</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#1a7a4a" id="ref-owed">R0</div><div class="stat-label">Total owed</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#ba7517" id="ref-pending">0</div><div class="stat-label">Pending payouts</div></div>
-  </div>
-  <div class="card">
-    <h3>Referral leaderboard</h3>
-    <div id="referral-list"><p style="color:#888780;font-size:13px">Loading referral data...</p></div>
-    <h3 style="margin-top:24px">Who referred who</h3>
-    <div id="referral-tracking"><p style="color:#888780;font-size:13px">Loading...</p></div>
-  </div>
-  <div class="card" style="background:#faeeda;border-color:#ba751740">
-    <h3 style="color:#ba7517">💸 Payout rules</h3>
-    <p style="font-size:13px;color:#5f5e5a;line-height:1.6">
-      • Minimum payout: <strong>R50</strong><br>
-      • Payment day: <strong>Last day of each month</strong><br>
-      • Method: <strong>Capitec Pay (free)</strong> or EFT (R12 internal cost)<br>
-      • Pro referral: <strong>R10 once + R5/mo × 6 months = R40 max</strong><br>
-      • Premium referral: <strong>R10 once + R5/mo × 6 months = R40 max</strong><br>
-      • Bank verification: <strong>R2 test deposit before first payout</strong>
-    </p>
-  </div>
-</div>
-
-<!-- RESERVES -->
-<div class="page" id="page-reserves">
-  <div class="card">
-    <h3>Company reserves</h3>
-    <div class="reserves-grid">
-      <div class="reserve-card"><div class="reserve-val">R2,700</div><div class="reserve-label">Ops buffer (3 months)</div><div class="reserve-target">Target: R2,700 ✅</div></div>
-      <div class="reserve-card"><div class="reserve-val">R5,000</div><div class="reserve-label">Legal fund</div><div class="reserve-target">For T&Cs, disputes, CIPC</div></div>
-      <div class="reserve-card"><div class="reserve-val">R2,000</div><div class="reserve-label">Referral payout reserve</div><div class="reserve-target">Never owe more than you have</div></div>
-      <div class="reserve-card"><div class="reserve-val" style="color:#534ab7">R9,700</div><div class="reserve-label">Total minimum</div><div class="reserve-target">Keep this at all times</div></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>Monthly running costs</h3>
-    <table>
-      <thead><tr><th>Item</th><th>Cost</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>Supabase</td><td>R0</td><td>Free tier (up to 50k users)</td></tr>
-        <tr><td>Claude API</td><td>~R400/mo</td><td>AI features</td></tr>
-        <tr><td>Claude subscription</td><td>~R350/mo</td><td>Development tool</td></tr>
-        <tr><td>Domain + hosting</td><td>~R150/mo</td><td>randwise.app</td></tr>
-        <tr><td>PayFast</td><td>R0</td><td>Pay per transaction only</td></tr>
-        <tr><td><strong>Total</strong></td><td><strong>~R900/mo</strong></td><td>Break-even: 19 Pro users</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="card">
-    <h3>Equity structure</h3>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Nyaniso Khoza (Founder/CEO)</span><span style="font-weight:700;color:#1a7a4a">60%</span></div><div class="bar-track"><div class="bar-fill" style="width:60%;background:#1a7a4a"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Twin (Co-founder/Growth)</span><span style="font-weight:700;color:#534ab7">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#534ab7"></div></div></div>
-      <div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Reserved (investors/key hires)</span><span style="font-weight:700;color:#ba7517">20%</span></div><div class="bar-track"><div class="bar-fill" style="width:20%;background:#ba7517"></div></div></div>
-    </div>
-  </div>
-</div>
-
-<!-- ALERTS -->
-<div class="page" id="page-alerts">
-  <div class="card">
-    <h3>🐛 Bug reports from users</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:14px">Reports submitted by users via the "Report a problem" button or auto-captured JS errors. Yellow = user submitted, red = JS error.</p>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <button onclick="loadBugReports()" style="background:#1a7a4a;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🔄 Refresh</button>
-      <button onclick="clearBugReports()" style="background:#fdecea;color:#a32d2d;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">🗑 Clear all</button>
-    </div>
-    <div id="bug-reports-list"><div style="color:#888780;font-size:13px">Loading...</div></div>
-  </div>
-  <div class="card">
-    <h3>📡 Live health check</h3>
-    <div id="health-panel" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-db" style="font-size:20px">⏳</div><div style="font-size:11px;color:#888780;margin-top:4px">Database</div></div>
-      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-users" style="font-size:18px;font-weight:700">—</div><div style="font-size:11px;color:#888780;margin-top:4px">Total users</div></div>
-      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-today" style="font-size:18px;font-weight:700;color:#1a7a4a">—</div><div style="font-size:11px;color:#888780;margin-top:4px">New today</div></div>
-      <div style="background:#f7f6f2;border-radius:10px;padding:12px;text-align:center"><div id="hp-bugs" style="font-size:18px;font-weight:700">—</div><div style="font-size:11px;color:#888780;margin-top:4px">Bugs (24h)</div></div>
-    </div>
-    <div style="font-size:11px;color:#888780" id="hp-updated">Last checked: —</div>
-  </div>
-  <div class="card">
-    <h3>🔔 Notification settings</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:14px">Emails sent to your address when key events happen via the send-alert Edge Function.</p>
-    <div id="alerts-list">
-      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">New user registered</div><div style="font-size:11px;color:#888780">Get notified when someone new signs up</div></div><label class="toggle"><input type="checkbox" id="notif-new-user" checked><span class="slider"></span></label></div>
-      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">User upgrades to paid tier</div><div style="font-size:11px;color:#888780">Pro or Premium subscription started</div></div><label class="toggle"><input type="checkbox" id="notif-upgrade" checked><span class="slider"></span></label></div>
-      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Bug report submitted</div><div style="font-size:11px;color:#888780">User reports an issue in the app</div></div><label class="toggle"><input type="checkbox" id="notif-bug" checked><span class="slider"></span></label></div>
-      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Daily summary (9am)</div><div style="font-size:11px;color:#888780">Users, paid, MRR, bugs in last 24h</div></div><label class="toggle"><input type="checkbox" id="notif-daily"><span class="slider"></span></label></div>
-      <div class="alert-row"><div><div style="font-size:13px;font-weight:600">Milestone reached</div><div style="font-size:11px;color:#888780">10, 50, 100, 500 users</div></div><label class="toggle"><input type="checkbox" id="notif-milestone" checked><span class="slider"></span></label></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>📬 Your contact details</h3>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div><label style="font-size:12px;color:#888780;display:block;margin-bottom:4px">Email address for alerts</label><input type="email" id="alert-email" value="nyanisokhoza@gmail.com" style="width:100%;padding:10px 14px;border-radius:10px;border:1px solid #e8e6de;font-size:13px;background:#f7f6f2"></div>
-      <button onclick="saveAlertSettings()" style="background:#1a7a4a;color:white;border:none;padding:12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💾 Save settings</button>
-      <div id="alert-save-msg" style="font-size:12px;color:#1a7a4a;display:none">✅ Settings saved</div>
-    </div>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0efe9">
-      <div style="font-size:12px;font-weight:600;margin-bottom:8px">Test alerts</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="testAlert('bug_report')" style="background:#fdecea;color:#a32d2d;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test bug alert</button>
-        <button onclick="testAlert('new_user')" style="background:#eaf3de;color:#1a7a4a;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test new user alert</button>
-        <button onclick="testAlert('daily_summary')" style="background:#f0efe9;color:#5f5e5a;border:none;padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer">Test daily summary</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ROADMAP PAGE -->
-<div class="page" id="page-roadmap">
-
-  <!-- Key fixes needed -->
-  <div class="card">
-    <h3>🔴 Fix immediately — broken or affecting users</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:13px">
-      <thead>
-        <tr style="border-bottom:2px solid #e8e6de">
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Issue</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Impact</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">Monthly needs stored in localStorage only</td>
-          <td style="padding:10px 8px;color:#888780">Different budget shown on different devices for same user</td>
-          <td style="padding:10px 8px"><span style="background:#fdecea;color:#a32d2d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">NEEDS FIX</span></td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">Debt intervention — asset debt triggers emergency</td>
-          <td style="padding:10px 8px;color:#888780">Car loan & bond inflates DTI % — shows false emergency to users</td>
-          <td style="padding:10px 8px"><span style="background:#fdecea;color:#a32d2d;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">NEEDS FIX</span></td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">Bank statement parser (Gemini quota)</td>
-          <td style="padding:10px 8px;color:#888780">Core Pro feature not working — blocked on R90 Anthropic credits</td>
-          <td style="padding:10px 8px"><span style="background:#faeeda;color:#ba7517;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">BLOCKED</span></td>
-        </tr>
-        <tr>
-          <td style="padding:10px 8px;font-weight:600">PC save error (recurring column)</td>
-          <td style="padding:10px 8px;color:#888780">Some users on PC may still get save errors — monitor</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">MONITORING</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Feature rollout -->
-  <div class="card">
-    <h3>🟡 Built — not released (queued for rollout)</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:14px">Features fully built and tested but held back until user base is large enough to validate and support them.</p>
-    <table style="width:100%;border-collapse:collapse;font-size:13px">
-      <thead>
-        <tr style="border-bottom:2px solid #e8e6de">
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Feature</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Release at</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Tier</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">📊 Monthly summary</td>
-          <td style="padding:10px 8px">50 users</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
-          <td style="padding:10px 8px;color:#888780">Grade A-D, week breakdown, top categories, next month tip</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">🏷️ Custom categories</td>
-          <td style="padding:10px 8px">50 users</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
-          <td style="padding:10px 8px;color:#888780">Users add own emoji + name categories (Church, Braai, etc)</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">🤝 Stokvel tracker</td>
-          <td style="padding:10px 8px">25 users</td>
-          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
-          <td style="padding:10px 8px;color:#888780">Group members, contributions, payout order, pot total</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 8px;font-weight:600">📱 See All transactions</td>
-          <td style="padding:10px 8px">Already live</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
-          <td style="padding:10px 8px;color:#888780">Grouped by day, search, filter by category</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Planned features -->
-  <div class="card">
-    <h3>🔵 Planned — not built yet</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:13px">
-      <thead>
-        <tr style="border-bottom:2px solid #e8e6de">
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Feature</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Build at</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Tier</th>
-          <th style="text-align:left;padding:10px 8px;color:#888780;font-weight:600">Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">📲 SMS auto-detect</td>
-          <td style="padding:10px 8px">100 users</td>
-          <td style="padding:10px 8px"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px">Pro</span></td>
-          <td style="padding:10px 8px;color:#888780">Needs proper APK with READ_SMS permission. Android only.</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">📱 Device limit (1 per account)</td>
-          <td style="padding:10px 8px">50 users</td>
-          <td style="padding:10px 8px"><span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px">All</span></td>
-          <td style="padding:10px 8px;color:#888780">Netflix model. Free/Pro = 1 device. Premium = 2. Extra = R19/mo.</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">🌙 Premium dark theme</td>
-          <td style="padding:10px 8px">25 users</td>
-          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
-          <td style="padding:10px 8px;color:#888780">Dark luxury experience. Pro and Premium look identical right now.</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">👨‍👩‍👧 Family view</td>
-          <td style="padding:10px 8px">100 users</td>
-          <td style="padding:10px 8px"><span style="background:#eeedfe;color:#534ab7;padding:2px 8px;border-radius:10px;font-size:11px">Premium</span></td>
-          <td style="padding:10px 8px;color:#888780">Shared household budget. Each member tracks separately, combined view.</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">📅 Monthly needs → Supabase</td>
-          <td style="padding:10px 8px">Next session</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Free</span></td>
-          <td style="padding:10px 8px;color:#888780">Move from localStorage to Supabase so it syncs across devices.</td>
-        </tr>
-        <tr style="border-bottom:1px solid #f0efe9">
-          <td style="padding:10px 8px;font-weight:600">🎯 CSI free Pro programme</td>
-          <td style="padding:10px 8px">When funded</td>
-          <td style="padding:10px 8px"><span style="background:#eaf3de;color:#1a5c35;padding:2px 8px;border-radius:10px;font-size:11px">Admin</span></td>
-          <td style="padding:10px 8px;color:#888780">Free Pro for users earning under R3,500/mo. 1 free per 25 paid users.</td>
-        </tr>
-        <tr>
-          <td style="padding:10px 8px;font-weight:600">🏢 BizRandWise</td>
-          <td style="padding:10px 8px">Post 100 users</td>
-          <td style="padding:10px 8px"><span style="background:#f0efe9;color:#5f5e5a;padding:2px 8px;border-radius:10px;font-size:11px">Separate</span></td>
-          <td style="padding:10px 8px;color:#888780">Same codebase, business skin. Staff costs, profits, real-time company view.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Ground rules -->
-  <div class="card" style="background:#f7f6f2;border:none">
-    <h3>📋 Release rules</h3>
-    <div style="font-size:13px;color:#5f5e5a;line-height:1.8">
-      ✅ <strong>Fix immediately</strong> — anything broken that affects existing users<br>
-      ⏸️ <strong>Queue for rollout</strong> — new features wait until user milestone is reached<br>
-      🚫 <strong>Do not release</strong> features that require support you can't yet provide<br>
-      📊 <strong>Validate first</strong> — ask users what they want before building it<br>
-      💰 <strong>Revenue first</strong> — if it doesn't fix broken or convert free→paid, it waits
-    </div>
-  </div>
-
-</div>
-
-<!-- IMPACT PAGE -->
-<div class="page" id="page-impact">
-
-  <!-- Headline stats -->
-  <div class="card">
-    <h3>💚 MyRandWise Impact Dashboard</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:20px">How we're changing financial lives across South Africa. Updated every time you load this page.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px" id="impact-stats-grid">
-      <div style="background:#eaf3de;border-radius:14px;padding:16px;text-align:center">
-        <div style="font-size:28px;font-weight:900;color:#1a5c35" id="impact-total-users">—</div>
-        <div style="font-size:12px;color:#5a8a6a;margin-top:4px">Total users</div>
-      </div>
-      <div style="background:#eaf3de;border-radius:14px;padding:16px;text-align:center">
-        <div style="font-size:28px;font-weight:900;color:#1a5c35" id="impact-active-users">—</div>
-        <div style="font-size:12px;color:#5a8a6a;margin-top:4px">Active (last 7 days)</div>
-      </div>
-      <div style="background:#fdecea;border-radius:14px;padding:16px;text-align:center">
-        <div style="font-size:22px;font-weight:900;color:#a32d2d" id="impact-total-debt">—</div>
-        <div style="font-size:12px;color:#c46060;margin-top:4px">Total debt tracked</div>
-      </div>
-      <div style="background:#eeedfe;border-radius:14px;padding:16px;text-align:center">
-        <div style="font-size:22px;font-weight:900;color:#534ab7" id="impact-total-savings">—</div>
-        <div style="font-size:12px;color:#534ab7;margin-top:4px;opacity:.7">Total savings goals</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Monthly sentiment -->
-  <div class="card">
-    <h3>😊 How users are feeling this month</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:16px">Monthly check-in responses — how finances feel vs last month.</p>
-    <div id="sentiment-bars">
-      <div style="color:#888780;font-size:13px">Loading check-in data...</div>
-    </div>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0efe9">
-      <div style="font-size:12px;color:#888780" id="sentiment-total">0 responses this month</div>
-    </div>
-  </div>
-
-  <!-- Story consent users -->
-  <div class="card">
-    <h3>🌱 Users who want to share their story</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:16px">These users have consented to share their MyRandWise journey for marketing and impact reporting.</p>
-    <div id="story-consent-list">
-      <div style="color:#888780;font-size:13px">Loading...</div>
-    </div>
-  </div>
-
-  <!-- Check-in history -->
-  <div class="card">
-    <h3>📊 All check-in responses</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:16px">Full history of monthly sentiment check-ins across all users.</p>
-    <div id="checkin-history">
-      <div style="color:#888780;font-size:13px">Loading...</div>
-    </div>
-  </div>
-
-</div>
-
-<!-- PUSH NOTIFICATIONS PAGE -->
-<div class="page" id="page-push">
-
-  <div class="card">
-    <h3>🔔 Send Push Notification</h3>
-    <p style="font-size:12px;color:#888780;margin-bottom:20px">Send real push notifications to users' devices — even when the app is closed. Requires the <code style="background:rgba(0,0,0,.06);padding:2px 6px;border-radius:4px">send-push</code> Edge Function deployed in Supabase.</p>
-
-    <!-- Audience -->
-    <div style="margin-bottom:16px">
-      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Send to</label>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="push-aud-all" onclick="setPushAudience('all')" style="padding:8px 16px;border-radius:20px;border:2px solid #1a7a4a;background:#1a7a4a;color:#fff;font-size:13px;font-weight:700;cursor:pointer">All users</button>
-        <button id="push-aud-worse" onclick="setPushAudience('worse')" style="padding:8px 16px;border-radius:20px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer">😔 Feeling worse</button>
-        <button id="push-aud-one" onclick="setPushAudience('one')" style="padding:8px 16px;border-radius:20px;border:2px solid #e8e6de;background:#fff;color:#555;font-size:13px;font-weight:600;cursor:pointer">One user</button>
-      </div>
-    </div>
-
-    <!-- User ID field (shown only for "one") -->
-    <div id="push-userid-row" style="display:none;margin-bottom:16px">
-      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">User email</label>
-      <input id="push-user-email" type="email" placeholder="nyanisokhoza@gmail.com" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
-    </div>
-
-    <!-- Title -->
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Notification title</label>
-      <input id="push-title" type="text" placeholder="MyRandWise 🌱" maxlength="50" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none">
-    </div>
-
-    <!-- Body -->
-    <div style="margin-bottom:14px">
-      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Message</label>
-      <textarea id="push-body" placeholder="Payday tomorrow — open MyRandWise to plan your month 🌱" maxlength="120" rows="3" style="width:100%;padding:12px;border:2px solid #e8e6de;border-radius:10px;font-size:14px;font-family:inherit;outline:none;resize:none"></textarea>
-      <div style="font-size:11px;color:#888780;margin-top:4px">Keep it under 100 characters for best display</div>
-    </div>
-
-    <!-- Quick templates -->
-    <div style="margin-bottom:20px">
-      <label style="font-size:12px;font-weight:700;color:#555;display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Quick templates</label>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <button onclick="setPushTemplate('payday')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">💰 Payday reminder — "Plan your month before you spend it"</button>
-        <button onclick="setPushTemplate('budget')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">⚠️ Budget alert — "You're halfway through your weekly budget"</button>
-        <button onclick="setPushTemplate('worse')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">💚 Reach out to struggling users — "We noticed things are tough. We're here."</button>
-        <button onclick="setPushTemplate('feature')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">✨ New feature — "Something new is waiting for you in MyRandWise"</button>
-        <button onclick="setPushTemplate('log')" style="padding:10px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:12px;text-align:left;cursor:pointer;color:#2c2c2a">📝 Daily log reminder — "Did you spend anything today? Log it in 20 seconds"</button>
-      </div>
-    </div>
-
-    <!-- Preview -->
-    <div style="background:#1a1a2e;border-radius:16px;padding:16px;margin-bottom:20px">
-      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Preview on device</div>
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <img src="../icon_48.png" onerror="this.style.display='none'" style="width:36px;height:36px;border-radius:8px">
         <div>
-          <div style="font-size:13px;font-weight:700;color:#fff" id="push-preview-title">MyRandWise 🌱</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;line-height:1.4" id="push-preview-body">Your message will appear here</div>
+          <div class="card">
+            <div class="card-title">Tier Breakdown</div>
+            <div id="tier-bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Life Stage Breakdown</div>
+            <div id="stage-bars"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Send button -->
-    <button onclick="sendPushNotification()" id="push-send-btn" style="width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">
-      🔔 Send Push Notification
-    </button>
-    <div id="push-result" style="margin-top:12px;font-size:13px;text-align:center;color:#888780"></div>
-  </div>
-
-  <!-- Push stats -->
-  <div class="card">
-    <h3>📊 Push subscription stats</h3>
-    <div id="push-stats">
-      <button onclick="loadPushStats()" style="background:#1a7a4a;color:white;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Load stats</button>
+    <!-- ── USERS ─────────────────────────── -->
+    <div id="tab-users" class="tab-page">
+      <input class="search-bar" id="user-search" placeholder="🔍  Search by name or life stage..." oninput="filterUsers()">
+      <div class="filter-row" id="tier-filters">
+        <button class="filter-btn active" onclick="setTierFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setTierFilter('free',this)">Free</button>
+        <button class="filter-btn" onclick="setTierFilter('pro',this)">Pro</button>
+        <button class="filter-btn" onclick="setTierFilter('premium',this)">Premium</button>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden">
+        <table class="data-table" id="users-table">
+          <thead><tr>
+            <th>Name</th><th>Life Stage</th><th>Income</th>
+            <th>Tier</th><th>Referral Code</th><th>Joined</th>
+          </tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
     </div>
-  </div>
 
+    <!-- ── SEGMENTS ───────────────────────── -->
+    <div id="tab-segments" class="tab-page">
+      <div class="segment-grid" id="segment-grid"></div>
+      <div class="card" id="segment-detail" style="display:none">
+        <div class="card-title" id="segment-detail-title">Segment Detail</div>
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Income</th><th>Tier</th><th>Goals</th><th>Joined</th></tr></thead>
+          <tbody id="segment-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── REFERRALS ──────────────────────── -->
+    <div id="tab-referrals" class="tab-page">
+      <div class="stats-grid" id="referral-stats">
+        <div class="stat-card green">
+          <div class="stat-label">Total Referrers</div>
+          <div class="stat-value" id="ref-total">—</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Pending Payouts</div>
+          <div class="stat-value" id="ref-pending">—</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Total Paid Out</div>
+          <div class="stat-value" id="ref-paid">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Referral Leaderboard
+          <span>Min payout: R50 · Batched monthly</span>
+        </div>
+        <table class="data-table">
+          <thead><tr>
+            <th>Referrer</th><th>Code</th><th>Referred</th>
+            <th>Converted</th><th>Pending</th><th>Action</th>
+          </tr></thead>
+          <tbody id="referral-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Payout History</div>
+        <table class="data-table">
+          <thead><tr><th>Referrer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="payout-body"><tr><td colspan="4" class="empty">No payouts yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── REVENUE & FINANCIALS ───────────── -->
+    <div id="tab-revenue" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">MRR (est.)</div>
+          <div class="stat-value" id="mrr-val">R0</div>
+          <div class="stat-sub">Monthly recurring revenue</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">ARR (est.)</div>
+          <div class="stat-value" id="arr-val">R0</div>
+          <div class="stat-sub">Annual run rate</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">PayFast Fees</div>
+          <div class="stat-value" id="fees-val">R0</div>
+          <div class="stat-sub">3.5% + R1 per txn</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Running Costs</div>
+          <div class="stat-value">R900</div>
+          <div class="stat-sub">Per month (est.)</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Break-Even Tracker</div>
+          <div id="breakeven-content"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Pricing Reference</div>
+          <div class="metric-row"><span class="metric-label">Free tier</span><span class="metric-value">R0</span></div>
+          <div class="metric-row"><span class="metric-label">Pro monthly</span><span class="metric-value">R49/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Pro annual</span><span class="metric-value">R470/yr</span></div>
+          <div class="metric-row"><span class="metric-label">Premium monthly</span><span class="metric-value">R129/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Premium annual</span><span class="metric-value">R1,238/yr</span></div>
+          <div class="metric-row"><span class="metric-label">Electricity add-on</span><span class="metric-value">R10/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Household add-on</span><span class="metric-value">R15/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Bond score add-on</span><span class="metric-value">R10/mo</span></div>
+          <div class="metric-row"><span class="metric-label">PayFast fee (Pro)</span><span class="metric-value">R2.72 → keep R46.28</span></div>
+          <div class="metric-row"><span class="metric-label">PayFast fee (Premium)</span><span class="metric-value">R5.52 → keep R123.48</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Investment Readiness</div>
+        <div class="metric-row"><span class="metric-label">Project value (your rate R417/hr × 120hrs)</span><span class="metric-value">R50,000</span></div>
+        <div class="metric-row"><span class="metric-label">Project value (agency rate R750/hr × 120hrs)</span><span class="metric-value">R90,000</span></div>
+        <div class="metric-row"><span class="metric-label">Equity structure</span><span class="metric-value">60% / 20% / 20%</span></div>
+        <div class="metric-row"><span class="metric-label">Recommended first investor max equity</span><span class="metric-value">15–20%</span></div>
+        <div class="metric-row"><span class="metric-label">Minimum users before approaching investors</span><span class="metric-value">100 paying users</span></div>
+        <div class="metric-row"><span class="metric-label">CIPC registration</span><span class="metric-value" id="cipc-status">🔲 Pending</span></div>
+        <div class="metric-row"><span class="metric-label">Trademark (Class 36 + 42)</span><span class="metric-value" id="tm-status">🔲 Pending (R1,180)</span></div>
+        <div class="metric-row"><span class="metric-label">PayFast account verified</span><span class="metric-value" id="pf-status">🔲 Awaiting email</span></div>
+      </div>
+    </div>
+
+    <!-- ── RESERVES & TEAM ────────────────── -->
+    <div id="tab-reserves" class="tab-page">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Company Reserves
+            <span>Minimum: R9,700</span>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Operational Buffer</div><div class="reserve-purpose">3 months running costs</div></div>
+            <div class="reserve-amount">R2,700</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Legal Fund</div><div class="reserve-purpose">T&C updates, disputes, CIPC</div></div>
+            <div class="reserve-amount">R5,000</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Referral Payout Reserve</div><div class="reserve-purpose">Always cover pending payouts</div></div>
+            <div class="reserve-amount">R2,000</div>
+          </div>
+          <div class="reserve-item" style="border-top: 2px solid var(--green)">
+            <div><div class="reserve-name" style="color:var(--green)">Total Minimum</div></div>
+            <div class="reserve-amount">R9,700</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Monthly Running Costs</div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Claude API</div><div class="reserve-purpose">AI features</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R400</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Claude Subscription</div><div class="reserve-purpose">Development</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R350</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Supabase</div><div class="reserve-purpose">Free under 50k users</div></div>
+            <div class="reserve-amount" style="color:var(--green)">R0</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Domain + Hosting</div><div class="reserve-purpose">randwise.app</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R150</div>
+          </div>
+          <div class="reserve-item" style="border-top: 2px solid var(--border)">
+            <div><div class="reserve-name">Total Monthly</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R900</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Team & Equity</div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--green)">B</div>
+          <div class="team-info">
+            <div class="team-name">Bongane Khoza</div>
+            <div class="team-role">CEO / Founder / Product</div>
+          </div>
+          <div>
+            <div class="team-equity">60% equity</div>
+            <div class="badge badge-pro" style="margin-top:4px">Active</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--purple)">T</div>
+          <div class="team-info">
+            <div class="team-name">Twin (Co-Founder)</div>
+            <div class="team-role">Growth & Community</div>
+          </div>
+          <div>
+            <div class="team-equity">20% equity (vesting)</div>
+            <div class="badge badge-free" style="margin-top:4px">24-mo vest</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--amber)">R</div>
+          <div class="team-info">
+            <div class="team-name">Reserved Pool</div>
+            <div class="team-role">Future investors / key hires</div>
+          </div>
+          <div>
+            <div class="team-equity">20% equity</div>
+            <div class="badge badge-new" style="margin-top:4px">Unallocated</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Team Salary Trigger</div>
+        <p style="font-size:12px;color:var(--mid);margin-bottom:12px">
+          No salary is payable until the Company achieves R5,000/month sustained revenue.
+          Bongane recovers R50,000 founding investment from profits before any dividends are distributed.
+        </p>
+        <div id="salary-progress"></div>
+      </div>
+    </div>
+
+    <!-- ── AI SUGGESTIONS ────────────────── -->
+    <div id="tab-ai" class="tab-page">
+      <div style="margin-bottom:16px;font-size:13px;color:var(--mid)">
+        AI-generated feature suggestions based on user segment data. Review and approve to schedule rollout, or dismiss to hide.
+      </div>
+      <div id="ai-suggestions"></div>
+    </div>
+
+    <!-- ── BUILD TRACKER ─────────────────── -->
+    <div id="tab-build" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Days Since Start</div>
+          <div class="stat-value" id="days-built">—</div>
+          <div class="stat-sub">Started 7 April 2026</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Hours Logged</div>
+          <div class="stat-value">120</div>
+          <div class="stat-sub">~3 weeks intensive</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Project Value</div>
+          <div class="stat-value">R50k</div>
+          <div class="stat-sub">R90k agency equivalent</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Screens Built</div>
+          <div class="stat-value">8</div>
+          <div class="stat-sub">All live on phone</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Build Timeline</div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">7 April 2026</div>
+              <div class="timeline-title">Project started</div>
+              <div class="timeline-desc">DashboardScreen first built and live on phone</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">7–8 April 2026</div>
+              <div class="timeline-title">Core screens</div>
+              <div class="timeline-desc">WeeklyScreen, DebtScreen, OnboardingScreen (5-step), GrowScreen, ProfileScreen</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">8 April 2026</div>
+              <div class="timeline-title">Supabase integration live</div>
+              <div class="timeline-desc">Users + expenses saving to database in real time</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">8–9 April 2026</div>
+              <div class="timeline-title">Referral system + admin v1</div>
+              <div class="timeline-desc">Referral SQL, T&Cs, commission structure locked</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">9 April 2026</div>
+              <div class="timeline-title">Trial + upgrade flow</div>
+              <div class="timeline-desc">14-day trial, UpgradeModal, trial banner below camera notch</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">10 April 2026</div>
+              <div class="timeline-title">PayFast wired (sandbox)</div>
+              <div class="timeline-desc">Test payment successful. Awaiting PayFast account verification.</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">10 April 2026</div>
+              <div class="timeline-title">Owner hidden panel live</div>
+              <div class="timeline-desc">Tap avatar 5× → PIN 1947 → live Supabase stats</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--border)"></div>
+              <div class="timeline-date">Next</div>
+              <div class="timeline-title" style="color:var(--muted)">Connect real data to Debt + Grow screens</div>
+              <div class="timeline-desc" style="color:var(--hint)">Add debts table, savings goals table to Supabase</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Feature Checklist</div>
+          <div id="feature-checklist"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ─────────────────────────── -->
+    <div id="tab-alerts" class="tab-page">
+      <div class="card">
+        <div class="card-title">WhatsApp Alerts</div>
+        <div id="whatsapp-number-row" style="margin-bottom:16px">
+          <label style="font-size:12px;color:var(--mid);display:block;margin-bottom:4px">Your WhatsApp number</label>
+          <input type="text" id="wa-number" placeholder="+27 82 123 4567"
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:240px;font-family:'DM Sans',sans-serif">
+          <button onclick="saveWaNumber()" style="margin-left:8px;padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Save</button>
+        </div>
+        <div id="alert-toggles"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Email Alerts</div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;color:var(--mid);display:block;margin-bottom:4px">Admin email</label>
+          <input type="text" id="email-addr" value="nyanisokhoza@gmail.com"
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:280px;font-family:'DM Sans',sans-serif">
+          <button onclick="saveEmail()" style="margin-left:8px;padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Save</button>
+        </div>
+        <p style="font-size:12px;color:var(--mid)">Email alerts will be sent via your notification webhook when configured. Currently in manual mode — check Supabase dashboard for new registrations.</p>
+      </div>
+    </div>
+
+    <!-- ── LEGAL & POPIA ──────────────────── -->
+    <div id="tab-legal" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Consented Users</div>
+          <div class="stat-value" id="consented-count">—</div>
+          <div class="stat-sub">POPIA compliant ✅</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">CIPC Status</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">🔲</div>
+          <div class="stat-sub">Sole trader pending</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Trademark</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">🔲</div>
+          <div class="stat-sub">Class 36 + 42 pending</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">PayFast</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">⏳</div>
+          <div class="stat-sub">Awaiting verification</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Legal Documents Status</div>
+          <div id="legal-docs"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">POPIA Compliance Log</div>
+          <table class="data-table">
+            <thead><tr><th>User</th><th>Action</th><th>Date</th></tr></thead>
+            <tbody id="popia-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Next Legal Steps</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">Register sole trader at CIPC</div>
+            <div class="timeline-desc">cipc.co.za · R175 · Trading name: "RandWise" · 20 mins online · Required before PayFast goes live</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">File trademark Class 36 + 42</div>
+            <div class="timeline-desc">cipc.co.za · R590/class = R1,180 total · Protects "RandWise" name nationally</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">Sign co-founder agreement</div>
+            <div class="timeline-desc">Both parties sign + witness · Store signed copy in Supabase storage</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--border)"></div>
+            <div class="timeline-title" style="color:var(--muted)">SARS provisional tax registration</div>
+            <div class="timeline-desc" style="color:var(--hint)">Register as soon as revenue starts · Free · Claude subscription + hosting are tax-deductible</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--border)"></div>
+            <div class="timeline-title" style="color:var(--muted)">Upgrade to (Pty) Ltd after beta</div>
+            <div class="timeline-desc" style="color:var(--hint)">After 100 paying users · Formalise twin's 20% equity on CIPC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EMAIL USERS PAGE ══════════════════════════════════════ -->
+    <div id="tab-email" class="tab-page" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:4px">✉️ Email Users</h2>
+          <p style="color:#666;font-size:13px">Send personalised emails to your users via Resend</p>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Quick templates</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button onclick="loadEmailTemplate('inactive')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">😴 Haven't seen you</button>
+          <button onclick="loadEmailTemplate('newfeature')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">✨ New features</button>
+          <button onclick="loadEmailTemplate('trial')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⏰ Trial expiring</button>
+          <button onclick="loadEmailTemplate('upgrade')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⭐ Upgrade nudge</button>
+          <button onclick="loadEmailTemplate('bugfix')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🐛 Bug fixed</button>
+          <button onclick="loadEmailTemplate('personal')" style="padding:8px 14px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#1a5c35">💬 Personal check-in</button>
+        </div>
+      </div>
+
+      <!-- Composer -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px;margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Send to</label>
+            <select id="email-to" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
+              <option value="all">All users</option>
+              <option value="free">Free users only</option>
+              <option value="pro">Pro users only</option>
+              <option value="trial">Trial users (active)</option>
+              <option value="inactive">Inactive (7+ days)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">From name</label>
+            <input id="email-from-name" value="MyRandWise Team" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Subject line</label>
+          <input id="email-subject" placeholder="e.g. We've fixed the issue you reported 🌱" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:4px">Message body</label>
+          <div style="font-size:11px;color:#888;margin-bottom:6px">Use {name} to personalise — replaced with each user's first name</div>
+          <textarea id="email-body" rows="8" placeholder="Hi {name} 👋..." style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Link (optional)</label>
+          <input id="email-link" placeholder="https://myrandwise.co.za/randwise/" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px">
+        </div>
+        <!-- Preview -->
+        <div style="background:#f7f6f2;border-radius:10px;padding:14px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px">PREVIEW (as Thandi would see it)</div>
+          <div id="email-preview" style="font-size:13px;color:#2c2c2a;line-height:1.6;white-space:pre-wrap"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button onclick="sendEmailCampaign()" id="email-send-btn" style="padding:12px 24px;background:#1a7a4a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">📤 Send emails</button>
+          <button onclick="previewEmail()" style="padding:12px 16px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">👁 Preview</button>
+          <div id="email-status" style="font-size:13px;color:#1a7a4a;font-weight:600"></div>
+        </div>
+      </div>
+
+      <!-- Send log -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px">
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Recent sends</div>
+        <div id="email-log" style="font-size:12px;color:#666">No emails sent yet this session.</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://mmezkseblafurjolkfkt.supabase.co';
+// ── Config ─────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://mmezkseblafurjolkfkt.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
-
-let allUsers = [];
-let totalExpenses = 0;
 
 async function sbGet(path) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
   });
+  if (!r.ok) throw new Error(await r.text());
   return r.json();
 }
 
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
-  event.target.classList.add('active');
-}
-
-// ── Segment drill-down ────────────────────────────────────────
-const SEGMENT_DEFS = {
-  new:       { title: '🆕 New users (last 7 days)', filter: u => new Date(u.created_at) > new Date(Date.now() - 7*86400000) },
-  student:   { title: '🎓 Students', filter: u => (u.life_stage||'').toLowerCase().includes('student') },
-  domestic:  { title: '🏠 Domestic workers', filter: u => (u.life_stage||'').toLowerCase().includes('domestic') },
-  employed:  { title: '💼 Employed', filter: u => (u.life_stage||'').toLowerCase().includes('employ')||(u.life_stage||'').toLowerCase().includes('salaried') },
-  self:      { title: '🏪 Self-employed', filter: u => (u.life_stage||'').toLowerCase().includes('freelance')||(u.life_stage||'').toLowerCase().includes('business')||(u.life_stage||'').toLowerCase().includes('self') },
-  pensioner: { title: '👴 Pensioners', filter: u => (u.life_stage||'').toLowerCase().includes('pension')||(u.life_stage||'').toLowerCase().includes('retire') },
-  pro:       { title: '💳 Pro users', filter: u => u.tier === 'pro' },
-  premium:   { title: '👑 Premium users', filter: u => u.tier === 'premium' },
-};
-
-function openSegment(key) {
-  const def = SEGMENT_DEFS[key];
-  if (!def) return;
-  const users = allUsers.filter(def.filter);
-  document.getElementById('seg-drill-title').textContent = def.title;
-  document.getElementById('seg-drill-sub').textContent = `${users.length} user${users.length !== 1 ? 's' : ''}`;
-
-  const body = document.getElementById('seg-drill-body');
-  if (!users.length) {
-    body.innerHTML = `<div style="text-align:center;padding:40px 20px;color:#888780">
-      <div style="font-size:40px;margin-bottom:12px">🌱</div>
-      <div style="font-size:15px;font-weight:700">No users in this segment yet</div>
-      <div style="font-size:13px;margin-top:6px">They'll appear here as people join</div>
-    </div>`;
-  } else {
-    body.innerHTML = users.map(u => {
-      const days = u.created_at ? Math.floor((Date.now() - new Date(u.created_at).getTime()) / 86400000) : '?';
-      const trialLeft = Math.max(0, 14 - days);
-      const tierBg = u.tier === 'premium' ? '#a78bfa' : u.tier === 'pro' ? '#fbbf24' : '#4ade80';
-      const tierColor = u.tier === 'premium' ? '#2e1065' : u.tier === 'pro' ? '#78350f' : '#0d3d22';
-      const lastActive = u.last_active ? new Date(u.last_active).toLocaleDateString('en-ZA', {day:'numeric',month:'short'}) : 'Never';
-      return `
-      <div style="background:#f7f6f2;border-radius:14px;padding:14px 16px;margin-bottom:10px;border:1px solid #e8e6de">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div>
-            <div style="font-size:15px;font-weight:800;color:#2c2c2a">${u.name || '—'}</div>
-            <div style="font-size:12px;color:#888780;margin-top:2px">${u.email || '—'}</div>
-          </div>
-          <span style="background:${tierBg};color:${tierColor};font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0">${u.tier || 'free'}</span>
-        </div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#5f5e5a;margin-bottom:10px">
-          <span>💼 ${u.life_stage_emoji || ''} ${u.life_stage || 'Unknown'}</span>
-          <span>💰 R${Number(u.income_amount||0).toLocaleString('en-ZA')}/mo</span>
-          <span>📅 Joined ${days} day${days !== 1 ? 's' : ''} ago</span>
-          <span>⏱ Last active: ${lastActive}</span>
-          ${(u.tier === 'free' && days < 14) ? `<span style="color:#f57f17">⏳ ${trialLeft} trial days left</span>` : ''}
-          ${(u.tier === 'free' && days >= 14) ? `<span style="color:#888780">Trial expired</span>` : ''}
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="grantFreeProFromSegment('${u.id}','${u.name||''}','${u.email||''}')" style="background:#1a7a4a;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">🎁 Grant free Pro</button>
-          <button onclick="copyToClipboard('${u.email||''}')" style="background:#f7f6f2;color:#2c2c2a;border:1px solid #e8e6de;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📋 Copy email</button>
-          ${u.phone ? `<button onclick="copyToClipboard('${u.phone}')" style="background:#f7f6f2;color:#2c2c2a;border:1px solid #e8e6de;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">📱 Copy phone</button>` : ''}
-          <span style="font-size:11px;color:#888780;align-self:center">Code: ${u.referral_code || '—'}</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  document.getElementById('seg-drilldown').style.display = 'block';
-  document.getElementById('seg-drilldown').scrollTop = 0;
-}
-
-function closeSegment() {
-  document.getElementById('seg-drilldown').style.display = 'none';
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    // Brief visual feedback
-    const el = event.target;
-    const orig = el.textContent;
-    el.textContent = '✅ Copied';
-    setTimeout(() => el.textContent = orig, 1500);
-  }).catch(() => {
-    prompt('Copy this:', text);
+async function sbPatch(path, body) {
+  await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
 }
 
-function grantFreeProFromSegment(id, name, email) {
-  if (!id) return;
-  const btn = event.target;
-  btn.textContent = 'Granting...';
-  btn.disabled = true;
-  fetch(`${SUPABASE_URL}/rest/v1/beta_testers?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ tier: 'pro', upgraded_at: new Date().toISOString() })
-  }).then(r => {
-    if (r.ok) {
-      btn.textContent = '✅ Pro granted';
-      btn.style.background = '#4ade80';
-      btn.style.color = '#0d3d22';
-      const u = allUsers.find(x => x.id === id);
-      if (u) u.tier = 'pro';
-    } else {
-      btn.textContent = '❌ Failed';
-      btn.disabled = false;
+// ── State ──────────────────────────────────────────────────────
+let allUsers = [];
+let allExpenses = [];
+let tierFilter = 'all';
+
+// ── Navigation ─────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.tab-page').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  const titles = {
+    overview:'Overview', users:'Users', segments:'Segments',
+    referrals:'Referrals', revenue:'Revenue & Financials', reserves:'Reserves & Team',
+    ai:'AI Suggestions', build:'Build Tracker', alerts:'Alerts', legal:'Legal & POPIA', email:'Email Users'
+  };
+  document.getElementById('page-title').textContent = titles[name] || name;
+}
+
+// ── Email Composer ─────────────────────────────────────────────
+const EMAIL_TEMPLATES = {
+  inactive: {
+    subject: "We haven't seen you in a while, {name} 👋",
+    body: `Hi {name} 👋
+
+We noticed you haven't logged into MyRandWise recently and wanted to check in.
+
+A lot has changed — we've been hard at work fixing bugs and adding new features based on user feedback.
+
+Here's what's new:
+• Payoff Accelerator — shows you exactly how much extra to put on each debt
+• Smarter weekly budget — your real spendable money after all commitments
+• Debt score — one clear number that improves as you pay down debt
+
+Your account and data are still safe. Come back and see how your finances look today.
+
+— MyRandWise team 🌱`
+  },
+  newfeature: {
+    subject: "New on MyRandWise — Payoff Accelerator is live ⚡",
+    body: `Hi {name}!
+
+We just launched something we think you'll love — the Payoff Accelerator.
+
+It shows you:
+• Exactly how much extra to put towards your debt each month
+• Which debt to attack first (snowball method)
+• How many months sooner you'll be debt-free
+• How much interest you'll save
+
+Just go to the Debt tab and scroll down to Payoff Accelerator. Try moving the slider — you'll see the magic.
+
+Open the app 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  trial: {
+    subject: "Your MyRandWise Pro trial ends soon ⏰",
+    body: `Hi {name},
+
+Your 14-day Pro trial is ending soon.
+
+During your trial you've had access to:
+• Debt score and snowball payoff plan
+• Weekly budget planner
+• Spending insights
+• Savings goals
+• Export PDF
+
+After your trial, you'll move to the free plan. To keep everything — upgrade to Pro for just R49/mo.
+
+Upgrade now 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  upgrade: {
+    subject: "Your money deserves the full picture, {name} 💰",
+    body: `Hi {name},
+
+You've been using MyRandWise to track your spending — great start.
+
+But here's what you're missing on the free plan:
+
+📊 Debt score — know exactly where you stand
+❄️ Snowball payoff plan — know when you'll be debt free
+📅 Weekly budget planner — your real money after all commitments
+⚡ Payoff Accelerator — see how R430 extra clears your debt 20 months sooner
+
+All of this for R49/month — less than most people spend on coffee.
+
+Upgrade to Pro 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  bugfix: {
+    subject: "We fixed the issue you reported 🛠️",
+    body: `Hi {name},
+
+Thank you for your patience — we've fixed the issue you experienced in MyRandWise.
+
+The app is now working correctly. Please open it and let us know if you're still seeing any problems.
+
+If something isn't working for you, reply to this email or use the "Report a problem" button inside the app.
+
+Open the app 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  personal: {
+    subject: "Quick check-in from MyRandWise 🌱",
+    body: `Hi {name},
+
+Just checking in personally — how are you finding MyRandWise?
+
+We're a small team building this specifically for South Africans and your feedback genuinely shapes what we build next.
+
+A few questions:
+• Is there anything confusing or not working?
+• What would make the app more useful for you?
+• Would you recommend it to someone you know?
+
+Reply to this email — I read every response.
+
+— MyRandWise team 🌱`
+  }
+};
+
+function loadEmailTemplate(key) {
+  const t = EMAIL_TEMPLATES[key];
+  if(!t) return;
+  document.getElementById('email-subject').value = t.subject;
+  document.getElementById('email-body').value = t.body;
+  previewEmail();
+}
+
+function previewEmail() {
+  const body = document.getElementById('email-body').value;
+  const preview = body.replace(/\{name\}/g, 'Thandi');
+  document.getElementById('email-preview').textContent = preview || 'Type a message above to preview...';
+}
+
+// Auto-preview as user types
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bodyEl = document.getElementById('email-body');
+  if(bodyEl) bodyEl.addEventListener('input', previewEmail);
+  const subjEl = document.getElementById('email-subject');
+  if(subjEl) subjEl.addEventListener('input', previewEmail);
+});
+
+async function sendEmailCampaign() {
+  const to = document.getElementById('email-to').value;
+  const subject = document.getElementById('email-subject').value.trim();
+  const body = document.getElementById('email-body').value.trim();
+  const fromName = document.getElementById('email-from-name').value.trim() || 'MyRandWise Team';
+  const link = document.getElementById('email-link').value.trim();
+  const statusEl = document.getElementById('email-status');
+  const sendBtn = document.getElementById('email-send-btn');
+
+  if(!subject || !body) { alert('Please fill in subject and message body.'); return; }
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = '⏳ Fetching users...';
+  statusEl.textContent = '';
+
+  try {
+    // Fetch users
+    let query = 'beta_testers?select=id,name,email,tier,created_at,last_active&order=created_at.desc';
+    const users = await sbFetch(query);
+    if(!users?.length) { statusEl.textContent = 'No users found.'; sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
+
+    // Filter by segment
+    const now = new Date();
+    let targets = users.filter(u => u.email);
+    if(to === 'free') targets = targets.filter(u => u.tier === 'free');
+    else if(to === 'pro') targets = targets.filter(u => u.tier === 'pro' || u.tier === 'premium');
+    else if(to === 'trial') targets = targets.filter(u => {
+      const days = Math.floor((now - new Date(u.created_at)) / 86400000);
+      return u.tier === 'free' && days <= 14;
+    });
+    else if(to === 'inactive') targets = targets.filter(u => {
+      if(!u.last_active) return true;
+      const days = Math.floor((now - new Date(u.last_active)) / 86400000);
+      return days >= 7;
+    });
+
+    if(!targets.length) { statusEl.textContent = 'No users in this segment.'; sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
+
+    const confirmed = confirm(\`Send to \${targets.length} user\${targets.length!==1?'s':''}? Subject: "\${subject}"\`);
+    if(!confirmed) { sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
+
+    sendBtn.textContent = \`⏳ Sending 0/\${targets.length}...\`;
+    let sent = 0, failed = 0;
+
+    for(const u of targets) {
+      const name = (u.name||'there').split(' ')[0];
+      const personalBody = body.replace(/\{name\}/g, name) + (link ? \`\n\n👉 \${link}\` : '');
+      const personalSubject = subject.replace(/\{name\}/g, name);
+
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer re_YOUR_RESEND_KEY',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            from: \`\${fromName} <onboarding@resend.dev>\`,
+            to: [u.email],
+            subject: personalSubject,
+            text: personalBody
+          })
+        });
+        sent++;
+      } catch(e) { failed++; }
+
+      sendBtn.textContent = \`⏳ Sending \${sent}/\${targets.length}...\`;
+      await new Promise(r=>setTimeout(r,200)); // rate limit
     }
-  }).catch(() => { btn.textContent = '❌ Error'; btn.disabled = false; });
+
+    const logEl = document.getElementById('email-log');
+    const logEntry = document.createElement('div');
+    logEntry.style.cssText = 'padding:10px;background:#f7f6f2;border-radius:8px;margin-bottom:8px;font-size:12px';
+    logEntry.innerHTML = \`<strong>\${new Date().toLocaleString('en-ZA')}</strong> — "\${subject}" → \${sent} sent\${failed>0?' ('+failed+' failed)':''} · \${to} segment\`;
+    logEl.insertBefore(logEntry, logEl.firstChild);
+    if(logEl.textContent === 'No emails sent yet this session.') logEl.innerHTML = '';
+    logEl.insertBefore(logEntry, logEl.firstChild);
+
+    statusEl.textContent = \`✅ \${sent} email\${sent!==1?'s':''} sent\${failed>0?' · '+failed+' failed':''}\`;
+    statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
+    sendBtn.textContent = '📤 Send emails';
+    sendBtn.disabled = false;
+
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + (e.message||e);
+    statusEl.style.color = '#a32d2d';
+    sendBtn.disabled=false;
+    sendBtn.textContent='📤 Send emails';
+  }
 }
 
-
-
-function formatDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+async function sbFetch(path) {
+  const r = await fetch(\`\${SUPABASE_URL}/rest/v1/\${path}\`, {
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': \`Bearer \${SUPABASE_ANON}\` }
+  });
+  return r.json();
 }
 
-function renderUsers(users) {
-  const tbody = document.getElementById('users-tbody');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:#888780;text-align:center;padding:20px">No users found</td></tr>'; return; }
-  tbody.innerHTML = users.map(u => `
+// ── Helpers ────────────────────────────────────────────────────
+function fmt(n) { return 'R' + Number(n||0).toLocaleString('en-ZA'); }
+function ago(d) {
+  const diff = Date.now() - new Date(d).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return new Date(d).toLocaleDateString('en-ZA', { day:'numeric', month:'short' });
+}
+function tierBadge(t) {
+  const map = { pro:'badge-pro', premium:'badge-premium', free:'badge-free' };
+  return `<span class="badge ${map[t]||'badge-free'}">${t||'free'}</span>`;
+}
+
+// ── Load all data ──────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('last-updated').textContent = 'Loading...';
+  try {
+    const [users, expenses, consent] = await Promise.all([
+      sbGet('beta_testers?select=*&order=created_at.desc&limit=500'),
+      sbGet('expenses?select=*&order=logged_at.desc&limit=1000'),
+      sbGet('consent_log?select=tester_id,action,created_at&order=created_at.desc&limit=200'),
+    ]);
+    allUsers = users || [];
+    allExpenses = expenses || [];
+    renderAll(allUsers, allExpenses, consent || []);
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-ZA');
+  } catch(e) {
+    document.getElementById('last-updated').textContent = 'Error: ' + e.message;
+  }
+}
+
+function renderAll(users, expenses, consent) {
+  renderOverview(users, expenses);
+  renderUsers(users);
+  renderSegments(users);
+  renderReferrals(users);
+  renderRevenue(users);
+  renderAI(users);
+  renderBuildTracker();
+  renderAlerts();
+  renderLegal(users, consent);
+  renderReserves(users);
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function renderOverview(users, expenses) {
+  const pro = users.filter(u => u.tier === 'pro').length;
+  const prem = users.filter(u => u.tier === 'premium').length;
+  const free = users.filter(u => !u.tier || u.tier === 'free').length;
+  const paid = pro + prem;
+  const conv = users.length ? ((paid/users.length)*100).toFixed(1) : 0;
+  const start = new Date('2026-04-07');
+  const daysSince = Math.floor((Date.now() - start.getTime()) / 86400000);
+
+  document.getElementById('overview-stats').innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value">${users.length}</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Paid Users</div>
+      <div class="stat-value">${paid}</div>
+      <div class="stat-sub">${conv}% conversion</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">Expenses Logged</div>
+      <div class="stat-value">${expenses.length}</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Days Building</div>
+      <div class="stat-value">${daysSince}</div>
+      <div class="stat-sub">Since 7 Apr 2026</div>
+    </div>
+  `;
+
+  // Recent users
+  const tbody = document.getElementById('recent-users-body');
+  tbody.innerHTML = users.slice(0,10).map(u => `
     <tr>
-      <td><strong>${u.name || '—'}</strong></td>
-      <td>${u.life_stage_emoji || ''} ${u.life_stage || '—'}</td>
-      <td>R${Number(u.income_amount || 0).toLocaleString('en-ZA')}</td>
-      <td><span class="badge ${u.tier || 'free'}">${u.tier || 'free'}</span></td>
-      <td style="font-family:monospace;font-size:12px">${u.referral_code || '—'}</td>
-      <td>${formatDate(u.created_at)}</td>
+      <td><b>${u.name||'—'}</b></td>
+      <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
     </tr>
+  `).join('') || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
+  document.getElementById('reg-count').textContent = `${users.length} total`;
+
+  // Tier bars
+  const tierData = [
+    { label:'Free', count:free, color:'var(--border)', total:users.length },
+    { label:'Pro', count:pro, color:'var(--green)', total:users.length },
+    { label:'Premium', count:prem, color:'var(--purple)', total:users.length },
+  ];
+  document.getElementById('tier-bars').innerHTML = tierData.map(t => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--mid)">${t.label}</span>
+        <span style="font-weight:700;color:var(--text)">${t.count}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${t.total?((t.count/t.total)*100).toFixed(0):0}%;background:${t.color}"></div>
+      </div>
+    </div>
   `).join('');
+
+  // Stage bars
+  const stages = {};
+  users.forEach(u => { const s = u.life_stage||'Unknown'; stages[s] = (stages[s]||0)+1; });
+  const stageSorted = Object.entries(stages).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('stage-bars').innerHTML = stageSorted.map(([s,c]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--mid)">${s}</span>
+        <span style="font-weight:600;color:var(--text)">${c}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${users.length?((c/users.length)*100).toFixed(0):0}%;background:var(--green-mid)"></div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty">No data yet</div>';
+}
+
+// ── USERS ─────────────────────────────────────────────────────
+function renderUsers(users) {
+  document.getElementById('users-body').innerHTML = '';
+  filterUsers();
 }
 
 function filterUsers() {
-  const q = document.getElementById('search-input').value.toLowerCase();
-  const tier = document.getElementById('tier-filter').value;
-  const filtered = allUsers.filter(u =>
-    (!q || (u.name || '').toLowerCase().includes(q)) &&
-    (!tier || (u.tier || 'free') === tier)
-  );
-  renderUsers(filtered);
-}
-
-function renderMilestones(userCount) {
-  const GROWTH = [
-    { count: 10,   label: '10 users',   desc: 'First real users — test everything',       action: 'Fix bugs, improve onboarding' },
-    { count: 50,   label: '50 users',   desc: 'Beta launch milestone',                   action: 'Gather feedback, first ratings' },
-    { count: 100,  label: '100 users',  desc: 'Break-even on investment in ~5 months',   action: 'Start tracking NPS score' },
-    { count: 250,  label: '250 users',  desc: 'Growing community',                        action: 'Launch referral marketing push' },
-    { count: 500,  label: '500 users',  desc: 'Contact EasyEquities for partnership',     action: '→ Open EasyEquities affiliate account' },
-    { count: 1000, label: '1,000 users',desc: 'Serious traction — investor-ready',        action: 'Prepare pitch deck for investors' },
-    { count: 5000, label: '5,000 users',desc: 'Scale phase — hire first team member',     action: 'Community Manager role open' },
-  ];
-
-  const el = document.getElementById('milestones-list');
-  el.innerHTML = GROWTH.map(m => {
-    const done = userCount >= m.count;
-    const pct = Math.min((userCount / m.count) * 100, 100);
-    return `
-      <div class="milestone">
-        <div class="milestone-icon ${done ? 'done' : 'pending'}">${done ? '✅' : '🎯'}</div>
-        <div class="milestone-body">
-          <div class="milestone-title">${m.label}</div>
-          <div class="milestone-desc">${m.desc}</div>
-          ${!done ? `<div class="milestone-progress"><div class="milestone-fill" style="width:${pct}%"></div></div>
-          <div style="font-size:11px;color:#888780;margin-top:3px">${userCount} / ${m.count} — ${m.action}</div>` : `<div style="font-size:11px;color:#1a7a4a;margin-top:3px">✅ ${m.action}</div>`}
-        </div>
-        <div class="milestone-status ${done ? 'done' : 'pending'}">${done ? 'Done' : Math.round(pct)+'%'}</div>
-      </div>`;
-  }).join('');
-
-  const BIZ = [
-    { done: true,  icon: '✅', label: 'PayFast sandbox', desc: 'Test payments working' },
-    { done: false, icon: '🔲', label: 'PayFast account verified', desc: 'Awaiting email from PayFast (1–2 days)' },
-    { done: false, icon: '🔲', label: 'CIPC registration', desc: 'Register trading name "RandWise" — R175' },
-    { done: false, icon: '🔲', label: 'Trademark filing', desc: 'Class 36 + 42 — R1,180 total' },
-    { done: false, icon: '🔲', label: 'Co-founder agreement signed', desc: 'Nyaniso + Twin — protect both parties' },
-    { done: false, icon: '🔲', label: 'SARS provisional tax registration', desc: 'Required once you earn income' },
-    { done: false, icon: '🔲', label: 'Business bank account', desc: 'After (Pty) Ltd registration' },
-    { done: false, icon: '🔲', label: 'Google Play Store submission', desc: 'After beta — requires R385 developer fee' },
-  ];
-
-  document.getElementById('biz-milestones').innerHTML = BIZ.map(m => `
-    <div class="milestone">
-      <div class="milestone-icon ${m.done ? 'done' : 'pending'}">${m.icon}</div>
-      <div class="milestone-body">
-        <div class="milestone-title">${m.label}</div>
-        <div class="milestone-desc">${m.desc}</div>
-      </div>
-      <div class="milestone-status ${m.done ? 'done' : 'pending'}">${m.done ? 'Done' : 'Todo'}</div>
-    </div>`).join('');
-}
-
-async function loadData() {
-  try {
-    const [users, expenses] = await Promise.all([
-      sbGet('beta_testers?select=*&order=created_at.desc&limit=200'),
-      sbGet('expenses?select=id&limit=2000'),
-    ]);
-
-    allUsers = Array.isArray(users) ? users : [];
-    totalExpenses = Array.isArray(expenses) ? expenses.length : 0;
-
-    const total = allUsers.length;
-    const pro = allUsers.filter(u => u.tier === 'pro').length;
-    const premium = allUsers.filter(u => u.tier === 'premium').length;
-    const paid = pro + premium;
-    const mrr = (pro * 49) + (premium * 129);
-    const daysSinceLaunch = Math.floor((Date.now() - new Date('2026-04-07').getTime()) / 86400000);
-
-    // Stats
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-paid').textContent = paid;
-    document.getElementById('stat-premium').textContent = premium;
-    document.getElementById('stat-expenses').textContent = totalExpenses;
-    document.getElementById('stat-mrr').textContent = 'R' + mrr.toLocaleString('en-ZA');
-    document.getElementById('stat-days').textContent = daysSinceLaunch;
-
-    // Recent users table
-    const recentTbody = document.getElementById('recent-tbody');
-    recentTbody.innerHTML = allUsers.slice(0, 10).map(u => `
-      <tr>
-        <td><strong>${u.name || '—'}</strong></td>
-        <td>${u.life_stage_emoji || ''} ${u.life_stage || '—'}</td>
-        <td><span class="badge ${u.tier || 'free'}">${u.tier || 'free'}</span></td>
-        <td style="font-family:monospace;font-size:12px">${u.referral_code || '—'}</td>
-        <td>${formatDate(u.created_at)}</td>
-      </tr>`).join('') || '<tr><td colspan="5" style="color:#888780;text-align:center;padding:20px">No users yet</td></tr>';
-
-    // Life stage breakdown
-    const stages = {};
-    allUsers.forEach(u => { const s = u.life_stage || 'Unknown'; stages[s] = (stages[s] || 0) + 1; });
-    document.getElementById('stage-breakdown').innerHTML = Object.entries(stages)
-      .sort((a, b) => b[1] - a[1])
-      .map(([s, c]) => `
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-            <span>${s}</span><span style="font-weight:700">${c}</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill" style="width:${(c/total*100).toFixed(0)}%;background:#1a7a4a"></div></div>
-        </div>`).join('') || '<p style="color:#888780;font-size:13px">No data yet</p>';
-
-    // Users page
-    renderUsers(allUsers);
-
-    // Segments
-    const now = new Date();
-    const week = new Date(now - 7 * 86400000);
-    document.getElementById('seg-new').textContent = allUsers.filter(u => new Date(u.created_at) > week).length;
-    document.getElementById('seg-student').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('student')).length;
-    document.getElementById('seg-domestic').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('domestic')).length;
-    document.getElementById('seg-employed').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('employ') || (u.life_stage || '').toLowerCase().includes('salaried')).length;
-    document.getElementById('seg-self').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('freelance') || (u.life_stage || '').toLowerCase().includes('business') || (u.life_stage || '').toLowerCase().includes('self')).length;
-    document.getElementById('seg-pensioner').textContent = allUsers.filter(u => (u.life_stage || '').toLowerCase().includes('pension') || (u.life_stage || '').toLowerCase().includes('retire')).length;
-    document.getElementById('seg-pro').textContent = pro;
-    document.getElementById('seg-prem').textContent = premium;
-
-    // Tier distribution
-    document.getElementById('tier-dist').innerHTML = [
-      ['Free', total - paid, '#888780'],
-      ['Pro', pro, '#1a7a4a'],
-      ['Premium', premium, '#534ab7'],
-    ].map(([t, c, col]) => `
-      <div style="margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
-          <span>${t}</span><span style="font-weight:700;color:${col}">${c} users (${total > 0 ? Math.round(c/total*100) : 0}%)</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${total > 0 ? (c/total*100).toFixed(0) : 0}%;background:${col}"></div></div>
-      </div>`).join('');
-
-    // Milestones
-    renderMilestones(total);
-
-    // EasyEquities
-    document.getElementById('easy-count').textContent = total;
-    const pct = Math.min(total / 500 * 100, 100);
-    document.getElementById('easy-fill').style.width = pct + '%';
-    document.getElementById('easy-label').textContent = total >= 500
-      ? '🎉 Ready! Contact EasyEquities now → easequities.co.za/partners'
-      : `${500 - total} more users to go`;
-
-    // Referrals stats
-    document.getElementById('ref-total').textContent = allUsers.filter(u => u.referral_joined).length;
-
-    // Build referral leaderboard and tracking table
-    const referred = allUsers.filter(u => u.referred_by);
-    const referrers = {};
-    referred.forEach(u => {
-      const code = u.referred_by;
-      if (!referrers[code]) referrers[code] = [];
-      referrers[code].push(u);
-    });
-
-    // Find referrer names by matching referral_code
-    const codeToName = {};
-    allUsers.forEach(u => { if (u.referral_code) codeToName[u.referral_code] = u.name; });
-
-    const leaderboard = Object.entries(referrers)
-      .map(([code, users]) => {
-        const paidUsers = users.filter(u => u.tier === 'pro' || u.tier === 'premium');
-        return { code, name: codeToName[code] || code, count: users.length, paidCount: paidUsers.length, users };
-      })
-      .sort((a, b) => b.count - a.count);
-
-    const pendingPayouts = leaderboard.length;
-    document.getElementById('ref-pending').textContent = pendingPayouts;
-
-    if (leaderboard.length === 0) {
-      document.getElementById('referral-list').innerHTML = '<p style="color:#888780;font-size:13px">No referrals yet — share your code to start earning.</p>';
-      document.getElementById('referral-tracking').innerHTML = '<p style="color:#888780;font-size:13px">No referral activity yet.</p>';
-    } else {
-      // Leaderboard
-      document.getElementById('referral-list').innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead><tr style="background:#f5f5f0">
-            <th style="padding:8px 12px;text-align:left">Referrer</th>
-            <th style="padding:8px 12px;text-align:center">Code</th>
-            <th style="padding:8px 12px;text-align:center">Total referred</th>
-            <th style="padding:8px 12px;text-align:center">Paid clients</th>
-            <th style="padding:8px 12px;text-align:right">Monthly owed</th>
-          </tr></thead>
-          <tbody>${leaderboard.map((r,i) => {
-            const monthly = r.paidCount * 5;
-            return `<tr style="border-bottom:1px solid #f0efe9">
-              <td style="padding:10px 12px;font-weight:600">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${r.name}</td>
-              <td style="padding:10px 12px;text-align:center;font-family:monospace;color:#1a7a4a">${r.code}</td>
-              <td style="padding:10px 12px;text-align:center">${r.count}</td>
-              <td style="padding:10px 12px;text-align:center;color:${r.paidCount>0?'#1a7a4a':'#888'}">${r.paidCount}</td>
-              <td style="padding:10px 12px;text-align:right;font-weight:700;color:${monthly>0?'#1a7a4a':'#888'}">${monthly>0?'R'+monthly.toLocaleString('en-ZA')+'/mo':'R0 — no paid clients yet'}</td>
-            </tr>`;
-          }).join('')}
-          </tbody>
-        </table>`;
-
-      // Who referred who tracking table
-      document.getElementById('referral-tracking').innerHTML = `
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
-          <thead><tr style="background:#f5f5f0">
-            <th style="padding:8px 12px;text-align:left">New user</th>
-            <th style="padding:8px 12px;text-align:left">Referred by</th>
-            <th style="padding:8px 12px;text-align:center">Tier</th>
-            <th style="padding:8px 12px;text-align:right">Joined</th>
-          </tr></thead>
-          <tbody>${referred.map(u => {
-            const referrerName = codeToName[u.referred_by] || u.referred_by;
-            const tierColor = u.tier==='premium'?'#534ab7':u.tier==='pro'?'#ba7517':'#1a7a4a';
-            const d = new Date(u.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
-            return `<tr style="border-bottom:1px solid #f0efe9">
-              <td style="padding:10px 12px;font-weight:600">${u.name||'—'}</td>
-              <td style="padding:10px 12px;color:#1a7a4a">${referrerName}</td>
-              <td style="padding:10px 12px;text-align:center"><span style="background:${tierColor}20;color:${tierColor};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700">${(u.tier||'free').toUpperCase()}</span></td>
-              <td style="padding:10px 12px;text-align:right;color:#888780">${d}</td>
-            </tr>`;
-          }).join('')}
-          </tbody>
-        </table>`; 
-    }
-
-    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString('en-ZA');
-  } catch (e) {
-    console.error('Load failed:', e);
-    document.getElementById('lastUpdated').textContent = 'Error loading data';
-  }
-}
-
-// ── Push Notification Admin ───────────────────────────────────
-let pushAudience = 'all';
-
-function setPushAudience(aud){
-  pushAudience = aud;
-  ['all','worse','one'].forEach(a=>{
-    const btn = document.getElementById('push-aud-'+a);
-    if(!btn) return;
-    const active = a === aud;
-    btn.style.background = active ? '#1a7a4a' : '#fff';
-    btn.style.color = active ? '#fff' : '#555';
-    btn.style.borderColor = active ? '#1a7a4a' : '#e8e6de';
+  const q = (document.getElementById('user-search').value||'').toLowerCase();
+  const filtered = allUsers.filter(u => {
+    const matchQ = !q || (u.name||'').toLowerCase().includes(q) || (u.life_stage||'').toLowerCase().includes(q);
+    const matchT = tierFilter === 'all' || (u.tier||'free') === tierFilter;
+    return matchQ && matchT;
   });
-  document.getElementById('push-userid-row').style.display = aud==='one' ? 'block' : 'none';
+  document.getElementById('users-body').innerHTML = filtered.map(u => `
+    <tr>
+      <td><b>${u.name||'—'}</b></td>
+      <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
+      <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" class="empty">No users match this filter</td></tr>';
 }
 
-function setPushTemplate(type){
-  const templates = {
-    payday:  { title: 'Payday is here 💰', body: 'Open MyRandWise and plan your month before you spend it.' },
-    budget:  { title: 'Budget check ⚠️', body: "You're halfway through your weekly budget. Tap to see where you stand." },
-    worse:   { title: 'We noticed things are tough 💚', body: 'MyRandWise is here to help. Open the app to see your debt plan.' },
-    feature: { title: 'Something new in MyRandWise ✨', body: "We've added new features to help you take control of your money." },
-    log:     { title: 'Did you spend anything today? 📝', body: 'Log your expenses in 20 seconds. Staying on track starts here.' },
-  };
-  const t = templates[type];
-  if(!t) return;
-  document.getElementById('push-title').value = t.title;
-  document.getElementById('push-body').value = t.body;
-  updatePushPreview();
+function setTierFilter(t, el) {
+  tierFilter = t;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  filterUsers();
 }
 
-function updatePushPreview(){
-  const title = document.getElementById('push-title')?.value || 'MyRandWise 🌱';
-  const body = document.getElementById('push-body')?.value || 'Your message will appear here';
-  const pt = document.getElementById('push-preview-title');
-  const pb = document.getElementById('push-preview-body');
-  if(pt) pt.textContent = title;
-  if(pb) pb.textContent = body;
-}
+// ── SEGMENTS ──────────────────────────────────────────────────
+function renderSegments(users) {
+  const defs = [
+    { id:'student',   emoji:'🎓', name:'Students',         filter: u => u.life_stage?.toLowerCase().includes('student') },
+    { id:'domestic',  emoji:'🏠', name:'Domestic Workers', filter: u => u.life_stage?.toLowerCase().includes('domestic') },
+    { id:'salaried',  emoji:'💼', name:'Salaried',         filter: u => u.life_stage?.toLowerCase().includes('salaried') || u.life_stage?.toLowerCase().includes('employ') },
+    { id:'freelance', emoji:'💻', name:'Freelancers',      filter: u => u.life_stage?.toLowerCase().includes('freelan') || u.life_stage?.toLowerCase().includes('self') },
+    { id:'pensioner', emoji:'👴', name:'Pensioners',       filter: u => u.life_stage?.toLowerCase().includes('pension') || u.life_stage?.toLowerCase().includes('retir') },
+    { id:'new',       emoji:'🆕', name:'New (last 7 days)', filter: u => { const d = Date.now()-new Date(u.created_at).getTime(); return d < 7*86400000; } },
+    { id:'pro',       emoji:'⭐', name:'Pro Users',        filter: u => u.tier === 'pro' },
+    { id:'premium',   emoji:'👑', name:'Premium Users',    filter: u => u.tier === 'premium' },
+  ];
 
-setTimeout(()=>{
-  document.getElementById('push-title')?.addEventListener('input', updatePushPreview);
-  document.getElementById('push-body')?.addEventListener('input', updatePushPreview);
-}, 500);
-
-async function sendPushNotification(){
-  const title = document.getElementById('push-title').value.trim() || 'MyRandWise 🌱';
-  const body = document.getElementById('push-body').value.trim();
-  if(!body){ alert('Enter a message first'); return; }
-  const btn = document.getElementById('push-send-btn');
-  const result = document.getElementById('push-result');
-  btn.disabled = true; btn.textContent = 'Sending...'; result.textContent = '';
-  const payload = { title, body, url: './' };
-  if(pushAudience === 'one'){
-    const email = document.getElementById('push-user-email').value.trim();
-    if(!email){ alert('Enter a user email'); btn.disabled=false; btn.textContent='🔔 Send Push Notification'; return; }
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?email=eq.${encodeURIComponent(email)}&select=id`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json()).catch(()=>[]);
-    if(!r[0]?.id){ result.textContent='❌ User not found'; btn.disabled=false; btn.textContent='🔔 Send Push Notification'; return; }
-    payload.user_id = r[0].id;
-  } else if(pushAudience === 'worse'){
-    payload.segment = 'worse';
-  } else {
-    payload.all = true;
-  }
-  try{
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-push`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const data = await resp.json();
-    if(data.error){ result.innerHTML=`<span style="color:#a32d2d">❌ Error: ${data.error}</span>`; }
-    else{ result.innerHTML=`<span style="color:#1a5c35">✅ Sent to ${data.sent} user${data.sent!==1?'s':''} · ${data.failed||0} failed</span>`; }
-  }catch(e){ result.innerHTML=`<span style="color:#a32d2d">❌ ${e.message}</span>`; }
-  btn.disabled=false; btn.textContent='🔔 Send Push Notification';
-}
-
-async function loadPushStats(){
-  const el = document.getElementById('push-stats');
-  el.innerHTML='<div style="color:#888780;font-size:13px">Loading...</div>';
-  const h={'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON};
-  const users=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,push_subscription`,{headers:h}).then(r=>r.json()).catch(()=>[]);
-  const sub=users.filter(u=>u.push_subscription);
-  const nosub=users.filter(u=>!u.push_subscription);
-  el.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div style="background:#eaf3de;border-radius:12px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:900;color:#1a5c35">${sub.length}</div><div style="font-size:12px;color:#5a8a6a;margin-top:3px">Subscribed to push</div></div><div style="background:#f7f6f2;border-radius:12px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:900;color:#888780">${nosub.length}</div><div style="font-size:12px;color:#888780;margin-top:3px">Not subscribed</div></div></div>${sub.length?'<div style="font-size:12px;font-weight:700;color:#555;margin-bottom:8px">Subscribed users</div>'+sub.map(u=>`<div style="font-size:13px;padding:8px 0;border-bottom:1px solid #f0efe9">${u.name||'—'}</div>`).join(''):'<div style="color:#888780;font-size:13px">No push subscribers yet.</div>'}`;
-}
-
-
-async function loadImpact(){
-  const h = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON };
-
-  // Load all users
-  const users = await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,email,created_at,last_active,story_consent,story_consent_at,income_amount,tier`, { headers: h }).then(r=>r.json()).catch(()=>[]);
-
-  // Load all debts
-  const debts = await fetch(`${SUPABASE_URL}/rest/v1/debts?select=balance,tester_id`, { headers: h }).then(r=>r.json()).catch(()=>[]);
-
-  // Load all savings goals
-  const goals = await fetch(`${SUPABASE_URL}/rest/v1/savings_goals?select=current_amount,target_amount`, { headers: h }).then(r=>r.json()).catch(()=>[]);
-
-  // Load check-ins
-  const checkins = await fetch(`${SUPABASE_URL}/rest/v1/monthly_checkins?select=*&order=created_at.desc`, { headers: h }).then(r=>r.json()).catch(()=>[]);
-
-  // Calculate stats
-  const totalUsers = users.length;
-  const sevenDaysAgo = new Date(Date.now() - 7*86400000).toISOString();
-  const activeUsers = users.filter(u => u.last_active && u.last_active > sevenDaysAgo).length;
-  const totalDebt = debts.reduce((s,d)=>s+Number(d.balance||0),0);
-  const totalSavings = goals.reduce((s,g)=>s+Number(g.current_amount||0),0);
-
-  // Update stat cards
-  document.getElementById('impact-total-users').textContent = totalUsers;
-  document.getElementById('impact-active-users').textContent = activeUsers;
-  document.getElementById('impact-total-debt').textContent = 'R'+Math.round(totalDebt).toLocaleString('en-ZA');
-  document.getElementById('impact-total-savings').textContent = 'R'+Math.round(totalSavings).toLocaleString('en-ZA');
-
-  // Monthly sentiment
-  const now = new Date();
-  const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const monthCheckins = checkins.filter(c=>c.month===thisMonth);
-  const better = monthCheckins.filter(c=>c.feeling==='better').length;
-  const same = monthCheckins.filter(c=>c.feeling==='same').length;
-  const worse = monthCheckins.filter(c=>c.feeling==='worse').length;
-  const total = monthCheckins.length;
-
-  const sentBars = document.getElementById('sentiment-bars');
-  if(total === 0){
-    sentBars.innerHTML = '<div style="color:#888780;font-size:13px;text-align:center;padding:20px">No check-ins yet this month — check back after the 2nd</div>';
-  } else {
-    const pctBetter = Math.round(better/total*100);
-    const pctSame = Math.round(same/total*100);
-    const pctWorse = Math.round(worse/total*100);
-    sentBars.innerHTML = `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😊 Better</span><span style="font-size:13px;font-weight:700;color:#1a5c35">${better} (${pctBetter}%)</span></div>
-        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctBetter}%;background:#1a7a4a;border-radius:4px"></div></div>
-      </div>
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😐 Same</span><span style="font-size:13px;font-weight:700;color:#ba7517">${same} (${pctSame}%)</span></div>
-        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctSame}%;background:#f59e0b;border-radius:4px"></div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:600">😔 Worse</span><span style="font-size:13px;font-weight:700;color:#a32d2d">${worse} (${pctWorse}%)</span></div>
-        <div style="height:8px;background:#e8e6de;border-radius:4px"><div style="height:100%;width:${pctWorse}%;background:#c62828;border-radius:4px"></div></div>
+  document.getElementById('segment-grid').innerHTML = defs.map(d => {
+    const count = users.filter(d.filter).length;
+    return `
+      <div class="segment-card" onclick="showSegment('${d.id}')">
+        <div class="segment-emoji">${d.emoji}</div>
+        <div class="segment-name">${d.name}</div>
+        <div class="segment-count">${count} user${count!==1?'s':''}</div>
       </div>
     `;
-  }
-  document.getElementById('sentiment-total').textContent = `${total} response${total!==1?'s':''} this month`;
+  }).join('');
 
-  // Story consent users
-  const consentUsers = users.filter(u=>u.story_consent===true);
-  const consentEl = document.getElementById('story-consent-list');
-  if(!consentUsers.length){
-    consentEl.innerHTML = '<div style="color:#888780;font-size:13px">No users have consented yet — they\'ll appear here once they toggle it on in their Profile</div>';
-  } else {
-    consentEl.innerHTML = consentUsers.map(u=>`
-      <div style="background:#eaf3de;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#1a5c35">${u.name||'—'}</div>
-          <div style="font-size:12px;color:#5a8a6a">${u.email} · Consented ${u.story_consent_at?new Date(u.story_consent_at).toLocaleDateString('en-ZA'):''}</div>
-        </div>
-        <button onclick="copyToClipboard('${u.email}')" style="background:#1a7a4a;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">📋 Email</button>
-      </div>`).join('');
-  }
-
-  // Check-in history
-  const histEl = document.getElementById('checkin-history');
-  if(!checkins.length){
-    histEl.innerHTML = '<div style="color:#888780;font-size:13px">No check-ins yet</div>';
-  } else {
-    // Group by month
-    const byMonth = {};
-    checkins.forEach(c=>{
-      if(!byMonth[c.month]) byMonth[c.month] = {better:0,same:0,worse:0};
-      byMonth[c.month][c.feeling]++;
-    });
-    histEl.innerHTML = Object.entries(byMonth).sort((a,b)=>b[0].localeCompare(a[0])).map(([month, counts])=>{
-      const t = counts.better+counts.same+counts.worse;
-      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0efe9">
-        <div style="font-size:13px;font-weight:700;color:#2c2c2a">${month}</div>
-        <div style="display:flex;gap:12px;font-size:12px">
-          <span style="color:#1a5c35">😊 ${counts.better}</span>
-          <span style="color:#ba7517">😐 ${counts.same}</span>
-          <span style="color:#a32d2d">😔 ${counts.worse}</span>
-          <span style="color:#888780">${t} total</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
+  window._segDefs = defs;
 }
 
-async function loadBugReports(){
-  try{
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?order=created_at.desc&limit=50`,{
-      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
-    });
-    const bugs = await res.json();
-    const el = document.getElementById('bug-reports-list');
-    if(!Array.isArray(bugs)||!bugs.length){el.innerHTML='<div style="color:#1a7a4a;font-size:13px;padding:12px 0">✅ No bug reports — all clear!</div>';return;}
-    el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px">
-      <thead><tr style="background:#f5f5f0">
-        <th style="padding:8px;text-align:left">Time</th>
-        <th style="padding:8px;text-align:left">User</th>
-        <th style="padding:8px;text-align:left">Error</th>
-        <th style="padding:8px;text-align:left">Type</th>
-      </tr></thead>
-      <tbody>${bugs.map(b=>{
-        const d=new Date(b.created_at).toLocaleString('en-ZA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-        const isUserReport=b.error_source==='user_report';
-        return `<tr style="border-bottom:1px solid #f0efe9;${isUserReport?'background:#fff8e1':''}">
-          <td style="padding:8px;color:#888780;white-space:nowrap">${d}</td>
-          <td style="padding:8px;font-weight:600">${b.user_name||'—'}</td>
-          <td style="padding:8px;color:#a32d2d;max-width:300px;word-break:break-word">${b.error_message||'—'}</td>
-          <td style="padding:8px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${isUserReport?'#fbbf2422':'#fee2e2'};color:${isUserReport?'#92400e':'#991b1b'}">${isUserReport?'USER':'JS ERROR'}</span></td>
+function showSegment(id) {
+  const def = window._segDefs.find(d => d.id === id);
+  if (!def) return;
+  const users = allUsers.filter(def.filter);
+  document.getElementById('segment-detail').style.display = 'block';
+  document.getElementById('segment-detail-title').textContent = `${def.emoji} ${def.name} (${users.length})`;
+  document.getElementById('segment-body').innerHTML = users.map(u => `
+    <tr>
+      <td><b>${u.name||'—'}</b></td>
+      <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-size:11px;color:var(--mid)">${(u.goals||[]).slice(0,2).join(', ')||'—'}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="empty">No users in this segment</td></tr>';
+  document.querySelectorAll('.segment-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.segment-card').forEach(c => {
+    if (c.textContent.includes(def.name)) c.classList.add('active');
+  });
+}
+
+// ── REFERRALS ─────────────────────────────────────────────────
+function renderReferrals(users) {
+  const referrers = users.filter(u => u.referral_count > 0 || u.earnings_total > 0);
+  document.getElementById('ref-total').textContent = referrers.length;
+  const pending = referrers.reduce((s,u)=>(s + (u.earnings_pending||0)),0);
+  const paid = referrers.reduce((s,u)=>(s + (u.earnings_paid||0)),0);
+  document.getElementById('ref-pending').textContent = fmt(pending);
+  document.getElementById('ref-paid').textContent = fmt(paid);
+
+  document.getElementById('referral-body').innerHTML = referrers.length
+    ? referrers.map(u => {
+        const canPay = (u.earnings_pending||0) >= 50;
+        return `<tr>
+          <td><b>${u.name||'—'}</b></td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
+          <td>${u.referral_count||0}</td>
+          <td>—</td>
+          <td style="font-family:'DM Mono',monospace">${fmt(u.earnings_pending||0)}</td>
+          <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${u.id}','${u.name}',${u.earnings_pending||0})">${canPay?'Pay R'+(u.earnings_pending||0):'Below R50'}</button></td>
         </tr>`;
-      }).join('')}</tbody>
-    </table>`;
-    // Update health panel bug count
-    const bugs24h = bugs.filter(b=>new Date(b.created_at)>new Date(Date.now()-86400000)).length;
-    const hpBugs = document.getElementById('hp-bugs');
-    if(hpBugs){hpBugs.textContent=bugs24h;hpBugs.style.color=bugs24h>0?'#a32d2d':'#1a7a4a';}
-  }catch(e){
-    document.getElementById('bug-reports-list').innerHTML='<div style="color:#888780;font-size:13px">Could not load bug reports — check console.</div>';
-  }
+      }).join('')
+    : '<tr><td colspan="6" class="empty">No referrers yet</td></tr>';
 }
 
-async function clearBugReports(){
-  if(!confirm('Delete all bug reports? This cannot be undone.'))return;
-  try{
-    await fetch(`${SUPABASE_URL}/rest/v1/bug_reports?id=neq.00000000-0000-0000-0000-000000000000`,{
-      method:'DELETE',
-      headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}
-    });
-    loadBugReports();
-  }catch(e){alert('Could not clear — check RLS policies.');}
+async function markPaid(id, name, amount) {
+  if (!confirm(`Mark R${amount} as paid to ${name}?`)) return;
+  await sbPatch(`beta_testers?id=eq.${id}`, {
+    earnings_paid: amount, earnings_pending: 0,
+    last_payout_at: new Date().toISOString()
+  });
+  alert(`✅ Payment to ${name} marked as paid.`);
+  loadAll();
 }
 
-function saveAlertSettings(){
-  const email = document.getElementById('alert-email')?.value;
-  const settings = {
-    email,
-    notifNewUser: document.getElementById('notif-new-user')?.checked,
-    notifUpgrade: document.getElementById('notif-upgrade')?.checked,
-    notifBug: document.getElementById('notif-bug')?.checked,
-    notifDaily: document.getElementById('notif-daily')?.checked,
-    notifMilestone: document.getElementById('notif-milestone')?.checked,
-  };
-  localStorage.setItem('rw_alert_settings', JSON.stringify(settings));
-  const msg = document.getElementById('alert-save-msg');
-  if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
+// ── REVENUE ───────────────────────────────────────────────────
+function renderRevenue(users) {
+  const pro = users.filter(u => u.tier === 'pro').length;
+  const prem = users.filter(u => u.tier === 'premium').length;
+  const mrr = (pro * 49) + (prem * 129);
+  const fees = (pro * 2.72) + (prem * 5.52);
+  document.getElementById('mrr-val').textContent = fmt(mrr);
+  document.getElementById('arr-val').textContent = fmt(mrr * 12);
+  document.getElementById('fees-val').textContent = fmt(fees);
+
+  const costPerMonth = 900;
+  const target = 100;
+  const paid = pro + prem;
+  const pct = Math.min((paid / target) * 100, 100).toFixed(0);
+
+  document.getElementById('breakeven-content').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--mid)">Cover monthly costs (19 users)</span>
+        <span style="font-weight:700">${paid >= 19 ? '✅' : paid + ' / 19'}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${Math.min((paid/19)*100,100).toFixed(0)}%;background:var(--green)"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--mid)">Recover investment (100 users)</span>
+        <span style="font-weight:700">${paid} / 100</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${pct}%;background:var(--purple)"></div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">CURRENT MRR BREAKDOWN</div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Pro users (${pro} × R49)</span><span class="metric-value">${fmt(pro*49)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Premium users (${prem} × R129)</span><span class="metric-value">${fmt(prem*129)}</span></div>
+      <div class="metric-row" style="padding:6px 0;border-top:1px solid var(--border)"><span class="metric-label">Total MRR</span><span class="metric-value" style="color:var(--green)">${fmt(mrr)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Less running costs</span><span class="metric-value" style="color:var(--red)">-${fmt(costPerMonth)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Net monthly</span><span class="metric-value" style="color:${mrr>=costPerMonth?'var(--green)':'var(--red)'}">${fmt(mrr-costPerMonth)}</span></div>
+    </div>
+  `;
 }
 
-async function testAlert(type){
-  const testData = {
-    bug_report: {user_name:'Test User',error_message:'This is a test bug report from the admin dashboard',error_source:'user_report',page_url:'https://nyanisokhoza-code.github.io/randwise'},
-    new_user: {name:'Test User',email:'test@example.com',life_stage:'Employed',income_amount:15000,referred_by:null},
-    daily_summary: {total_users:5,paid_users:0,new_today:2,mrr:0,bugs_24h:1}
-  };
-  try{
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-alert`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON},
-      body:JSON.stringify({type, data:testData[type]||{}})
-    });
-    const d = await res.json();
-    if(d.success){alert(`✅ Test ${type} alert sent to your email!`);}
-    else{alert(`⚠️ Alert failed: ${d.error||'Unknown error'}`);}
-  }catch(e){alert('Could not send test alert: '+e.message);}
+// ── RESERVES ──────────────────────────────────────────────────
+function renderReserves(users) {
+  const pro = users.filter(u=>u.tier==='pro').length;
+  const prem = users.filter(u=>u.tier==='premium').length;
+  const mrr = (pro*49)+(prem*129);
+  const target = 5000;
+  const pct = Math.min((mrr/target)*100,100).toFixed(0);
+  document.getElementById('salary-progress').innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <span style="color:var(--mid)">Monthly revenue toward R5,000 salary trigger</span>
+      <span style="font-weight:700;color:var(--${mrr>=5000?'green':'mid'}">${fmt(mrr)} / R5,000</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:var(--${mrr>=5000?'green':'amber'})"></div></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">${mrr>=5000?'✅ Salary trigger reached — review team remuneration.':'Not yet reached. Keep growing.'}</p>
+  `;
 }
 
-async function runHealthCheck(){
-  try{
-    const [users, bugs] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,created_at`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json()),
-      fetch(`${SUPABASE_URL}/rest/v1/bug_reports?select=id,created_at&order=created_at.desc&limit=100`,{headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON}}).then(r=>r.json())
-    ]);
-    const totalUsers = Array.isArray(users)?users.length:0;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const newToday = Array.isArray(users)?users.filter(u=>new Date(u.created_at)>=today).length:0;
-    const bugs24h = Array.isArray(bugs)?bugs.filter(b=>new Date(b.created_at)>new Date(Date.now()-86400000)).length:0;
-    const el = (id,val,col)=>{const e=document.getElementById(id);if(e){e.textContent=val;if(col)e.style.color=col;}};
-    el('hp-db','✅ Online','#1a7a4a');
-    el('hp-users',totalUsers);
-    el('hp-today',newToday,newToday>0?'#1a7a4a':'#888780');
-    el('hp-bugs',bugs24h,bugs24h>0?'#a32d2d':'#1a7a4a');
-    const upd=document.getElementById('hp-updated');
-    if(upd)upd.textContent='Last checked: '+new Date().toLocaleTimeString('en-ZA');
-  }catch(e){
-    const db=document.getElementById('hp-db');if(db){db.textContent='❌ Error';db.style.color='#a32d2d';}
-  }
+// ── AI SUGGESTIONS ────────────────────────────────────────────
+function renderAI(users) {
+  const students = users.filter(u=>u.life_stage?.toLowerCase().includes('student')).length;
+  const domestic = users.filter(u=>u.life_stage?.toLowerCase().includes('domestic')).length;
+  const noExpenses = users.filter(u=>{
+    return !allExpenses.find(e=>e.tester_id===u.id);
+  }).length;
+
+  const suggestions = [
+    {
+      emoji:'⚡', bg:'var(--amber-l)', color:'var(--amber)',
+      title:'Launch Electricity Tracker to all users',
+      desc:`${users.length} users registered. Electricity is a top SA expense. The tracker (R10/mo add-on) would be relevant to nearly every user — especially domestic workers and students buying prepaid tokens.`,
+      meta:`Segment: All users · Estimated uptake: 15–30% · Revenue potential: R${Math.round(users.length*0.2*10)}/mo`,
+    },
+    {
+      emoji:'📊', bg:'var(--purple-l)', color:'var(--purple)',
+      title:'Nudge inactive users to log first expense',
+      desc:`${noExpenses} user${noExpenses!==1?'s':''} registered but logged no expenses yet. A WhatsApp message saying "You're all set! Tap + to log your first spend — takes 5 seconds" could significantly improve activation.`,
+      meta:`Segment: No expenses logged · Action: WhatsApp nudge campaign`,
+    },
+    {
+      emoji:'🎓', bg:'var(--green-l)', color:'var(--green)',
+      title:'Student-specific budget templates',
+      desc:`${students} student${students!==1?'s':''} registered. Students have unique budgets (bursary income, NSFAS, transport to campus). A pre-filled student budget template on first open would improve retention for this group.`,
+      meta:`Segment: Students (${students} users) · Feature: Budget templates`,
+    },
+    {
+      emoji:'🏠', bg:'var(--red-l)', color:'var(--red)',
+      title:'Household feature campaign for domestic workers',
+      desc:`${domestic} domestic worker${domestic!==1?'s':''} on the platform. This segment often shares costs with family. A WhatsApp campaign showing the Household feature (R15/mo) could convert this group.`,
+      meta:`Segment: Domestic workers (${domestic} users) · Add-on: Household view R15/mo`,
+    },
+    {
+      emoji:'🤝', bg:'var(--purple-l)', color:'var(--purple)',
+      title:'Activate referral programme for top users',
+      desc:'Users with more than 3 expenses logged are your most engaged. Send them their referral code via an in-app nudge: "Earn R10 for every friend you bring to RandWise — share your code now."',
+      meta:`Segment: Engaged users · Action: In-app referral nudge`,
+    },
+  ];
+
+  document.getElementById('ai-suggestions').innerHTML = suggestions.map((s,i) => `
+    <div class="suggestion-card" id="sug-${i}">
+      <div class="suggestion-icon" style="background:${s.bg};color:${s.color}">${s.emoji}</div>
+      <div class="suggestion-body">
+        <div class="suggestion-title">${s.title}</div>
+        <div class="suggestion-desc">${s.desc}</div>
+        <div class="suggestion-meta">${s.meta}</div>
+        <div class="suggestion-actions">
+          <button class="btn-approve" onclick="approveSuggestion(${i})">✓ Approve rollout</button>
+          <button class="btn-dismiss" onclick="dismissSuggestion(${i})">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
-// Load saved settings
-(()=>{
-  const s=localStorage.getItem('rw_alert_settings');
-  if(!s)return;
-  try{
-    const settings=JSON.parse(s);
-    if(settings.email){const el=document.getElementById('alert-email');if(el)el.value=settings.email;}
-    if(settings.notifNewUser!==undefined){const el=document.getElementById('notif-new-user');if(el)el.checked=settings.notifNewUser;}
-    if(settings.notifUpgrade!==undefined){const el=document.getElementById('notif-upgrade');if(el)el.checked=settings.notifUpgrade;}
-    if(settings.notifBug!==undefined){const el=document.getElementById('notif-bug');if(el)el.checked=settings.notifBug;}
-    if(settings.notifDaily!==undefined){const el=document.getElementById('notif-daily');if(el)el.checked=settings.notifDaily;}
-    if(settings.notifMilestone!==undefined){const el=document.getElementById('notif-milestone');if(el)el.checked=settings.notifMilestone;}
-  }catch{}
-})();
+function approveSuggestion(i) {
+  const el = document.getElementById('sug-'+i);
+  el.style.background = 'var(--green-l)';
+  el.style.borderColor = 'var(--green)';
+  el.querySelector('.suggestion-actions').innerHTML = '<span style="color:var(--green);font-size:12px;font-weight:700">✅ Approved — rollout scheduled</span>';
+}
 
-// Load bug reports + health when alerts tab clicked
-document.querySelector('[onclick="showPage(\'alerts\')"]')?.addEventListener('click',()=>{loadBugReports();runHealthCheck();});
+function dismissSuggestion(i) {
+  document.getElementById('sug-'+i).style.display = 'none';
+}
 
-loadData();
-runHealthCheck();
-setInterval(loadData,30000);
-setInterval(runHealthCheck,60000);
+// ── BUILD TRACKER ─────────────────────────────────────────────
+function renderBuildTracker() {
+  const start = new Date('2026-04-07');
+  const days = Math.floor((Date.now()-start.getTime())/86400000);
+  document.getElementById('days-built').textContent = days;
+
+  const features = [
+    ['OnboardingScreen (5-step + Supabase)', true],
+    ['DashboardScreen (real data)', true],
+    ['WeeklyScreen (envelopes + expenses)', true],
+    ['AddExpenseScreen (12 categories)', true],
+    ['DebtScreen', true],
+    ['GrowScreen', true],
+    ['ProfileScreen + referral T&Cs', true],
+    ['UpgradeModal + PayFast sandbox', true],
+    ['Owner hidden panel (tap avatar 5×)', true],
+    ['14-day trial + upgrade banner', true],
+    ['Supabase RLS security', true],
+    ['.env security (keys out of code)', true],
+    ['Admin dashboard (this page)', true],
+    ['Co-founder agreement PDF', true],
+    ['NDA PDF', true],
+    ['Connect real data to DebtScreen', false],
+    ['Connect real data to GrowScreen', false],
+    ['PayFast live (awaiting verification)', false],
+    ['CIPC registration', false],
+    ['Trademark filing', false],
+    ['50 beta testers', false],
+    ['Push notifications', false],
+    ['Supabase Auth (login/session)', false],
+  ];
+
+  document.getElementById('feature-checklist').innerHTML = features.map(([label, done]) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bg2)">
+      <span style="font-size:14px">${done ? '✅' : '🔲'}</span>
+      <span style="font-size:12px;color:${done?'var(--text)':'var(--muted)'}">${label}</span>
+    </div>
+  `).join('');
+}
+
+// ── ALERTS ────────────────────────────────────────────────────
+function renderAlerts() {
+  const events = [
+    'New user registered',
+    'User upgrades to Pro',
+    'User upgrades to Premium',
+    'User trial expires (day 14)',
+    'Referral payment due (≥R50)',
+    'Bug report submitted',
+    'User cancels / churns',
+  ];
+
+  document.getElementById('alert-toggles').innerHTML = events.map((e,i) => `
+    <div class="alert-row">
+      <span style="font-size:13px;color:var(--text)">${e}</span>
+      <label class="toggle">
+        <input type="checkbox" ${i < 4 ? 'checked' : ''}>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+  `).join('');
+}
+
+function saveWaNumber() {
+  const n = document.getElementById('wa-number').value;
+  localStorage.setItem('rw_wa_number', n);
+  alert('✅ WhatsApp number saved: ' + n);
+}
+
+function saveEmail() {
+  const e = document.getElementById('email-addr').value;
+  localStorage.setItem('rw_email', e);
+  alert('✅ Admin email saved: ' + e);
+}
+
+// ── LEGAL ─────────────────────────────────────────────────────
+function renderLegal(users, consent) {
+  document.getElementById('consented-count').textContent =
+    users.filter(u => u.consent_given).length;
+
+  const docs = [
+    { name:'Co-Founder Agreement', status:'🔲 Not yet signed', note:'Sign before any equity decisions' },
+    { name:'NDA (template)', status:'✅ Created', note:'Have each team member sign before access' },
+    { name:'Beta Tester Consent', status:'✅ In-app (onboarding)', note:'All users consent on signup' },
+    { name:'Referral T&Cs', status:'✅ In-app (ProfileScreen)', note:'Users opt-in before getting code' },
+    { name:'Terms of Service', status:'🔲 Pending', note:'Required before Play Store submission' },
+    { name:'Privacy Policy (POPIA)', status:'🔲 Pending', note:'Required before Play Store submission' },
+    { name:'CIPC Trading Name', status:'🔲 Pending (R175)', note:'cipc.co.za — required before PayFast live' },
+    { name:'Trademark Class 36 + 42', status:'🔲 Pending (R1,180)', note:'File as soon as CIPC done' },
+  ];
+
+  document.getElementById('legal-docs').innerHTML = docs.map(d => `
+    <div class="reserve-item">
+      <div>
+        <div class="reserve-name">${d.name}</div>
+        <div class="reserve-purpose">${d.note}</div>
+      </div>
+      <div style="font-size:12px;color:var(--mid);text-align:right">${d.status}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('popia-body').innerHTML = consent.slice(0,10).map(c => {
+    const user = allUsers.find(u => u.id === c.tester_id);
+    return `<tr>
+      <td>${user?.name || c.tester_id?.slice(0,8)+'...'}</td>
+      <td><span class="popia-tag">✓ ${c.action||'consent'}</span></td>
+      <td style="color:var(--muted);font-size:11px">${ago(c.created_at)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="3" class="empty">No consent logs yet</td></tr>';
+}
+
+// ── Init ──────────────────────────────────────────────────────
+loadAll();
+setInterval(loadAll, 60000); // auto-refresh every 60s
 </script>
 </body>
 </html>
