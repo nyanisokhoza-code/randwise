@@ -745,7 +745,7 @@
         <div class="card">
           <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
           <table class="data-table">
-            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th></tr></thead>
+            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th><th>Last Active</th></tr></thead>
             <tbody id="recent-users-body"></tbody>
           </table>
         </div>
@@ -775,7 +775,7 @@
         <table class="data-table" id="users-table">
           <thead><tr>
             <th>Name</th><th>Life Stage</th><th>Income</th>
-            <th>Tier</th><th>Referral Code</th><th>Joined</th>
+            <th>Tier</th><th>Referral Code</th><th>Joined</th><th>Last Active</th>
           </tr></thead>
           <tbody id="users-body"></tbody>
         </table>
@@ -1600,8 +1600,9 @@ function renderOverview(users, expenses) {
       <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
       <td>${tierBadge(u.tier)}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+      <td style="font-size:11px;font-weight:600;color:${!u.last_active||((Date.now()-new Date(u.last_active).getTime())/86400000)>7?'#e53e3e':((Date.now()-new Date(u.last_active).getTime())/86400000)>3?'#dd6b20':'#38a169'}">${u.last_active?ago(u.last_active):'Never'}</td>
     </tr>
-  `).join('') || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
+  `).join('') || '<tr><td colspan="5" class="empty">No users yet</td></tr>';
   document.getElementById('reg-count').textContent = `${users.length} total`;
 
   // Tier bars
@@ -1660,8 +1661,9 @@ function filterUsers() {
       <td>${tierBadge(u.tier)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+      <td style="font-size:11px;font-weight:600;color:${!u.last_active||((Date.now()-new Date(u.last_active).getTime())/86400000)>7?'#e53e3e':((Date.now()-new Date(u.last_active).getTime())/86400000)>3?'#dd6b20':'#38a169'}">${u.last_active?ago(u.last_active):'Never'}</td>
     </tr>
-  `).join('') || '<tr><td colspan="6" class="empty">No users match this filter</td></tr>';
+  `).join('') || '<tr><td colspan="7" class="empty">No users match this filter</td></tr>';
 }
 
 function setTierFilter(t, el) {
