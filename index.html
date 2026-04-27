@@ -3510,6 +3510,7 @@ async function loadDebtsPWA(){
     // ── PAYOFF ACCELERATOR ─────────────────────────────────────
     // Use real disposable income (after all commitments) not raw income
     // Calculate real disposable using freshly loaded debts (not global which may be stale)
+    // Store disposable income for accelerator (must be inside try where inc is defined)
     const freshDebtMin = debts.reduce((s,d)=>s+Number(d.min_payment||0),0);
     const storedDOs2 = JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
     const manualDOs2 = storedDOs2.filter(d=>!d.addedFromDebt);
@@ -3518,7 +3519,7 @@ async function loadDebtsPWA(){
     const customNeeds2 = JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
     const needsTotal2 = Object.values(savedNeeds2).reduce((s,v)=>s+Number(v),0) + customNeeds2.reduce((s,n)=>s+Number(n.amount||0),0);
     const accDisposable = Math.max(0, Number(inc) - freshDebtMin - doTotal2 - needsTotal2);
-    const accInc = accDisposable > 0 ? accDisposable : Number(inc);
+    window._pendingAccInc = accDisposable > 0 ? accDisposable : Number(inc); // pass to outer scope
 
   }catch(e){
     console.error('Debt render error:', e);
@@ -3529,35 +3530,15 @@ async function loadDebtsPWA(){
     }
   }
 
-  // Accelerator runs OUTSIDE try/catch — its errors don't affect the debt list
+  // Accelerator runs OUTSIDE try/catch — uses window._pendingAccInc set inside try
   try {
     const accDebts = (typeof debts !== 'undefined' && Array.isArray(debts)) ? debts : [];
     if(accDebts.length > 0) {
-      // Always recalculate fresh disposable — don't trust stale global
-      const freshMin2 = accDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
-      const storedDOs3 = JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-      const doTotal3 = storedDOs3.filter(d=>!d.addedFromDebt).reduce((s,d)=>s+Number(d.amount||0),0);
-      // Try Supabase monthly needs first, fall back to localStorage
-      let needsTotal3 = 0;
-      const dbNeeds3 = user?.monthly_needs;
-      console.log('[ACC] user.monthly_needs:', JSON.stringify(dbNeeds3));
-      console.log('[ACC] user.income_amount:', user?.income_amount);
-      console.log('[ACC] freshMin2:', freshMin2);
-      if(dbNeeds3?.preset && Object.keys(dbNeeds3.preset).length > 0){
-        needsTotal3 = Object.values(dbNeeds3.preset).reduce((s,v)=>s+Number(v||0),0);
-        if(dbNeeds3.custom) needsTotal3 += dbNeeds3.custom.reduce((s,v)=>s+Number(v.amount||0),0);
-        // Also sync to localStorage so budget calc matches
-        localStorage.setItem('rw_monthly_needs', JSON.stringify(dbNeeds3.preset));
-      } else {
-        const ln = JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
-        const lc = JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
-        needsTotal3 = Object.values(ln).reduce((s,v)=>s+Number(v||0),0) + lc.reduce((s,v)=>s+Number(v.amount||0),0);
-      }
-      const accInc3 = Math.max(0, Number(user?.income_amount||0) - freshMin2 - doTotal3 - needsTotal3);
-      const accInc2 = accInc3 > 0 ? accInc3 : Number(user?.income_amount||0);
       const accOwed = accDebts.reduce((s,d)=>s+Number(d.balance||0),0);
       const accMin = accDebts.reduce((s,d)=>s+Number(d.min_payment||0),0);
-      console.log('[ACC] final accInc2 passed to accelerator:', accInc2);
+      // Use value calculated inside try/catch where inc was in scope
+      const accInc2 = window._pendingAccInc > 0 ? window._pendingAccInc : Number(user?.income_amount||0);
+      console.log('[ACC] final accInc2:', accInc2, '| _pendingAccInc:', window._pendingAccInc);
       renderPayoffAccelerator(accDebts, accOwed, accMin, accInc2);
     }
   } catch(e2) { console.error('Accelerator error:', e2); }
@@ -6972,7 +6953,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-27-v140';
+const APP_VERSION = '2026-04-27-v141';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
