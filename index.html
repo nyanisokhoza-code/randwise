@@ -537,6 +537,22 @@ if('serviceWorker' in navigator){
 
 <!-- PAYDAY PAYMENT CHECK-IN -->
 <!-- SALARY CONFIRMATION CHECK-IN -->
+
+<!-- BREAKDOWN COMPLETE MOTIVATIONAL POPUP -->
+<div id="breakdown-complete-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:24px;width:100%;max-width:440px;padding:32px 28px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎉</div>
+    <h2 style="font-size:22px;font-weight:900;color:#1a1a18;margin:0 0 10px;line-height:1.2">You're in control</h2>
+    <div style="background:#f0faf4;border-radius:14px;padding:16px;margin:16px 0">
+      <div style="font-size:13px;color:#5a8a6a;margin-bottom:4px">After all commitments</div>
+      <div style="font-size:32px;font-weight:900;color:#1a5c35" id="complete-amount">R0</div>
+      <div style="font-size:12px;color:#5a8a6a;margin-top:4px" id="complete-weekly">— /wk to work with</div>
+    </div>
+    <p style="font-size:13px;color:#666;line-height:1.7;margin:0 0 20px" id="complete-message">Most South Africans never know this number. You do.</p>
+    <button onclick="document.getElementById('breakdown-complete-overlay').style.display='none';renderDash();" style="width:100%;padding:14px;background:#1a5c35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">See my plan →</button>
+  </div>
+</div>
+
 <div id="salary-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7800;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
     <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
@@ -2926,6 +2942,9 @@ async function renderDash(){
       const _needsTotal=Object.values(_needs).reduce((s,v)=>s+Number(v),0)+_custom.reduce((s,n)=>s+Number(n.amount||0),0);
       sp=Math.max(0,sp-_needsTotal);
     }
+    // Subtract accelerator plan extra payment if committed
+    const _accPlan=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
+    if(_accPlan&&_accPlan.extra>0) sp=Math.max(0,sp-Number(_accPlan.extra));
   }
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
@@ -3255,11 +3274,38 @@ async function renderDash(){
   if(bbCard && bbIsPro){
     bbCard.style.display='block';
     if(!_bAll){
-      const _bStep=!_bSalary?'Step 1: Confirm salary received on payday':!_bDebts?'Step 2: Confirm debt payments':!_bHasNeeds?'Add monthly needs in Profile':!_bNeeds?'Step 3: Confirm monthly needs':'Complete setup';
+      // Build live breakdown with confirmed/pending lines
       document.getElementById('bb-weekly').textContent='— /wk';
       document.getElementById('bb-disposable').textContent='—';
       const _bRows=document.getElementById('bb-rows');
-      if(_bRows)_bRows.innerHTML=`<div style="font-size:12px;color:#5a8a6a;padding:6px 0;text-align:center;cursor:pointer" onclick="handleBreakdownTap()">🔒 ${_bStep}</div><div style="font-size:11px;color:#aaa;text-align:center;margin-top:4px">${_bCount} of 3 confirmed — tap to continue</div>`;
+      if(_bRows){
+        let _bHtml='';
+        // Salary line
+        _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:#2c2c2a">Monthly income</span><span style="font-size:12px;font-weight:700;color:${_bSalary?'#1a5c35':'#aaa'}">${_bSalary?'R'+Number(user?.income_amount||0).toLocaleString('en-ZA'):'—'}</span></div>`;
+        // Debt lines — show each confirmed debt
+        if(debts&&debts.length){
+          const _bNow=new Date();
+          const _bPM=_bNow.getMonth()===0?12:_bNow.getMonth();
+          const _bPY=_bNow.getMonth()===0?_bNow.getFullYear()-1:_bNow.getFullYear();
+          debts.forEach(dd=>{
+            const _dKey1=`rw_paid_${dd.id}_${_bNow.getFullYear()}_${_bNow.getMonth()+1}`;
+            const _dKey2=`rw_paid_${dd.id}_${_bPY}_${_bPM}`;
+            const _dVal=localStorage.getItem(_dKey1)||localStorage.getItem(_dKey2);
+            const _dPaid=_dVal&&_dVal.startsWith('paid:');
+            const _dMissed=_dVal==='missed';
+            const _dAmt=_dPaid?Number(_dVal.split(':')[1])||Number(dd.min_payment||0):Number(dd.min_payment||0);
+            _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:${_dPaid?'#2c2c2a':_dMissed?'#c62828':'#aaa'}">${_dPaid?'✅':_dMissed?'❌':'⏳'} ${dd.name||'Debt'}</span><span style="font-size:12px;font-weight:700;color:${_dPaid?'#c62828':_dMissed?'#888':'#aaa'}">${_dPaid?'−R'+_dAmt.toLocaleString('en-ZA'):_dMissed?'missed':'pending'}</span></div>`;
+          });
+        }
+        // Accelerator plan line
+        const _bAcc=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
+        if(_bAcc&&_bAcc.extra>0) _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:#1a5c35">🎯 Extra (plan)</span><span style="font-size:12px;font-weight:700;color:#c62828">−R${Number(_bAcc.extra).toLocaleString('en-ZA')}</span></div>`;
+        // Monthly needs line
+        _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:${_bNeeds?'#2c2c2a':'#aaa'}">⏳ Monthly needs</span><span style="font-size:12px;font-weight:700;color:${_bNeeds?'#c62828':'#aaa'}">${_bNeeds?'−R'+(Object.values(JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}')).reduce((s,v)=>s+Number(v),0)).toLocaleString('en-ZA'):'pending'}</span></div>`;
+        // Tap prompt
+        if(_bCount<3) _bHtml+=`<div style="font-size:11px;color:#5a8a6a;text-align:center;margin-top:8px;cursor:pointer" onclick="handleBreakdownTap()">${_bCount} of 3 confirmed — tap to continue →</div>`;
+        _bRows.innerHTML=_bHtml;
+      }
     } else if(budgetBreakdown&&budgetBreakdown.length>0){
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
@@ -3637,7 +3683,16 @@ async function loadDebtsPWA(){
         ${orig>bal?`<div style="height:4px;background:#e8f5ee;border-radius:3px;overflow:hidden;margin-bottom:4px"><div style="height:100%;background:#1a5c35;border-radius:3px;width:${pct}%"></div></div><div style="font-size:10px;color:#5a8a6a">${pct}% paid off</div>`:''}
         <div style="font-size:10px;color:#888;margin-top:4px" id="last-payment-${d.id}">Loading payment history...</div>
         <div style="display:flex;gap:8px;margin-top:8px">
-          <button onclick="openPaymentSheet('${d.id}','${(d.name||'Debt').replace(/'/g,"\\'")}',${Number(d.min_payment||0)},${bal})" style="flex:2;padding:7px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">💳 Mark payment</button>
+          ${(()=>{
+            const _pNow=new Date();
+            const _pKey=`rw_paid_${d.id}_${_pNow.getFullYear()}_${_pNow.getMonth()+1}`;
+            const _pKeyPrev=`rw_paid_${d.id}_${_pNow.getMonth()===0?_pNow.getFullYear()-1:_pNow.getFullYear()}_${_pNow.getMonth()===0?12:_pNow.getMonth()}`;
+            const _pVal=localStorage.getItem(_pKey)||localStorage.getItem(_pKeyPrev);
+            if(_pVal&&_pVal.startsWith('paid:')){
+              return `<button onclick="openPaymentSheet('${d.id}','${(d.name||'Debt').replace(/'/g,"\\'")}',${Number(d.min_payment||0)},${bal})" style="flex:2;padding:7px;background:#e8f5e9;color:#1a5c35;border:1px solid #c8e6c9;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">➕ Extra payment</button>`;
+            }
+            return `<button onclick="openPaymentSheet('${d.id}','${(d.name||'Debt').replace(/'/g,"\\'")}',${Number(d.min_payment||0)},${bal})" style="flex:2;padding:7px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">💳 Mark payment</button>`;
+          })()}
           <button onclick="deleteDebtPWA('${d.id}')" style="flex:1;padding:7px;background:#fee2e2;color:#c62828;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">🗑</button>
           <button onclick="openEditDebtPWA('${d.id}',${bal})" style="flex:1;padding:7px;background:#f0faf4;color:#1a5c35;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">✏️</button>
         </div>
@@ -7393,7 +7448,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v160';
+const APP_VERSION = '2026-04-28-v161';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8542,7 +8597,30 @@ function checkBreakdownUnlock(){
   const s1=(localStorage.getItem(`rw_salary_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
   const s2=localStorage.getItem(`rw_payday_checkin_${y}_${m}`)==='done';
   const s3=(localStorage.getItem(`rw_needs_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
-  if(s1&&s2&&s3){showToast('🎉 All confirmed — budget breakdown unlocked!');renderDash();}
+  if(s1&&s2&&s3){
+    renderDash();
+    // Show motivational completion popup
+    setTimeout(()=>{
+      const {disposable,wb}=getSmartWeeklyBudget();
+      const _inc=Number(user?.income_amount||0);
+      const _sp=Math.max(0,disposable);
+      const ov=document.getElementById('breakdown-complete-overlay');
+      const amtEl=document.getElementById('complete-amount');
+      const wkEl=document.getElementById('complete-weekly');
+      const msgEl=document.getElementById('complete-message');
+      if(amtEl) amtEl.textContent='R'+_sp.toLocaleString('en-ZA');
+      if(wkEl) wkEl.textContent='R'+Math.round(_sp/4).toLocaleString('en-ZA')+'/wk to work with';
+      if(msgEl){
+        const accPlan=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
+        if(accPlan&&accPlan.extra>0){
+          msgEl.textContent=`You have a debt-free plan in place. R${Number(accPlan.extra).toLocaleString('en-ZA')} extra/mo is already working to clear your debt faster. Most people never get this far.`;
+        } else {
+          msgEl.textContent='Most South Africans never know this number. You do. This is the number that changes everything — it's yours to grow, save, or plan with.';
+        }
+      }
+      if(ov) ov.style.display='flex';
+    },500);
+  }
 }
 function handleBreakdownTap(){
   const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;
