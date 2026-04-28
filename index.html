@@ -3201,7 +3201,11 @@ async function renderDash(){
   // Only when salary confirmed — shows progress through the week
   const wb_confirmed = sp > 0 ? Math.round(sp/4) : 0;
   const weekStart2=new Date(now);weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));weekStart2.setHours(0,0,0,0);
-  const weekSpent2=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart2).reduce((s,e)=>s+Number(e.amount),0);
+  // Only count expenses that have a real logged_at date — created_at is DB insert time not spend time
+  const weekSpent2=expenses.filter(e=>{
+    const _ed=e.logged_at?new Date(e.logged_at):null;
+    return _ed&&_ed>=weekStart2;
+  }).reduce((s,e)=>s+Number(e.amount),0);
   const pct=_cSal&&wb_confirmed>0?Math.min(weekSpent2/wb_confirmed,1):0;
   const rarcEl=document.getElementById('rarc');
   if(rarcEl){
@@ -7460,7 +7464,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v165';
+const APP_VERSION = '2026-04-28-v166';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
