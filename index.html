@@ -7448,7 +7448,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v161';
+const APP_VERSION = '2026-04-28-v162';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8615,7 +8615,7 @@ function checkBreakdownUnlock(){
         if(accPlan&&accPlan.extra>0){
           msgEl.textContent=`You have a debt-free plan in place. R${Number(accPlan.extra).toLocaleString('en-ZA')} extra/mo is already working to clear your debt faster. Most people never get this far.`;
         } else {
-          msgEl.textContent='Most South Africans never know this number. You do. This is the number that changes everything — it's yours to grow, save, or plan with.';
+          msgEl.textContent='Most South Africans never know this number. You do. This is the number that changes everything — yours to grow, save, or plan with.';
         }
       }
       if(ov) ov.style.display='flex';
