@@ -3165,8 +3165,16 @@ async function renderDash(){
   const _salaryKey = `rw_salary_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
   const _salaryConfirmed = (localStorage.getItem(_salaryKey)||'').startsWith('confirmed:');
   const _setupComplete = _hasIncome && _hasDebts && _hasNeeds && _salaryConfirmed;
-  if(bbCard && _setupComplete && budgetBreakdown && budgetBreakdown.length > 0 && bbIsPro){
+  if(bbCard && bbIsPro){
     bbCard.style.display='block';
+    if(!_setupComplete){
+      // Show card with pending state until confirmed
+      document.getElementById('bb-weekly').textContent = '— /wk';
+      document.getElementById('bb-disposable').textContent = '—';
+      const rows=document.getElementById('bb-rows');
+      const pendingMsg = !_salaryConfirmed ? 'Confirm salary received on payday to unlock' : !_hasDebts ? 'Add your debts to complete setup' : !_hasNeeds ? 'Add monthly needs in Profile to complete setup' : 'Complete setup to unlock';
+      if(rows) rows.innerHTML=`<div style="font-size:12px;color:#5a8a6a;padding:8px 0;text-align:center">🔒 ${pendingMsg}</div>`;
+    } else if(budgetBreakdown && budgetBreakdown.length > 0){
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
     const rows = document.getElementById('bb-rows');
@@ -3182,6 +3190,7 @@ async function renderDash(){
           <span style="color:#c62828;font-weight:600">−R${Math.round(b.amount).toLocaleString('en-ZA')}</span>
         </div>`).join('')}
       `;
+    }
     }
   } else if(bbCard){
     bbCard.style.display='none';
@@ -3204,9 +3213,27 @@ async function renderDash(){
   const el=document.getElementById('exp-list');
   if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
   const cm=CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
-  el.innerHTML=expenses.slice(0,10).map(e=>{const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
-    return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
-  }).join('');
+  // Group by date label with separators
+  const now_tx=new Date(); const today_tx=now_tx.toDateString(); const yest_tx=new Date(now_tx-86400000).toDateString();
+  const thisMonthKey=`${now_tx.getFullYear()}-${now_tx.getMonth()}`;
+  let lastLabel=''; let html='';
+  expenses.slice(0,20).forEach(e=>{
+    const d=new Date(e.logged_at||e.created_at);
+    const ds=d.toDateString();
+    const monthKey=`${d.getFullYear()}-${d.getMonth()}`;
+    let label='';
+    if(ds===today_tx) label='Today';
+    else if(ds===yest_tx) label='Yesterday';
+    else if(monthKey===thisMonthKey) label=d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'short'});
+    else label=d.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
+    if(label!==lastLabel){
+      html+=`<div style="font-size:10px;font-weight:700;color:#5a8a6a;text-transform:uppercase;letter-spacing:.6px;padding:10px 14px 4px;background:#f7faf5">${label}</div>`;
+      lastLabel=label;
+    }
+    const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
+    html+=`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
+  });
+  el.innerHTML=html;
 }
 
 // ── Expense sheet ─────────────────────────────────────────────
@@ -7290,7 +7317,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v155';
+const APP_VERSION = '2026-04-28-v156';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
