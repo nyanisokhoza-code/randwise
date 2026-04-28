@@ -536,37 +536,6 @@ if('serviceWorker' in navigator){
 </div>
 
 <!-- PAYDAY PAYMENT CHECK-IN -->
-
-<!-- BREAKDOWN ACTION SHEET -->
-<div id="breakdown-action-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7900;align-items:flex-end;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
-  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
-    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
-    <div style="font-size:18px;font-weight:900;color:#111;margin-bottom:6px">Budget Breakdown</div>
-    <div style="font-size:13px;color:#888;margin-bottom:20px">Your breakdown is based on confirmed data only. Complete your monthly check-in to unlock it.</div>
-    <div id="breakdown-steps-list" style="margin-bottom:20px"></div>
-    <button id="breakdown-action-btn" onclick="startBreakdownCheckin()" style="width:100%;padding:14px;background:#1a5c35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">Start check-in →</button>
-    <button onclick="document.getElementById('breakdown-action-overlay').style.display='none'" style="width:100%;padding:12px;background:none;border:none;font-size:14px;color:#888;cursor:pointer;font-family:inherit;margin-top:8px">Maybe later</button>
-  </div>
-</div>
-
-<!-- SALARY CONFIRMATION CHECK-IN (monthly, on payday) -->
-<div id="salary-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7800;align-items:flex-end;justify-content:center">
-  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
-    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
-    <div style="font-size:32px;text-align:center;margin-bottom:12px">💸</div>
-    <div style="font-size:18px;font-weight:900;color:#111;text-align:center;margin-bottom:8px">Did your salary arrive?</div>
-    <div style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:20px">Confirming keeps your budget breakdown accurate for this month.</div>
-    <div style="background:#f7f6f2;border-radius:12px;padding:14px;text-align:center;margin-bottom:20px">
-      <div style="font-size:12px;color:#888;margin-bottom:4px">Expected this payday</div>
-      <div style="font-size:28px;font-weight:900;color:#1a5c35" id="salary-confirm-amount">R0</div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button onclick="confirmSalaryReceived(true)" style="padding:14px;background:#eaf3de;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;font-family:inherit">✅ Yes — salary received</button>
-      <button onclick="confirmSalaryReceived(false)" style="padding:14px;background:#fff3f3;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#c62828;cursor:pointer;font-family:inherit">❌ Not yet / different amount</button>
-    </div>
-  </div>
-</div>
-
 <div id="payday-checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7700;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px;max-height:85vh;overflow-y:auto">
     <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
@@ -1227,7 +1196,7 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- BUDGET BREAKDOWN CARD -->
-          <div id="budget-breakdown-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:13px 14px" onclick="handleBreakdownTap()">
+          <div id="budget-breakdown-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:13px 14px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Budget breakdown</div>
               <div style="font-size:11px;color:#1a5c35;font-weight:700" id="bb-weekly">R0/wk free</div>
@@ -2809,7 +2778,7 @@ async function renderDash(){
   setTimeout(maybeShowAbout, 1200);
   setTimeout(maybeShowCheckin, 4000);
   setTimeout(maybeShowPushPrompt, 8000);
-  setTimeout(maybeShowSalaryConfirm, 3000); // salary first, then debt check-in chains after
+  setTimeout(maybeShowPaydayCheckin, 3000);
   setTimeout(maybeShowIncomeCheckin, 10000);
   setTimeout(maybeShowNeedsCheckin, 12000);
   checkAppRating();
@@ -3137,17 +3106,7 @@ async function renderDash(){
   if(ramtEl)ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
   // After commitments = spendable
   const afterEl=document.getElementById('hdr-after');
-  if(afterEl){
-    const _an=new Date();
-    const _confirmed3=(localStorage.getItem(`rw_salary_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:')
-      && localStorage.getItem(`rw_payday_checkin_${_an.getFullYear()}_${_an.getMonth()+1}`)==='done'
-      && (localStorage.getItem(`rw_needs_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:');
-    if(_confirmed3){
-      afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
-    } else {
-      afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">est.</span>';
-    }
-  }
+  if(afterEl)afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
 
   // ── 2×2 STAT CARDS ─────────────────────────────────────────
   // This week spending — red if over budget
@@ -3177,32 +3136,11 @@ async function renderDash(){
   }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
-  // ── BUDGET BREAKDOWN CARD (Pro only, confirmed data only) ──
+  // ── BUDGET BREAKDOWN CARD (Pro only) ───────────────────────
   const bbCard = document.getElementById('budget-breakdown-card');
   const {isPro:bbIsPro} = getTier();
-  // Gate: income entered + debts added + monthly needs entered + salary confirmed this cycle
-  const _hasIncome = Number(user?.income_amount||0) > 0;
-  const _hasDebts = debts && debts.length > 0;
-  const _hasNeeds = (()=>{ try{ const n=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}'); return Object.values(n).some(v=>Number(v)>0); }catch{ return false; } })();
-  const _now = new Date();
-  const _salaryKey = `rw_salary_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
-  const _debtKey = `rw_payday_checkin_${_now.getFullYear()}_${_now.getMonth()+1}`;
-  const _needsKey = `rw_needs_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
-  const _salaryConfirmed = (localStorage.getItem(_salaryKey)||'').startsWith('confirmed:');
-  const _debtConfirmed = localStorage.getItem(_debtKey)==='done';
-  const _needsConfirmed = (localStorage.getItem(_needsKey)||'').startsWith('confirmed:');
-  const _confirmCount = [_salaryConfirmed,_debtConfirmed,_needsConfirmed].filter(Boolean).length;
-  const _setupComplete = _hasIncome && _hasDebts && _hasNeeds && _salaryConfirmed && _debtConfirmed && _needsConfirmed;
-  if(bbCard && bbIsPro){
+  if(bbCard && budgetBreakdown && budgetBreakdown.length > 0 && bbIsPro){
     bbCard.style.display='block';
-    if(!_setupComplete){
-      // Show card with pending state until confirmed
-      document.getElementById('bb-weekly').textContent = '— /wk';
-      document.getElementById('bb-disposable').textContent = '—';
-      const rows=document.getElementById('bb-rows');
-      const _stepMsg = !_salaryConfirmed ? 'Step 1: Confirm salary received on payday' : !_debtConfirmed ? 'Step 2: Confirm debt payments' : 'Step 3: Confirm monthly needs';
-      if(rows) rows.innerHTML=`<div style="font-size:12px;color:#5a8a6a;padding:6px 0;text-align:center">🔒 ${_stepMsg}</div><div style="font-size:11px;color:#aaa;text-align:center;margin-top:4px;cursor:pointer">${_confirmCount||0} of 3 confirmed — tap to continue</div>`;
-    } else if(budgetBreakdown && budgetBreakdown.length > 0){
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
     const rows = document.getElementById('bb-rows');
@@ -3218,7 +3156,6 @@ async function renderDash(){
           <span style="color:#c62828;font-weight:600">−R${Math.round(b.amount).toLocaleString('en-ZA')}</span>
         </div>`).join('')}
       `;
-    }
     }
   } else if(bbCard){
     bbCard.style.display='none';
@@ -3241,27 +3178,9 @@ async function renderDash(){
   const el=document.getElementById('exp-list');
   if(!expenses.length){el.innerHTML='<div class="empty"><div class="empty-e">➕</div><div class="empty-t">No transactions yet</div><div class="empty-s">Tap + to log your first</div></div>';return;}
   const cm=CATS.reduce((m,c)=>{m[c.id]=c;return m;},{});
-  // Group by date label with separators
-  const now_tx=new Date(); const today_tx=now_tx.toDateString(); const yest_tx=new Date(now_tx-86400000).toDateString();
-  const thisMonthKey=`${now_tx.getFullYear()}-${now_tx.getMonth()}`;
-  let lastLabel=''; let html='';
-  expenses.slice(0,20).forEach(e=>{
-    const d=new Date(e.logged_at||e.created_at);
-    const ds=d.toDateString();
-    const monthKey=`${d.getFullYear()}-${d.getMonth()}`;
-    let label='';
-    if(ds===today_tx) label='Today';
-    else if(ds===yest_tx) label='Yesterday';
-    else if(monthKey===thisMonthKey) label=d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'short'});
-    else label=d.toLocaleDateString('en-ZA',{month:'long',year:'numeric'});
-    if(label!==lastLabel){
-      html+=`<div style="font-size:10px;font-weight:700;color:#5a8a6a;text-transform:uppercase;letter-spacing:.6px;padding:10px 14px 4px;background:#f7faf5">${label}</div>`;
-      lastLabel=label;
-    }
-    const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
-    html+=`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
-  });
-  el.innerHTML=html;
+  el.innerHTML=expenses.slice(0,10).map(e=>{const c=cm[e.category_id]||{e:'📦',c:'#5f5e5a'};
+    return`<div class="exp-row"><div class="exp-ico" style="background:${c.c}20">${e.emoji||c.e}</div><div style="flex:1"><div class="exp-n">${e.category}</div>${e.note?`<div class="exp-nt">${e.note}</div>`:''}</div><div class="exp-amt">-R${Number(e.amount).toLocaleString('en-ZA')}</div><button class="exp-del" onclick="editExp('${e.id}')" style="font-size:13px;color:var(--g)">✏️</button><button class="exp-del" onclick="delExp('${e.id}')">×</button></div>`;
+  }).join('');
 }
 
 // ── Expense sheet ─────────────────────────────────────────────
@@ -7345,7 +7264,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v158';
+const APP_VERSION = '2026-04-28-v153';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8442,45 +8361,6 @@ async function loadLastPayment(debtId){
 }
 
 // ── Payday Payment Check-in ───────────────────────────────────
-
-// ── Salary Confirmation (monthly on payday) ──────────────────
-function maybeShowSalaryConfirm(){
-  if(!user?.id) return;
-  const now = new Date();
-  const payDay = Number(user.pay_day||25);
-  const today = now.getDate();
-  const cycleKey = `rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
-  if(localStorage.getItem(cycleKey)) return;
-  // Only on payday itself or 1 day after
-  const daysAfter = today >= payDay ? today - payDay : today + (new Date(now.getFullYear(), now.getMonth(), 0).getDate() - payDay);
-  if(daysAfter !== 0 && daysAfter !== 1) return;
-  // Show salary confirmation
-  const el = document.getElementById('salary-confirm-amount');
-  if(el) el.textContent = 'R' + Number(user.income_amount||0).toLocaleString('en-ZA');
-  const ov = document.getElementById('salary-confirm-overlay');
-  if(ov) { ov.style.display='flex'; }
-}
-
-async function confirmSalaryReceived(received){
-  const ov = document.getElementById('salary-confirm-overlay');
-  if(ov) ov.style.display='none';
-  const now = new Date();
-  const cycleKey = `rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
-  if(received){
-    localStorage.setItem(cycleKey, 'confirmed:' + new Date().toISOString());
-    // Update Supabase — salary confirmed this cycle
-    try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{salary_last_confirmed: new Date().toISOString()}); }catch{}
-    showToast('✅ Salary confirmed — budget breakdown updated');
-    checkBreakdownUnlock();
-    // Now trigger debt check-in after 1 second
-    setTimeout(maybeShowPaydayCheckin, 1000);
-  } else {
-    localStorage.setItem(cycleKey, 'pending:' + new Date().toISOString());
-    showToast('📌 Noted — update your income in Profile when it arrives');
-  }
-  renderDash();
-}
-
 async function maybeShowPaydayCheckin(){
   if(!user?.id||!debts?.length) return;
   const now=new Date();
@@ -8547,7 +8427,7 @@ function showPaydayCheckin(mode){
     return !localStorage.getItem(key);
   });
   if(!pending.length){
-    closePaydayCheckin();
+    closePaydayCheckin(true);
     showToast('✅ All debt payments confirmed for this month!');
     setTimeout(maybeShowMonthlyNeedsConfirm, 1500);
     return;
@@ -8594,57 +8474,15 @@ async function quickMissedPayment(debtId,year,month){
   showPaydayCheckin(mode);
 }
 
-// ── Breakdown card tap handler ────────────────────────────────
-function handleBreakdownTap(){
-  const now=new Date(); const y=now.getFullYear(); const m=now.getMonth()+1;
-  const s1=(localStorage.getItem(`rw_salary_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
-  const s2=localStorage.getItem(`rw_payday_checkin_${y}_${m}`)==='done';
-  const s3=(localStorage.getItem(`rw_needs_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
-  if(s1&&s2&&s3) return;
-  const steps=[
-    {label:'Confirm salary received',done:s1,action:'salary'},
-    {label:'Confirm debt payments',done:s2,action:'debts'},
-    {label:'Confirm monthly needs',done:s3,action:'needs'}
-  ];
-  const list=document.getElementById('breakdown-steps-list');
-  if(list){
-    list.innerHTML=steps.map(s=>`<div style="display:flex;align-items:center;gap:12px;padding:12px;background:${s.done?'#f0faf4':'#fff9f0'};border-radius:12px;margin-bottom:8px;border:1px solid ${s.done?'#d1ead9':'#ffe0b2'}"><div style="font-size:20px">${s.done?'✅':'⏳'}</div><div style="flex:1;font-size:13px;font-weight:600;color:${s.done?'#1a5c35':'#2c2c2a'}">${s.label}</div><div style="font-size:11px;color:${s.done?'#5a8a6a':'#e65100'}">${s.done?'Done':'Pending'}</div></div>`).join('');
-  }
-  const btn=document.getElementById('breakdown-action-btn');
-  const nextStep=steps.find(s=>!s.done);
-  if(btn&&nextStep){
-    const labels={salary:'Confirm salary →',debts:'Confirm debt payments →',needs:'Confirm monthly needs →'};
-    btn.textContent=labels[nextStep.action]||'Start check-in →';
-    btn.dataset.action=nextStep.action;
-  }
-  document.getElementById('breakdown-action-overlay').style.display='flex';
-}
-
-function startBreakdownCheckin(){
-  document.getElementById('breakdown-action-overlay').style.display='none';
-  const btn=document.getElementById('breakdown-action-btn');
-  const action=btn?.dataset?.action;
-  setTimeout(()=>{
-    if(action==='salary') maybeShowSalaryConfirm();
-    else if(action==='debts') showPaydayCheckin('prev');
-    else if(action==='needs') maybeShowMonthlyNeedsConfirm();
-  },300);
-}
-
-function checkBreakdownUnlock(){
-  const now=new Date(); const y=now.getFullYear(); const m=now.getMonth()+1;
-  const s1=(localStorage.getItem(`rw_salary_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
-  const s2=localStorage.getItem(`rw_payday_checkin_${y}_${m}`)==='done';
-  const s3=(localStorage.getItem(`rw_needs_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
-  if(s1&&s2&&s3){ showToast('🎉 All confirmed — budget breakdown unlocked!'); renderDash(); }
-}
-
-function closePaydayCheckin(){
+function closePaydayCheckin(markDone=false){
   const ov=document.getElementById('payday-checkin-overlay');
   if(ov) ov.style.display='none';
-  const now=new Date();
-  const monthKey=`rw_payday_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
-  localStorage.setItem(monthKey,'done');
+  // Only mark done if explicitly all debts confirmed — not just on dismiss
+  if(markDone){
+    const now=new Date();
+    const monthKey=`rw_payday_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
+    localStorage.setItem(monthKey,'done');
+  }
 }
 
 // ── Income Check-in (every 3 months) ─────────────────────────
@@ -8710,7 +8548,6 @@ async function confirmNeedsUnchanged(){
   try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{last_needs_checkin:new Date().toISOString()}); }catch{}
   closeNeedsCheckin();
   showToast('✅ Monthly costs confirmed — budget stays accurate');
-  checkBreakdownUnlock();
 }
 
 function closeNeedsCheckin(){
