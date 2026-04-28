@@ -8452,13 +8452,16 @@ async function loadLastPayment(debtId){
 // ── Payday Payment Check-in ───────────────────────────────────
 
 // ── Salary Confirmation ───────────────────────────────────────
-function maybeShowSalaryConfirm(){
+function maybeShowSalaryConfirm(force=false){
   if(!user?.id) return;
   const now=new Date(),payDay=Number(user.pay_day||25),today=now.getDate();
   const cycleKey=`rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
   if(localStorage.getItem(cycleKey)) return;
-  const daysAfter=today>=payDay?today-payDay:today+(new Date(now.getFullYear(),now.getMonth(),0).getDate()-payDay);
-  if(daysAfter!==0&&daysAfter!==1) return;
+  // Day check — only auto-trigger on payday/day after. But force=true bypasses (user tapped manually)
+  if(!force){
+    const daysAfter=today>=payDay?today-payDay:today+(new Date(now.getFullYear(),now.getMonth(),0).getDate()-payDay);
+    if(daysAfter!==0&&daysAfter!==1) return;
+  }
   const el=document.getElementById('salary-confirm-amount');
   if(el)el.textContent='R'+Number(user.income_amount||0).toLocaleString('en-ZA');
   const ov=document.getElementById('salary-confirm-overlay');
@@ -8518,7 +8521,7 @@ function handleBreakdownTap(){
 function startBreakdownCheckin(){
   document.getElementById('breakdown-action-overlay').style.display='none';
   const action=document.getElementById('breakdown-action-btn')?.dataset?.action;
-  setTimeout(()=>{if(action==='salary')maybeShowSalaryConfirm();else if(action==='debts')showPaydayCheckin('prev');else if(action==='needs')maybeShowMonthlyNeedsConfirm();},300);
+  setTimeout(()=>{if(action==='salary')maybeShowSalaryConfirm(true);else if(action==='debts')showPaydayCheckin('prev');else if(action==='needs')maybeShowMonthlyNeedsConfirm();},300);
 }
 
 async function maybeShowPaydayCheckin(){
