@@ -1142,9 +1142,9 @@ if('serviceWorker' in navigator){
           </div>
           <!-- Ring + Salary row -->
           <div style="display:flex;align-items:center;gap:16px;position:relative">
-            <div style="flex-shrink:0;position:relative;width:84px;height:84px">
+            <div style="flex-shrink:0;position:relative;width:84px;height:84px;border-radius:50%" id="ring-wrap">
               <svg width="84" height="84" viewBox="0 0 84 84">
-                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.12)" stroke-width="6" fill="none"/>
+                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.08)" stroke-width="6" fill="none" id="rtrack"/>
                 <circle id="rarc" cx="42" cy="42" r="34" stroke="#4ade80" stroke-width="6" fill="none" stroke-dasharray="0 214" stroke-linecap="round" transform="rotate(-90 42 42)"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -3222,14 +3222,17 @@ async function renderDash(){
     }
   }
   const ramtEl=document.getElementById('ramt');
+  const rtrackEl=document.getElementById('rtrack');
   if(ramtEl){
     if(_cAll){
       ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+      if(rtrackEl) rtrackEl.setAttribute('stroke','rgba(255,255,255,.12)');
     } else if(_cSal){
-      // Salary confirmed but not all — show current confirmed sp
       ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+      if(rtrackEl) rtrackEl.setAttribute('stroke','rgba(255,255,255,.08)');
     } else {
       ramtEl.textContent='—';
+      if(rtrackEl) rtrackEl.setAttribute('stroke','transparent');
     }
   }
   // After commitments = spendable
@@ -7472,7 +7475,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v167';
+const APP_VERSION = '2026-04-28-v168';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
