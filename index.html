@@ -1144,8 +1144,8 @@ if('serviceWorker' in navigator){
           <div style="display:flex;align-items:center;gap:16px;position:relative">
             <div style="flex-shrink:0;position:relative;width:84px;height:84px">
               <svg width="84" height="84" viewBox="0 0 84 84">
-                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.15)" stroke-width="7" fill="none"/>
-                <circle id="rarc" cx="42" cy="42" r="34" stroke="#4ade80" stroke-width="7" fill="none" stroke-dasharray="0 214" stroke-linecap="round" transform="rotate(-90 42 42)"/>
+                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.12)" stroke-width="6" fill="none"/>
+                <circle id="rarc" cx="42" cy="42" r="34" stroke="#4ade80" stroke-width="6" fill="none" stroke-dasharray="0 214" stroke-linecap="round" transform="rotate(-90 42 42)"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
                 <div style="font-size:11px;font-weight:800;color:#fff;line-height:1;text-align:center" id="ramt">R0</div>
@@ -1156,9 +1156,9 @@ if('serviceWorker' in navigator){
               <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
               <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;cursor:pointer;display:flex;align-items:center;gap:6px" id="hdr-income" onclick="openQuickEditIncome()">R0 <span style="font-size:11px;opacity:.5">✏️</span></div>
               <div id="hdr-after-row">
-                <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;font-weight:500">After commitments</div>
-                <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px;text-decoration:none" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
-                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;font-style:italic" id="hdr-after-msg">Tap breakdown to confirm</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;font-weight:500;user-select:none">After commitments</div>
+                <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px;text-decoration:none;user-select:none" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
+                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;font-style:italic;user-select:none" id="hdr-after-msg">Tap breakdown to confirm</div>
               </div>
             </div>
           </div>
@@ -3197,12 +3197,24 @@ async function renderDash(){
     && localStorage.getItem(`rw_payday_checkin_${_cn.getFullYear()}_${_cn.getMonth()+1}`)==='done'
     && (localStorage.getItem(`rw_needs_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
   const circ=2*Math.PI*34;
-  // Only fill circle when all 3 confirmed — otherwise show empty
-  const pct=_cAll&&inc>0?Math.min(spent/inc,1):0;
-  const rarcEl=document.getElementById('rarc');if(rarcEl)rarcEl.setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
+  // Circle fills based on weekly expenses spent vs weekly budget
+  // Only when salary confirmed — shows progress through the week
+  const wb_confirmed = sp > 0 ? Math.round(sp/4) : 0;
+  const weekStart2=new Date(now);weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));weekStart2.setHours(0,0,0,0);
+  const weekSpent2=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=weekStart2).reduce((s,e)=>s+Number(e.amount),0);
+  const pct=_cSal&&wb_confirmed>0?Math.min(weekSpent2/wb_confirmed,1):0;
+  const rarcEl=document.getElementById('rarc');
+  if(rarcEl){
+    const _arcVal=Math.max(0,circ*pct);
+    rarcEl.setAttribute('stroke-dasharray',`${_arcVal} ${circ}`);
+    rarcEl.style.opacity = _arcVal > 0 ? '1' : '0'; // hide arc completely when 0
+  }
   const ramtEl=document.getElementById('ramt');
   if(ramtEl){
     if(_cAll){
+      ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+    } else if(_cSal){
+      // Salary confirmed but not all — show current confirmed sp
       ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
     } else {
       ramtEl.textContent='—';
@@ -7448,7 +7460,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v164';
+const APP_VERSION = '2026-04-28-v165';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
