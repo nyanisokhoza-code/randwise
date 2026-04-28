@@ -2895,20 +2895,24 @@ async function renderDash(){
   if(_spSal){
     // Start with income
     sp=inc;
-    // Subtract only confirmed debt payments this cycle
-    const _cycleStart=(()=>{const d=new Date(_spY,_spM-1,Number(user?.pay_day||25));if(d>_spNow)d.setMonth(d.getMonth()-1);return d;})();
-    const _confirmedPayments=expenses.filter(e=>{
-      // Check debt_payments via the rw_paid_ keys set when user confirmed each debt
-      return false; // placeholder — see below
-    });
-    // Use individual debt confirmation keys set during check-in
+    // Determine pay cycle month — payday 25th means cycle starts 25th of prev month
+    // So on 28 April, cycle started 25 April → check April keys
+    // But check-in may have saved under prevMonth if payday just passed
+    const _payDay=Number(user?.pay_day||25);
+    const _cycleMonth=_spNow.getDate()>=_payDay?_spM:(_spM===1?12:_spM-1);
+    const _cycleYear=_spM===1&&_cycleMonth===12?_spY-1:_spY;
+    // Also check prev month in case check-in ran before payday
+    const _prevM=_cycleMonth===1?12:_cycleMonth-1;
+    const _prevY=_cycleMonth===1?_cycleYear-1:_cycleYear;
+    // Use individual debt confirmation keys — check both cycle month and prev month
     let _confirmedDebtTotal=0;
     if(debts&&debts.length){
       debts.forEach(d=>{
-        const _pKey=`rw_paid_${d.id}_${_spY}_${_spM}`;
-        const _pVal=localStorage.getItem(_pKey);
-        if(_pVal&&_pVal!=='missed'&&_pVal.startsWith('paid:')){
-          // Format is "paid:200" — extract the actual confirmed amount
+        // Check current cycle month first, then prev month
+        const _pKey1=`rw_paid_${d.id}_${_cycleYear}_${_cycleMonth}`;
+        const _pKey2=`rw_paid_${d.id}_${_prevY}_${_prevM}`;
+        const _pVal=localStorage.getItem(_pKey1)||localStorage.getItem(_pKey2);
+        if(_pVal&&_pVal.startsWith('paid:')){
           const _pAmt=Number(_pVal.split(':')[1])||Number(d.min_payment||0);
           _confirmedDebtTotal+=_pAmt;
         }
