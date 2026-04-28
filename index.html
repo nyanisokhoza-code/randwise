@@ -7448,7 +7448,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v163';
+const APP_VERSION = '2026-04-28-v164';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8826,6 +8826,9 @@ function maybeShowNeedsCheckin(){
 
 async function confirmNeedsUnchanged(){
   localStorage.setItem('rw_needs_checkin_date',Date.now().toString());
+  // Write monthly confirmation key — required for breakdown unlock
+  const _nc=new Date();
+  localStorage.setItem(`rw_needs_confirmed_${_nc.getFullYear()}_${_nc.getMonth()+1}`,'confirmed:'+new Date().toISOString());
   try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{last_needs_checkin:new Date().toISOString()}); }catch{}
   closeNeedsCheckin();
   showToast('✅ Monthly costs confirmed — budget stays accurate');
