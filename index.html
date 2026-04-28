@@ -3163,17 +3163,21 @@ async function renderDash(){
   const _hasNeeds = (()=>{ try{ const n=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}'); return Object.values(n).some(v=>Number(v)>0); }catch{ return false; } })();
   const _now = new Date();
   const _salaryKey = `rw_salary_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
+  const _debtKey = `rw_payday_checkin_${_now.getFullYear()}_${_now.getMonth()+1}`;
+  const _needsKey = `rw_needs_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
   const _salaryConfirmed = (localStorage.getItem(_salaryKey)||'').startsWith('confirmed:');
-  const _setupComplete = _hasIncome && _hasDebts && _hasNeeds && _salaryConfirmed;
+  const _debtConfirmed = localStorage.getItem(_debtKey)==='done';
+  const _needsConfirmed = (localStorage.getItem(_needsKey)||'').startsWith('confirmed:');
+  const _confirmCount = [_salaryConfirmed,_debtConfirmed,_needsConfirmed].filter(Boolean).length;
+  const _setupComplete = _hasIncome && _hasDebts && _hasNeeds && _salaryConfirmed && _debtConfirmed && _needsConfirmed;
   if(bbCard && bbIsPro){
     bbCard.style.display='block';
     if(!_setupComplete){
-      // Show card with pending state until confirmed
       document.getElementById('bb-weekly').textContent = '— /wk';
       document.getElementById('bb-disposable').textContent = '—';
       const rows=document.getElementById('bb-rows');
-      const pendingMsg = !_salaryConfirmed ? 'Confirm salary received on payday to unlock' : !_hasDebts ? 'Add your debts to complete setup' : !_hasNeeds ? 'Add monthly needs in Profile to complete setup' : 'Complete setup to unlock';
-      if(rows) rows.innerHTML=`<div style="font-size:12px;color:#5a8a6a;padding:8px 0;text-align:center">🔒 ${pendingMsg}</div>`;
+      const _stepMsg = !_salaryConfirmed ? 'Step 1: Confirm salary received on payday' : !_debtConfirmed ? 'Step 2: Confirm debt payments via check-in' : 'Step 3: Confirm monthly needs via check-in';
+      if(rows) rows.innerHTML=`<div style="font-size:12px;color:#5a8a6a;padding:6px 0;text-align:center">🔒 ${_stepMsg}</div><div style="font-size:11px;color:#aaa;text-align:center;margin-top:4px">${_confirmCount} of 3 confirmed</div>`;
     } else if(budgetBreakdown && budgetBreakdown.length > 0){
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
@@ -7317,7 +7321,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v156';
+const APP_VERSION = '2026-04-28-v157';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8443,6 +8447,7 @@ async function confirmSalaryReceived(received){
     // Update Supabase — salary confirmed this cycle
     try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{salary_last_confirmed: new Date().toISOString()}); }catch{}
     showToast('✅ Salary confirmed — budget breakdown updated');
+    checkBreakdownUnlock();
     // Now trigger debt check-in after 1 second
     setTimeout(maybeShowPaydayCheckin, 1000);
   } else {
@@ -8450,6 +8455,39 @@ async function confirmSalaryReceived(received){
     showToast('📌 Noted — update your income in Profile when it arrives');
   }
   renderDash();
+}
+
+
+// ── Monthly Needs Confirmation (part of payday chain) ────────
+function maybeShowMonthlyNeedsConfirm(){
+  const now=new Date();
+  const key=`rw_needs_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
+  if(localStorage.getItem(key)) return; // already confirmed this month
+  // Show the needs check-in overlay
+  const ov=document.getElementById('needs-checkin-overlay');
+  const list=document.getElementById('needs-checkin-list');
+  if(!ov||!list) return;
+  const needs=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+  const custom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+  const items=[...Object.entries(needs).map(([k,v])=>({label:k.charAt(0).toUpperCase()+k.slice(1),amount:v})),...custom.map(c=>({label:c.name,amount:c.amount}))];
+  if(!items.length){ confirmNeedsUnchanged(); return; } // nothing to confirm — auto-confirm
+  list.innerHTML=items.map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0e8"><span style="font-size:13px;color:#2c2c2a">${i.label}</span><span style="font-size:13px;font-weight:700;color:#1a5c35">R${Number(i.amount).toLocaleString('en-ZA')}</span></div>`).join('');
+  ov.style.display='flex';
+}
+
+
+// ── Check if all 3 confirmations done → unlock breakdown ─────
+function checkBreakdownUnlock(){
+  const now=new Date();
+  const y=now.getFullYear(); const m=now.getMonth()+1;
+  const s1=( localStorage.getItem(`rw_salary_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
+  const s2= localStorage.getItem(`rw_payday_checkin_${y}_${m}`)==='done';
+  const s3=(localStorage.getItem(`rw_needs_confirmed_${y}_${m}`)||'').startsWith('confirmed:');
+  const count=[s1,s2,s3].filter(Boolean).length;
+  if(count===3){
+    showToast('🎉 All confirmed — budget breakdown unlocked!');
+    renderDash();
+  }
 }
 
 async function maybeShowPaydayCheckin(){
@@ -8520,6 +8558,8 @@ function showPaydayCheckin(mode){
   if(!pending.length){
     closePaydayCheckin();
     showToast('✅ All debt payments confirmed for this month!');
+    // Chain to monthly needs confirmation
+    setTimeout(maybeShowMonthlyNeedsConfirm, 1500);
     return;
   }
   list.innerHTML=pending.map(d=>`
@@ -8632,9 +8672,12 @@ function maybeShowNeedsCheckin(){
 
 async function confirmNeedsUnchanged(){
   localStorage.setItem('rw_needs_checkin_date',Date.now().toString());
+  const _nc=new Date();
+  localStorage.setItem(`rw_needs_confirmed_${_nc.getFullYear()}_${_nc.getMonth()+1}`,'confirmed:'+new Date().toISOString());
   try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{last_needs_checkin:new Date().toISOString()}); }catch{}
   closeNeedsCheckin();
   showToast('✅ Monthly costs confirmed — budget stays accurate');
+  checkBreakdownUnlock();
 }
 
 function closeNeedsCheckin(){
