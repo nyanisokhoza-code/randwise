@@ -3199,19 +3199,27 @@ async function renderDash(){
   const circ=2*Math.PI*34;
   // Circle fills based on weekly expenses spent vs weekly budget
   // Only when salary confirmed — shows progress through the week
+  // Circle = weekly spend progress. Only fills when salary confirmed + expenses logged this week
   const wb_confirmed = sp > 0 ? Math.round(sp/4) : 0;
-  const weekStart2=new Date(now);weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));weekStart2.setHours(0,0,0,0);
-  // Only count expenses that have a real logged_at date — created_at is DB insert time not spend time
-  const weekSpent2=expenses.filter(e=>{
-    const _ed=e.logged_at?new Date(e.logged_at):null;
-    return _ed&&_ed>=weekStart2;
-  }).reduce((s,e)=>s+Number(e.amount),0);
-  const pct=_cSal&&wb_confirmed>0?Math.min(weekSpent2/wb_confirmed,1):0;
+  const weekStart2=new Date(now);
+  weekStart2.setDate(now.getDate()-((now.getDay()+6)%7));
+  weekStart2.setHours(0,0,0,0);
+  weekStart2.setMinutes(0);weekStart2.setSeconds(0);weekStart2.setMilliseconds(0);
+  const weekSpent2=!_cSal?0:expenses.filter(e=>{
+    if(!e.logged_at) return false;
+    const d=new Date(e.logged_at);
+    return !isNaN(d.getTime()) && d>=weekStart2 && d<=now;
+  }).reduce((s,e)=>s+Number(e.amount||0),0);
+  const pct=(_cSal&&wb_confirmed>0&&weekSpent2>0)?Math.min(weekSpent2/wb_confirmed,1):0;
   const rarcEl=document.getElementById('rarc');
   if(rarcEl){
-    const _arcVal=Math.max(0,circ*pct);
-    rarcEl.setAttribute('stroke-dasharray',`${_arcVal} ${circ}`);
-    rarcEl.style.opacity = _arcVal > 0 ? '1' : '0'; // hide arc completely when 0
+    if(pct<=0){
+      rarcEl.setAttribute('stroke-dasharray','0 214');
+      rarcEl.style.opacity='0';
+    } else {
+      rarcEl.setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
+      rarcEl.style.opacity='1';
+    }
   }
   const ramtEl=document.getElementById('ramt');
   if(ramtEl){
@@ -7464,7 +7472,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v166';
+const APP_VERSION = '2026-04-28-v167';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
