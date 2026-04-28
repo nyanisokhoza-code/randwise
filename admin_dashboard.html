@@ -876,8 +876,8 @@
       </div>
       <div class="card">
         <div class="card-title">Investment Readiness</div>
-        <div class="metric-row"><span class="metric-label">Project value (your rate R417/hr × 120hrs)</span><span class="metric-value">R50,000</span></div>
-        <div class="metric-row"><span class="metric-label">Project value (agency rate R750/hr × 120hrs)</span><span class="metric-value">R90,000</span></div>
+        <div class="metric-row"><span class="metric-label">Project value (your rate R417/hr × 633.5hrs)</span><span class="metric-value" id="proj-val-founder">R264,170</span></div>
+        <div class="metric-row"><span class="metric-label">Project value (agency rate R750/hr × 633.5hrs)</span><span class="metric-value" id="proj-val-agency">R475,125</span></div>
         <div class="metric-row"><span class="metric-label">Equity structure</span><span class="metric-value">60% / 20% / 20%</span></div>
         <div class="metric-row"><span class="metric-label">Recommended first investor max equity</span><span class="metric-value">15–20%</span></div>
         <div class="metric-row"><span class="metric-label">Minimum users before approaching investors</span><span class="metric-value">100 paying users</span></div>
@@ -977,7 +977,7 @@
         <div class="card-title">Team Salary Trigger</div>
         <p style="font-size:12px;color:var(--mid);margin-bottom:12px">
           No salary is payable until the Company achieves R5,000/month sustained revenue.
-          Bongane recovers R50,000 founding investment from profits before any dividends are distributed.
+          Nyaniso recovers R50,000 founding investment from profits before any dividends are distributed.
         </p>
         <div id="salary-progress"></div>
       </div>
@@ -1001,13 +1001,13 @@
         </div>
         <div class="stat-card purple">
           <div class="stat-label">Hours Logged</div>
-          <div class="stat-value">120</div>
+          <div class="stat-value">633</div>
           <div class="stat-sub">~3 weeks intensive</div>
         </div>
         <div class="stat-card amber">
           <div class="stat-label">Project Value</div>
-          <div class="stat-value">R50k</div>
-          <div class="stat-sub">R90k agency equivalent</div>
+          <div class="stat-value">R264k</div>
+          <div class="stat-sub">R528k agency equivalent</div>
         </div>
         <div class="stat-card green">
           <div class="stat-label">Screens Built</div>
@@ -1063,8 +1063,16 @@
             </div>
             <div class="timeline-item">
               <div class="timeline-dot" style="background:var(--border)"></div>
+              <div class="timeline-date">27–28 April 2026</div>
+              <div class="timeline-title">Budget confirmation system + domain live</div>
+              <div class="timeline-desc">myrandwise.co.za live · 3-step budget confirmation (salary→debts→needs) · live breakdown card · motivational unlock popup · goal-triggered welcome emails · admin email composer · SW auto-update · payoff accelerator fixed</div>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--muted)"></div>
+            <div class="timeline-content">
               <div class="timeline-date">Next</div>
-              <div class="timeline-title" style="color:var(--muted)">Connect real data to Debt + Grow screens</div>
+              <div class="timeline-title" style="color:var(--muted)">APK rebuild · Education savings goal · TFSA calculator</div>
               <div class="timeline-desc" style="color:var(--hint)">Add debts table, savings goals table to Supabase</div>
             </div>
           </div>
@@ -1890,6 +1898,7 @@ function renderBuildTracker() {
   const start = new Date('2026-04-07');
   const days = Math.floor((Date.now()-start.getTime())/86400000);
   document.getElementById('days-built').textContent = days;
+  loadFounderTrackerData();
 
   const features = [
     ['OnboardingScreen (5-step + Supabase)', true],
@@ -1999,6 +2008,49 @@ function renderLegal(users, consent) {
 // ── Init ──────────────────────────────────────────────────────
 loadAll();
 setInterval(loadAll, 60000); // auto-refresh every 60s
+
+// ── Founder Tracker Live Data ─────────────────────────────────
+async function loadFounderTrackerData(){
+  try{
+    const data = await sbGet('founder_tracker?id=eq.1');
+    if(!data||!data[0]) return;
+    const ft = data[0];
+    const hours = Number(ft.total_hours||633.5);
+    const cash = Number(ft.cash_spent||5668);
+    const rate = Number(ft.hourly_rate||417);
+    const timeVal = Math.round(hours * rate);
+    const totalOwed = timeVal + cash;
+    
+    // Update Build Tracker cards
+    const hoursEl = document.querySelector('#tab-build .stat-value:nth-child(1)');
+    // Update investment readiness
+    const projFounder = document.getElementById('proj-val-founder');
+    const projAgency = document.getElementById('proj-val-agency');
+    if(projFounder) projFounder.textContent = 'R'+timeVal.toLocaleString('en-ZA');
+    if(projAgency) projAgency.textContent = 'R'+Math.round(hours*750).toLocaleString('en-ZA');
+    
+    // Show in build tracker stat
+    const statEls = document.querySelectorAll('#tab-build .stat-value');
+    if(statEls[1]) statEls[1].textContent = Math.round(hours);
+    if(statEls[2]) statEls[2].textContent = 'R'+Math.round(timeVal/1000)+'k';
+  }catch(e){ console.warn('Founder tracker load failed:', e); }
+}
+
+async function logFounderSession(hours, description){
+  try{
+    const current = await sbGet('founder_tracker?id=eq.1');
+    const cur = current?.[0];
+    if(!cur) return;
+    const newHours = Number(cur.total_hours||0) + hours;
+    await sbPatch('founder_tracker?id=eq.1', {
+      total_hours: newHours,
+      last_updated: new Date().toISOString()
+    });
+    showToast('✅ Session logged — '+hours+'h added');
+    loadFounderTrackerData();
+  }catch(e){ showToast('❌ Failed to log session'); }
+}
+
 </script>
 </body>
 </html>
