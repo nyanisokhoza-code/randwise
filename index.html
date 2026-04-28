@@ -2885,8 +2885,44 @@ async function renderDash(){
   const me=expenses.filter(e=>new Date(e.logged_at||e.created_at)>=ms);
   const spent=me.reduce((s,e)=>s+Number(e.amount),0);
   const {wb,disposable,fixed,breakdown:budgetBreakdown}=getSmartWeeklyBudget();
-  // sp = spendable = income minus fixed monthly commitments (NOT minus all expenses)
-  const sp=Math.max(0,disposable);
+  // sp = confirmed disposable — only subtract what user has actually confirmed this cycle
+  const _spNow=new Date();
+  const _spY=_spNow.getFullYear(),_spM=_spNow.getMonth()+1;
+  const _spSal=(localStorage.getItem(`rw_salary_confirmed_${_spY}_${_spM}`)||'').startsWith('confirmed:');
+  const _spDebtDone=localStorage.getItem(`rw_payday_checkin_${_spY}_${_spM}`)==='done';
+  const _spNeeds=(localStorage.getItem(`rw_needs_confirmed_${_spY}_${_spM}`)||'').startsWith('confirmed:');
+  let sp=0;
+  if(_spSal){
+    // Start with income
+    sp=inc;
+    // Subtract only confirmed debt payments this cycle
+    const _cycleStart=(()=>{const d=new Date(_spY,_spM-1,Number(user?.pay_day||25));if(d>_spNow)d.setMonth(d.getMonth()-1);return d;})();
+    const _confirmedPayments=expenses.filter(e=>{
+      // Check debt_payments via the rw_paid_ keys set when user confirmed each debt
+      return false; // placeholder — see below
+    });
+    // Use individual debt confirmation keys set during check-in
+    let _confirmedDebtTotal=0;
+    if(debts&&debts.length){
+      debts.forEach(d=>{
+        const _pKey=`rw_paid_${d.id}_${_spY}_${_spM}`;
+        const _pVal=localStorage.getItem(_pKey);
+        if(_pVal&&_pVal!=='missed'&&_pVal.startsWith('paid:')){
+          // Format is "paid:200" — extract the actual confirmed amount
+          const _pAmt=Number(_pVal.split(':')[1])||Number(d.min_payment||0);
+          _confirmedDebtTotal+=_pAmt;
+        }
+      });
+    }
+    sp=Math.max(0,sp-_confirmedDebtTotal);
+    // Subtract monthly needs only if confirmed
+    if(_spNeeds){
+      const _needs=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+      const _custom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
+      const _needsTotal=Object.values(_needs).reduce((s,v)=>s+Number(v),0)+_custom.reduce((s,n)=>s+Number(n.amount||0),0);
+      sp=Math.max(0,sp-_needsTotal);
+    }
+  }
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
 
