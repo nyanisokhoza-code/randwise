@@ -2942,9 +2942,9 @@ async function renderDash(){
       const _needsTotal=Object.values(_needs).reduce((s,v)=>s+Number(v),0)+_custom.reduce((s,n)=>s+Number(n.amount||0),0);
       sp=Math.max(0,sp-_needsTotal);
     }
-    // Subtract accelerator plan extra payment if committed
+    // Subtract accelerator plan extra payment only if user committed to it
     const _accPlan=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
-    if(_accPlan&&_accPlan.extra>0) sp=Math.max(0,sp-Number(_accPlan.extra));
+    if(_accPlan&&_accPlan.extra>0&&_accPlan.committed_at) sp=Math.max(0,sp-Number(_accPlan.extra));
   }
   const sc=sp<inc*.1?'#a32d2d':sp<inc*.25?'#ba7517':'#1a7a4a';
   const weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
@@ -3299,7 +3299,7 @@ async function renderDash(){
         }
         // Accelerator plan line
         const _bAcc=JSON.parse(localStorage.getItem('rw_acc_plan')||'null');
-        if(_bAcc&&_bAcc.extra>0) _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:#1a5c35">🎯 Extra (plan)</span><span style="font-size:12px;font-weight:700;color:#c62828">−R${Number(_bAcc.extra).toLocaleString('en-ZA')}</span></div>`;
+        if(_bAcc&&_bAcc.extra>0&&_bAcc.committed_at) _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:#1a5c35">🎯 Extra (plan)</span><span style="font-size:12px;font-weight:700;color:#c62828">−R${Number(_bAcc.extra).toLocaleString('en-ZA')}</span></div>`;
         // Monthly needs line
         _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:${_bNeeds?'#2c2c2a':'#aaa'}">⏳ Monthly needs</span><span style="font-size:12px;font-weight:700;color:${_bNeeds?'#c62828':'#aaa'}">${_bNeeds?'−R'+(Object.values(JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}')).reduce((s,v)=>s+Number(v),0)).toLocaleString('en-ZA'):'pending'}</span></div>`;
         // Tap prompt
@@ -7448,7 +7448,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v162';
+const APP_VERSION = '2026-04-28-v163';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
