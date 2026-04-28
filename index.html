@@ -1139,9 +1139,10 @@ if('serviceWorker' in navigator){
             <div style="flex:1">
               <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
               <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;cursor:pointer;display:flex;align-items:center;gap:6px" id="hdr-income" onclick="openQuickEditIncome()">R0 <span style="font-size:11px;opacity:.5">✏️</span></div>
-              <div id="hdr-after-row" style="display:none">
+              <div id="hdr-after-row">
                 <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;font-weight:500">After commitments</div>
                 <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px;text-decoration:none" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
+                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;font-style:italic" id="hdr-after-msg">Tap breakdown to confirm</div>
               </div>
             </div>
           </div>
@@ -3130,10 +3131,24 @@ async function renderDash(){
   }
 
   // ── MINI RING in header ────────────────────────────────────
-  const circ=2*Math.PI*34,pct=inc>0?Math.min(spent/inc,1):0;
+  // Circle fills based on confirmed data only
+  const _cn=new Date();
+  const _cSal=(localStorage.getItem(`rw_salary_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
+  const _cAll=_cSal
+    && localStorage.getItem(`rw_payday_checkin_${_cn.getFullYear()}_${_cn.getMonth()+1}`)==='done'
+    && (localStorage.getItem(`rw_needs_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
+  const circ=2*Math.PI*34;
+  // Only fill circle when all 3 confirmed — otherwise show empty
+  const pct=_cAll&&inc>0?Math.min(spent/inc,1):0;
   const rarcEl=document.getElementById('rarc');if(rarcEl)rarcEl.setAttribute('stroke-dasharray',`${circ*pct} ${circ}`);
   const ramtEl=document.getElementById('ramt');
-  if(ramtEl)ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+  if(ramtEl){
+    if(_cAll){
+      ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
+    } else {
+      ramtEl.textContent='—';
+    }
+  }
   // After commitments = spendable
   const afterEl=document.getElementById('hdr-after');
   const afterRow=document.getElementById('hdr-after-row');
@@ -3143,13 +3158,19 @@ async function renderDash(){
     const _c3=_sSal
       && localStorage.getItem(`rw_payday_checkin_${_an.getFullYear()}_${_an.getMonth()+1}`)==='done'
       && (localStorage.getItem(`rw_needs_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:');
-    if(_sSal){
-      // Salary confirmed — show the row
-      afterRow.style.display='block';
-      afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+(_c3?' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>':' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">est.</span>');
+    const msgEl=document.getElementById('hdr-after-msg');
+    if(_c3){
+      // All 3 confirmed — show real number, hide message
+      afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
+      if(msgEl) msgEl.style.display='none';
+    } else if(_sSal){
+      // Salary confirmed, rest pending — show est.
+      afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">est.</span>';
+      if(msgEl){ msgEl.textContent='Confirm debt & needs to unlock exact number'; msgEl.style.display='block'; }
     } else {
-      // Salary not confirmed — hide the row entirely
-      afterRow.style.display='none';
+      // Nothing confirmed — show R0 with prompt
+      afterEl.innerHTML='R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
+      if(msgEl){ msgEl.textContent='Tap breakdown below to confirm'; msgEl.style.display='block'; }
     }
   }
 
