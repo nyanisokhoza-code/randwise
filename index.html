@@ -536,6 +536,24 @@ if('serviceWorker' in navigator){
 </div>
 
 <!-- PAYDAY PAYMENT CHECK-IN -->
+<!-- SALARY CONFIRMATION CHECK-IN (monthly, on payday) -->
+<div id="salary-confirm-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7800;align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px">
+    <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+    <div style="font-size:32px;text-align:center;margin-bottom:12px">💸</div>
+    <div style="font-size:18px;font-weight:900;color:#111;text-align:center;margin-bottom:8px">Did your salary arrive?</div>
+    <div style="font-size:13px;color:#888;text-align:center;line-height:1.5;margin-bottom:20px">Confirming keeps your budget breakdown accurate for this month.</div>
+    <div style="background:#f7f6f2;border-radius:12px;padding:14px;text-align:center;margin-bottom:20px">
+      <div style="font-size:12px;color:#888;margin-bottom:4px">Expected this payday</div>
+      <div style="font-size:28px;font-weight:900;color:#1a5c35" id="salary-confirm-amount">R0</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmSalaryReceived(true)" style="padding:14px;background:#eaf3de;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#1a5c35;cursor:pointer;font-family:inherit">✅ Yes — salary received</button>
+      <button onclick="confirmSalaryReceived(false)" style="padding:14px;background:#fff3f3;border:none;border-radius:14px;font-size:15px;font-weight:700;color:#c62828;cursor:pointer;font-family:inherit">❌ Not yet / different amount</button>
+    </div>
+  </div>
+</div>
+
 <div id="payday-checkin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:7700;align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:24px 24px 48px;max-height:85vh;overflow-y:auto">
     <div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
@@ -2778,7 +2796,7 @@ async function renderDash(){
   setTimeout(maybeShowAbout, 1200);
   setTimeout(maybeShowCheckin, 4000);
   setTimeout(maybeShowPushPrompt, 8000);
-  setTimeout(maybeShowPaydayCheckin, 3000);
+  setTimeout(maybeShowSalaryConfirm, 3000); // salary first, then debt check-in chains after
   setTimeout(maybeShowIncomeCheckin, 10000);
   setTimeout(maybeShowNeedsCheckin, 12000);
   checkAppRating();
@@ -3136,10 +3154,18 @@ async function renderDash(){
   }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
 
-  // ── BUDGET BREAKDOWN CARD (Pro only) ───────────────────────
+  // ── BUDGET BREAKDOWN CARD (Pro only, confirmed data only) ──
   const bbCard = document.getElementById('budget-breakdown-card');
   const {isPro:bbIsPro} = getTier();
-  if(bbCard && budgetBreakdown && budgetBreakdown.length > 0 && bbIsPro){
+  // Gate: income entered + debts added + monthly needs entered + salary confirmed this cycle
+  const _hasIncome = Number(user?.income_amount||0) > 0;
+  const _hasDebts = debts && debts.length > 0;
+  const _hasNeeds = (()=>{ try{ const n=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}'); return Object.values(n).some(v=>Number(v)>0); }catch{ return false; } })();
+  const _now = new Date();
+  const _salaryKey = `rw_salary_confirmed_${_now.getFullYear()}_${_now.getMonth()+1}`;
+  const _salaryConfirmed = (localStorage.getItem(_salaryKey)||'').startsWith('confirmed:');
+  const _setupComplete = _hasIncome && _hasDebts && _hasNeeds && _salaryConfirmed;
+  if(bbCard && _setupComplete && budgetBreakdown && budgetBreakdown.length > 0 && bbIsPro){
     bbCard.style.display='block';
     document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
     document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
@@ -7264,7 +7290,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v153';
+const APP_VERSION = '2026-04-28-v155';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8361,6 +8387,44 @@ async function loadLastPayment(debtId){
 }
 
 // ── Payday Payment Check-in ───────────────────────────────────
+
+// ── Salary Confirmation (monthly on payday) ──────────────────
+function maybeShowSalaryConfirm(){
+  if(!user?.id) return;
+  const now = new Date();
+  const payDay = Number(user.pay_day||25);
+  const today = now.getDate();
+  const cycleKey = `rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
+  if(localStorage.getItem(cycleKey)) return;
+  // Only on payday itself or 1 day after
+  const daysAfter = today >= payDay ? today - payDay : today + (new Date(now.getFullYear(), now.getMonth(), 0).getDate() - payDay);
+  if(daysAfter !== 0 && daysAfter !== 1) return;
+  // Show salary confirmation
+  const el = document.getElementById('salary-confirm-amount');
+  if(el) el.textContent = 'R' + Number(user.income_amount||0).toLocaleString('en-ZA');
+  const ov = document.getElementById('salary-confirm-overlay');
+  if(ov) { ov.style.display='flex'; }
+}
+
+async function confirmSalaryReceived(received){
+  const ov = document.getElementById('salary-confirm-overlay');
+  if(ov) ov.style.display='none';
+  const now = new Date();
+  const cycleKey = `rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
+  if(received){
+    localStorage.setItem(cycleKey, 'confirmed:' + new Date().toISOString());
+    // Update Supabase — salary confirmed this cycle
+    try{ await sbPatch(`beta_testers?id=eq.${user.id}`,{salary_last_confirmed: new Date().toISOString()}); }catch{}
+    showToast('✅ Salary confirmed — budget breakdown updated');
+    // Now trigger debt check-in after 1 second
+    setTimeout(maybeShowPaydayCheckin, 1000);
+  } else {
+    localStorage.setItem(cycleKey, 'pending:' + new Date().toISOString());
+    showToast('📌 Noted — update your income in Profile when it arrives');
+  }
+  renderDash();
+}
+
 async function maybeShowPaydayCheckin(){
   if(!user?.id||!debts?.length) return;
   const now=new Date();
