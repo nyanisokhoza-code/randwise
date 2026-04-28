@@ -3114,7 +3114,9 @@ async function renderDash(){
   const overBudget = wb > 0 && weekSpentAmt > wb;
   const weekEl = document.getElementById('stat-week-spent');
   if(weekEl){
-    weekEl.textContent = 'R'+weekSpentAmt.toLocaleString('en-ZA');
+    // Show remaining budget (not spent) — clearer for users
+    const weekRemaining = Math.max(0, wb - weekSpentAmt);
+    weekEl.textContent = 'R'+weekRemaining.toLocaleString('en-ZA');
     weekEl.style.color = overBudget ? '#c62828' : '#1a5c35';
   }
   const weekCard = document.getElementById('week-stat-card');
@@ -3124,9 +3126,12 @@ async function renderDash(){
   }
   const weekLabelEl = document.getElementById('stat-week-label');
   if(weekLabelEl){
+    const weekRemaining2 = Math.max(0, wb - weekSpentAmt);
     weekLabelEl.textContent = overBudget
       ? `⚠️ R${Math.round(weekSpentAmt-wb).toLocaleString('en-ZA')} over budget`
-      : `Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk`;
+      : weekSpentAmt===0
+        ? `Week ${weekOfMonth} of 4 · R${wb.toLocaleString('en-ZA')}/wk available`
+        : `Week ${weekOfMonth} of 4 · R${weekRemaining2.toLocaleString('en-ZA')} left`;
     weekLabelEl.style.color = overBudget ? '#c62828' : '';
   }
   set('week-num-label',`Week ${weekOfMonth} of 4`);
@@ -7259,7 +7264,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v151';
+const APP_VERSION = '2026-04-28-v153';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -8356,24 +8361,50 @@ async function loadLastPayment(debtId){
 }
 
 // ── Payday Payment Check-in ───────────────────────────────────
-function maybeShowPaydayCheckin(){
+async function maybeShowPaydayCheckin(){
   if(!user?.id||!debts?.length) return;
   const now=new Date();
   const payDay=Number(user.pay_day||25);
   const today=now.getDate();
-  const monthKey=`rw_payday_checkin_${now.getFullYear()}_${now.getMonth()+1}`;
-  // Show on payday+1 and payday+3 if not done
-  const daysAfterPay=today-payDay;
-  if(daysAfterPay!==1&&daysAfterPay!==3) return;
+  const currentMonth=now.getMonth()+1;
+  const currentYear=now.getFullYear();
+  const monthKey=`rw_payday_checkin_${currentYear}_${currentMonth}`;
   if(localStorage.getItem(monthKey)==='done') return;
-  // Check for previous month unpaid debts first
-  const prevMonth=now.getMonth()===0?12:now.getMonth();
-  const prevYear=now.getMonth()===0?now.getFullYear()-1:now.getFullYear();
-  const unpaidPrev=debts.filter(d=>{
-    const key=`rw_paid_${d.id}_${prevYear}_${prevMonth}`;
-    return !localStorage.getItem(key);
-  });
-  setTimeout(()=>showPaydayCheckin(unpaidPrev.length>0?'prev':'current'),2000);
+  // Trigger on payday itself, and retry once 2 days later — then stop
+  // e.g. payday=25: triggers on 25th and 27th only
+  const daysAfterPay=today>=payDay?today-payDay:today+(new Date(currentYear,currentMonth-1,0).getDate()-payDay);
+  if(daysAfterPay!==0&&daysAfterPay!==2) return;
+  // Check Supabase for payments already made this month — don't ask again
+  const prevMonth=currentMonth===1?12:currentMonth-1;
+  const prevYear=currentMonth===1?currentYear-1:currentYear;
+  // Query from payday of previous cycle onwards (payday = start of new pay cycle)
+  // e.g. paid on 25th: look for payments from 25th April onwards
+  const cycleStart=new Date(currentYear,currentMonth-1,payDay);
+  // If today is before payday this month, cycle started last month
+  if(cycleStart>now) cycleStart.setMonth(cycleStart.getMonth()-1);
+  const cycleStartStr=cycleStart.toISOString().split('T')[0];
+  try{
+    const paid=await sbG(`debt_payments?tester_id=eq.${user.id}&paid_at=gte.${cycleStartStr}`);
+    const paidIds=new Set((paid||[]).map(p=>p.debt_id));
+    // Mark already-paid debts in localStorage so check-in skips them
+    debts.forEach(d=>{
+      if(paidIds.has(d.id)){
+        localStorage.setItem(`rw_paid_${d.id}_${prevYear}_${prevMonth}`,'paid:confirmed');
+      }
+    });
+    const unpaidPrev=debts.filter(d=>!paidIds.has(d.id));
+    if(!unpaidPrev.length){
+      // All paid — mark done, no check-in needed
+      localStorage.setItem(monthKey,'done');
+      return;
+    }
+    setTimeout(()=>showPaydayCheckin('prev'),2000);
+  }catch{
+    // Fallback to localStorage only
+    const unpaidPrev=debts.filter(d=>!localStorage.getItem(`rw_paid_${d.id}_${prevYear}_${prevMonth}`));
+    if(!unpaidPrev.length){ localStorage.setItem(monthKey,'done'); return; }
+    setTimeout(()=>showPaydayCheckin('prev'),2000);
+  }
 }
 
 function showPaydayCheckin(mode){
