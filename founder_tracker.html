@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandWise — Founder Investment Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0e1a12;--paper:#f5f2eb;--green:#1a7a4a;--green-light:#eaf3de;--green-mid:#2d9e5f;
+  --gold:#c9922a;--gold-light:#fdf3e0;--red:#a32d2d;--red-light:#fdecea;
+  --border:#ddd8cc;--muted:#7a7368;--white:#fff;
+  --serif:'DM Serif Display',serif;--mono:'DM Mono',monospace;--sans:'Outfit',sans-serif;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+#lock{position:fixed;inset:0;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;padding:40px}
+.lock-logo{font-family:var(--serif);font-size:48px;color:#fff;margin-bottom:6px;letter-spacing:-1px}
+.lock-logo span{color:#4ade80}
+.lock-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:48px;letter-spacing:2px;text-transform:uppercase}
+.lock-label{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;align-self:flex-start;width:100%;max-width:320px}
+.lock-input{width:100%;max-width:320px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:16px 18px;font-size:18px;letter-spacing:6px;color:#fff;font-family:var(--mono);text-align:center;outline:none;margin-bottom:12px;transition:border-color .2s}
+.lock-input:focus{border-color:rgba(74,222,128,.4)}
+.lock-btn{width:100%;max-width:320px;background:#4ade80;color:var(--ink);border:none;border-radius:10px;padding:15px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--sans);letter-spacing:.5px}
+.lock-err{color:#f87171;font-size:12px;margin-top:6px;min-height:18px;text-align:center;width:100%;max-width:320px}
+.lock-nda{font-size:11px;color:rgba(255,255,255,.25);margin-top:32px;text-align:center;max-width:280px;line-height:1.6}
+#app{display:none;min-height:100vh}
+.hdr{background:var(--ink);padding:28px 40px 24px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(74,222,128,.08) 0%,transparent 70%);pointer-events:none}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px}
+.hdr-brand{font-family:var(--serif);font-size:28px;color:#fff;letter-spacing:-0.5px}
+.hdr-brand span{color:#4ade80}
+.hdr-badge{background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.2);color:#4ade80;font-size:10px;font-weight:600;padding:4px 12px;border-radius:20px;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--mono)}
+.hdr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.06);border-radius:14px;overflow:hidden;margin-top:28px}
+.hdr-stat{background:rgba(255,255,255,.04);padding:18px 20px}
+.hdr-stat-l{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-family:var(--mono)}
+.hdr-stat-v{font-size:20px;font-weight:700;color:#fff;font-family:var(--serif);letter-spacing:-0.5px}
+.hdr-stat-v.gold{color:#fbbf24}
+.hdr-stat-v.green{color:#4ade80}
+.hdr-stat-v.red{color:#f87171}
+.content{max-width:960px;margin:0 auto;padding:40px 24px 80px}
+.nda-notice{background:var(--gold-light);border:1px solid #e8c87a;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;gap:14px;align-items:flex-start}
+.nda-ico{font-size:20px;flex-shrink:0}
+.nda-text{font-size:12px;color:#7a5a12;line-height:1.6}
+.nda-text strong{display:block;margin-bottom:2px;font-size:13px}
+/* ACCRUAL BANNER */
+.accrual-banner{background:var(--ink);border-radius:14px;padding:20px 24px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.accrual-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:4px;font-family:var(--mono)}
+.accrual-value{font-family:var(--serif);font-size:22px;color:#4ade80}
+.accrual-note{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
+.accrual-status{display:flex;align-items:center;gap:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:8px;padding:8px 14px}
+.accrual-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* TOTAL BOX */
+.total-box{background:var(--ink);border-radius:16px;padding:28px 32px;margin-bottom:32px;position:relative;overflow:hidden}
+.total-box::after{content:'';position:absolute;bottom:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(74,222,128,.1) 0%,transparent 70%);pointer-events:none}
+.total-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px;font-family:var(--mono)}
+.total-value{font-family:var(--serif);font-size:52px;color:#fff;letter-spacing:-2px;line-height:1;margin-bottom:4px}
+.total-value span{color:#4ade80}
+.total-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px}
+.breakdown-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.breakdown-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px}
+.bd-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:var(--mono)}
+.bd-value{font-size:18px;font-weight:700;color:#4ade80;font-family:var(--mono)}
+.bd-sub{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
+.repay-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.repay-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px}
+.repay-milestone{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-family:var(--mono)}
+.repay-amount{font-size:16px;font-weight:700;color:#fbbf24;font-family:var(--mono)}
+.repay-period{font-size:11px;color:rgba(255,255,255,.25);margin-top:2px}
+/* SECTION */
+.section{margin-bottom:36px}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px solid var(--border)}
+.sec-title{font-family:var(--serif);font-size:20px;color:var(--ink)}
+.sec-total{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--green)}
+.add-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:opacity .15s}
+.add-btn:hover{opacity:.85}
+/* RATE BANNER */
+.rate-banner{background:var(--green-light);border:1px solid #b5dfa8;border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+.rate-right{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--green)}
+.rate-edit{background:none;border:none;color:var(--green);font-size:12px;cursor:pointer;text-decoration:underline;margin-left:10px}
+/* ENTRIES */
+.entries{display:flex;flex-direction:column;gap:8px}
+.entry{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:box-shadow .15s}
+.entry:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.entry-ico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.entry-ico.time{background:#eaf3de}
+.entry-ico.cash{background:#fdf3e0}
+.entry-ico.sub{background:#eeedfe}
+.entry-ico.acc{background:#fdecea}
+.entry-body{flex:1}
+.entry-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.entry-meta{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.entry-amount{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--ink);flex-shrink:0}
+.entry-del{background:none;border:none;color:var(--border);font-size:18px;cursor:pointer;padding:4px;line-height:1;transition:color .15s;flex-shrink:0}
+.entry-del:hover{color:var(--red)}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:13px;border:1.5px dashed var(--border);border-radius:12px}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:18px;padding:28px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto}
+.modal-title{font-family:var(--serif);font-size:20px;margin-bottom:20px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block;font-family:var(--mono)}
+.form-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--ink);font-family:var(--sans);outline:none;transition:border-color .2s;background:var(--paper)}
+.form-input:focus{border-color:var(--green)}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-save{flex:1;background:var(--green);color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--sans)}
+.modal-cancel{flex:1;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:10px;padding:13px;font-size:14px;cursor:pointer;font-family:var(--sans)}
+.calc-preview{background:var(--green-light);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--green);font-family:var(--mono);margin-bottom:4px;min-height:36px}
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:1.5px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-dot{position:absolute;left:-24px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--white);box-shadow:0 0 0 2px var(--green)}
+.tl-dot.cash{background:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.tl-dot.sub{background:#7c3aed;box-shadow:0 0 0 2px #7c3aed}
+.tl-date{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:2px}
+.tl-text{font-size:13px;color:var(--ink);font-weight:500}
+.tl-val{font-size:12px;color:var(--green);font-family:var(--mono);font-weight:500}
+@media(max-width:600px){
+  .hdr{padding:20px}
+  .hdr-stats{grid-template-columns:repeat(2,1fr)}
+  .breakdown-grid,.repay-grid{grid-template-columns:1fr}
+  .total-value{font-size:36px}
+  .content{padding:24px 16px 60px}
+  .accrual-banner{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div id="rw-auth-wall" style="position:fixed;inset:0;background:#0d3d22;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif">
+  <div style="background:#1a5c35;border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="font-size:48px;margin-bottom:16px">🌱</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px">MyRandWise Admin</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:28px">Enter password to continue</div>
+    <input id="rw-pw-input" type="password" placeholder="Password" 
+      style="width:100%;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:15px;outline:none;box-sizing:border-box;margin-bottom:12px;font-family:inherit"
+      onkeydown="if(event.key==='Enter')rwCheckAuth()">
+    <div id="rw-pw-error" style="color:#ff8a80;font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <button onclick="rwCheckAuth()" style="width:100%;padding:14px;background:#4ade80;color:#0d3d22;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer">Unlock →</button>
+    <div id="rw-lockout-timer" style="color:rgba(255,255,255,.5);font-size:12px;margin-top:12px"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const HASH='c368098d5d663f46273e7e74fe7d116931beb1270eb5d339abc0382bb8e9a66a';
+  const SK='rw_admin_auth',AK='rw_auth_attempts',LK='rw_auth_lockout';
+  if(sessionStorage.getItem(SK)===HASH){document.getElementById('rw-auth-wall').style.display='none';return;}
+  checkLock();
+  async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  function checkLock(){
+    const l=Number(localStorage.getItem(LK)||0),now=Date.now();
+    if(l>now){
+      const s=Math.ceil((l-now)/1000);
+      document.getElementById('rw-pw-input').disabled=true;
+      document.getElementById('rw-lockout-timer').textContent='Too many attempts. Try again in '+s+'s';
+      setTimeout(checkLock,1000);
+    } else {
+      document.getElementById('rw-pw-input').disabled=false;
+      document.getElementById('rw-lockout-timer').textContent='';
+      localStorage.removeItem(LK);
+    }
+  }
+  window.rwCheckAuth=async function(){
+    if(Number(localStorage.getItem(LK)||0)>Date.now())return;
+    const h=await hashStr(document.getElementById('rw-pw-input').value);
+    if(h===HASH){
+      sessionStorage.setItem(SK,HASH);
+      localStorage.removeItem(AK);localStorage.removeItem(LK);
+      document.getElementById('rw-auth-wall').style.display='none';
+    } else {
+      let a=Number(localStorage.getItem(AK)||0)+1;
+      localStorage.setItem(AK,a);
+      const r=3-a;
+      if(r<=0){localStorage.setItem(LK,Date.now()+30000);localStorage.removeItem(AK);document.getElementById('rw-pw-error').textContent='Too many attempts. Locked for 30 seconds.';checkLock();}
+      else document.getElementById('rw-pw-error').textContent='Incorrect password. '+r+' attempt'+(r!==1?'s':'')+' remaining.';
+      document.getElementById('rw-pw-input').value='';document.getElementById('rw-pw-input').focus();
+    }
+  };
+  document.getElementById('rw-pw-input').focus();
+})();
+</script>
+
+<div id="lock">
+  <div class="lock-logo">Rand<span>Wise</span></div>
+  <div class="lock-sub">Founder Investment Ledger</div>
+  <div class="lock-label">Access password</div>
+  <input class="lock-input" type="password" id="lock-pw" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')unlock()">
+  <button class="lock-btn" onclick="unlock()">Enter ledger →</button>
+  <div class="lock-err" id="lock-err"></div>
+  <div class="lock-nda">Confidential — NDA protected. Unauthorised access is prohibited.</div>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-top">
+      <div>
+        <div class="hdr-brand">Rand<span>Wise</span></div>
+        <div style="font-size:11px;color:rgba(255,255,255,.3);margin-top:2px;font-family:var(--mono)">Founder Investment Ledger · Nyaniso Khoza</div>
+      </div>
+      <div class="hdr-badge">NDA Protected</div>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.25);font-family:var(--mono)" id="hdr-date">—</div>
+    <div class="hdr-stats">
+      <div class="hdr-stat">
+        <div class="hdr-stat-l">Total hours</div>
+        <div class="hdr-stat-v" id="stat-hours">0h</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-l">Time value</div>
+        <div class="hdr-stat-v green" id="stat-time-val">R0</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-l">Cash spent</div>
+        <div class="hdr-stat-v gold" id="stat-cash">R0</div>
+      </div>
+      <div class="hdr-stat">
+        <div class="hdr-stat-l">Total owed</div>
+        <div class="hdr-stat-v red" id="stat-total">R0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="nda-notice">
+      <div class="nda-ico">⚖️</div>
+      <div class="nda-text">
+        <strong>Confidential — NDA Required · Nyaniso Khoza, Founder & Lead Developer</strong>
+        This ledger documents the personal financial investment made by the founder into RandWise. All figures constitute a founder loan to be repaid from company revenue. Viewing this document acknowledges your NDA obligations.
+      </div>
+    </div>
+
+    <!-- SUBSCRIPTION ACCRUAL STATUS -->
+    <div class="accrual-banner">
+      <div>
+        <div class="accrual-label">Monthly subscription accrual</div>
+        <div class="accrual-value" id="accrual-monthly">R1,000/mo</div>
+        <div class="accrual-note" id="accrual-note">Accruing until RandWise earns R1,000/month MRR</div>
+      </div>
+      <div>
+        <div class="accrual-label">RandWise current MRR</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+          <div class="accrual-value" id="mrr-display">R0</div>
+          <button class="rate-edit" style="color:#4ade80" onclick="updateMRR()">update</button>
+        </div>
+        <div class="accrual-note" id="shortfall-note">Full R1,000/mo is owed · shortfall = R1,000</div>
+      </div>
+      <div class="accrual-status">
+        <div class="accrual-dot"></div>
+        <div style="font-size:12px;color:#4ade80;font-family:var(--mono)">Accruing</div>
+      </div>
+    </div>
+
+    <div class="rate-banner">
+      <div style="font-size:13px;color:var(--green);font-weight:600">⏱ Developer rate — R417/hr (confirmed from project records)</div>
+      <div>
+        <span class="rate-right" id="rate-display">R417/hr</span>
+        <button class="rate-edit" onclick="editRate()">change</button>
+      </div>
+    </div>
+
+    <!-- GRAND TOTAL -->
+    <div class="total-box">
+      <div class="total-label">Total RandWise owes the founder</div>
+      <div class="total-value">R<span id="grand-total">0</span></div>
+      <div class="total-sub" id="total-breakdown">Calculating...</div>
+      <div class="breakdown-grid">
+        <div class="breakdown-card">
+          <div class="bd-label">Dev time</div>
+          <div class="bd-value" id="bd-time">R0</div>
+          <div class="bd-sub" id="bd-time-sub">0 hours</div>
+        </div>
+        <div class="breakdown-card">
+          <div class="bd-label">Cash & subscriptions</div>
+          <div class="bd-value" id="bd-cash">R0</div>
+          <div class="bd-sub">Out of pocket</div>
+        </div>
+        <div class="breakdown-card">
+          <div class="bd-label">Sub shortfall accrued</div>
+          <div class="bd-value" id="bd-shortfall">R0</div>
+          <div class="bd-sub" id="bd-shortfall-sub">0 months tracked</div>
+        </div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.08);margin:20px 0"></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px;font-family:var(--mono)">Repayment schedule (from company revenue)</div>
+      <div class="repay-grid">
+        <div class="repay-card">
+          <div class="repay-milestone">At R10k/mo MRR</div>
+          <div class="repay-amount">R2,000/mo</div>
+          <div class="repay-period">Until fully recovered</div>
+        </div>
+        <div class="repay-card">
+          <div class="repay-milestone">At R50k/mo MRR</div>
+          <div class="repay-amount">R5,000/mo</div>
+          <div class="repay-period">Until fully recovered</div>
+        </div>
+        <div class="repay-card">
+          <div class="repay-milestone">At R100k/mo MRR</div>
+          <div class="repay-amount">R10,000/mo</div>
+          <div class="repay-period">Full recovery accelerated</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEV SESSIONS -->
+    <div class="section">
+      <div class="sec-hdr">
+        <div class="sec-title">Development sessions</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="sec-total" id="sessions-total">0h · R0</div>
+          <button class="add-btn" onclick="openModal('session')">+ Log session</button>
+        </div>
+      </div>
+      <div class="entries" id="sessions-list"><div class="empty-state">Loading...</div></div>
+    </div>
+
+    <!-- CASH EXPENSES -->
+    <div class="section">
+      <div class="sec-hdr">
+        <div class="sec-title">Cash expenses</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="sec-total" id="cash-total">R0</div>
+          <button class="add-btn" onclick="openModal('cash')">+ Add expense</button>
+        </div>
+      </div>
+      <div class="entries" id="cash-list"><div class="empty-state">No cash expenses logged yet.</div></div>
+    </div>
+
+    <!-- SUBSCRIPTIONS -->
+    <div class="section">
+      <div class="sec-hdr">
+        <div class="sec-title">Monthly subscriptions</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="sec-total" id="subs-total">R0/mo</div>
+          <button class="add-btn" onclick="openModal('sub')">+ Add subscription</button>
+        </div>
+      </div>
+      <div class="entries" id="subs-list"><div class="empty-state">No subscriptions logged yet.</div></div>
+    </div>
+
+    <!-- SUBSCRIPTION SHORTFALL LOG -->
+    <div class="section">
+      <div class="sec-hdr">
+        <div class="sec-title">Monthly shortfall log</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="sec-total" id="shortfall-total">R0 total accrued</div>
+          <button class="add-btn" onclick="openModal('shortfall')">+ Log month</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Each month RandWise earns less than <strong>R1,000</strong>, the difference is logged here as money owed to the founder. When RandWise earns R1,000/mo consistently, this stops accruing.</p>
+      <div class="entries" id="shortfall-list"><div class="empty-state">No months logged yet. Log each month's shortfall.</div></div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="section">
+      <div class="sec-hdr"><div class="sec-title">Investment timeline</div></div>
+      <div class="timeline" id="timeline"><div class="empty-state" style="margin-left:-28px">No entries yet.</div></div>
+    </div>
+
+    <div style="text-align:center;padding-top:24px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);line-height:1.8">
+        RandWise Founder Investment Ledger · Confidential · NDA Protected<br>
+        Generated <span id="footer-date">—</span><br>
+        <span style="color:var(--green)">Nyaniso Khoza · Founder & Lead Developer · RandWise</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION MODAL -->
+<div class="modal-bg" id="session-modal">
+  <div class="modal">
+    <div class="modal-title">Log a dev session</div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="s-date"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Start time</label><input class="form-input" type="time" id="s-start"></div>
+      <div class="form-group"><label class="form-label">End time</label><input class="form-input" type="time" id="s-end"></div>
+    </div>
+    <div class="form-group"><label class="form-label">What was built / worked on</label><input class="form-input" type="text" id="s-desc" placeholder="e.g. Bank statement parser, bug fixes, admin dashboard"></div>
+    <div class="calc-preview" id="s-calc">Select start and end time to see value</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('session')">Cancel</button>
+      <button class="modal-save" onclick="saveSession()">Save session</button>
+    </div>
+  </div>
+</div>
+
+<!-- CASH MODAL -->
+<div class="modal-bg" id="cash-modal">
+  <div class="modal">
+    <div class="modal-title">Log a cash expense</div>
+    <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="c-date"></div>
+    <div class="form-group"><label class="form-label">Description</label><input class="form-input" type="text" id="c-desc" placeholder="e.g. Hardware, tools, printing"></div>
+    <div class="form-group"><label class="form-label">Amount (R)</label><input class="form-input" type="number" id="c-amount" placeholder="e.g. 1500"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('cash')">Cancel</button>
+      <button class="modal-save" onclick="saveCash()">Save expense</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUB MODAL -->
+<div class="modal-bg" id="sub-modal">
+  <div class="modal">
+    <div class="modal-title">Add a subscription</div>
+    <div class="form-group"><label class="form-label">Service name</label><input class="form-input" type="text" id="sub-name" placeholder="e.g. Claude Pro, Supabase, GitHub"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Monthly cost (R)</label><input class="form-input" type="number" id="sub-amount" placeholder="e.g. 350"></div>
+      <div class="form-group"><label class="form-label">Months active</label><input class="form-input" type="number" id="sub-months" placeholder="e.g. 3"></div>
+    </div>
+    <div class="calc-preview" id="sub-calc">Fill in to see total</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('sub')">Cancel</button>
+      <button class="modal-save" onclick="saveSub()">Save subscription</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHORTFALL MODAL -->
+<div class="modal-bg" id="shortfall-modal">
+  <div class="modal">
+    <div class="modal-title">Log monthly shortfall</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Record how much RandWise earned vs the R1,000/mo subscription cost. The difference is owed to you.</p>
+    <div class="form-group"><label class="form-label">Month</label><input class="form-input" type="month" id="sf-month"></div>
+    <div class="form-group"><label class="form-label">RandWise MRR that month (R)</label><input class="form-input" type="number" id="sf-mrr" placeholder="e.g. 0 (if no revenue yet)"></div>
+    <div class="form-group"><label class="form-label">Total subscriptions that month (R)</label><input class="form-input" type="number" id="sf-subs" placeholder="e.g. 1000"></div>
+    <div class="calc-preview" id="sf-calc">Fill in to see shortfall</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('shortfall')">Cancel</button>
+      <button class="modal-save" onclick="saveShortfall()">Save shortfall</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'RandWise2026';
+const KEY = 'rw_founder_v3';
+let RATE = 417;
+let currentMRR = 0;
+
+// ── TWO-RATE SYSTEM ──
+// Research phase (Jan–27 Mar 2026): R280/hr × 280 hours = R78,400
+// Development phase (28 Mar 2026 onwards): R417/hr
+// March dev: 28–31 Mar = 4 days × 14h = 56h = R23,352
+// April dev: 1–13 Apr = 13 days × 14h = 182h = R75,894
+
+const RESEARCH_RATE = 280;
+const DEV_RATE = 417;
+
+// ── PRELOADED DATA ──
+const SEED = {
+  rate: 417,
+  mrr: 0,
+  sessions: [
+    // ── RESEARCH PHASE: Jan–27 Mar 2026 @ R280/hr (280 hours total) ──
+    {id:'r1',date:'2026-01-06',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 1 — SA fintech market analysis, competitor mapping, target market definition'},
+    {id:'r2',date:'2026-01-07',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 1 — Budgeting app user research, SA financial literacy landscape, problem validation'},
+    {id:'r3',date:'2026-01-13',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 2 — Business model research, monetisation benchmarks, pricing strategy for SA market'},
+    {id:'r4',date:'2026-01-14',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 2 — Tech stack evaluation, React Native vs PWA, Supabase vs Firebase analysis'},
+    {id:'r5',date:'2026-01-20',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 3 — Referral programme design, viral loop mechanics, SA mobile payment landscape'},
+    {id:'r6',date:'2026-01-21',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 3 — Financial product regulation research, NCA compliance, Treating Customers Fairly'},
+    {id:'r7',date:'2026-01-27',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 4 — App architecture design, database schema planning, UX wireframes'},
+    {id:'r8',date:'2026-01-28',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 4 — Brand identity research, SA design language, name and positioning: RandWise'},
+    {id:'r9',date:'2026-02-03',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 1 — Feature prioritisation, MVP scope definition, launch plan v1'},
+    {id:'r10',date:'2026-02-04',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 1 — Envelope budgeting methodology, debt snowball/avalanche research'},
+    {id:'r11',date:'2026-02-10',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 2 — Legal structure research, founder agreements, equity/IP ownership'},
+    {id:'r12',date:'2026-02-11',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 2 — Growth strategy, beta launch plan, waitlist mechanics'},
+    {id:'r13',date:'2026-02-17',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 3 — PayFast integration research, payment gateway landscape SA'},
+    {id:'r14',date:'2026-02-18',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 3 — User journey mapping, onboarding flow design, life stage personas'},
+    {id:'r15',date:'2026-02-24',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 4 — Investor pitch research, SA startup ecosystem, funding options'},
+    {id:'r16',date:'2026-02-25',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 4 — NDA and partnership framework research, co-founder agreement templates'},
+    {id:'r17',date:'2026-03-03',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 1 — Bank statement parsing research, OCR/PDF extraction landscape'},
+    {id:'r18',date:'2026-03-04',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 1 — AI integration strategy, Claude API capabilities, prompt engineering'},
+    {id:'r19',date:'2026-03-10',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 2 — Revenue model refinement, Pro/Premium tier feature mapping'},
+    {id:'r20',date:'2026-03-11',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 2 — Admin dashboard requirements, monitoring and health tracking design'},
+  ],
+  // ── DEVELOPMENT PHASE: 28 Mar 2026 onwards @ R417/hr ──
+  devSessions: [
+    // March 28–31 (4 days × 14h = 56h)
+    {id:'d1',date:'2026-03-28',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Day 1 — Project setup, Supabase schema, React Native + Expo initialisation'},
+    {id:'d2',date:'2026-03-29',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Day 2 — Onboarding flow v1, life stages, income setup, Supabase integration'},
+    {id:'d3',date:'2026-03-30',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Day 3 — DashboardScreen — income ring, weekly bars, expense list, stat pills, tab bar'},
+    {id:'d4',date:'2026-03-31',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Day 4 — DebtScreen + GrowScreen v1, Freedom Score, savings goals UI'},
+    // April 1–13 (13 days × 14h = 182h)
+    {id:'d5',date:'2026-04-01',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 1 — WeeklyScreen, envelope budgeting grid, category management'},
+    {id:'d6',date:'2026-04-02',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 2 — ProfileScreen, tier system, referral programme UI, earnings display'},
+    {id:'d7',date:'2026-04-03',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 3 — AddExpenseScreen, 12 categories, quick amounts, Supabase write'},
+    {id:'d8',date:'2026-04-04',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 4 — App navigation, tab bar, stack navigation, screen transitions'},
+    {id:'d9',date:'2026-04-05',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 5 — Onboarding v2 — life stage emojis, income frequency, goals multi-select'},
+    {id:'d10',date:'2026-04-06',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 6 — Pricing model, Pro R49/mo, Premium R129/mo, trial lockout logic'},
+    {id:'d11',date:'2026-04-07',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 7 — Admin dashboard v1, referral calculator, NDA + Co-founder Agreement drafts'},
+    {id:'d12',date:'2026-04-08',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 8 — Referral system — code generation, R10+R5/mo model, payout rules'},
+    {id:'d13',date:'2026-04-09',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 9 — Supabase Auth, email+password signup, session persistence, signUpUser/signIn'},
+    {id:'d14',date:'2026-04-10',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 10 — PayFast integration sandbox, owner hidden panel (tap 5×, PIN 0826), admin stats'},
+    {id:'d15',date:'2026-04-11',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 11 — Admin dashboard v2, paid-first milestones, EasyEquities tracker, referral financial model'},
+    {id:'d16',date:'2026-04-12',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 12 — Full Auth wiring, forgot password, legal docs with watermarks, DebtScreen/GrowScreen Supabase real data'},
+    {id:'d17',date:'2026-04-13',start:'09:00',end:'23:00',hours:14,rate:417,desc:'[DEV] Apr 13 — PWA build (GitHub Pages), bank statement parser (Claude API + PDF), import tab, admin health panel, bug reporting, frozen screen detection'},
+    {id:'d18',date:'2026-04-14',start:'11:00',end:'23:30',hours:12.5,rate:417,desc:'[DEV] Apr 14 — Home screen rebuild, stat cards, daily spend dots, weekly planner, debt snowball, tier system, export PDF/CSV, auth fixes, email templates, domain setup, duplicate account cleanup'},
+    {id:'d19',date:'2026-04-15',start:'09:00',end:'02:00',hours:17,rate:417,desc:'[DEV] Apr 15 — Financial Health tab, debt payoff accelerator, bond readiness, weekly planner historical weeks, Mashonisa loan calculator, report-a-problem form, maintenance triggers, splash loader animation, SW fixes, services directory, ai-nudge Edge Function, CORS fixes'},
+    {id:'d20',date:'2026-04-16',start:'10:00',end:'23:00',hours:13,rate:417,desc:'[DEV] Apr 16 — K avatar profile fix, load sequence overhaul (no flash), intro screen once-only, SW GET-only fix, payoff accelerator middle insights, BizRandWise concept documented, bank parser model update (gemini-2.5-flash)'},
+    {id:'d21',date:'2026-04-17',start:'09:00',end:'18:00',hours:9,rate:417,desc:'[DEV] Apr 17 — Bank parser root cause fixed (gemini-2.0-flash deprecated → 2.5-flash), financial model updated, services directory updated, project state updated, founder tracker updated'},
+    {id:'d22',date:'2026-04-21',start:'09:00',end:'16:00',hours:7,rate:417,desc:'[DEV] Apr 21 — PayFast LIVE (sandbox=false, verified), APK built via PWABuilder (1,861KB), circle logo icons generated (48/96/192/512px), splash screen updated with real photo, manifest.json updated to MyRandWise, pull-to-refresh fixed (no login flash), SW controllerchange fixed'},
+    {id:'d23',date:'2026-04-21',start:'16:00',end:'23:00',hours:7,rate:417,desc:'[DEV] Apr 21 — Full MyRandWise rename (0 plain RandWise remaining), push notifications built (payday/budget/evening), What\'s new popup built (per-version, seen-once), PIN/fingerprint app lock built (SHA-256 hashed, 5min timeout), dead tap fix (excludes PIN pad), PayFast webhook deployed + tier polling, spending insights (category comparison, payday countdown), interest rate field on debt form, recurring expenses toggle, savings contribution button improved, snowball bug fixed, debt-free date added'},
+    {id:'d24',date:'2026-04-22',start:'01:49',end:'17:14',hours:15,rate:417,desc:'[DEV] Apr 22 — Scroll bug root cause fixed (display:block killing flex:1), RLS policies audited and cleaned (7 tables, 31 conflicting policies → 1 clean policy each), recurring column added to expenses table, expenses now saving correctly, debit orders showing debt minimums automatically, bottom padding fixed on all pages (content no longer hidden behind tab bar), login failures investigated, data persistence confirmed'},
+    {id:'d25',date:'2026-04-22',start:'23:29',end:'00:06',hours:1,rate:417,desc:'[DEV] Apr 22 late — saveExp fixed (toast after Supabase confirm not before), error surfacing added to show exact Supabase error, pull-to-refresh fixed to check correct scroll container'},
+    {id:'d26',date:'2026-04-23',start:'00:02',end:'13:07',hours:13,rate:417,desc:'[DEV] Apr 23 — Login root cause found (reset-password.html 404 — fixed to handle inside index.html), forgot password flow rebuilt, browser confirm() popups replaced with in-app UI, maintenance redirect fixed, unsafe user.id calls guarded, all alert() removed, smart weekly budget (income − debit orders − debt minimums − monthly needs ÷ 4), See All transactions screen built (grouped by day, search, filter), debit orders now show debt minimum payments automatically, monthly needs setup sheet built for existing users, trial reset SQL run for all users'},
+    {id:'d27',date:'2026-04-24',start:'14:47',end:'20:30',hours:6,rate:417,desc:'[DEV] Apr 24 morning — Weekly carry-over (previous week surplus/deficit rolls forward), month overview strip (all 4 weeks), overspend clarity with rollover, About MyRandWise intro (twice/week during trial), free tier soft-lock fix (no hard block), 8pm reminder scheduled to exact time, share nudge weekly Saturdays, admin popup controls in services directory, app_config settings system, admin segment drill-down with Grant Pro/Copy email actions, admin Roadmap tab built'},
+    {id:'d28',date:'2026-04-24',start:'20:30',end:'23:59',hours:3.5,rate:417,desc:'[DEV] Apr 24 evening — Race condition root cause found (auto-login never loaded debts before renderDash — fixed v113), fingerprint lock SVG icon + improved WebAuthn biometric flow, duplicate MTN debt diagnosed and cleaned via SQL, two-account (gmail vs hotmail) confusion resolved, monthly needs localStorage vs Supabase sync issue diagnosed, monthly needs manually synced on PC, debt intervention false emergency fix noted (car/bond inflates DTI — roadmap), custom categories built (+ custom button, localStorage), monthly summary built (grade A-D, week breakdown, top categories), admin Roadmap tab finalised with fix/queued/planned sections and release rules'},
+  ],
+  get sessions(){ return [...this._sessions, ...this.devSessions]; },
+  _sessions: [],
+  cash: [
+    {id:'c1',date:'2026-01-06',desc:'Initial setup costs — tools, accounts, domain, testing',amount:500},
+    {id:'c2',date:'2026-02-01',desc:'Out of pocket — data, printing, stationery, testing devices',amount:500},
+    {id:'c3',date:'2026-04-01',desc:'Additional cash investment — miscellaneous project costs',amount:500},
+    {id:'c4',date:'2026-04-14',desc:'myrandwise.co.za domain registration + protection (domains.co.za)',amount:168},
+  ],
+  subs: [
+    {id:'s1',name:'Claude Pro (AI development assistant)',monthly:1000,months:4,total:4000},
+    {id:'s2',name:'Other subscriptions (data, tools, services)',monthly:0,months:4,total:0},
+  ],
+  shortfalls: [
+    {id:'sf1',month:'2026-01',mrr:0,subs:1000,shortfall:1000,note:'January 2026 — pre-revenue'},
+    {id:'sf2',month:'2026-02',mrr:0,subs:1000,shortfall:1000,note:'February 2026 — pre-revenue'},
+    {id:'sf3',month:'2026-03',mrr:0,subs:1000,shortfall:1000,note:'March 2026 — pre-revenue'},
+  ]
+};
+
+// Flatten sessions for use
+SEED._sessions = SEED._sessions; // already empty, devSessions handles the rest
+// Override the sessions getter to return flat array
+Object.defineProperty(SEED, 'sessions', {
+  get: function(){ 
+    return [...this._researchSessions, ...this.devSessions]; 
+  }
+});
+SEED._researchSessions = [
+  {id:'r1',date:'2026-01-06',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 1 — SA fintech market analysis, competitor mapping, target market definition'},
+  {id:'r2',date:'2026-01-07',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 1 — Budgeting app user research, SA financial literacy landscape, problem validation'},
+  {id:'r3',date:'2026-01-13',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 2 — Business model research, monetisation benchmarks, pricing strategy for SA market'},
+  {id:'r4',date:'2026-01-14',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 2 — Tech stack evaluation, React Native vs PWA, Supabase vs Firebase analysis'},
+  {id:'r5',date:'2026-01-20',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 3 — Referral programme design, viral loop mechanics, SA mobile payment landscape'},
+  {id:'r6',date:'2026-01-21',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 3 — Financial product regulation research, NCA compliance, Treating Customers Fairly'},
+  {id:'r7',date:'2026-01-27',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 4 — App architecture design, database schema planning, UX wireframes'},
+  {id:'r8',date:'2026-01-28',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Week 4 — Brand identity research, SA design language, name and positioning: RandWise'},
+  {id:'r9',date:'2026-02-03',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 1 — Feature prioritisation, MVP scope definition, launch plan v1'},
+  {id:'r10',date:'2026-02-04',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 1 — Envelope budgeting methodology, debt snowball/avalanche research'},
+  {id:'r11',date:'2026-02-10',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 2 — Legal structure research, founder agreements, equity/IP ownership'},
+  {id:'r12',date:'2026-02-11',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 2 — Growth strategy, beta launch plan, waitlist mechanics'},
+  {id:'r13',date:'2026-02-17',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 3 — PayFast integration research, payment gateway landscape SA'},
+  {id:'r14',date:'2026-02-18',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 3 — User journey mapping, onboarding flow design, life stage personas'},
+  {id:'r15',date:'2026-02-24',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 4 — Investor pitch research, SA startup ecosystem, funding options'},
+  {id:'r16',date:'2026-02-25',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 2 Week 4 — NDA and partnership framework research, co-founder agreement templates'},
+  {id:'r17',date:'2026-03-03',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 1 — Bank statement parsing research, OCR/PDF extraction landscape'},
+  {id:'r18',date:'2026-03-04',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 1 — AI integration strategy, Claude API capabilities, prompt engineering'},
+  {id:'r19',date:'2026-03-10',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 2 — Revenue model refinement, Pro/Premium tier feature mapping'},
+  {id:'r20',date:'2026-03-11',start:'09:00',end:'23:00',hours:14,rate:280,desc:'[RESEARCH] Month 3 Week 2 — Admin dashboard requirements, monitoring and health tracking design'},
+].map(s=>({...s, value: Math.round(s.hours * s.rate)}));
+
+SEED.devSessions = SEED.devSessions.map(s=>({...s, value: Math.round(s.hours * s.rate)}));
+
+let data = {};
+
+function unlock(){
+  const pw = document.getElementById('lock-pw').value;
+  if(pw === PASSWORD){
+    document.getElementById('lock').style.opacity='0';
+    document.getElementById('lock').style.transition='opacity .4s';
+    setTimeout(()=>{
+      document.getElementById('lock').style.display='none';
+      document.getElementById('app').style.display='block';
+      initApp();
+    },400);
+  } else {
+    const err=document.getElementById('lock-err');
+    err.textContent='Incorrect password';
+    setTimeout(()=>{err.textContent='';},2500);
+  }
+}
+
+function initApp(){
+  const saved=localStorage.getItem(KEY);
+  if(saved){
+    data = JSON.parse(saved);
+  } else {
+    // Flatten the two-phase sessions into one array
+    const allSessions = [...SEED._researchSessions, ...SEED.devSessions];
+    data = {
+      rate: SEED.rate,
+      mrr: SEED.mrr,
+      sessions: allSessions,
+      cash: SEED.cash,
+      subs: SEED.subs,
+      shortfalls: SEED.shortfalls
+    };
+  }
+  RATE = data.rate||417;
+  currentMRR = data.mrr||0;
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('s-date').value=today;
+  document.getElementById('c-date').value=today;
+  const now=new Date().toLocaleString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('hdr-date').textContent=`Last updated: ${now}`;
+  document.getElementById('footer-date').textContent=now;
+  document.getElementById('rate-display').textContent=`R${RATE}/hr`;
+  // Set default month for shortfall modal
+  const ym=new Date().toISOString().slice(0,7);
+  document.getElementById('sf-month').value=ym;
+  // Listeners
+  ['s-start','s-end','s-date'].forEach(id=>document.getElementById(id).addEventListener('input',calcSessionPreview));
+  ['sub-amount','sub-months'].forEach(id=>document.getElementById(id).addEventListener('input',calcSubPreview));
+  ['sf-mrr','sf-subs'].forEach(id=>document.getElementById(id).addEventListener('input',calcShortfallPreview));
+  render();
+}
+
+function save(){ data.rate=RATE; data.mrr=currentMRR; localStorage.setItem(KEY,JSON.stringify(data)); }
+
+function fmt(n){return 'R'+Math.round(n).toLocaleString('en-ZA');}
+
+function render(){
+  const totalHours=data.sessions.reduce((s,e)=>s+e.hours,0);
+  // Use per-session rate if stored, otherwise fallback to global RATE
+  const timeVal=data.sessions.reduce((s,e)=>s+(e.value||Math.round(e.hours*(e.rate||RATE))),0);
+  const cashTotal=data.cash.reduce((s,e)=>s+e.amount,0);
+  const subsTotal=data.subs.reduce((s,e)=>s+e.total,0);
+  const shortfallTotal=(data.shortfalls||[]).reduce((s,e)=>s+e.shortfall,0);
+  const monthlySubsTotal=data.subs.reduce((s,e)=>s+e.monthly,0);
+  const grand=timeVal+cashTotal+subsTotal+shortfallTotal;
+
+  // Header
+  document.getElementById('stat-hours').textContent=totalHours+'h';
+  document.getElementById('stat-time-val').textContent=fmt(timeVal);
+  document.getElementById('stat-cash').textContent=fmt(cashTotal+subsTotal);
+  document.getElementById('stat-total').textContent=fmt(grand);
+
+  // Accrual banner
+  document.getElementById('accrual-monthly').textContent=fmt(monthlySubsTotal)+'/mo';
+  const mrr=currentMRR;
+  document.getElementById('mrr-display').textContent=fmt(mrr);
+  if(mrr>=monthlySubsTotal){
+    document.getElementById('shortfall-note').textContent='✅ RandWise is covering subscriptions — shortfall no longer accruing';
+    document.querySelector('.accrual-dot').style.background='#4ade80';
+    document.querySelector('.accrual-dot').nextSibling.textContent=' Covered';
+  } else {
+    const shortfall=monthlySubsTotal-mrr;
+    document.getElementById('shortfall-note').textContent=`Shortfall = ${fmt(shortfall)}/mo · Accruing until MRR ≥ ${fmt(monthlySubsTotal)}`;
+  }
+
+  // Grand total
+  document.getElementById('grand-total').textContent=grand.toLocaleString('en-ZA');
+  // Research vs Dev breakdown
+  const researchVal=data.sessions.filter(s=>s.id&&s.id.startsWith('r')).reduce((s,e)=>s+(e.value||0),0);
+  const researchH=data.sessions.filter(s=>s.id&&s.id.startsWith('r')).reduce((s,e)=>s+e.hours,0);
+  const devVal=data.sessions.filter(s=>!(s.id&&s.id.startsWith('r'))).reduce((s,e)=>s+(e.value||0),0);
+  const devH=data.sessions.filter(s=>!(s.id&&s.id.startsWith('r'))).reduce((s,e)=>s+e.hours,0);
+  document.getElementById('total-breakdown').textContent=`Research: ${researchH}h @ R280/hr (${fmt(researchVal)}) + Dev: ${devH}h @ R417/hr (${fmt(devVal)}) + ${fmt(cashTotal+subsTotal)} cash & subs + ${fmt(shortfallTotal)} sub shortfall`;
+  document.getElementById('bd-time').textContent=fmt(timeVal);
+  document.getElementById('bd-time-sub').textContent=totalHours+'h worked';
+  document.getElementById('bd-cash').textContent=fmt(cashTotal+subsTotal);
+  document.getElementById('bd-shortfall').textContent=fmt(shortfallTotal);
+  document.getElementById('bd-shortfall-sub').textContent=(data.shortfalls||[]).length+' months tracked';
+
+  // Sessions
+  document.getElementById('sessions-total').textContent=totalHours+'h · '+fmt(timeVal);
+  renderList('sessions-list', data.sessions.slice().reverse().map(s=>{
+    const isResearch = s.id && s.id.startsWith('r');
+    const rateUsed = s.rate || RATE;
+    const badge = isResearch ? `<span style="background:#fdf3e0;color:#c9922a;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px">R280/hr RESEARCH</span>` : `<span style="background:#eaf3de;color:#1a7a4a;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px">R417/hr DEV</span>`;
+    return `<div class="entry">
+      <div class="entry-ico time">⏱</div>
+      <div class="entry-body">
+        <div class="entry-title">${s.desc.replace('[RESEARCH] ','').replace('[DEV] ','')}${badge}</div>
+        <div class="entry-meta">${s.date} · ${s.start||''}${s.end?'–'+s.end:''} · ${s.hours}h</div>
+      </div>
+      <div class="entry-amount">${fmt(s.value||Math.round(s.hours*rateUsed))}</div>
+      <button class="entry-del" onclick="del('sessions','${s.id}')">×</button>
+    </div>`;
+  }).join(''));
+
+  // Cash
+  document.getElementById('cash-total').textContent=fmt(cashTotal);
+  renderList('cash-list', data.cash.slice().reverse().map(c=>`
+    <div class="entry">
+      <div class="entry-ico cash">💸</div>
+      <div class="entry-body">
+        <div class="entry-title">${c.desc}</div>
+        <div class="entry-meta">${c.date}</div>
+      </div>
+      <div class="entry-amount">${fmt(c.amount)}</div>
+      <button class="entry-del" onclick="del('cash','${c.id}')">×</button>
+    </div>`).join(''));
+
+  // Subs
+  document.getElementById('subs-total').textContent=fmt(monthlySubsTotal)+'/mo · '+fmt(subsTotal)+' total';
+  renderList('subs-list', data.subs.map(s=>`
+    <div class="entry">
+      <div class="entry-ico sub">📦</div>
+      <div class="entry-body">
+        <div class="entry-title">${s.name}</div>
+        <div class="entry-meta">${fmt(s.monthly)}/mo × ${s.months} month${s.months!==1?'s':''}</div>
+      </div>
+      <div class="entry-amount">${fmt(s.total)}</div>
+      <button class="entry-del" onclick="del('subs','${s.id}')">×</button>
+    </div>`).join(''));
+
+  // Shortfalls
+  document.getElementById('shortfall-total').textContent=fmt(shortfallTotal)+' total accrued';
+  renderList('shortfall-list', (data.shortfalls||[]).slice().reverse().map(sf=>`
+    <div class="entry">
+      <div class="entry-ico acc">📉</div>
+      <div class="entry-body">
+        <div class="entry-title">${sf.note||sf.month}</div>
+        <div class="entry-meta">${sf.month} · MRR ${fmt(sf.mrr)} · Subs ${fmt(sf.subs)}</div>
+      </div>
+      <div class="entry-amount" style="color:var(--red)">${fmt(sf.shortfall)}</div>
+      <button class="entry-del" onclick="del('shortfalls','${sf.id}')">×</button>
+    </div>`).join(''));
+
+  // Timeline
+  const all=[
+    ...data.sessions.map(s=>({date:s.date,text:s.desc,val:s.hours+'h · '+fmt(s.value),type:'time'})),
+    ...data.cash.map(c=>({date:c.date,text:c.desc,val:fmt(c.amount),type:'cash'})),
+    ...(data.shortfalls||[]).map(sf=>({date:sf.month+'-01',text:'Sub shortfall — '+sf.note,val:fmt(sf.shortfall),type:'sub'})),
+  ].sort((a,b)=>a.date.localeCompare(b.date));
+  const tl=document.getElementById('timeline');
+  if(!all.length){tl.innerHTML='<div class="empty-state" style="margin-left:-28px">No entries.</div>';return;}
+  tl.innerHTML=all.map(e=>`
+    <div class="tl-item">
+      <div class="tl-dot ${e.type}"></div>
+      <div class="tl-date">${e.date}</div>
+      <div class="tl-text">${e.text}</div>
+      <div class="tl-val">${e.val}</div>
+    </div>`).join('');
+}
+
+function renderList(id,html){document.getElementById(id).innerHTML=html||'<div class="empty-state">Nothing logged yet.</div>';}
+
+function openModal(t){document.getElementById(t+'-modal').classList.add('open');}
+function closeModal(t){document.getElementById(t+'-modal').classList.remove('open');}
+
+function calcSessionPreview(){
+  const s=document.getElementById('s-start').value,e=document.getElementById('s-end').value,d=document.getElementById('s-date').value;
+  if(!s||!e)return;
+  const [sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm);if(mins<=0)mins+=1440;
+  const hrs=Math.round((mins/60)*10)/10;
+  const r = d && d < '2026-03-28' ? 280 : 417;
+  const phase = r===280 ? 'Research rate' : 'Dev rate';
+  document.getElementById('s-calc').textContent=`${hrs}h × R${r}/hr (${phase}) = ${fmt(hrs*r)}`;
+}
+function calcSubPreview(){
+  const a=parseFloat(document.getElementById('sub-amount').value)||0,m=parseInt(document.getElementById('sub-months').value)||0;
+  document.getElementById('sub-calc').textContent=`R${a}/mo × ${m} months = ${fmt(a*m)}`;
+}
+function calcShortfallPreview(){
+  const mrr=parseFloat(document.getElementById('sf-mrr').value)||0,subs=parseFloat(document.getElementById('sf-subs').value)||0;
+  const sf=Math.max(0,subs-mrr);
+  document.getElementById('sf-calc').textContent=`Subs ${fmt(subs)} − MRR ${fmt(mrr)} = Shortfall ${fmt(sf)}`;
+}
+
+function saveSession(){
+  const date=document.getElementById('s-date').value,start=document.getElementById('s-start').value,end=document.getElementById('s-end').value,desc=document.getElementById('s-desc').value.trim();
+  if(!date||!start||!end||!desc){alert('Please fill in all fields');return;}
+  const [sh,sm]=start.split(':').map(Number),[eh,em]=end.split(':').map(Number);
+  let mins=(eh*60+em)-(sh*60+sm);if(mins<=0)mins+=1440;
+  const hours=Math.round((mins/60)*10)/10;
+  // Auto-assign rate: research phase = R280/hr (before 28 Mar 2026), dev = R417/hr
+  const sessionRate = date < '2026-03-28' ? 280 : 417;
+  data.sessions.push({id:'s'+Date.now(),date,start,end,hours,rate:sessionRate,desc,value:Math.round(hours*sessionRate)});
+  save();render();closeModal('session');document.getElementById('s-desc').value='';
+}
+function saveCash(){
+  const date=document.getElementById('c-date').value,desc=document.getElementById('c-desc').value.trim(),amount=parseFloat(document.getElementById('c-amount').value)||0;
+  if(!date||!desc||!amount){alert('Please fill in all fields');return;}
+  data.cash.push({id:'c'+Date.now(),date,desc,amount});
+  save();render();closeModal('cash');document.getElementById('c-desc').value='';document.getElementById('c-amount').value='';
+}
+function saveSub(){
+  const name=document.getElementById('sub-name').value.trim(),monthly=parseFloat(document.getElementById('sub-amount').value)||0,months=parseInt(document.getElementById('sub-months').value)||0;
+  if(!name||!monthly||!months){alert('Please fill in all fields');return;}
+  data.subs.push({id:'sub'+Date.now(),name,monthly,months,total:monthly*months});
+  save();render();closeModal('sub');document.getElementById('sub-name').value='';document.getElementById('sub-amount').value='';document.getElementById('sub-months').value='';
+}
+function saveShortfall(){
+  const month=document.getElementById('sf-month').value,mrr=parseFloat(document.getElementById('sf-mrr').value)||0,subs=parseFloat(document.getElementById('sf-subs').value)||0;
+  if(!month){alert('Please select a month');return;}
+  const shortfall=Math.max(0,subs-mrr);
+  const d=new Date(month+'-01');
+  const note=d.toLocaleString('en-ZA',{month:'long',year:'numeric'})+' — MRR '+fmt(mrr);
+  data.shortfalls=data.shortfalls||[];
+  data.shortfalls.push({id:'sf'+Date.now(),month,mrr,subs,shortfall,note});
+  save();render();closeModal('shortfall');document.getElementById('sf-mrr').value='';document.getElementById('sf-subs').value='';
+}
+function del(type,id){
+  if(!confirm('Remove this entry?'))return;
+  data[type]=data[type].filter(e=>e.id!==id);
+  save();render();
+}
+function editRate(){
+  const r=prompt(`Current rate: R${RATE}/hr\nEnter new rate:`);
+  if(!r)return;const n=parseFloat(r);if(!n||n<1){alert('Invalid');return;}
+  RATE=n;data.sessions=data.sessions.map(s=>({...s,value:Math.round(s.hours*RATE)}));
+  save();render();document.getElementById('rate-display').textContent=`R${RATE}/hr`;
+}
+function updateMRR(){
+  const r=prompt(`Current MRR: R${currentMRR}\nEnter RandWise current monthly revenue (R):`);
+  if(r===null)return;const n=parseFloat(r)||0;
+  currentMRR=n;save();render();
+}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+document.getElementById('lock-pw').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+</script>
+</body>
+</html>
