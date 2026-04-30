@@ -3,12 +3,17 @@
 <head>
 <script>
   (function() {
-    const hash = new URLSearchParams(window.location.hash.slice(1));
-    const type = hash.get('type');
-    const token = hash.get('access_token') || hash.get('token');
-    
+    var h = window.location.hash.slice(1);
+    var params = new URLSearchParams(h);
+    var type = params.get('type');
+    var token = params.get('access_token');
+    var refresh = params.get('refresh_token');
     if (type === 'recovery' && token) {
-      window.location.replace('https://myrandwise.co.za/reset-password.html' + window.location.hash);
+      window.location.replace(
+        'https://myrandwise.co.za/reset-password.html?token=' + encodeURIComponent(token) +
+        '&refresh_token=' + encodeURIComponent(refresh || '') +
+        '&type=recovery'
+      );
     }
   })();
 </script>
