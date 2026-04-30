@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  (function() {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const type = hash.get('type');
+    const token = hash.get('access_token') || hash.get('token');
+    
+    if (type === 'recovery' && token) {
+      window.location.replace('https://myrandwise.co.za/reset-password.html' + window.location.hash);
+    }
+  })();
+</script>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
