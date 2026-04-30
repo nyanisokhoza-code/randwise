@@ -3,15 +3,15 @@
 <head>
 <script>
   (function() {
-    var h = window.location.hash.slice(1);
+    var h = window.location.hash.replace(/^#/, '');
     var params = new URLSearchParams(h);
     var type = params.get('type');
     var token = params.get('access_token');
-    var refresh = params.get('refresh_token');
+    var refresh = params.get('refresh_token') || '';
     if (type === 'recovery' && token) {
       window.location.replace(
-        'https://myrandwise.co.za/reset-password.html?token=' + encodeURIComponent(token) +
-        '&refresh_token=' + encodeURIComponent(refresh || '') +
+        'https://myrandwise.co.za/reset-password.html#access_token=' + encodeURIComponent(token) +
+        '&refresh_token=' + encodeURIComponent(refresh) +
         '&type=recovery'
       );
     }
@@ -2170,7 +2170,7 @@ if('serviceWorker' in navigator){
 
 <script>
 const SB='https://mmezkseblafurjolkfkt.supabase.co';
-const APP_URL='https://nyanisokhoza-code.github.io/randwise';
+const APP_URL='https://myrandwise.co.za';
 const AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 // Always use user JWT when available so RLS policies work correctly
 async function refreshTokenIfNeeded(){
@@ -2475,7 +2475,7 @@ async function handleForgot(){
   try{
     const res=await authPost('recover',{
       email:email.toLowerCase(),
-      redirectTo:APP_URL+'/?reset=1'
+      redirectTo:'https://myrandwise.co.za/reset-password.html'
     });
     const el=document.getElementById('reset-sent');
     el.style.display='block';
