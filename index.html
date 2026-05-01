@@ -255,7 +255,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 <script>
 // ── SERVICE WORKER — always get latest version ────────────────
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/randwise/sw.js', {scope:'/randwise/'})
+  navigator.serviceWorker.register('/sw.js', {scope:'/'})
     .then(reg => {
       // Check for updates every 30 seconds while app is open
       setInterval(() => reg.update(), 30000);
@@ -322,7 +322,7 @@ if('serviceWorker' in navigator){
       </svg>
       <!-- Real circle logo -->
       <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="108" height="108"
+        <img src="/icon_192.png" width="108" height="108"
           style="border-radius:50%;object-fit:cover"
           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
@@ -340,7 +340,7 @@ if('serviceWorker' in navigator){
 
   <!-- MAIN SPLASH CONTENT — hidden, fades in after 3s -->
   <div id="splash-content" style="display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:0 24px;opacity:0;transition:opacity .6s ease">
-    <div class="s-logo"><img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
+    <div class="s-logo"><img src="/icon_192.png" width="80" height="80" style="border-radius:50%;object-fit:cover" onerror="this.outerHTML='🌱'"></div>
     <div class="s-title">Your money,<br><span>your rules.</span></div>
     <p class="s-sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
     <div class="s-flag">🇿🇦 Built in South Africa · POPIA Compliant</div>
@@ -442,7 +442,7 @@ if('serviceWorker' in navigator){
       <div style="position:absolute;bottom:-20px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(74,222,128,.05)"></div>
       <!-- Logo -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
-        <img src="https://nyanisokhoza-code.github.io/randwise/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
+        <img src="/icon_192.png" width="36" height="36" style="border-radius:50%" onerror="this.style.display='none'">
         <div>
           <div style="font-size:14px;font-weight:800;color:#fff">MyRandWise</div>
           <div style="font-size:10px;color:rgba(255,255,255,.5)">Your money, your rules. 🇿🇦</div>
@@ -1401,7 +1401,7 @@ if('serviceWorker' in navigator){
           <div style="position:absolute;right:-10px;top:-10px;font-size:60px;opacity:.08">📱</div>
           <div style="font-size:13px;font-weight:700;color:#4ade80;margin-bottom:4px">📱 Android App</div>
           <div style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:12px">Download the native Android app — installs directly, works faster, no browser needed.</div>
-          <a href="https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
+          <a href="https://myrandwise.co.za/MyRandWise.apk" target="_blank" rel="noopener" onclick="showToast('📥 Download starting — tap Install when done')" style="display:block;width:100%;padding:12px;background:#4ade80;color:#0d1f14;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;text-align:center;text-decoration:none;box-sizing:border-box">⬇️ Download Android APK</a>
           <div style="font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;text-align:center">Version 1.0 · 1.4MB · Android 7.0+</div>
         </div>
         <div style="height:8px"></div>
@@ -5276,9 +5276,9 @@ function closeShareCard(){
 
 function shareCard(){
   const name = (user?.name||'').split(' ')[0]||'';
-  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://nyanisokhoza-code.github.io/randwise`;
+  const text = `${document.getElementById('sc-headline')?.textContent||''}\n\n${document.getElementById('sc-body')?.textContent||''}\n\nTry MyRandWise free 👇\nhttps://myrandwise.co.za`;
   if(navigator.share){
-    navigator.share({title:'MyRandWise',text,url:'https://nyanisokhoza-code.github.io/randwise'});
+    navigator.share({title:'MyRandWise',text,url:'https://myrandwise.co.za'});
   } else {
     navigator.clipboard?.writeText(text).then(()=>showToast('✅ Copied — paste into WhatsApp or Instagram'));
   }
@@ -8975,7 +8975,7 @@ function openAppRating(){
   const ov=document.getElementById('rating-overlay');
   if(ov) ov.style.display='none';
   // Open Play Store or app URL
-  window.open('https://nyanisokhoza-code.github.io/randwise/MyRandWise.apk','_blank');
+  window.open('https://myrandwise.co.za/MyRandWise.apk','_blank');
   // Fallback if not on Play Store yet
   showToast('🌟 Thank you! Your support means everything.');
 }
@@ -9001,7 +9001,7 @@ function initReferralCard(){
 function shareReferral(){
   const code=user?.referral_code||'';
   const name=user?.name?.split(' ')[0]||'';
-  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://nyanisokhoza-code.github.io/randwise?ref=${code}\n\nShared by a MyRandWise team member.`;
+  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://myrandwise.co.za?ref=${code}\n\nShared by a MyRandWise team member.`;
   if(navigator.share){
     navigator.share({ title:'MyRandWise 🌱', text:msg }).catch(()=>{});
   } else {
