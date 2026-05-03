@@ -9567,7 +9567,7 @@ async function verifyOtp(){
   btn.disabled=true;btn.textContent='Verifying...';
   document.getElementById('otp-err').textContent='';
   try{
-    const res=await fetch(,{
+    const res=await fetch(SB+'/auth/v1/verify',{
       method:'POST',
       headers:{'apikey':AK,'Content-Type':'application/json'},
       body:JSON.stringify({type:'signup',email:otpEmail,token:code})
@@ -9592,7 +9592,7 @@ async function verifyOtp(){
 async function resendOtp(){
   if(!otpEmail)return;
   try{
-    await fetch(,{
+    await fetch(SB+'/auth/v1/resend',{
       method:'POST',
       headers:{'apikey':AK,'Content-Type':'application/json'},
       body:JSON.stringify({type:'signup',email:otpEmail})
@@ -9606,7 +9606,7 @@ async function resendOtp(){
 }
 function showOtpScreen(email){
   otpEmail=email;
-  document.getElementById('otp-desc').textContent=;
+  document.getElementById('otp-desc').textContent=`We sent a 6-digit code to ${email}. Enter it below to verify your account.`;
   document.querySelectorAll('.otp-box').forEach(b=>{b.value='';b.classList.remove('filled');});
   document.getElementById('otp-err').textContent='';
   show('verify-otp');
@@ -9635,9 +9635,7 @@ async function savePopupPhone(){
   if(!phone||phone.length<9){errEl.textContent='Please enter a valid cell number.';return;}
   errEl.textContent='';
   try{
-    await fetch(,{
-      method:'PATCH',
-      headers:{...H,'Prefer':'return=minimal'},
+    await fetch(SB+'/rest/v1/beta_testers?id=eq.'+user.id,{
       body:JSON.stringify({phone})
     });
     user.phone=phone;
