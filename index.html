@@ -249,6 +249,10 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
     70%{transform:scale(1.05);}
     100%{transform:scale(1);opacity:1;}
   }
+
+.otp-box{width:44px;height:52px;border:2px solid #ddd;border-radius:10px;font-size:22px;font-weight:700;text-align:center;color:var(--m);outline:none;transition:border-color .2s;}
+.otp-box:focus{border-color:var(--m);}
+.otp-box.filled{border-color:var(--m);background:#e8f5ee;}
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
 </head>
@@ -1101,6 +1105,11 @@ if('serviceWorker' in navigator){
         <button class="auth-toggle" onclick="togglePass('r-pass',this)">Show</button>
       </div>
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">At least 8 characters. You'll use this to sign back in.</div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Cell number <span style="font-weight:400;color:var(--mu)">(required)</span></div>
+      <div class="auth-row" style="margin-bottom:6px">
+        <input type="tel" id="r-phone" class="auth-in" placeholder="e.g. 0821234567" autocomplete="tel" oninput="valStep()">
+      </div>
+      <div style="font-size:11px;color:var(--mu);margin-bottom:16px">Used for account recovery and important alerts only.</div>
       <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Referral code <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
       <input type="text" id="r-ref" class="auth-in" placeholder="e.g. KHO-245D" autocapitalize="characters" style="margin-bottom:4px">
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">Got a code from a friend? Enter it here.</div>
@@ -1130,6 +1139,41 @@ if('serviceWorker' in navigator){
     <div class="done-feat"><span style="font-size:18px">🔒</span><div class="done-feat-t">Saved securely · POPIA compliant</div></div>
   </div>
   <button class="btn-p" style="max-width:300px" onclick="openDash()">Open my dashboard →</button>
+</div>
+
+
+<!-- OTP VERIFICATION SCREEN -->
+<div class="screen" id="verify-otp" style="display:none">
+  <div style="max-width:360px;margin:0 auto;padding:40px 24px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">📬</div>
+    <div style="font-size:22px;font-weight:800;color:var(--m);margin-bottom:8px">Check your email</div>
+    <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px" id="otp-desc">We sent a 6-digit code to your email. Enter it below to verify your account.</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px" id="otp-boxes">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+      <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
+    </div>
+    <div id="otp-err" style="color:#c0392b;font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <button class="btn-p" id="otp-btn" onclick="verifyOtp()" style="max-width:280px;margin-bottom:16px">Verify →</button>
+    <div style="font-size:13px;color:var(--mu)">Didn't get the code? <span style="color:var(--m);font-weight:600;cursor:pointer" onclick="resendOtp()">Resend</span></div>
+    <div style="font-size:11px;color:var(--mu);margin-top:8px">Check your spam/junk folder too.</div>
+  </div>
+</div>
+
+<!-- PHONE NUMBER POPUP (for existing users without phone) -->
+<div id="phone-popup" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center;padding:24px">
+  <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center">
+    <div style="font-size:36px;margin-bottom:12px">📱</div>
+    <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px">Add your cell number</div>
+    <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:20px">We need your cell number for account recovery and important security alerts. We won't spam you.</div>
+    <input type="tel" id="popup-phone" class="auth-in" placeholder="e.g. 0821234567" style="margin-bottom:8px;text-align:center;font-size:16px">
+    <div id="popup-phone-err" style="color:#c0392b;font-size:12px;margin-bottom:12px;min-height:16px"></div>
+    <button onclick="savePopupPhone()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Save number →</button>
+    <button onclick="dismissPhonePopup()" style="width:100%;background:#f5f5f0;color:#888;border:none;border-radius:12px;padding:12px;font-size:13px;cursor:pointer">Remind me later</button>
+  </div>
 </div>
 
 <!-- MAIN APP -->
@@ -2267,7 +2311,7 @@ function renderStep(){
   document.getElementById('ob-body').scrollTop=0;
 }
 function valStep(){
-  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8);
+  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8&&(document.getElementById('r-phone')?.value||'').trim().length>=9);
   const btn=document.getElementById('ob-next');
   btn.disabled=!v;
   btn.textContent=step===5?"Let's go 🚀":'Continue →';
@@ -2295,6 +2339,7 @@ document.getElementById('name-in')&&document.getElementById('name-in').addEventL
 document.getElementById('r-ref')&&document.getElementById('r-ref').addEventListener('input',()=>{ob.referralCode=document.getElementById('r-ref').value.trim().toUpperCase();});
 document.getElementById('r-email')&&document.getElementById('r-email').addEventListener('input',()=>{ob.email=document.getElementById('r-email').value;valStep();});
 document.getElementById('r-pass')&&document.getElementById('r-pass').addEventListener('input',()=>{ob.password=document.getElementById('r-pass').value;valStep();});
+document.getElementById('r-phone')&&document.getElementById('r-phone').addEventListener('input',()=>{ob.phone=document.getElementById('r-phone').value;valStep();});
 
 async function doRegister(){
   show('saving');
@@ -2347,7 +2392,7 @@ async function doRegister(){
     // 2. Create profile
     const a=parseFloat(ob.income)||0;
     const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;
-    const res=await sbP('beta_testers',{auth_id:authId,email:ob.email.trim().toLowerCase(),name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:ob.referralCode?true:false,referred_by:ob.referralCode||null,status:'active'});
+    const res=await sbP('beta_testers',{auth_id:authId,email:ob.email.trim().toLowerCase(),name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:ob.referralCode?true:false,referred_by:ob.referralCode||null,status:'active',phone:ob.phone||null});
     user=res?.[0];
     if(user)localStorage.setItem('rw_user',JSON.stringify(user));
     // Fire alert email to owner (non-blocking)
@@ -2359,7 +2404,7 @@ async function doRegister(){
     document.getElementById('done-s').textContent=`Your account is ready! Check your inbox now — click the confirmation link from MyRandWise to activate your account.`;
     document.getElementById('done-inc').textContent=`Income: R${m.toLocaleString('en-ZA')}/month`;
     document.getElementById('done-gls').textContent=`${ob.goals.length} goal${ob.goals.length!==1?'s':''} tracked`;
-    show('done');
+    showOtpScreen(ob.email.trim().toLowerCase());
   }catch(e){
     show('onboarding'); const eDiv=document.createElement('div'); eDiv.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#c0392b;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:9999;max-width:320px;text-align:center'; eDiv.textContent='Registration failed: '+(e.message||'Please try again'); document.body.appendChild(eDiv); setTimeout(()=>eDiv.remove(),5000);
     show('onboarding');
@@ -2434,6 +2479,7 @@ async function doLogin(){
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     show('main');
     try{setTimeout(showIntro,400);}catch(ex){}
+    setTimeout(checkPhonePopup, 1500);
     btn.disabled=false;btn.textContent='Sign in →';
   }catch(e){
     loginAttempts++;
@@ -9490,6 +9536,118 @@ function checkNeedsSetup(){
   if(!localStorage.getItem('rw_needs_setup_done') && user?.id){
     setTimeout(()=>showMonthlyNeedsSetup(), 2000);
   }
+}
+
+// ── OTP Verification ─────────────────────────────────────────
+let otpEmail = '';
+function otpInput(el){
+  el.classList.toggle('filled', el.value.length>0);
+  if(el.value.length===1){
+    const boxes=[...document.querySelectorAll('.otp-box')];
+    const idx=boxes.indexOf(el);
+    if(idx<boxes.length-1)boxes[idx+1].focus();
+    // Auto-verify when all 6 filled
+    if(boxes.every(b=>b.value.length===1))verifyOtp();
+  }
+}
+function otpKey(e,el){
+  if(e.key==='Backspace'&&!el.value){
+    const boxes=[...document.querySelectorAll('.otp-box')];
+    const idx=boxes.indexOf(el);
+    if(idx>0){boxes[idx-1].focus();boxes[idx-1].value='';boxes[idx-1].classList.remove('filled');}
+  }
+}
+function getOtpCode(){
+  return [...document.querySelectorAll('.otp-box')].map(b=>b.value).join('');
+}
+async function verifyOtp(){
+  const code=getOtpCode();
+  if(code.length!==6){document.getElementById('otp-err').textContent='Please enter all 6 digits.';return;}
+  const btn=document.getElementById('otp-btn');
+  btn.disabled=true;btn.textContent='Verifying...';
+  document.getElementById('otp-err').textContent='';
+  try{
+    const res=await fetch(,{
+      method:'POST',
+      headers:{'apikey':AK,'Content-Type':'application/json'},
+      body:JSON.stringify({type:'signup',email:otpEmail,token:code})
+    });
+    const data=await res.json();
+    if(data.access_token){
+      localStorage.setItem('rw_token',data.access_token);
+      if(data.refresh_token)localStorage.setItem('rw_refresh',data.refresh_token);
+      // Load user and go to dashboard
+      const rows=await sbG();
+      if(rows?.length){user=rows[0];localStorage.setItem('rw_user',JSON.stringify(user));}
+      show('done');
+    } else {
+      document.getElementById('otp-err').textContent='Incorrect code. Please try again.';
+      btn.disabled=false;btn.textContent='Verify →';
+    }
+  }catch(e){
+    document.getElementById('otp-err').textContent='Verification failed. Please try again.';
+    btn.disabled=false;btn.textContent='Verify →';
+  }
+}
+async function resendOtp(){
+  if(!otpEmail)return;
+  try{
+    await fetch(,{
+      method:'POST',
+      headers:{'apikey':AK,'Content-Type':'application/json'},
+      body:JSON.stringify({type:'signup',email:otpEmail})
+    });
+    document.getElementById('otp-err').textContent='';
+    const msg=document.createElement('div');
+    msg.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a7a4a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999';
+    msg.textContent='New code sent! Check your inbox.';
+    document.body.appendChild(msg);setTimeout(()=>msg.remove(),3000);
+  }catch(e){}
+}
+function showOtpScreen(email){
+  otpEmail=email;
+  document.getElementById('otp-desc').textContent=;
+  document.querySelectorAll('.otp-box').forEach(b=>{b.value='';b.classList.remove('filled');});
+  document.getElementById('otp-err').textContent='';
+  show('verify-otp');
+  setTimeout(()=>document.querySelector('.otp-box')?.focus(),300);
+}
+
+// ── Phone Number Popup ────────────────────────────────────────
+function checkPhonePopup(){
+  if(user && !user.phone){
+    const dismissed=localStorage.getItem('rw_phone_dismissed');
+    const dismissedAt=dismissed?new Date(dismissed):null;
+    const daysSince=dismissedAt?(Date.now()-dismissedAt.getTime())/(1000*60*60*24):999;
+    if(!dismissed||daysSince>7){
+      const popup=document.getElementById('phone-popup');
+      if(popup){popup.style.display='flex';setTimeout(()=>document.getElementById('popup-phone')?.focus(),300);}
+    }
+  }
+}
+function dismissPhonePopup(){
+  localStorage.setItem('rw_phone_dismissed',new Date().toISOString());
+  document.getElementById('phone-popup').style.display='none';
+}
+async function savePopupPhone(){
+  const phone=document.getElementById('popup-phone').value.trim();
+  const errEl=document.getElementById('popup-phone-err');
+  if(!phone||phone.length<9){errEl.textContent='Please enter a valid cell number.';return;}
+  errEl.textContent='';
+  try{
+    await fetch(,{
+      method:'PATCH',
+      headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify({phone})
+    });
+    user.phone=phone;
+    localStorage.setItem('rw_user',JSON.stringify(user));
+    document.getElementById('phone-popup').style.display='none';
+    const msg=document.createElement('div');
+    msg.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#1a7a4a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999';
+    msg.textContent='Cell number saved!';
+    document.body.appendChild(msg);setTimeout(()=>msg.remove(),2500);
+  }catch(e){errEl.textContent='Could not save. Please try again.';}
 }
 </script>
 
