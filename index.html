@@ -996,12 +996,12 @@ if('serviceWorker' in navigator){
     <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px">Email address</div>
     <input type="email" id="l-email" 
       style="width:100%;padding:16px;font-size:16px;background:#f2f2f0;border:2px solid #e0e0e0;border-radius:14px;box-sizing:border-box;color:#111;margin-bottom:16px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;-webkit-appearance:none"
-      placeholder="your@email.com" autocapitalize="none" autocorrect="off">
+      placeholder="your@email.com" autocapitalize="none" autocorrect="off" autocomplete="off">
     <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:8px">Password</div>
     <div style="position:relative;margin-bottom:8px">
       <input type="password" id="l-pass"
         style="width:100%;padding:16px;padding-right:70px;font-size:16px;background:#f2f2f0;border:2px solid #e0e0e0;border-radius:14px;box-sizing:border-box;color:#111;font-family:'Plus Jakarta Sans',sans-serif;outline:none;-webkit-appearance:none"
-        placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
+        placeholder="Your password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doLogin()">
       <button onclick="togglePass('l-pass',this)" 
         style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#1a7a4a;font-size:13px;font-weight:700;cursor:pointer;padding:4px 8px">Show</button>
     </div>
