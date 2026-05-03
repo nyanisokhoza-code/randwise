@@ -1107,7 +1107,7 @@ if('serviceWorker' in navigator){
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">At least 8 characters. You'll use this to sign back in.</div>
       <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Cell number <span style="font-weight:400;color:var(--mu)">(required)</span></div>
       <div class="auth-row" style="margin-bottom:6px">
-        <input type="tel" id="r-phone" class="auth-in" placeholder="e.g. 0821234567" autocomplete="tel" oninput="valStep()">
+        <input type="tel" id="r-phone" class="auth-in" placeholder="e.g. 082 123 4567" autocomplete="tel" oninput="formatPhone(this);valStep()">
       </div>
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">Used for account recovery and important alerts only.</div>
       <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Referral code <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
@@ -1169,7 +1169,7 @@ if('serviceWorker' in navigator){
     <div style="font-size:36px;margin-bottom:12px">📱</div>
     <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:8px">Add your cell number</div>
     <div style="font-size:13px;color:#666;line-height:1.6;margin-bottom:20px">We need your cell number for account recovery and important security alerts. We won't spam you.</div>
-    <input type="tel" id="popup-phone" class="auth-in" placeholder="e.g. 0821234567" style="margin-bottom:8px;text-align:center;font-size:16px">
+    <input type="tel" id="popup-phone" class="auth-in" placeholder="e.g. 082 123 4567" oninput="formatPhone(this)" style="margin-bottom:8px;text-align:center;font-size:16px">
     <div id="popup-phone-err" style="color:#c0392b;font-size:12px;margin-bottom:12px;min-height:16px"></div>
     <button onclick="savePopupPhone()" style="width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Save number →</button>
     <button onclick="dismissPhonePopup()" style="width:100%;background:#f5f5f0;color:#888;border:none;border-radius:12px;padding:12px;font-size:13px;cursor:pointer">Remind me later</button>
@@ -2421,6 +2421,14 @@ async function doLogin(){
   btn.disabled=true;btn.textContent='Signing in...';
   hideErr('l-err');
   try{
+    // Pre-check: does this email exist in our database?
+    const emailCheck=await fetch(SB+'/rest/v1/beta_testers?select=id&email=eq.'+encodeURIComponent(email.toLowerCase()),{headers:{'apikey':AK,'Authorization':'Bearer '+AK}});
+    const existing=await emailCheck.json();
+    if(!existing?.length){
+      showErr('l-err','No account found with this email. Please sign up first.');
+      btn.disabled=false;btn.textContent='Sign in →';
+      return;
+    }
     const auth=await authPost('token?grant_type=password',{email:email.toLowerCase(),password:pass});
     if(!auth.access_token){
       loginAttempts++;
@@ -9646,6 +9654,15 @@ async function savePopupPhone(){
     msg.textContent='Cell number saved!';
     document.body.appendChild(msg);setTimeout(()=>msg.remove(),2500);
   }catch(e){errEl.textContent='Could not save. Please try again.';}
+}
+
+// ── Phone Number Formatting ───────────────────────────────────
+function formatPhone(el){
+  let v=el.value.replace(/\D/g,'');
+  if(v.length<=3) el.value=v;
+  else if(v.length<=6) el.value=v.slice(0,3)+' '+v.slice(3);
+  else el.value=v.slice(0,3)+' '+v.slice(3,6)+' '+v.slice(6,10);
+  ob.phone=el.value;
 }
 </script>
 
