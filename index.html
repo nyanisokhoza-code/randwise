@@ -8,6 +8,16 @@
     var type = params.get('type');
     var token = params.get('access_token');
     var refresh = params.get('refresh_token') || '';
+    var error = params.get('error');
+    var errorCode = params.get('error_code');
+    var errorDesc = params.get('error_description');
+    // Handle expired/invalid links
+    if(error || errorCode) {
+      var msg = errorCode === 'otp_expired' ? 'This verification link has expired. Please request a new one.' :
+                errorCode === 'access_denied' ? 'This link is no longer valid. Please try again.' :
+                'Something went wrong. Please try again.';
+      sessionStorage.setItem('rw_auth_error', msg);
+    }
     if (type === 'recovery' && token) {
       window.location.replace(
         'https://myrandwise.co.za/reset-password.html#access_token=' + encodeURIComponent(token) +
@@ -6597,6 +6607,15 @@ window.addEventListener('load',async()=>{
   } else {
     show('splash');
   }
+  // Show auth error if redirected with error hash
+  const authErr = sessionStorage.getItem('rw_auth_error');
+  if(authErr){
+    sessionStorage.removeItem('rw_auth_error');
+    setTimeout(()=>{
+      const toast = document.getElementById('toast');
+      if(toast){toast.textContent=authErr;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),5000);}
+    }, 1000);
+  }
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
@@ -9603,7 +9622,7 @@ async function verifyOtp(){
   try{
     const res=await fetch(SB+'/auth/v1/verify',{
       method:'POST',
-      headers:{'apikey':AK,'Content-Type':'application/json'},
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'},
       body:JSON.stringify({type:'signup',email:otpEmail,token:code})
     });
     const data=await res.json();
@@ -9628,7 +9647,7 @@ async function resendOtp(){
   try{
     await fetch(SB+'/auth/v1/resend',{
       method:'POST',
-      headers:{'apikey':AK,'Content-Type':'application/json'},
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'},
       body:JSON.stringify({type:'signup',email:otpEmail})
     });
     document.getElementById('otp-err').textContent='';
