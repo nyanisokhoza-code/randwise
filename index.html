@@ -1390,6 +1390,8 @@ if('serviceWorker' in navigator){
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Account tier</span><span style="background:var(--bg2);color:var(--mu);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px" id="ptier">Free</span></div>
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Referral code</span><span style="font-size:13px;color:var(--g);font-weight:700;font-family:monospace" id="pref">—</span></div>
           <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Pay day</span><span style="font-size:13px;color:var(--mu)" id="ppayday">25th</span></div>
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Email</span><span style="font-size:12px;color:var(--mu)" id="pemail">—</span></div>
+          <div style="padding:14px 16px;border-bottom:.5px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Cell number</span><span style="font-size:13px;color:var(--g);font-weight:600;cursor:pointer" id="pphone" onclick="editProfilePhone()">Add number +</span></div>
           <div style="padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">Member since</span><span style="font-size:13px;color:var(--mu)" id="psince">—</span></div>
         </div>
         <div style="background:var(--gl);border-radius:14px;padding:16px;margin-bottom:14px">
@@ -2485,6 +2487,16 @@ async function doLogin(){
     }catch(ex){expenses=[];debts=[];}
     await loadMonthlyNeedsFromSupabase().catch(()=>{});
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
+    if(!auth.user?.email_confirmed_at){
+      otpEmail=user?.email||email.toLowerCase();
+      document.getElementById('otp-desc').textContent='Please verify your email first. Enter the 6-digit code sent to '+otpEmail+'.';
+      document.querySelectorAll('.otp-box').forEach(b=>{b.value='';b.classList.remove('filled');});
+      document.getElementById('otp-err').textContent='';
+      show('verify-otp');
+      setTimeout(()=>document.querySelector('.otp-box')?.focus(),300);
+      btn.disabled=false;btn.textContent='Sign in →';
+      return;
+    }
     show('main');
     try{setTimeout(showIntro,400);}catch(ex){}
     setTimeout(checkPhonePopup, 1500);
@@ -2932,6 +2944,9 @@ async function renderDash(){
   }
   set('ptier',user.tier||'free');
   set('pref',user.referral_code||'—');
+  set('pemail',user.email||'—');
+  const phoneEl=document.getElementById('pphone');
+  if(phoneEl){phoneEl.textContent=user.phone||'Add number +';phoneEl.style.color=user.phone?'var(--mu)':'var(--g)';}
   set('psince',user.created_at?new Date(user.created_at).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}):'—');
 
   if((user.tier||'free')==='free'&&user.created_at){
@@ -9663,6 +9678,16 @@ function formatPhone(el){
   else if(v.length<=6) el.value=v.slice(0,3)+' '+v.slice(3);
   else el.value=v.slice(0,3)+' '+v.slice(3,6)+' '+v.slice(6,10);
   ob.phone=el.value;
+}
+
+function editProfilePhone(){
+  const current = user?.phone || '';
+  const popup = document.getElementById('phone-popup');
+  if(popup){
+    document.getElementById('popup-phone').value = current;
+    popup.style.display='flex';
+    setTimeout(()=>document.getElementById('popup-phone')?.focus(),300);
+  }
 }
 </script>
 
