@@ -1104,7 +1104,13 @@ if('serviceWorker' in navigator){
         <input type="password" id="r-pass" class="auth-in" placeholder="Minimum 8 characters" oninput="valStep()">
         <button class="auth-toggle" onclick="togglePass('r-pass',this)">Show</button>
       </div>
-      <div style="font-size:11px;color:var(--mu);margin-bottom:16px">At least 8 characters. You'll use this to sign back in.</div>
+      <div style="font-size:11px;color:var(--mu);margin-bottom:12px">At least 8 characters. You'll use this to sign back in.</div>
+      <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Confirm password</div>
+      <div class="auth-row" style="margin-bottom:4px">
+        <input type="password" id="r-pass2" class="auth-in" placeholder="Re-enter your password" autocomplete="new-password" oninput="valStep()">
+        <button class="auth-toggle" onclick="togglePass('r-pass2',this)">Show</button>
+      </div>
+      <div id="r-pass2-err" style="font-size:11px;color:#c0392b;margin-bottom:12px;min-height:16px"></div>
       <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Cell number <span style="font-weight:400;color:var(--mu)">(required)</span></div>
       <div class="auth-row" style="margin-bottom:6px">
         <input type="tel" id="r-phone" class="auth-in" placeholder="e.g. 082 123 4567" autocomplete="tel" oninput="formatPhone(this);valStep()">
@@ -2313,7 +2319,7 @@ function renderStep(){
   document.getElementById('ob-body').scrollTop=0;
 }
 function valStep(){
-  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8&&(document.getElementById('r-phone')?.value||'').trim().length>=9);
+  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8&&(document.getElementById('r-phone')?.value||'').trim().length>=9&&(()=>{const p2=document.getElementById('r-pass2')?.value||'';const errEl=document.getElementById('r-pass2-err');if(p2&&p2!==ob.password){if(errEl)errEl.textContent='Passwords do not match';return false;}if(errEl)errEl.textContent='';return p2===ob.password&&p2.length>=8;})());
   const btn=document.getElementById('ob-next');
   btn.disabled=!v;
   btn.textContent=step===5?"Let's go 🚀":'Continue →';
