@@ -1152,8 +1152,13 @@ if('serviceWorker' in navigator){
 <div class="screen" id="verify-otp" style="display:none">
   <div style="max-width:360px;margin:0 auto;padding:40px 24px;text-align:center">
     <div style="font-size:48px;margin-bottom:16px">📬</div>
-    <div style="font-size:22px;font-weight:800;color:var(--m);margin-bottom:8px">Check your email</div>
-    <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:28px" id="otp-desc">We sent a 6-digit code to your email. Enter it below to verify your account.</div>
+    <div style="font-size:22px;font-weight:800;color:var(--m);margin-bottom:8px">Verify your email</div>
+    <div style="font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:16px" id="otp-desc">We sent a verification email to your address.</div>
+    <div style="background:#e8f5ee;border-radius:12px;padding:14px 16px;margin-bottom:20px;text-align:left">
+      <div style="font-size:13px;font-weight:700;color:var(--m);margin-bottom:4px">Option 1 — Click the link</div>
+      <div style="font-size:12px;color:#555;line-height:1.6">Open the email and click <strong>"Verify my account"</strong>. Check your spam/junk folder too.</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--m);margin-bottom:12px">Option 2 — Enter the 6-digit code</div>
     <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px" id="otp-boxes">
       <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
       <input type="tel" maxlength="1" class="otp-box" oninput="otpInput(this)" onkeydown="otpKey(event,this)">
