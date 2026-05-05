@@ -112,7 +112,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 #saving{background:var(--w);align-items:center;justify-content:center;gap:14px}
 .spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,217,110,0);border-color:#a8d96e}50%{box-shadow:0 0 0 5px rgba(168,217,110,0.35);border-color:#4ade80}}
+@keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0);border-color:#d1ead9}50%{box-shadow:0 0 0 6px rgba(251,191,36,0.4);border-color:#fbbf24}}
 
 /* DONE */
 #done{background:linear-gradient(160deg,#0a3d20,#1a7a4a);align-items:center;justify-content:center;text-align:center;padding:40px 28px}
@@ -3318,24 +3318,24 @@ async function renderDash(){
     if(ringSvg) ringSvg.style.opacity='0';
     if(ramtEl) ramtEl.textContent='—';
   } else {
-    // Salary confirmed — show ring
-    // Ring fills proportionally to how much is LEFT (disposable / income)
-    // Full ring = all income free. Empty = all committed.
-    const _ringRemaining = Math.max(0, sp); // sp = confirmed remaining after commitments
-    const _ringPct = inc > 0 ? Math.min(_ringRemaining / inc, 1) : 0;
+    // Salary confirmed — ring fills as commitments are confirmed
+    // Ring = % of income committed/spent. Empty = untouched. Full = fully committed.
+    const _ringCommitted = Math.min(inc - Math.max(0, sp), inc); // how much has been committed
+    const _ringPct = inc > 0 ? Math.min(_ringCommitted / inc, 1) : 0;
     const _ringFill = circ * _ringPct;
+    const _ringRemaining = Math.max(0, sp);
 
     if(rarcEl){
-      rarcEl.setAttribute('stroke-dasharray', `${_ringFill} ${circ}`);
-      rarcEl.style.opacity = _ringPct > 0 ? '1' : '0';
-      // Colour: green when lots left, amber when tight, red when very little
-      const _ringColor = _ringPct > 0.4 ? '#4ade80' : _ringPct > 0.15 ? '#fbbf24' : '#f87171';
+      rarcEl.setAttribute('stroke-dasharray', _ringPct > 0 ? `${_ringFill} ${circ}` : `0 ${circ}`);
+      rarcEl.style.opacity = _ringPct > 0 ? '1' : '0.3';
+      // Colour: green while building up, amber when tight, red when fully committed
+      const _ringColor = _ringPct < 0.7 ? '#4ade80' : _ringPct < 0.92 ? '#fbbf24' : '#f87171';
       rarcEl.setAttribute('stroke', _ringColor);
     }
-    // Track only visible when ring is active
     const rtrackEl2=document.getElementById('rtrack');
-    if(rtrackEl2) rtrackEl2.style.opacity = '0.2';
+    if(rtrackEl2) rtrackEl2.style.opacity='0.15';
     if(ringSvg) ringSvg.style.opacity='1';
+    // Label shows what's remaining
     if(ramtEl) ramtEl.textContent = _ringRemaining>=1000 ? 'R'+Math.round(_ringRemaining/1000)+'k' : 'R'+_ringRemaining.toLocaleString('en-ZA');
   }
   // After commitments = spendable
@@ -7597,7 +7597,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-05-05-v173';
+const APP_VERSION = '2026-05-05-v174';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
