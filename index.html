@@ -3352,10 +3352,10 @@ async function renderDash(){
     // Nothing confirmed — ring hidden, show dash
     if(ringSvg) ringSvg.style.opacity='0';
     if(ramtEl) ramtEl.textContent='—';
+    updateHeroWeekPanel(0, wb);
   } else {
     // Salary confirmed — ring fills as commitments are confirmed
-    // Ring = % of income committed/spent. Empty = untouched. Full = fully committed.
-    const _ringCommitted = Math.min(inc - Math.max(0, sp), inc); // how much has been committed
+    const _ringCommitted = Math.min(inc - Math.max(0, sp), inc);
     const _ringPct = inc > 0 ? Math.min(_ringCommitted / inc, 1) : 0;
     const _ringFill = circ * _ringPct;
     const _ringRemaining = Math.max(0, sp);
@@ -3363,7 +3363,6 @@ async function renderDash(){
     if(rarcEl){
       rarcEl.setAttribute('stroke-dasharray', _ringPct > 0 ? `${_ringFill} ${circ}` : `0 ${circ}`);
       rarcEl.style.opacity = _ringPct > 0 ? '1' : '0.3';
-      // Green <50%, amber 50-79%, red 80%+ (80% committed = real danger)
       const _ringColor = _ringPct < 0.5 ? '#4ade80' : _ringPct < 0.8 ? '#fbbf24' : '#f87171';
       rarcEl.setAttribute('stroke', _ringColor);
     }
@@ -3371,9 +3370,7 @@ async function renderDash(){
     if(rtrackEl2) rtrackEl2.style.opacity='0.15';
     if(ringSvg) ringSvg.style.opacity='1';
     if(ramtEl) ramtEl.textContent = _ringRemaining>=1000 ? 'R'+Math.round(_ringRemaining/1000)+'k' : 'R'+_ringRemaining.toLocaleString('en-ZA');
-    updateHeroWeekPanel(sp, wb); // pass both confirmed sp and wb
-  } else {
-    updateHeroWeekPanel(0, wb); // still update panel with wb even if not fully confirmed
+    updateHeroWeekPanel(sp, wb);
   }
   // After commitments = spendable
   const afterEl=document.getElementById('hdr-after');
@@ -7696,7 +7693,7 @@ function updateHeroWeekPanel(sp, wbOverride){
   if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
 }
 
-const APP_VERSION = '2026-05-05-v177';
+const APP_VERSION = '2026-05-05-v178';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
