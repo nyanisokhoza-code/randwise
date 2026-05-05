@@ -2877,6 +2877,10 @@ function shareStokvelCard(id){
 function getSmartWeeklyBudget(){
   const inc = Number(user?.income_amount||0);
   if(inc<=0) return {wb:0, disposable:0, fixed:0, breakdown:[]};
+  // Don't show any weekly budget until salary is confirmed — prevents wrong numbers before debts load
+  const _gn=new Date();
+  const _gSalKey=`rw_salary_confirmed_${_gn.getFullYear()}_${_gn.getMonth()+1}`;
+  if(!(localStorage.getItem(_gSalKey)||'').startsWith('confirmed:')) return {wb:0, disposable:0, fixed:0, breakdown:[]};
 
   const breakdown = [];
 
@@ -3333,7 +3337,8 @@ async function renderDash(){
   if(ramtEl){
     if(_cAll){
       ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
-      if(ringSvg) ringSvg.style.opacity='1';
+      // Only show ring if there are actual expenses this week — otherwise pure dark background, no track visible
+      if(ringSvg) ringSvg.style.opacity = weekSpent2>0 ? '1' : '0';
     } else if(_cSal){
       ramtEl.textContent=sp>=1000?'R'+Math.round(sp/1000)+'k':'R'+sp.toLocaleString('en-ZA');
       if(ringSvg) ringSvg.style.opacity='0';
@@ -7591,7 +7596,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-04-28-v169';
+const APP_VERSION = '2026-05-05-v170';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
