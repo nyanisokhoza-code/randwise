@@ -2948,6 +2948,10 @@ function getSmartWeeklyBudget(){
 
 async function renderDash(){
   if(!user)return;
+  // Always show monthly front on render — don't leave stuck on weekly back
+  const _hfi=document.getElementById('hero-flip-inner');
+  if(_hfi) _hfi.classList.remove('flipped');
+  clearTimeout(_heroFlipTimer);
   // Force scroll to top - multiple attempts to ensure it works
   const forceTop=()=>{
     const el=document.getElementById('dash-main-content');
@@ -3367,8 +3371,9 @@ async function renderDash(){
     if(rtrackEl2) rtrackEl2.style.opacity='0.15';
     if(ringSvg) ringSvg.style.opacity='1';
     if(ramtEl) ramtEl.textContent = _ringRemaining>=1000 ? 'R'+Math.round(_ringRemaining/1000)+'k' : 'R'+_ringRemaining.toLocaleString('en-ZA');
-    // Update weekly back panel
-    updateHeroWeekPanel(sp);
+    updateHeroWeekPanel(sp, wb); // pass both confirmed sp and wb
+  } else {
+    updateHeroWeekPanel(0, wb); // still update panel with wb even if not fully confirmed
   }
   // After commitments = spendable
   const afterEl=document.getElementById('hdr-after');
@@ -6597,7 +6602,7 @@ window.addEventListener('load',async()=>{
   const splashRing = document.getElementById('splash-ring');
   const splashTitle = document.getElementById('splash-title');
   const splashSub = document.getElementById('splash-sub');
-  if(splashRing) splashRing.style.animation='splashRingDraw 1.8s cubic-bezier(.4,0,.2,1) forwards';
+  if(splashRing) splashRing.style.animation='splashRingDraw 2.8s cubic-bezier(.4,0,.2,1) forwards';
   if(splashTitle) setTimeout(()=>{ splashTitle.style.animation='splashFadeUp .7s ease forwards'; },400);
   if(splashSub) setTimeout(()=>{ splashSub.style.animation='splashFadeUp .7s ease forwards'; },700);
   if(!hasSession){
@@ -7638,12 +7643,23 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
+let _heroFlipTimer = null;
 function toggleHeroFlip(){
   const inner=document.getElementById('hero-flip-inner');
-  if(inner) inner.classList.toggle('flipped');
+  if(!inner) return;
+  const isFlipped = inner.classList.contains('flipped');
+  inner.classList.toggle('flipped');
+  clearTimeout(_heroFlipTimer);
+  if(!isFlipped){
+    // Just flipped to weekly — auto-return after 8s
+    _heroFlipTimer = setTimeout(()=>{
+      if(inner.classList.contains('flipped')) inner.classList.remove('flipped');
+    }, 8000);
+  }
 }
-function updateHeroWeekPanel(sp){
-  const wb=sp>0?Math.round(sp/4):0;
+function updateHeroWeekPanel(sp, wbOverride){
+  // Use wb from getSmartWeeklyBudget — same source as weekly planner
+  const wb = wbOverride || (sp>0 ? Math.round(sp/4) : 0);
   const now=new Date();
   const weekStart=new Date(now);
   weekStart.setDate(now.getDate()-((now.getDay()+6)%7));
@@ -7680,7 +7696,7 @@ function updateHeroWeekPanel(sp){
   if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
 }
 
-const APP_VERSION = '2026-05-05-v176';
+const APP_VERSION = '2026-05-05-v177';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
