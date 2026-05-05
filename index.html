@@ -112,6 +112,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 #saving{background:var(--w);align-items:center;justify-content:center;gap:14px}
 .spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(168,217,110,0);border-color:#a8d96e}50%{box-shadow:0 0 0 5px rgba(168,217,110,0.35);border-color:#4ade80}}
 
 /* DONE */
 #done{background:linear-gradient(160deg,#0a3d20,#1a7a4a);align-items:center;justify-content:center;text-align:center;padding:40px 28px}
@@ -3357,11 +3358,11 @@ async function renderDash(){
       && localStorage.getItem(`rw_payday_checkin_${_an.getFullYear()}_${_an.getMonth()+1}`)==='done'
       && (localStorage.getItem(`rw_needs_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:');
     const msgEl=document.getElementById('hdr-after-msg');
-    if(_c3){
+    if(_c3 && sp>0){
       // All 3 confirmed — show real number, hide message
       afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span>';
       if(msgEl) msgEl.style.display='none';
-    } else if(_sSal){
+    } else if(_sSal && sp>0){
       // Salary confirmed, rest pending — show est.
       afterEl.innerHTML='R'+sp.toLocaleString('en-ZA')+' <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">est.</span>';
       if(msgEl){ msgEl.textContent='Confirm debt & needs to unlock exact number'; msgEl.style.display='block'; }
@@ -3412,6 +3413,14 @@ async function renderDash(){
   const _bHasNeeds=(()=>{try{const n=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');return Object.values(n).some(v=>Number(v)>0);}catch{return false;}})();
   if(bbCard && bbIsPro){
     bbCard.style.display='block';
+    // Pulse when incomplete — calm when done
+    if(!_bAll){
+      bbCard.style.animation='bbPulse 2.5s ease-in-out infinite';
+      bbCard.style.border='1.5px solid #a8d96e';
+    } else {
+      bbCard.style.animation='none';
+      bbCard.style.border='1px solid #d1ead9';
+    }
     if(!_bAll){
       // Build live breakdown with confirmed/pending lines
       document.getElementById('bb-weekly').textContent='— /wk';
@@ -3446,8 +3455,10 @@ async function renderDash(){
         _bRows.innerHTML=_bHtml;
       }
     } else if(budgetBreakdown&&budgetBreakdown.length>0){
-    document.getElementById('bb-weekly').textContent = 'R'+wb.toLocaleString('en-ZA')+'/wk free';
-    document.getElementById('bb-disposable').textContent = 'R'+disposable.toLocaleString('en-ZA')+'/mo';
+    // All 3 confirmed — show real confirmed numbers using sp (confirmed disposable)
+    const spWk = sp>0 ? Math.round(sp/4) : 0;
+    document.getElementById('bb-weekly').textContent = spWk>0 ? 'R'+spWk.toLocaleString('en-ZA')+'/wk free' : '— /wk';
+    document.getElementById('bb-disposable').textContent = sp>0 ? 'R'+sp.toLocaleString('en-ZA')+'/mo' : '—';
     const rows = document.getElementById('bb-rows');
     if(rows){
       rows.innerHTML = `
@@ -7596,7 +7607,7 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-05-05-v170';
+const APP_VERSION = '2026-05-05-v172';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
