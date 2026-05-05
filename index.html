@@ -112,6 +112,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 #saving{background:var(--w);align-items:center;justify-content:center;gap:14px}
 .spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes splashRingDraw{0%{stroke-dasharray:0 365}100%{stroke-dasharray:365 365}}
+@keyframes splashFadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0);border-color:#d1ead9}50%{box-shadow:0 0 0 6px rgba(251,191,36,0.4);border-color:#fbbf24}}
 #hero-flip-inner.flipped{transform:rotateY(180deg)}
 
@@ -328,24 +330,20 @@ if('serviceWorker' in navigator){
 
   <!-- LOADING STATE — shows first for 3 seconds -->
   <div id="splash-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:0">
-    <!-- Animated logo -->
-    <div style="position:relative;width:140px;height:140px;margin-bottom:24px">
-      <!-- Spinning ring -->
-      <svg width="140" height="140" viewBox="0 0 140 140" style="position:absolute;inset:0;animation:spin 2s linear infinite">
-        <circle cx="70" cy="70" r="64" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
-        <circle cx="70" cy="70" r="64" fill="none" stroke="#a8d96e" stroke-width="3"
-          stroke-dasharray="80 320" stroke-linecap="round"/>
+    <!-- Animated logo — ring draws in around logo -->
+    <div style="position:relative;width:130px;height:130px;margin-bottom:20px">
+      <svg width="130" height="130" viewBox="0 0 130 130" style="position:absolute;inset:0">
+        <circle cx="65" cy="65" r="58" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/>
+        <circle cx="65" cy="65" r="58" fill="none" stroke="#4ade80" stroke-width="6"
+          stroke-dasharray="0 365" stroke-linecap="round"
+          transform="rotate(-90 65 65)" id="splash-ring"/>
       </svg>
-      <!-- Real circle logo -->
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
-        <img src="/icon_192.png" width="108" height="108"
-          style="border-radius:50%;object-fit:cover"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div style="display:none;width:108px;height:108px;background:rgba(255,255,255,.12);border-radius:50%;align-items:center;justify-content:center;font-size:48px">🌱</div>
+      <div style="position:absolute;inset:10px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06)">
+        <img src="data:image/png;base64,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" width="100" height="100" style="border-radius:50%;object-fit:cover">
       </div>
     </div>
-    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px">MyRandWise</div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px">Your money, your rules.</div>
+    <div style="font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px;opacity:0" id="splash-title">MyRandWise</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px;opacity:0" id="splash-sub">Your money, your rules.</div>
     <!-- Loading dots -->
     <div style="display:flex;gap:6px;margin-top:32px">
       <div style="width:6px;height:6px;background:rgba(255,255,255,.3);border-radius:50%;animation:dot1 1.2s ease-in-out infinite"></div>
@@ -1225,11 +1223,11 @@ if('serviceWorker' in navigator){
           </div>
           <!-- Ring + Salary row -->
           <!-- Ring + Salary flip card -->
-          <div style="perspective:600px;cursor:pointer;min-height:84px" onclick="toggleHeroFlip()">
+          <div style="perspective:600px;min-height:84px">
             <div id="hero-flip-inner" style="display:flex;align-items:center;gap:16px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);min-height:84px">
               <!-- FRONT: monthly ring + salary -->
               <div style="display:flex;align-items:center;gap:16px;width:100%;backface-visibility:hidden">
-                <div style="flex-shrink:0;position:relative;width:72px;height:72px;border-radius:50%" id="ring-wrap">
+                <div style="flex-shrink:0;position:relative;width:72px;height:72px;border-radius:50%;cursor:pointer" id="ring-wrap" onclick="toggleHeroFlip()" title="Tap to see weekly view">
                   <svg id="ring-svg" width="72" height="72" viewBox="0 0 72 72" style="opacity:0">
                     <circle cx="36" cy="36" r="29" stroke="rgba(255,255,255,.15)" stroke-width="5" fill="none" id="rtrack"/>
                     <circle id="rarc" cx="36" cy="36" r="29" stroke="#4ade80" stroke-width="5" fill="none" stroke-dasharray="0 182" stroke-linecap="round" transform="rotate(-90 36 36)"/>
@@ -6589,23 +6587,27 @@ window.addEventListener('load',async()=>{
     document.head.appendChild(s);
   }
 
-  // Splash loader: show 3s animation for new visitors, skip for returning users
+  // Splash: branded ring-draw animation for ALL users
   const hasSession = localStorage.getItem('rw_user') && localStorage.getItem('rw_token');
   const loader = document.getElementById('splash-loader');
   const content = document.getElementById('splash-content');
+  if(loader) loader.style.display='flex';
+  if(content) content.style.display='none';
+  // Trigger ring draw + fade-up animations
+  const splashRing = document.getElementById('splash-ring');
+  const splashTitle = document.getElementById('splash-title');
+  const splashSub = document.getElementById('splash-sub');
+  if(splashRing) splashRing.style.animation='splashRingDraw 1.8s cubic-bezier(.4,0,.2,1) forwards';
+  if(splashTitle) setTimeout(()=>{ splashTitle.style.animation='splashFadeUp .7s ease forwards'; },400);
+  if(splashSub) setTimeout(()=>{ splashSub.style.animation='splashFadeUp .7s ease forwards'; },700);
   if(!hasSession){
-    // New visitor — show loader 3s then fade in buttons
-    if(loader) loader.style.display='flex';
-    if(content) content.style.display='none';
+    // New visitor — show buttons after 3s
     setTimeout(()=>{
       if(loader) loader.style.display='none';
       if(content){ content.style.display='flex'; setTimeout(()=>content.style.opacity='1',50); }
     }, 3000);
-  } else {
-    // Returning user — hide loader immediately, auto-login takes over
-    if(loader) loader.style.display='none';
-    if(content){ content.style.display='flex'; content.style.opacity='1'; }
   }
+  // Returning users: loader stays visible until auto-login completes below
   await refreshTokenIfNeeded();
   const s=localStorage.getItem('rw_user');
   const tok=localStorage.getItem('rw_token');
@@ -6626,6 +6628,9 @@ window.addEventListener('load',async()=>{
         // Sync monthly needs from Supabase (cross-device sync)
         await loadMonthlyNeedsFromSupabase().catch(()=>{});
         try{renderDash();}catch{}
+        // Hide splash loader, show main
+        const _splashLoader=document.getElementById('splash-loader');
+        if(_splashLoader) _splashLoader.style.display='none';
         show('main');
         startLockTimer();
         setTimeout(()=>schedulePushNudges(), 3000);
@@ -7325,7 +7330,9 @@ function trackDeadTap(){
   const onAccelerator = event?.target?.closest?.('#payoff-accelerator, #accelerator-scenarios');
   // Exclude debt tab buttons (mark payment, delete, edit) 
   const onDebtCard = event?.target?.closest?.('#debt-list-pwa');
-  if(lockVisible || setPinOpen || anySheetOpen || onPinPad || onAccelerator || onDebtCard) return;
+  // Exclude hero flip — tapping coin/header is intentional interactive element
+  const onHeroFlip = event?.target?.closest?.('#hero-flip-inner, #ring-wrap, #ring-svg');
+  if(lockVisible || setPinOpen || anySheetOpen || onPinPad || onAccelerator || onDebtCard || onHeroFlip) return;
 
   _deadTapCount++;
   clearTimeout(_deadTapTimer);
@@ -7673,7 +7680,7 @@ function updateHeroWeekPanel(sp){
   if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
 }
 
-const APP_VERSION = '2026-05-05-v175';
+const APP_VERSION = '2026-05-05-v176';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
