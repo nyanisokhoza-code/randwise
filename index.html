@@ -113,6 +113,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .spin{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0);border-color:#d1ead9}50%{box-shadow:0 0 0 6px rgba(251,191,36,0.4);border-color:#fbbf24}}
+#hero-flip-inner.flipped{transform:rotateY(180deg)}
 
 /* DONE */
 #done{background:linear-gradient(160deg,#0a3d20,#1a7a4a);align-items:center;justify-content:center;text-align:center;padding:40px 28px}
@@ -1223,24 +1224,56 @@ if('serviceWorker' in navigator){
             </div>
           </div>
           <!-- Ring + Salary row -->
-          <div style="display:flex;align-items:center;gap:16px;position:relative">
-            <div style="flex-shrink:0;position:relative;width:84px;height:84px;border-radius:50%" id="ring-wrap">
-              <svg id="ring-svg" width="84" height="84" viewBox="0 0 84 84" style="opacity:0">
-                <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.15)" stroke-width="6" fill="none" id="rtrack"/>
-                <circle id="rarc" cx="42" cy="42" r="34" stroke="#4ade80" stroke-width="6" fill="none" stroke-dasharray="0 214" stroke-linecap="round" transform="rotate(-90 42 42)"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:11px;font-weight:800;color:#fff;line-height:1;text-align:center" id="ramt">R0</div>
-                <div style="font-size:8px;color:rgba(255,255,255,.45);margin-top:1px">free</div>
+          <!-- Ring + Salary flip card -->
+          <div style="perspective:600px;cursor:pointer;min-height:84px" onclick="toggleHeroFlip()">
+            <div id="hero-flip-inner" style="display:flex;align-items:center;gap:16px;position:relative;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1);min-height:84px">
+              <!-- FRONT: monthly ring + salary -->
+              <div style="display:flex;align-items:center;gap:16px;width:100%;backface-visibility:hidden">
+                <div style="flex-shrink:0;position:relative;width:72px;height:72px;border-radius:50%" id="ring-wrap">
+                  <svg id="ring-svg" width="72" height="72" viewBox="0 0 72 72" style="opacity:0">
+                    <circle cx="36" cy="36" r="29" stroke="rgba(255,255,255,.15)" stroke-width="5" fill="none" id="rtrack"/>
+                    <circle id="rarc" cx="36" cy="36" r="29" stroke="#4ade80" stroke-width="5" fill="none" stroke-dasharray="0 182" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+                  </svg>
+                  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                    <div style="font-size:10px;font-weight:800;color:#fff;line-height:1;text-align:center" id="ramt">—</div>
+                    <div style="font-size:7px;color:rgba(255,255,255,.45);margin-top:1px">free</div>
+                  </div>
+                </div>
+                <div style="flex:1">
+                  <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
+                  <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;display:flex;align-items:center;gap:6px" id="hdr-income" onclick="event.stopPropagation();openQuickEditIncome()">R0 <span style="font-size:11px;opacity:.5">✏️</span></div>
+                  <div id="hdr-after-row">
+                    <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;font-weight:500;user-select:none">After commitments</div>
+                    <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px;user-select:none" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;font-style:italic;user-select:none" id="hdr-after-msg">Tap breakdown to confirm</div>
+                  </div>
+                </div>
+                <div style="font-size:9px;color:rgba(255,255,255,.25);align-self:flex-end;padding-bottom:2px">week →</div>
               </div>
-            </div>
-            <div style="flex:1">
-              <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Salary received</div>
-              <div style="font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.1;cursor:pointer;display:flex;align-items:center;gap:6px" id="hdr-income" onclick="openQuickEditIncome()">R0 <span style="font-size:11px;opacity:.5">✏️</span></div>
-              <div id="hdr-after-row">
-                <div style="font-size:10px;color:rgba(255,255,255,.55);margin-top:5px;font-weight:500;user-select:none">After commitments</div>
-                <div style="font-size:15px;font-weight:700;color:#4ade80;margin-top:1px;text-decoration:none;user-select:none" id="hdr-after">R0 <span style="font-size:10px;font-weight:400;color:rgba(255,255,255,.45)">yours</span></div>
-                <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:3px;font-style:italic;user-select:none" id="hdr-after-msg">Tap breakdown to confirm</div>
+              <!-- BACK: weekly progress -->
+              <div id="hero-week-back" style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;backface-visibility:hidden;transform:rotateY(180deg)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+                  <span style="font-size:12px;font-weight:700;color:white" id="hw-title">Week 1 of 4</span>
+                  <span style="font-size:11px;color:rgba(255,255,255,.4)" id="hw-budget">R0 budget</span>
+                </div>
+                <div style="background:rgba(255,255,255,.12);border-radius:6px;height:7px;overflow:hidden;margin-bottom:11px">
+                  <div id="hw-bar" style="background:#4ade80;width:0%;height:100%;border-radius:6px;transition:width .4s ease"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.4)">Days left</div>
+                    <div style="font-size:17px;font-weight:700;color:white" id="hw-days">—</div>
+                  </div>
+                  <div style="text-align:center">
+                    <div style="font-size:9px;color:rgba(255,255,255,.4)">Safe/day</div>
+                    <div style="font-size:17px;font-weight:700;color:#4ade80" id="hw-daily">R0</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:9px;color:rgba(255,255,255,.4)">Remaining</div>
+                    <div style="font-size:17px;font-weight:700;color:white" id="hw-remaining">R0</div>
+                  </div>
+                </div>
+                <div style="font-size:9px;color:rgba(255,255,255,.25);margin-top:5px;text-align:right">← month</div>
               </div>
             </div>
           </div>
@@ -3308,7 +3341,7 @@ async function renderDash(){
   const _cAll=_cSal
     && localStorage.getItem(`rw_payday_checkin_${_cn.getFullYear()}_${_cn.getMonth()+1}`)==='done'
     && (localStorage.getItem(`rw_needs_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
-  const circ=2*Math.PI*34;
+  const circ=2*Math.PI*29;
   const rarcEl=document.getElementById('rarc');
   const ramtEl=document.getElementById('ramt');
   const ringSvg=document.getElementById('ring-svg');
@@ -3328,15 +3361,16 @@ async function renderDash(){
     if(rarcEl){
       rarcEl.setAttribute('stroke-dasharray', _ringPct > 0 ? `${_ringFill} ${circ}` : `0 ${circ}`);
       rarcEl.style.opacity = _ringPct > 0 ? '1' : '0.3';
-      // Colour: green while building up, amber when tight, red when fully committed
-      const _ringColor = _ringPct < 0.7 ? '#4ade80' : _ringPct < 0.92 ? '#fbbf24' : '#f87171';
+      // Green <50%, amber 50-79%, red 80%+ (80% committed = real danger)
+      const _ringColor = _ringPct < 0.5 ? '#4ade80' : _ringPct < 0.8 ? '#fbbf24' : '#f87171';
       rarcEl.setAttribute('stroke', _ringColor);
     }
     const rtrackEl2=document.getElementById('rtrack');
     if(rtrackEl2) rtrackEl2.style.opacity='0.15';
     if(ringSvg) ringSvg.style.opacity='1';
-    // Label shows what's remaining
     if(ramtEl) ramtEl.textContent = _ringRemaining>=1000 ? 'R'+Math.round(_ringRemaining/1000)+'k' : 'R'+_ringRemaining.toLocaleString('en-ZA');
+    // Update weekly back panel
+    updateHeroWeekPanel(sp);
   }
   // After commitments = spendable
   const afterEl=document.getElementById('hdr-after');
@@ -7597,7 +7631,49 @@ async function saveEdit(){
 }
 
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
-const APP_VERSION = '2026-05-05-v174';
+function toggleHeroFlip(){
+  const inner=document.getElementById('hero-flip-inner');
+  if(inner) inner.classList.toggle('flipped');
+}
+function updateHeroWeekPanel(sp){
+  const wb=sp>0?Math.round(sp/4):0;
+  const now=new Date();
+  const weekStart=new Date(now);
+  weekStart.setDate(now.getDate()-((now.getDay()+6)%7));
+  weekStart.setHours(0,0,0,0);
+  const weekSpent=(window.expenses||[]).filter(e=>{
+    if(!e.logged_at)return false;
+    const d=new Date(e.logged_at);
+    return !isNaN(d.getTime())&&d>=weekStart&&d<=now;
+  }).reduce((s,e)=>s+Number(e.amount||0),0);
+  const remaining=Math.max(0,wb-weekSpent);
+  const overspent=weekSpent>wb&&wb>0;
+  // Days left in week (Mon=0...Sun=6 → days until Sunday)
+  const dayOfWeek=(now.getDay()+6)%7; // 0=Mon,6=Sun
+  const daysLeft=Math.max(0,6-dayOfWeek);
+  const safeDaily=daysLeft>0?Math.round(remaining/daysLeft):0;
+  const pct=wb>0?Math.min(weekSpent/wb,1):0;
+  // Week number in month
+  const weekNum=Math.ceil(now.getDate()/7);
+  const weeksInMonth=Math.ceil(new Date(now.getFullYear(),now.getMonth()+1,0).getDate()/7);
+  const t=document.getElementById('hw-title');
+  const b=document.getElementById('hw-budget');
+  const bar=document.getElementById('hw-bar');
+  const days=document.getElementById('hw-days');
+  const daily=document.getElementById('hw-daily');
+  const rem=document.getElementById('hw-remaining');
+  if(t) t.textContent=`Week ${weekNum} of ${weeksInMonth}`;
+  if(b) b.textContent=wb>0?'R'+wb.toLocaleString('en-ZA')+' budget':'Confirm to unlock';
+  if(bar){
+    bar.style.width=(pct*100)+'%';
+    bar.style.background=overspent?'#f87171':pct>0.7?'#fbbf24':'#4ade80';
+  }
+  if(days) days.textContent=daysLeft||'—';
+  if(daily){ daily.textContent=safeDaily>0?'R'+safeDaily.toLocaleString('en-ZA'):'R0'; daily.style.color=overspent?'#f87171':'#4ade80'; }
+  if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
+}
+
+const APP_VERSION = '2026-05-05-v175';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
