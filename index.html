@@ -1129,6 +1129,16 @@ if('serviceWorker' in navigator){
       <div style="font-size:12px;font-weight:600;color:var(--m);margin-bottom:6px">Referral code <span style="font-weight:400;color:var(--mu)">(optional)</span></div>
       <input type="text" id="r-ref" class="auth-in" placeholder="e.g. KHO-245D" autocapitalize="characters" style="margin-bottom:4px">
       <div style="font-size:11px;color:var(--mu);margin-bottom:16px">Got a code from a friend? Enter it here.</div>
+      <!-- POPIA Consent — required before account creation -->
+      <div style="background:#f0faf4;border:1.5px solid #a8d96e;border-radius:12px;padding:14px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:#1a5c35;margin-bottom:6px">🔒 Privacy & Data Consent (POPIA)</div>
+        <div style="font-size:11px;color:#444;line-height:1.6;margin-bottom:10px">By creating an account, you agree that MyRandWise may collect and store your financial information (income, expenses, debts, savings goals) to provide the budgeting service. Your data is:<br>• Never sold to third parties<br>• Never used for advertising<br>• Stored securely and encrypted<br>• Yours — you can request deletion at any time via support@myrandwise.co.za</div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <input type="checkbox" id="popia-consent" style="margin-top:2px;width:18px;height:18px;accent-color:#1a5c35;flex-shrink:0" onchange="valStep()">
+          <label for="popia-consent" style="font-size:12px;color:#2c2c2a;line-height:1.5;cursor:pointer">I have read and agree to MyRandWise collecting and processing my personal financial information in accordance with POPIA. I understand I can withdraw consent at any time.</label>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--mu);margin-bottom:4px;text-align:center">By continuing you also agree to our <span style="color:#1a5c35;text-decoration:underline;cursor:pointer" onclick="showPrivacyPolicy()">Privacy Policy</span> and <span style="color:#1a5c35;text-decoration:underline;cursor:pointer" onclick="showTerms()">Terms of Service</span>.</div>
     </div>
   </div>
   <div class="ob-foot">
@@ -2364,7 +2374,8 @@ function renderStep(){
   document.getElementById('ob-body').scrollTop=0;
 }
 function valStep(){
-  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8&&(document.getElementById('r-phone')?.value||'').trim().length>=9&&(()=>{const p2=document.getElementById('r-pass2')?.value||'';const errEl=document.getElementById('r-pass2-err');if(p2&&p2!==ob.password){if(errEl)errEl.textContent='Passwords do not match';return false;}if(errEl)errEl.textContent='';return p2===ob.password&&p2.length>=8;})());
+  const popiaChecked = step===5 ? (document.getElementById('popia-consent')?.checked||false) : true;
+  const v=(step===1&&ob.stage)||(step===2&&ob.incomeType)||(step===3&&parseFloat(ob.income)>0)||(step===4&&ob.goals.length>0)||(step===5&&ob.name.trim().length>=2&&ob.email.includes('@')&&ob.password.length>=8&&(document.getElementById('r-phone')?.value||'').trim().length>=9&&popiaChecked&&(()=>{const p2=document.getElementById('r-pass2')?.value||'';const errEl=document.getElementById('r-pass2-err');if(p2&&p2!==ob.password){if(errEl)errEl.textContent='Passwords do not match';return false;}if(errEl)errEl.textContent='';return p2===ob.password&&p2.length>=8;})());
   const btn=document.getElementById('ob-next');
   btn.disabled=!v;
   btn.textContent=step===5?"Let's go 🚀":'Continue →';
@@ -7711,7 +7722,7 @@ function updateHeroWeekPanel(sp, wbOverride){
   if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
 }
 
-const APP_VERSION = '2026-05-05-v180';
+const APP_VERSION = '2026-05-07-v181';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
@@ -9176,6 +9187,44 @@ function renderSearchResults(){
   }).join('');
 }
 
+function showPrivacyPolicy(){
+  const sheet=document.createElement('div');
+  sheet.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.innerHTML=`<div style="background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto">
+    <div style="font-size:17px;font-weight:800;color:#1a5c35;margin-bottom:12px">Privacy Policy</div>
+    <div style="font-size:13px;color:#444;line-height:1.7">
+      <strong>What we collect:</strong> Your name, email, income, expenses, debts, savings goals, and device type.<br><br>
+      <strong>Why we collect it:</strong> To provide the MyRandWise budgeting and debt management service.<br><br>
+      <strong>What we never do:</strong> We never sell your data. We never use your data for advertising. We never share it with third parties without your consent.<br><br>
+      <strong>Your rights (POPIA):</strong> You have the right to access, correct, or delete your data at any time. Email support@myrandwise.co.za to exercise these rights.<br><br>
+      <strong>Data storage:</strong> Your data is stored securely on Supabase servers (EU-West). All connections are encrypted (HTTPS/TLS).<br><br>
+      <strong>Retention:</strong> Your data is kept for as long as your account is active. Deleting your account removes all personal data within 30 days.<br><br>
+      <strong>Contact:</strong> support@myrandwise.co.za
+    </div>
+    <button onclick="this.closest('div').parentElement.remove()" style="width:100%;padding:12px;background:#1a5c35;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px">Close</button>
+  </div>`;
+  document.body.appendChild(sheet);
+}
+function showTerms(){
+  const sheet=document.createElement('div');
+  sheet.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.innerHTML=`<div style="background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto">
+    <div style="font-size:17px;font-weight:800;color:#1a5c35;margin-bottom:12px">Terms of Service</div>
+    <div style="font-size:13px;color:#444;line-height:1.7">
+      <strong>Service:</strong> MyRandWise provides personal budgeting and financial planning tools. We are not a registered financial services provider. Nothing in the app constitutes financial advice.<br><br>
+      <strong>Your account:</strong> You are responsible for keeping your password secure. You may not share your account.<br><br>
+      <strong>Payments:</strong> Subscriptions are billed monthly or annually. Cancellations take effect at the end of the billing period. No refunds for partial periods.<br><br>
+      <strong>Free trial:</strong> The 14-day Pro trial automatically reverts to Free tier unless you subscribe. No charge during trial.<br><br>
+      <strong>Accuracy:</strong> MyRandWise calculations are based on data you provide. We are not responsible for decisions made based on app data.<br><br>
+      <strong>Termination:</strong> We reserve the right to suspend accounts that violate these terms.<br><br>
+      <strong>Governing law:</strong> These terms are governed by South African law.<br><br>
+      <strong>Contact:</strong> support@myrandwise.co.za
+    </div>
+    <button onclick="this.closest('div').parentElement.remove()" style="width:100%;padding:12px;background:#1a5c35;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:16px">Close</button>
+  </div>`;
+  document.body.appendChild(sheet);
+}
+
 // ── App Rating Prompt ─────────────────────────────────────────
 function checkAppRating(){
   if(localStorage.getItem('rw_rated')||localStorage.getItem('rw_rate_never')) return;
@@ -9193,10 +9242,51 @@ function openAppRating(){
   localStorage.setItem('rw_rated','1');
   const ov=document.getElementById('rating-overlay');
   if(ov) ov.style.display='none';
-  // Open Play Store or app URL
-  window.open('https://myrandwise.co.za/MyRandWise.apk','_blank');
-  // Fallback if not on Play Store yet
-  showToast('🌟 Thank you! Your support means everything.');
+  // Show in-app star rating sheet instead of opening APK
+  showInAppRating();
+}
+function showInAppRating(){
+  const existing=document.getElementById('star-rating-sheet');
+  if(existing) existing.remove();
+  const sheet=document.createElement('div');
+  sheet.id='star-rating-sheet';
+  sheet.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+  sheet.innerHTML=`
+    <div style="background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:480px;text-align:center">
+      <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 20px"></div>
+      <div style="font-size:32px;margin-bottom:8px">⭐</div>
+      <div style="font-size:18px;font-weight:800;color:#1a5c35;margin-bottom:6px">Enjoying MyRandWise?</div>
+      <div style="font-size:14px;color:#666;margin-bottom:20px;line-height:1.5">Your feedback helps us improve and reach more South Africans who need this.</div>
+      <div id="star-row" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;font-size:36px">
+        ${[1,2,3,4,5].map(i=>`<span onclick="selectStar(${i})" style="cursor:pointer;opacity:.4;transition:all .2s" id="star-${i}">★</span>`).join('')}
+      </div>
+      <textarea id="star-comment" placeholder="Optional: Tell us what you love or what we can improve..." style="width:100%;border:1px solid #ddd;border-radius:10px;padding:10px;font-size:13px;resize:none;height:70px;font-family:inherit;box-sizing:border-box;margin-bottom:16px"></textarea>
+      <button onclick="submitRating()" style="width:100%;padding:14px;background:#1a5c35;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:8px">Submit Feedback</button>
+      <button onclick="document.getElementById('star-rating-sheet').remove()" style="width:100%;padding:10px;background:none;color:#999;border:none;font-size:14px;cursor:pointer;font-family:inherit">Maybe later</button>
+    </div>`;
+  document.body.appendChild(sheet);
+  window._selectedStar=0;
+}
+function selectStar(n){
+  window._selectedStar=n;
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('star-'+i);
+    if(el) el.style.opacity=i<=n?'1':'0.4';
+  }
+}
+async function submitRating(){
+  const stars=window._selectedStar||0;
+  const comment=document.getElementById('star-comment')?.value||'';
+  if(stars===0){showToast('Please select a star rating first');return;}
+  try{
+    await sbP('bug_reports',{tester_id:user?.id,type:'rating',message:`${stars} stars: ${comment}`,created_at:new Date().toISOString()});
+  }catch(e){}
+  document.getElementById('star-rating-sheet')?.remove();
+  if(stars>=4){
+    showToast('🌟 Thank you! Your support means everything to us.');
+  } else {
+    showToast('Thank you for your honest feedback — we will improve!');
+  }
 }
 function dismissRating(){
   const ov=document.getElementById('rating-overlay');
