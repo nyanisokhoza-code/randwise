@@ -233,43 +233,72 @@ footer{background:#061f0f;padding:36px 24px 20px}
 .fbot{border-top:1px solid rgba(255,255,255,.07);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .fcopy,.fpopia{font-size:10px;color:rgba(255,255,255,.22)}
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE — tablet ── */
 @media(max-width:900px){
-  .hero{grid-template-columns:1fr;text-align:center;padding:90px 22px 70px}
+  .hero{grid-template-columns:1fr;text-align:center;padding:90px 22px 60px}
   .hv{display:none}
   .hbtns{justify-content:center}
   .hsub{margin:0 auto 12px}
   .hflag{text-align:center}
-  .refinn{grid-template-columns:1fr}
+  .refinn{grid-template-columns:1fr;gap:32px}
   .inn{padding:0 16px}
-  .pricegrid{grid-template-columns:1fr}
+  .pricegrid{grid-template-columns:1fr 1fr}
   .fgrid{grid-template-columns:1fr 1fr}
   .pgrid{grid-template-columns:1fr 1fr}
   .pgrid2{grid-template-columns:repeat(3,1fr)}
 }
-@media(max-width:680px){
-  nav{padding:11px 16px}
+
+/* ── RESPONSIVE — mobile ── */
+@media(max-width:600px){
+  nav{padding:10px 14px}
   .nr a:not(.nb){display:none}
-  .eform{flex-direction:column;align-items:stretch}
-  .einput{width:100%}
-  .ebtn{width:100%}
-  .ftop{flex-direction:column;gap:24px}
-  .stores{flex-wrap:wrap;justify-content:center;gap:10px}
-  .sbadge{min-width:calc(50% - 8px);justify-content:center;flex:1}
-  .pricegrid{grid-template-columns:1fr}
+  .nb{padding:7px 14px;font-size:12px!important}
+
+  .hero{padding:80px 16px 50px}
+  h1{font-size:32px;letter-spacing:-1px}
+  .hsub{font-size:15px}
+  .hbtns{flex-direction:column;align-items:stretch;gap:10px}
+  .bw,.bg{text-align:center;padding:14px 20px}
+  .hstats{flex-wrap:nowrap}
+  .hs{padding:10px 6px}
+  .hsn{font-size:17px}
+
+  section{padding-left:16px!important;padding-right:16px!important}
+  section[style*="padding:80px"]{padding-top:52px!important;padding-bottom:52px!important}
+
+  .stit{font-size:22px!important;line-height:1.25}
+  .ssub{font-size:13px}
+  h2{font-size:22px!important}
+
   .fgrid{grid-template-columns:1fr}
   .pgrid{grid-template-columns:1fr 1fr}
-  .pgrid2{grid-template-columns:repeat(2,1fr)}
-  .hstats{flex-direction:row;flex-wrap:wrap}
-  .hs{flex:1;min-width:80px;padding:10px 6px}
-  .pc{transform:none !important}
-  h2{font-size:24px !important}
-  .ssub{font-size:14px}
-  .faqq{font-size:13px}
+  .pgrid2{grid-template-columns:1fr 1fr}
+  .pricegrid{grid-template-columns:1fr}
+
+  .pcard2{padding:14px}
+  .fcard{padding:16px}
+  .pcard3{padding:14px}
+  .pc{transform:none!important;padding:18px}
+
+  .refinn{grid-template-columns:1fr}
   .rtit{font-size:22px}
-  .refsec{padding:60px 20px}
-  .rsteps{gap:10px}
-  section{padding-left:16px !important;padding-right:16px !important}
+  .refsec{padding:52px 16px}
+
+  .stores{flex-direction:column;align-items:stretch;gap:8px}
+  .sbadge{min-width:unset;width:100%;justify-content:flex-start}
+
+  .eform{flex-direction:column;gap:8px}
+  .einput,.ebtn{width:100%;box-sizing:border-box}
+
+  .ftop{flex-direction:column;gap:20px}
+  .flinks{flex-wrap:wrap;gap:10px}
+  .fbot{flex-direction:column;gap:6px}
+
+  .faqq{font-size:13px;padding:13px 14px}
+  .faqa{font-size:12px}
+
+  .rsteps{gap:8px}
+  .rstep{padding:12px}
 }
 
 /* ── ANIMATIONS ── */
