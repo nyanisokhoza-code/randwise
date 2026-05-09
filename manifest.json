@@ -2,7 +2,7 @@
   "name": "MyRandWise",
   "short_name": "MyRandWise",
   "description": "Your money, your rules. Personal finance built for South Africans.",
-  "start_url": "/",
+  "start_url": "/app.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
@@ -11,7 +11,7 @@
   "theme_color": "#1a7a4a",
   "lang": "en-ZA",
   "dir": "ltr",
-  "id": "/",
+  "id": "/app.html",
   "categories": ["finance", "utilities", "productivity"],
   "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
   "icons": [
@@ -54,26 +54,26 @@
       "name": "Log expense",
       "short_name": "Log",
       "description": "Quickly log an expense",
-      "url": "/?action=log-expense",
+      "url": "/app.html?action=log-expense",
       "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
     },
     {
       "name": "My weekly budget",
       "short_name": "Budget",
       "description": "View your weekly budget",
-      "url": "/?action=weekly-budget",
+      "url": "/app.html?action=weekly-budget",
       "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
     },
     {
       "name": "My debts",
       "short_name": "Debts",
       "description": "View your debt payoff plan",
-      "url": "/?action=debts",
+      "url": "/app.html?action=debts",
       "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
     }
   ],
   "share_target": {
-    "action": "/",
+    "action": "/app.html",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
