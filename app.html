@@ -7275,7 +7275,7 @@ async function checkManualMaintenanceFlag(){
   try{
     const r = await fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
       headers:{'apikey':AK,'Authorization':'Bearer '+AK},
-      signal:AbortSignal.timeout(4000)
+      signal:AbortSignal.timeout(1500)
     });
     if(r.ok){const data=await r.json();return data?.[0]?.value==='true';}
   }catch{}
@@ -7300,7 +7300,7 @@ async function loadAppSettings(){
   try{
     const r=await fetch(`${SB}/rest/v1/app_config?key=like.setting_*&select=key,value`,{
       headers:{'apikey':AK,'Authorization':'Bearer '+AK},
-      signal:AbortSignal.timeout(4000)
+      signal:AbortSignal.timeout(1500)
     });
     if(r.ok){
       const data=await r.json();
@@ -7733,20 +7733,20 @@ const APP_VERSION = '2026-05-07-v181';
   const last = Number(localStorage.getItem(key)||0);
   const threeDays = 3*24*60*60*1000;
   if(now - last > threeDays){
-    // Lightweight ping — just read the app_config table
     fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
-      headers:{'apikey':AK,'Authorization':'Bearer '+AK}
+      headers:{'apikey':AK,'Authorization':'Bearer '+AK},
+      signal:AbortSignal.timeout(2000)
     }).then(()=>{
       localStorage.setItem(key, now);
     }).catch(()=>{});
   }
-  // Check again every 24 hours while app is open
   setInterval(()=>{
     const n=Date.now();
     const l=Number(localStorage.getItem(key)||0);
     if(n-l>threeDays){
       fetch(`${SB}/rest/v1/app_config?key=eq.maintenance_mode&select=value`,{
-        headers:{'apikey':AK,'Authorization':'Bearer '+AK}
+        headers:{'apikey':AK,'Authorization':'Bearer '+AK},
+        signal:AbortSignal.timeout(2000)
       }).then(()=>localStorage.setItem(key,n)).catch(()=>{});
     }
   }, 24*60*60*1000);
