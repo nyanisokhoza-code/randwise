@@ -243,23 +243,33 @@ footer{background:#061f0f;padding:36px 24px 20px}
   .refinn{grid-template-columns:1fr}
   .inn{padding:0 16px}
   .pricegrid{grid-template-columns:1fr}
-  .features-grid{grid-template-columns:1fr 1fr}
+  .fgrid{grid-template-columns:1fr 1fr}
+  .pgrid{grid-template-columns:1fr 1fr}
+  .pgrid2{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:680px){
   nav{padding:11px 16px}
   .nr a:not(.nb){display:none}
-  .eform{flex-direction:column}
+  .eform{flex-direction:column;align-items:stretch}
+  .einput{width:100%}
+  .ebtn{width:100%}
   .ftop{flex-direction:column;gap:24px}
   .stores{flex-wrap:wrap;justify-content:center;gap:10px}
-  .sbadge{min-width:calc(50% - 10px);justify-content:center}
+  .sbadge{min-width:calc(50% - 8px);justify-content:center;flex:1}
   .pricegrid{grid-template-columns:1fr}
-  .features-grid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .pgrid{grid-template-columns:1fr 1fr}
+  .pgrid2{grid-template-columns:repeat(2,1fr)}
   .hstats{flex-direction:row;flex-wrap:wrap}
-  .hs{flex:1;min-width:80px}
+  .hs{flex:1;min-width:80px;padding:10px 6px}
   .pc{transform:none !important}
   h2{font-size:24px !important}
   .ssub{font-size:14px}
-  .faqq{font-size:14px}
+  .faqq{font-size:13px}
+  .rtit{font-size:22px}
+  .refsec{padding:60px 20px}
+  .rsteps{gap:10px}
+  section{padding-left:16px !important;padding-right:16px !important}
 }
 
 /* ── ANIMATIONS ── */
