@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyRandWise — Your Money, Your Rules</title>
+<meta name="description" content="The personal finance app built for real South African life. Track expenses, crush debt, grow savings. Free during beta.">
+<meta name="keywords" content="South Africa budget app, personal finance SA, expense tracker, debt tracker, MyRandWise">
+<meta name="author" content="MyRandWise">
+<link rel="canonical" href="https://myrandwise.co.za/MyRandWise_Landing_Final.html">
+
+<!-- Open Graph — controls WhatsApp/Facebook/LinkedIn preview -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://myrandwise.co.za/MyRandWise_Landing_Final.html">
+<meta property="og:title" content="MyRandWise — Budget smarter. Built for South Africa.">
+<meta property="og:description" content="Track expenses, crush debt, grow savings. The personal finance app built for real South African life. Free during beta.">
+<meta property="og:image" content="https://myrandwise.co.za/icon_512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:locale" content="en_ZA">
+<meta property="og:site_name" content="MyRandWise">
+
+<!-- Twitter/X card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MyRandWise — Budget smarter. Built for South Africa.">
+<meta name="twitter:description" content="Track expenses, crush debt, grow savings. Free during beta.">
+<meta name="twitter:image" content="https://myrandwise.co.za/icon_512.png">
+
+<!-- Theme colour (Android Chrome tab bar) -->
+<meta name="theme-color" content="#1a7a4a">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='75' x='12'>🌱</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g:#1a7a4a;--gl:#eaf3de;--ga:#a8d96e;--gd:#0a3d20;--gm:#2d6a3f;
+  --t:#2c2c2a;--m:#5f5e5a;--mu:#888780;
+  --w:#fff;--bg:#f7f9f4;--bg2:#eef2e8;
+  --red:#ef4444;--gold:#f0b429;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;color:var(--t);background:var(--w);overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:13px 40px;background:rgba(255,255,255,.96);backdrop-filter:blur(14px);border-bottom:1px solid rgba(26,122,74,.1);transition:box-shadow .3s}
+nav.scrolled{box-shadow:0 2px 24px rgba(0,0,0,.09)}
+.nl{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nli{width:34px;height:34px;background:var(--g);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nlt{font-size:17px;font-weight:800;color:var(--g);letter-spacing:-.4px}
+.nr{display:flex;gap:26px;align-items:center}
+.nr a{text-decoration:none;color:var(--m);font-size:13px;font-weight:600;transition:color .2s}
+.nr a:hover{color:var(--g)}
+.nb{background:var(--g);color:var(--w)!important;padding:9px 20px;border-radius:10px;font-weight:700!important;font-size:13px!important;transition:all .2s!important}
+.nb:hover{background:var(--gd)!important;transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{min-height:100vh;background:linear-gradient(155deg,#061f0f 0%,#0a3d20 35%,#1a7a4a 70%,#27935a 100%);display:grid;grid-template-columns:1fr 420px;align-items:center;gap:40px;padding:100px 60px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:300px;width:600px;height:600px;background:radial-gradient(circle,rgba(168,217,110,.1) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:70px;background:var(--w);clip-path:ellipse(55% 100% at 50% 100%)}
+.ht{position:relative;z-index:1}
+.hbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.88);font-size:11px;font-weight:700;padding:5px 14px;border-radius:50px;margin-bottom:22px;letter-spacing:.4px}
+.hdot{width:6px;height:6px;background:var(--ga);border-radius:50%;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(36px,4.5vw,60px);font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.05;margin-bottom:14px}
+h1 em{color:var(--ga);font-style:normal}
+.hsub{font-size:16px;color:rgba(255,255,255,.68);line-height:1.72;margin-bottom:12px;max-width:440px}
+.hflag{font-size:12px;color:rgba(255,255,255,.38);margin-bottom:26px;letter-spacing:.2px}
+.hbtns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:30px}
+.bw{background:#fff;color:var(--g);padding:13px 26px;border-radius:12px;font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 6px 28px rgba(0,0,0,.22);transition:all .2s;display:inline-block}
+.bw:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.28)}
+.bg{background:rgba(255,255,255,.11);color:rgba(255,255,255,.82);padding:12px 20px;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;border:1px solid rgba(255,255,255,.18);transition:all .2s;display:inline-block}
+.bg:hover{background:rgba(255,255,255,.18)}
+.hstats{display:flex;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.13);border-radius:12px;overflow:hidden}
+.hs{flex:1;padding:13px 10px;text-align:center;position:relative}
+.hs+.hs::before{content:'';position:absolute;left:0;top:22%;bottom:22%;width:1px;background:rgba(255,255,255,.12)}
+.hsn{font-size:20px;font-weight:900;color:var(--ga);letter-spacing:-.8px}
+.hsl{font-size:10px;color:rgba(255,255,255,.42);margin-top:2px;font-weight:500}
+
+/* ── PHONE MOCKUP (matches real app from pic 2) ── */
+.hv{position:relative;z-index:1;display:flex;justify-content:center;align-items:center}
+.pwrap{width:230px;animation:float 4s ease-in-out infinite;filter:drop-shadow(0 30px 60px rgba(0,0,0,.5))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.phone{width:230px;height:460px;background:#0d0d0d;border-radius:34px;padding:10px;border:1px solid rgba(255,255,255,.08)}
+.pscreen{width:100%;height:100%;border-radius:25px;overflow:hidden;background:#f7f9f4;display:flex;flex-direction:column}
+/* trial bar - matches real app */
+.ptrial{background:#eaf3de;padding:5px 10px;font-size:8px;font-weight:700;color:var(--g);display:flex;justify-content:space-between;align-items:center}
+/* header - matches real app dark green gradient */
+.phead{background:linear-gradient(155deg,#061f0f,#1a7a4a);padding:10px 12px 14px;color:#fff}
+.phead-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.phi{font-size:8px;opacity:.55}
+.phn{font-size:14px;font-weight:900;letter-spacing:-.3px}
+.phav{width:22px;height:22px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.phdate{font-size:7px;opacity:.4;margin-bottom:8px}
+.phsal-label{font-size:7px;opacity:.45;text-transform:uppercase;letter-spacing:.4px}
+.phsal{font-size:22px;font-weight:900;letter-spacing:-1px;line-height:1}
+.phac{font-size:8px;margin-top:3px}
+.phac span{color:var(--ga);font-weight:700}
+/* body cards */
+.pbody{flex:1;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;overflow:hidden}
+.pcard{background:#fff;border-radius:10px;padding:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.pcard.full{grid-column:1/-1}
+.pclabel{font-size:7px;color:#9ca3af;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;font-weight:700}
+.pcval{font-size:13px;font-weight:900;color:var(--t);letter-spacing:-.5px}
+.pcsub{font-size:7px;color:var(--mu);margin-top:1px}
+.pcval.red{color:var(--red)}
+.pcval.grn{color:var(--g)}
+.pcval.amber{color:var(--gold)}
+.pbar{height:3px;background:#e5e7eb;border-radius:3px;margin-top:5px;overflow:hidden}
+.pbarf{height:100%;border-radius:3px}
+/* bottom nav - matches real app */
+.pnav{background:#fff;border-top:1px solid #f0f0f0;display:flex;padding:4px 0 3px}
+.pnt{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px}
+.pnt-icon{font-size:11px}
+.pnt-lbl{font-size:6px;color:var(--mu);font-weight:600}
+.pnt.act .pnt-lbl{color:var(--g)}
+.pnt-plus{width:28px;height:28px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;margin-top:-8px;box-shadow:0 2px 8px rgba(26,122,74,.4)}
+
+/* ── SECTIONS ── */
+sec{display:block}
+.inn{max-width:1100px;margin:0 auto}
+.stag{font-size:11px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:9px}
+.stit{font-size:clamp(26px,3.8vw,40px);font-weight:900;letter-spacing:-1px;line-height:1.18;margin-bottom:10px}
+.ssub{font-size:15px;color:var(--m);line-height:1.72;max-width:500px}
+.ctr{text-align:center}.ctr .ssub{margin:0 auto}
+
+/* ── PROBLEMS ── */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:28px}
+.pcard2{background:var(--bg);border-radius:14px;padding:18px;border:1.5px solid var(--bg2);position:relative;overflow:hidden}
+.pcard2::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#ef4444,#f97316)}
+.pe{font-size:24px;margin-bottom:8px}
+.pt{font-size:13px;font-weight:600;color:var(--t);line-height:1.5}
+.fixbar{margin-top:18px;background:var(--gl);border:1.5px solid rgba(26,122,74,.2);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px}
+.fxi{font-size:22px;flex-shrink:0}
+.fxt{font-size:13px;font-weight:700;color:var(--g);line-height:1.5}
+
+/* ── FEATURES ── */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin-top:28px}
+.fcard{background:#fff;border-radius:16px;padding:22px;border:1.5px solid var(--bg2);transition:all .22s}
+.fcard:hover{border-color:rgba(26,122,74,.28);box-shadow:0 6px 24px rgba(26,122,74,.09);transform:translateY(-2px)}
+.fi{width:42px;height:42px;background:var(--gl);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.ft{font-size:15px;font-weight:800;margin-bottom:5px;letter-spacing:-.3px}
+.fd{font-size:13px;color:var(--m);line-height:1.65}
+
+/* ── PERSONAS ── */
+.pgrid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-top:28px}
+.pcard3{background:var(--bg);border-radius:14px;padding:20px;border:1.5px solid var(--bg2);text-align:center}
+.pce{font-size:34px;margin-bottom:7px}
+.pcn{font-size:13px;font-weight:800;color:var(--t);margin-bottom:3px}
+.pcd{font-size:11px;color:var(--mu);line-height:1.5}
+
+/* ── REFERRAL ── */
+.refsec{background:var(--gd);padding:80px 24px}
+.refinn{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.rtag{font-size:11px;font-weight:800;color:var(--ga);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:9px}
+.rtit{font-size:clamp(24px,3.5vw,36px);font-weight:900;color:#fff;letter-spacing:-1px;line-height:1.18;margin-bottom:10px}
+.rsub{font-size:14px;color:rgba(255,255,255,.55);line-height:1.72;margin-bottom:24px}
+.rbtn{display:inline-block;background:var(--ga);color:var(--gd);padding:13px 26px;border-radius:11px;font-weight:800;font-size:14px;text-decoration:none;transition:all .2s}
+.rbtn:hover{background:#b8e97e;transform:translateY(-1px)}
+.rnote{font-size:11px;color:rgba(255,255,255,.25);margin-top:10px}
+.rsteps{display:flex;flex-direction:column;gap:12px}
+.rstep{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:14px}
+.rsnum{width:26px;height:26px;background:var(--ga);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:var(--gd);flex-shrink:0;margin-top:1px}
+.rstit{font-size:12px;font-weight:700;color:#fff;margin-bottom:2px}
+.rsdesc{font-size:11px;color:rgba(255,255,255,.45);line-height:1.5}
+
+/* ── PRICING ── */
+.pricegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:28px;max-width:840px;margin-left:auto;margin-right:auto}
+.pc{background:#fff;border-radius:16px;padding:24px;border:1.5px solid var(--bg2)}
+.pc.feat{background:var(--gd);border-color:var(--gd);position:relative}
+.pcbadge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--ga);color:var(--gd);font-size:10px;font-weight:800;padding:3px 12px;border-radius:50px;white-space:nowrap}
+.pctier{font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.pc.feat .pctier{color:rgba(255,255,255,.45)}
+.pcamt{font-size:32px;font-weight:900;color:var(--t);letter-spacing:-1px;margin-bottom:3px}
+.pc.feat .pcamt{color:var(--ga)}
+.pcper{font-size:11px;color:var(--mu);margin-bottom:16px}
+.pc.feat .pcper{color:rgba(255,255,255,.4)}
+.pclist{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.pclist li{font-size:12px;color:var(--m);display:flex;align-items:center;gap:7px}
+.pc.feat .pclist li{color:rgba(255,255,255,.78)}
+.pclist li::before{content:'✓';color:var(--g);font-weight:800;font-size:11px;flex-shrink:0}
+.pc.feat .pclist li::before{color:var(--ga)}
+.pccta{display:block;text-align:center;padding:11px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s}
+.cout{color:var(--g);border:2px solid var(--g)}.cout:hover{background:var(--gl)}
+.csol{background:var(--ga);color:var(--gd)}.csol:hover{background:#b8e97e;transform:translateY(-1px)}
+
+/* ── STORE BADGES ── */
+.stores{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:32px}
+.sbadge{display:flex;align-items:center;gap:9px;background:#111;color:#fff;padding:9px 16px;border-radius:11px;text-decoration:none;border:1px solid rgba(255,255,255,.08);transition:all .2s;min-width:130px}
+.sbadge:hover{background:#1a1a1a;transform:translateY(-1px)}
+.sbadge.dim{opacity:.42;pointer-events:none}
+.sbi{font-size:22px;flex-shrink:0}
+.sbt{display:flex;flex-direction:column}
+.sbsub{font-size:8px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.3px}
+.sbname{font-size:13px;font-weight:700}
+
+/* ── EMAIL CAPTURE ── */
+.emailsec{background:linear-gradient(155deg,#061f0f 0%,#0a3d20 50%,#1a7a4a 100%);padding:72px 24px;text-align:center;position:relative;overflow:hidden}
+.emailsec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 60% 90%,rgba(168,217,110,.1) 0%,transparent 55%);pointer-events:none}
+.einn{position:relative;z-index:1;max-width:480px;margin:0 auto}
+.emailsec h2{font-size:clamp(24px,4vw,38px);font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:9px}
+.emailsec p{font-size:14px;color:rgba(255,255,255,.58);margin-bottom:24px;line-height:1.65}
+.eform{display:flex;gap:8px;max-width:400px;margin:0 auto}
+.einput{flex:1;padding:13px 16px;border-radius:10px;border:none;font-size:13px;font-family:inherit;outline:none;background:rgba(255,255,255,.94)}
+.einput:focus{background:#fff;box-shadow:0 0 0 2px var(--ga)}
+.ebtn{background:var(--ga);color:var(--gd);padding:13px 20px;border-radius:10px;font-weight:800;font-size:13px;border:none;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit}
+.ebtn:hover{background:#b8e97e;transform:translateY(-1px)}
+.esuccess{display:none;background:rgba(168,217,110,.15);border:1px solid rgba(168,217,110,.3);border-radius:10px;padding:12px 18px;color:var(--ga);font-size:13px;font-weight:600;margin:12px auto 0;max-width:400px}
+.enote{font-size:11px;color:rgba(255,255,255,.25);margin-top:12px}
+
+/* ── FAQ ── */
+.faqlist{max-width:660px;margin:28px auto 0;display:flex;flex-direction:column;gap:8px}
+.faqitem{border:1.5px solid var(--bg2);border-radius:11px;overflow:hidden;transition:border-color .2s}
+.faqitem.open{border-color:rgba(26,122,74,.28)}
+.faqq{padding:15px 17px;font-size:14px;font-weight:700;color:var(--t);cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#fff;border:none;width:100%;text-align:left;gap:10px;font-family:inherit}
+.faqq:hover{background:var(--bg)}
+.faqi{font-size:18px;color:var(--g);transition:transform .22s;flex-shrink:0}
+.faqitem.open .faqi{transform:rotate(45deg)}
+.faqa{padding:0 17px;max-height:0;overflow:hidden;font-size:13px;color:var(--m);line-height:1.7;transition:max-height .3s ease,padding .3s ease;background:var(--bg)}
+.faqitem.open .faqa{max-height:280px;padding:13px 17px}
+
+/* ── FOOTER ── */
+footer{background:#061f0f;padding:36px 24px 20px}
+.finn{max-width:1100px;margin:0 auto}
+.ftop{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:22px;margin-bottom:22px}
+.flogo{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+.flogi{width:28px;height:28px;background:rgba(255,255,255,.1);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.flogt{font-size:15px;font-weight:800;color:#fff}
+.ftag{font-size:11px;color:rgba(255,255,255,.28)}
+.flinks{display:flex;gap:14px;flex-wrap:wrap}
+.flinks a{font-size:11px;color:rgba(255,255,255,.38);text-decoration:none;font-weight:500;transition:color .2s}
+.flinks a:hover{color:rgba(255,255,255,.85)}
+.fbot{border-top:1px solid rgba(255,255,255,.07);padding-top:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.fcopy,.fpopia{font-size:10px;color:rgba(255,255,255,.22)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr;text-align:center;padding:90px 22px 70px}
+  .hv{display:none}
+  .hbtns{justify-content:center}
+  .hsub{margin:0 auto 12px}
+  .hflag{text-align:center}
+  .refinn{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  nav{padding:11px 16px}
+  .nr a:not(.nb){display:none}
+  .eform{flex-direction:column}
+  .ftop{flex-direction:column}
+}
+
+/* ── ANIMATIONS ── */
+.fu{opacity:0;transform:translateY(22px);transition:opacity .58s ease,transform .58s ease}
+.fu.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#top" class="nl">
+    <div class="nli">🌱</div>
+    <span class="nlt">MyRandWise</span>
+  </a>
+  <div class="nr">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#referral">Referral</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://myrandwise.co.za" class="nb">Open App →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <!-- TEXT -->
+  <div class="ht">
+    <div class="hbadge"><span class="hdot"></span>🇿🇦 BETA — FREE ACCESS NOW</div>
+    <h1>Your money,<br><em>your rules.</em></h1>
+    <p class="hsub">The personal finance app built for real South African life — not American, not European. Ours.</p>
+    <div class="hflag">🇿🇦 Built in South Africa · POPIA Compliant</div>
+    <div class="hbtns">
+      <a href="https://myrandwise.co.za" class="bw">Get started — it's free →</a>
+      <a href="https://myrandwise.co.za/MyRandWise.apk" class="bg">⬇ Download APK</a>
+    </div>
+    <div class="hstats">
+      <div class="hs"><div class="hsn">21+</div><div class="hsl">Beta testers</div></div>
+      <div class="hs"><div class="hsn">R0</div><div class="hsl">During beta</div></div>
+      <div class="hs"><div class="hsn">100%</div><div class="hsl">Built for SA</div></div>
+    </div>
+  </div>
+
+  <!-- PHONE MOCKUP — matches real app dashboard from screenshot -->
+  <div class="hv">
+    <div class="pwrap">
+      <div class="phone">
+        <div class="pscreen">
+          <!-- Trial bar -->
+          <div class="ptrial"><span>🎁 13 days left in your free trial</span><span style="font-weight:800">Upgrade →</span></div>
+          <!-- Header -->
+          <div class="phead">
+            <div class="phead-top">
+              <div>
+                <div class="phi">Good morning</div>
+                <div class="phn">Nyaniso 👋</div>
+                <div class="phdate" style="font-size:7px;opacity:.4;margin-top:1px">Wednesday, 7 May</div>
+              </div>
+              <div class="phav">N</div>
+            </div>
+            <div class="phsal-label">SALARY RECEIVED</div>
+            <div class="phsal">R15 000</div>
+            <div class="phac">After commitments <span>R1 350 yours</span></div>
+          </div>
+          <!-- Dashboard cards -->
+          <div class="pbody">
+            <div class="pcard">
+              <div class="pclabel">This Week</div>
+              <div class="pcval red">R238</div>
+              <div class="pcsub">Week 1 of 4 · R238 left</div>
+            </div>
+            <div class="pcard">
+              <div class="pclabel">Debit Orders</div>
+              <div class="pcval" style="color:var(--t)">R7 000</div>
+              <div class="pcsub">1 commitment</div>
+            </div>
+            <div class="pcard">
+              <div class="pclabel">Debt Score</div>
+              <div class="pcval amber">35<span style="font-size:8px;font-weight:600">/100</span></div>
+              <div class="pcsub" style="color:var(--red)">● Needs attention</div>
+              <div class="pbar"><div class="pbarf" style="width:35%;background:var(--gold)"></div></div>
+            </div>
+            <div class="pcard">
+              <div class="pclabel">Net Worth</div>
+              <div class="pcval red">−R26 000</div>
+              <div class="pcsub">Focus on debt</div>
+            </div>
+            <div class="pcard full">
+              <div class="pclabel">This Week — Daily Spend</div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px">
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">M</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:var(--red);border-radius:50%;margin:0 auto 2px;font-size:7px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700">R100</div><div style="font-size:7px;color:var(--mu)">T</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">W</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">T</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">F</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">Sa</div></div>
+                <div style="text-align:center"><div style="width:18px;height:18px;background:#e5e7eb;border-radius:50%;margin:0 auto 2px;font-size:8px;display:flex;align-items:center;justify-content:center">—</div><div style="font-size:7px;color:var(--mu)">Su</div></div>
+              </div>
+            </div>
+          </div>
+          <!-- Bottom nav -->
+          <div class="pnav">
+            <div class="pnt act"><div class="pnt-icon">⌂</div><div class="pnt-lbl">Home</div></div>
+            <div class="pnt"><div class="pnt-icon">💳</div><div class="pnt-lbl">Debt</div></div>
+            <div class="pnt"><div class="pnt-plus">+</div><div class="pnt-lbl" style="margin-top:3px"> </div></div>
+            <div class="pnt"><div class="pnt-icon">🌱</div><div class="pnt-lbl">Grow</div></div>
+            <div class="pnt"><div class="pnt-icon">💡</div><div class="pnt-lbl">Health</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMS -->
+<section style="padding:80px 24px;background:#fff">
+  <div class="inn fu">
+    <div class="stag">Sound familiar?</div>
+    <div class="stit">Most South Africans face these<br>money problems every month.</div>
+    <div class="ssub">You're not bad with money — you just don't have the right tools.</div>
+    <div class="pgrid">
+      <div class="pcard2"><div class="pe">😤</div><div class="pt">You don't know where it all went when month-end comes</div></div>
+      <div class="pcard2"><div class="pe">🇺🇸</div><div class="pt">Every budgeting app is built for Americans, not for us</div></div>
+      <div class="pcard2"><div class="pe">💳</div><div class="pt">Debt keeps piling up and you can't seem to get ahead</div></div>
+      <div class="pcard2"><div class="pe">🎯</div><div class="pt">You set savings goals but can't seem to make them stick</div></div>
+    </div>
+    <div class="fixbar">
+      <div class="fxi">💡</div>
+      <div class="fxt">MyRandWise fixes all of this — built for South African life, all the tools you need, none of the noise.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section style="padding:80px 24px;background:var(--bg)" id="features">
+  <div class="inn">
+    <div class="fu">
+      <div class="stag">Built for SA life</div>
+      <div class="stit">Everything you need to<br>take control of your money</div>
+      <div class="ssub">Every feature designed for how South Africans actually live and get paid.</div>
+    </div>
+    <div class="fgrid fu">
+      <div class="fcard"><div class="fi">📊</div><div class="ft">Expense Tracking</div><div class="fd">Log and categorise every rand. Weekly and monthly views that match your exact pay cycle.</div></div>
+      <div class="fcard"><div class="fi">🎯</div><div class="ft">Budget Management</div><div class="fd">Set weekly or monthly budgets. See your after-commitments balance in real time — no more surprises.</div></div>
+      <div class="fcard"><div class="fi">💳</div><div class="ft">Debt Freedom Score</div><div class="fd">Track every debt with a live score. Avalanche or Snowball strategy — you choose. Watch the number climb.</div></div>
+      <div class="fcard"><div class="fi">🏦</div><div class="ft">Savings Goals</div><div class="fd">Set goals for home, education, emergency fund, or holidays. Progress tracked every payday.</div></div>
+      <div class="fcard"><div class="fi">🤝</div><div class="ft">Stokvel Tracker</div><div class="fd">Track contributions and payout schedules — built exactly for how South African stokvels work.</div></div>
+      <div class="fcard"><div class="fi">💡</div><div class="ft">Financial Health Score</div><div class="fd">Your overall money health in one number. Spending, debt, savings, income — all in one score.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PERSONAS -->
+<section style="padding:80px 24px;background:#fff">
+  <div class="inn">
+    <div class="fu">
+      <div class="stag">Real lives. Real situations.</div>
+      <div class="stit">Whatever your life stage —<br>MyRandWise was built for you.</div>
+    </div>
+    <div class="pgrid2 fu">
+      <div class="pcard3"><div class="pce">👨‍💼</div><div class="pcn">Employed</div><div class="pcd">Salary earner wanting to budget smarter and kill debt faster</div></div>
+      <div class="pcard3"><div class="pce">👩‍🔧</div><div class="pcn">Self-Employed</div><div class="pcd">Freelancer or contractor with irregular income who needs to plan ahead</div></div>
+      <div class="pcard3"><div class="pce">🎓</div><div class="pcn">Student</div><div class="pcd">Managing NSFAS or part-time income while saving for fees and the future</div></div>
+      <div class="pcard3"><div class="pce">🏡</div><div class="pcn">Domestic Worker</div><div class="pcd">Managing multiple income sources and sending money home each month</div></div>
+      <div class="pcard3"><div class="pce">👨‍👩‍👧</div><div class="pcn">Family Provider</div><div class="pcd">Supporting dependants while planning for the future and making ends meet</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERRAL -->
+<section class="refsec" id="referral">
+  <div class="refinn fu">
+    <div>
+      <div class="rtag">Earn rewards</div>
+      <div class="rtit">Share MyRandWise.<br>Both of you win.</div>
+      <p class="rsub">Get your unique referral link from your dashboard and share it. When your friend signs up and completes their first week, you both unlock rewards.</p>
+      <a href="https://myrandwise.co.za" class="rbtn">Get your referral link →</a>
+      <div class="rnote">Available in your dashboard after signup</div>
+    </div>
+    <div class="rsteps">
+      <div class="rstep"><div class="rsnum">1</div><div><div class="rstit">Share your unique link</div><div class="rsdesc">Find your personal referral link in your MyRandWise dashboard and share it with friends and family.</div></div></div>
+      <div class="rstep"><div class="rsnum">2</div><div><div class="rstit">They sign up and join</div><div class="rsdesc">Your friend creates their free account using your link and gets instant access to all beta features.</div></div></div>
+      <div class="rstep"><div class="rsnum">3</div><div><div class="rstit">You both get rewarded</div><div class="rsdesc">Complete their first week and you both unlock rewards — your friend also gets a bonus free month.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section style="padding:80px 24px;background:var(--bg)" id="pricing">
+  <div class="inn ctr fu">
+    <div class="stag">Simple pricing</div>
+    <div class="stit">Free during beta.<br>Upgrade anytime — cancel anytime.</div>
+    <div class="ssub">No lock-in. No credit card during beta.</div>
+  </div>
+  <div class="pricegrid fu">
+    <div class="pc">
+      <div class="pctier">Free</div>
+      <div class="pcamt">R0</div>
+      <div class="pcper">During beta · Always free tier</div>
+      <ul class="pclist">
+        <li>Expense tracking</li>
+        <li>Basic budget management</li>
+        <li>Debt tracker</li>
+        <li>1 savings goal</li>
+        <li>14-day Pro trial included</li>
+      </ul>
+      <a href="https://myrandwise.co.za" class="pccta cout">Get started free</a>
+    </div>
+    <div class="pc feat">
+      <div class="pcbadge">⭐ MOST POPULAR</div>
+      <div class="pctier">Pro</div>
+      <div class="pcamt">R49<span style="font-size:14px;font-weight:600">/mo</span></div>
+      <div class="pcper">or R470/yr — save R118</div>
+      <ul class="pclist">
+        <li>Everything in Free</li>
+        <li>Full budget breakdown</li>
+        <li>Unlimited savings goals</li>
+        <li>Debt payoff accelerator</li>
+        <li>AI spending insights</li>
+        <li>Stokvel tracker</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="https://myrandwise.co.za" class="pccta csol">Start free trial →</a>
+    </div>
+    <div class="pc">
+      <div class="pctier">Premium</div>
+      <div class="pcamt">R129<span style="font-size:14px;font-weight:600">/mo</span></div>
+      <div class="pcper">or R1 238/yr</div>
+      <ul class="pclist">
+        <li>Everything in Pro</li>
+        <li>Bank statement AI parser</li>
+        <li>Investing &amp; TFSA calculator</li>
+        <li>Bond readiness score</li>
+        <li>Family &amp; dependent tracking</li>
+        <li>Custom categories</li>
+      </ul>
+      <a href="https://myrandwise.co.za" class="pccta cout" style="opacity:.6;cursor:default">Coming soon</a>
+    </div>
+  </div>
+
+  <!-- STORE BADGES -->
+  <div class="stores fu">
+    <a href="https://myrandwise.co.za/MyRandWise.apk" class="sbadge">
+      <span class="sbi">🤖</span>
+      <span class="sbt"><span class="sbsub">Download direct</span><span class="sbname">Android APK</span></span>
+    </a>
+    <div class="sbadge dim">
+      <span class="sbi">📦</span>
+      <span class="sbt"><span class="sbsub">Coming soon</span><span class="sbname">Amazon Appstore</span></span>
+    </div>
+    <div class="sbadge dim">
+      <span class="sbi">🍎</span>
+      <span class="sbt"><span class="sbsub">Coming soon</span><span class="sbname">App Store</span></span>
+    </div>
+    <div class="sbadge dim">
+      <span class="sbi">▶</span>
+      <span class="sbt"><span class="sbsub">Coming soon</span><span class="sbname">Google Play</span></span>
+    </div>
+  </div>
+</section>
+
+<!-- EMAIL CAPTURE -->
+<section class="emailsec">
+  <div class="einn fu">
+    <h2>Get weekly money tips 💌</h2>
+    <p>No spam — just real financial tips built for South African life, straight to your inbox.</p>
+    <div class="eform">
+      <input type="email" class="einput" id="eml" placeholder="your@email.com">
+      <button class="ebtn" onclick="subEmail()">Subscribe</button>
+    </div>
+    <div class="esuccess" id="esuc">✅ You're in! Check your inbox for a welcome message.</div>
+    <div class="enote">No spam. POPIA compliant. Unsubscribe anytime.</div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="padding:80px 24px;background:#fff">
+  <div class="inn ctr fu">
+    <div class="stag">FAQ</div>
+    <div class="stit">Everything you need to know.</div>
+  </div>
+  <div class="faqlist fu">
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">Is MyRandWise really free?<span class="faqi">+</span></button>
+      <div class="faqa">Yes — 100% free during the beta. After beta: Free tier (always free), Pro at R49/month, Premium at R129/month. Beta users get special early pricing as a thank you.</div>
+    </div>
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">Does it work with irregular income?<span class="faqi">+</span></button>
+      <div class="faqa">Yes. MyRandWise was built for South African life — freelancers, self-employed, domestic workers, and those with irregular income. Log any source: salary, gigs, side hustles, remittances, or stokvel payouts.</div>
+    </div>
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">Is my data safe?<span class="faqi">+</span></button>
+      <div class="faqa">Yes. MyRandWise is POPIA compliant, uses bank-level encryption for all data, and stores information on secure servers. We never sell your data. Ever.</div>
+    </div>
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">Is it available on iOS and Android?<span class="faqi">+</span></button>
+      <div class="faqa">Works on any device via myrandwise.co.za in your browser. Android APK available now for direct download. Google Play and App Store listings coming soon.</div>
+    </div>
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">Is MyRandWise a financial advisor?<span class="faqi">+</span></button>
+      <div class="faqa">No. MyRandWise is a personal finance tracking and budgeting app, not a registered FSP. We help you see where your money goes — all decisions are yours. For professional advice, consult a registered financial advisor.</div>
+    </div>
+    <div class="faqitem">
+      <button class="faqq" onclick="faq(this)">How do I get support?<span class="faqi">+</span></button>
+      <div class="faqa">Email us at support@myrandwise.co.za or use the in-app support chat. We respond within 24 hours, Mon–Fri 8am–5pm SAST.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="finn">
+    <div class="ftop">
+      <div>
+        <div class="flogo">
+          <div class="flogi">🌱</div>
+          <span class="flogt">MyRandWise</span>
+        </div>
+        <div class="ftag">Your money, your rules. 🇿🇦</div>
+      </div>
+      <div class="flinks">
+        <a href="https://myrandwise.co.za">Open App</a>
+        <a href="https://myrandwise.co.za/MyRandWise.apk">Download APK</a>
+        <a href="https://myrandwise.co.za/privacy-policy.html">Privacy Policy</a>
+        <a href="https://myrandwise.co.za/delete-account.html">Delete Account</a>
+        <a href="mailto:support@myrandwise.co.za">Contact</a>
+      </div>
+    </div>
+    <div class="fbot">
+      <div class="fcopy">© 2026 MyRandWise · Built in South Africa</div>
+      <div class="fpopia">POPIA Compliant · support@myrandwise.co.za</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Nav scroll
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>10));
+
+// FAQ
+function faq(btn){
+  const item=btn.closest('.faqitem'),open=item.classList.contains('open');
+  document.querySelectorAll('.faqitem').forEach(i=>i.classList.remove('open'));
+  if(!open)item.classList.add('open');
+}
+
+// Email subscribe
+async function subEmail(){
+  const inp = document.getElementById('eml');
+  const suc = document.getElementById('esuc');
+  const btn = document.querySelector('.ebtn');
+
+  if(!inp.value.trim() || !inp.value.includes('@')){
+    inp.style.boxShadow = '0 0 0 2px #ef4444';
+    return;
+  }
+  inp.style.boxShadow = 'none';
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('https://mmezkseblafurjolkfkt.supabase.co/rest/v1/newsletter_subscribers', {
+      method: 'POST',
+      headers: {
+        'apikey': 'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+        'Authorization': 'Bearer sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates'
+      },
+      body: JSON.stringify({
+        email: inp.value.trim().toLowerCase(),
+        source: 'landing_page',
+        active: true
+      })
+    });
+
+    // 201 = created, 200 = already exists (ignored duplicate) — both are success
+    if(resp.ok || resp.status === 201 || resp.status === 200) {
+      inp.parentElement.style.display = 'none';
+      suc.style.display = 'block';
+    } else {
+      const err = await resp.json();
+      // If duplicate email — still show success (don't tell them they're already subscribed)
+      if(resp.status === 409 || (err && err.code === '23505')) {
+        inp.parentElement.style.display = 'none';
+        suc.style.display = 'block';
+      } else {
+        inp.style.boxShadow = '0 0 0 2px #ef4444';
+        btn.textContent = 'Try again';
+        btn.disabled = false;
+      }
+    }
+  } catch(e) {
+    // Network error — still show success to not frustrate user, log silently
+    console.error('Subscribe error:', e);
+    inp.parentElement.style.display = 'none';
+    suc.style.display = 'block';
+  }
+}
+
+// Allow Enter key on email input
+document.getElementById('eml').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') subEmail();
+});
+
+// Scroll fade-in
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in')})},{threshold:0.08,rootMargin:'0px 0px -20px 0px'});
+document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>
