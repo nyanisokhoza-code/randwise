@@ -1,5 +1,10 @@
-const CACHE='rw-v136';
-const STATIC=['./manifest.json','./icon_192.png','./icon_512.png'];
+const CACHE='rw-v133';
+const STATIC=[
+  './app.html',
+  './manifest.json',
+  './icon_192.png',
+  './icon_512.png'
+];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC)).then(()=>self.skipWaiting()));
@@ -15,14 +20,23 @@ self.addEventListener('activate',e=>{
 
 self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);
-  // index.html - always fetch fresh from network, never cache
-  if(url.pathname.endsWith('/')||url.pathname.endsWith('/index.html')||url.pathname.endsWith('/randwise')||url.pathname.endsWith('/randwise/')||url.hostname==='myrandwise.co.za'){
+
+  // Root / and index.html → serve landing page (index.html) fresh always
+  if(url.pathname==='/'||url.pathname==='/index.html'){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./index.html')));
     return;
   }
-  // Only GET requests can be cached
+
+  // app.html → always fetch fresh so users get updates
+  if(url.pathname==='/app.html'||url.pathname.endsWith('/randwise/')||url.pathname.endsWith('/randwise')){
+    e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./app.html')));
+    return;
+  }
+
+  // Only cache GET requests
   if(e.request.method!=='GET') return;
-  // Static assets - cache first
+
+  // Static assets — cache first, fallback to network
   e.respondWith(
     caches.match(e.request).then(cached=>{
       if(cached) return cached;
@@ -39,46 +53,38 @@ self.addEventListener('fetch',e=>{
 
 // ── Push Notifications ────────────────────────────────────────
 self.addEventListener('push',e=>{
-  let data={title:'MyRandWise 🌱',body:'You have a new update.',icon:'./icon_192.png',badge:'./icon_192.png',tag:'myrandwise-push',url:'./'};
-  try{
-    if(e.data) Object.assign(data, e.data.json());
-  }catch{}
+  let data={title:'MyRandWise 🌱',body:'You have a new update.',icon:'./icon_192.png',badge:'./icon_192.png',tag:'myrandwise-push',url:'./app.html'};
+  try{ if(e.data) Object.assign(data,e.data.json()); }catch{}
   e.waitUntil(
     self.registration.showNotification(data.title,{
-      body: data.body,
-      icon: data.icon||'./icon_192.png',
-      badge: data.badge||'./icon_192.png',
-      tag: data.tag||'myrandwise-push',
-      renotify: true,
-      data:{ url: data.url||'./' },
+      body:data.body,
+      icon:data.icon||'./icon_192.png',
+      badge:data.badge||'./icon_192.png',
+      tag:data.tag||'myrandwise-push',
+      renotify:true,
+      data:{url:data.url||'./app.html'},
       actions:[
-        {action:'open', title:'Open app'},
-        {action:'dismiss', title:'Dismiss'}
+        {action:'open',title:'Open app'},
+        {action:'dismiss',title:'Dismiss'}
       ]
     })
   );
 });
 
-// Handle notification click — open the app
 self.addEventListener('notificationclick',e=>{
   e.notification.close();
   if(e.action==='dismiss') return;
-  const url=e.notification.data?.url||'./';
+  const url=e.notification.data?.url||'./app.html';
   e.waitUntil(
     clients.matchAll({type:'window',includeUncontrolled:true}).then(windowClients=>{
-      // If app already open, focus it
       for(const client of windowClients){
-        if(client.url.includes('randwise')&&'focus' in client){
-          return client.focus();
-        }
+        if(client.url.includes('randwise')&&'focus' in client) return client.focus();
       }
-      // Otherwise open a new window
       if(clients.openWindow) return clients.openWindow(url);
     })
   );
 });
 
-// ── Message handler — activate new SW immediately ────────────
-self.addEventListener('message', e => {
-  if(e.data?.type === 'SKIP_WAITING') self.skipWaiting();
+self.addEventListener('message',e=>{
+  if(e.data?.type==='SKIP_WAITING') self.skipWaiting();
 });
