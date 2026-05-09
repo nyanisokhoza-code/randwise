@@ -704,11 +704,6 @@
       <span class="nav-icon">⏱️</span> Build Tracker
     </div>
 
-    <div class="nav-section" style="margin-top:8px">Marketing</div>
-    <div class="nav-item" onclick="showTab('newsletter',this)">
-      <span class="nav-icon">📧</span> Newsletter
-    </div>
-
     <div class="nav-section" style="margin-top:8px">Settings</div>
     <div class="nav-item" onclick="showTab('alerts',this)">
       <span class="nav-icon">🔔</span> Alerts
@@ -1067,38 +1062,15 @@
               <div class="timeline-desc">Tap avatar 5× → PIN 1947 → live Supabase stats</div>
             </div>
             <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-date">Late April 2026</div>
-              <div class="timeline-title">OTP verification + security</div>
-              <div class="timeline-desc">Email OTP via Resend, RLS hardened, .env keys secured</div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-date">May 2026</div>
-              <div class="timeline-title">Newsletter system built</div>
-              <div class="timeline-desc">52-week automated tips, Supabase cron, Edge Function, POPIA unsubscribe</div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-date">May 2026</div>
-              <div class="timeline-title">Admin dashboard v2</div>
-              <div class="timeline-desc">Newsletter tab, user import, referral table detection, build tracker live data</div>
-            </div>
-            <div class="timeline-item">
               <div class="timeline-dot" style="background:var(--border)"></div>
               <div class="timeline-date">Next</div>
-              <div class="timeline-title" style="color:var(--muted)">Connect real data to Debt + Grow screens · Amazon + Huawei listings</div>
-              <div class="timeline-desc" style="color:var(--hint)">Add debts table, savings goals, app store submissions</div>
+              <div class="timeline-title" style="color:var(--muted)">Connect real data to Debt + Grow screens</div>
+              <div class="timeline-desc" style="color:var(--hint)">Add debts table, savings goals table to Supabase</div>
             </div>
           </div>
         </div>
         <div class="card">
           <div class="card-title">Feature Checklist</div>
-          <div id="build-progress" style="margin-bottom:14px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-              <span style="color:var(--mid)">Calculating...</span>
-            </div>
-          </div>
           <div id="feature-checklist"></div>
         </div>
       </div>
@@ -1198,7 +1170,7 @@
     </div>
 
     <!-- ══ EMAIL USERS PAGE ══════════════════════════════════════ -->
-    <div id="tab-email" class="tab-page">
+    <div id="tab-email" class="tab-page" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
         <div>
           <h2 style="font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:4px">✉️ Email Users</h2>
@@ -1269,130 +1241,47 @@
       </div>
     </div>
 
-    <!-- ── NEWSLETTER ─────────────────────── -->
-    <div id="tab-newsletter" class="tab-page">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <div>
-          <h2 style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">📧 Weekly Newsletter</h2>
-          <p style="color:var(--muted);font-size:13px">Automated tips sent every Monday 8am via Resend · <span class="popia-tag">POPIA</span></p>
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
-          <button onclick="importUsersAsSubscribers()" id="nl-import-btn" style="padding:8px 14px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">👥 Import all users</button>
-          <div id="nl-import-status" style="font-size:12px;color:var(--muted);max-width:200px;text-align:right"></div>
-          <span style="font-size:13px;font-weight:600;color:var(--mid)" id="nl-toggle-label">Loading...</span>
-          <label class="toggle" style="width:50px;height:26px">
-            <input type="checkbox" id="nl-master-toggle" onchange="toggleNewsletter(this.checked)">
-            <div class="toggle-track"></div>
-          </label>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card green"><div class="stat-label">Total Subscribers</div><div class="stat-value" id="nl-total">—</div><div class="stat-sub">All time sign-ups</div></div>
-        <div class="stat-card green"><div class="stat-label">Active</div><div class="stat-value" id="nl-active">—</div><div class="stat-sub">Receiving tips now</div></div>
-        <div class="stat-card red"><div class="stat-label">Unsubscribed</div><div class="stat-value" id="nl-unsub">—</div><div class="stat-sub">Opted out</div></div>
-        <div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value" id="nl-retention">—</div><div class="stat-sub">Active ÷ total</div></div>
-      </div>
-
-      <div class="grid2" style="margin-bottom:20px">
-        <div class="card">
-          <div class="card-title">This Week's Tip <span id="nl-week-badge" style="background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700"></span></div>
-          <div id="nl-current-tip"><div class="loading"><div class="spinner"></div> Loading...</div></div>
-          <div style="display:flex;gap:8px;margin-top:16px">
-            <button onclick="sendTestTip()" id="nl-test-btn" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📤 Send test to me</button>
-            <button onclick="openOverrideForm()" style="padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">✏️ Override this week</button>
-          </div>
-          <div id="nl-test-status" style="font-size:12px;color:var(--green);font-weight:600;margin-top:8px;min-height:18px"></div>
-        </div>
-
-        <div class="card" id="nl-override-form" style="display:none">
-          <div class="card-title">Override Week <span id="nl-override-week-num"></span> <span onclick="closeOverrideForm()" style="cursor:pointer;font-size:18px;color:var(--muted);font-weight:400;float:right">×</span></div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Subject line</label><input id="nl-ov-subject" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif"></div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Headline</label><input id="nl-ov-headline" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif"></div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Body text</label><textarea id="nl-ov-body" rows="5" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical"></textarea></div>
-          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">CTA button text</label><input id="nl-ov-cta" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif" value="Open MyRandWise →"></div>
-          <div style="display:flex;gap:8px">
-            <button onclick="saveOverride()" style="padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save override</button>
-            <button onclick="closeOverrideForm()" style="padding:9px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">Cancel</button>
-          </div>
-          <div id="nl-ov-status" style="font-size:12px;color:var(--green);font-weight:600;margin-top:8px;min-height:18px"></div>
-        </div>
-
-        <div class="card" id="nl-recent-subs-card">
-          <div class="card-title">Recent Subscribers <span id="nl-subs-count" style="color:var(--muted);font-weight:400;font-size:12px"></span></div>
-          <div id="nl-recent-subs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">All 52 Tips
-          <input id="nl-tip-search" placeholder="🔍 Search tips..." oninput="filterTips()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;width:200px">
-        </div>
-        <div id="nl-tips-list"><div class="loading"><div class="spinner"></div> Loading tips...</div></div>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <script>
 // ── Config ─────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://mmezkseblafurjolkfkt.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+const SUPABASE_ANON = 'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm';
 
 async function sbGet(path) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: {
-      'apikey': SUPABASE_ANON,
-      'Authorization': `Bearer ${SUPABASE_ANON}`,
-      'Accept': 'application/json'
-    }
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
   });
-  const text = await r.text();
-  if (!r.ok) throw new Error(`[${r.status}] ${text}`);
-  try { return JSON.parse(text); } catch(e) { return []; }
-}
-
-async function sbFetch(path) {
-  try { return await sbGet(path); } catch(e) { console.error('sbFetch:', e); return []; }
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
 }
 
 async function sbPatch(path, body) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method: 'PATCH',
-    headers: {
-      'apikey': SUPABASE_ANON,
-      'Authorization': `Bearer ${SUPABASE_ANON}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  if (!r.ok) { const t = await r.text(); throw new Error(`PATCH failed [${r.status}]: ${t}`); }
 }
 
 // ── State ──────────────────────────────────────────────────────
 let allUsers = [];
 let allExpenses = [];
 let tierFilter = 'all';
-let _usersTable = 'beta_testers';
-let _expensesTable = 'expenses';
 
 // ── Navigation ─────────────────────────────────────────────────
 function showTab(name, el) {
   document.querySelectorAll('.tab-page').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const tab = document.getElementById('tab-' + name);
-  if (tab) { tab.classList.add('active'); tab.style.display = ''; }
+  document.getElementById('tab-' + name).classList.add('active');
   el.classList.add('active');
   const titles = {
     overview:'Overview', users:'Users', segments:'Segments',
     referrals:'Referrals', revenue:'Revenue & Financials', reserves:'Reserves & Team',
-    ai:'AI Suggestions', build:'Build Tracker', alerts:'Alerts', legal:'Legal & POPIA',
-    email:'Email Users', newsletter:'Newsletter'
+    ai:'AI Suggestions', build:'Build Tracker', alerts:'Alerts', legal:'Legal & POPIA', email:'Email Users'
   };
   document.getElementById('page-title').textContent = titles[name] || name;
-  if (name === 'newsletter') loadNewsletter();
 }
 
 // ── Email Composer ─────────────────────────────────────────────
@@ -1541,14 +1430,8 @@ async function sendEmailCampaign() {
   statusEl.textContent = '';
 
   try {
-    const query = _usersTable + '?select=id,name,email,tier,created_at,last_active&order=created_at.desc';
-    const users = await sbFetch(query);
-    if(!users || !users.length) {
-      statusEl.textContent = 'No users found.';
-      sendBtn.disabled = false;
-      sendBtn.textContent = '📤 Send emails';
-      return;
-    }
+    const users = await sbFetch(_usersTable + '?select=id,name,email,tier,created_at,last_active&order=created_at.desc');
+    if(!users || !users.length) { statusEl.textContent = 'No users found.'; sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
 
     const now = new Date();
     let targets = users.filter(u => u.email);
@@ -1564,30 +1447,26 @@ async function sendEmailCampaign() {
       return days >= 7;
     });
 
-    if(!targets.length) {
-      statusEl.textContent = 'No users in this segment.';
-      sendBtn.disabled = false;
-      sendBtn.textContent = '📤 Send emails';
-      return;
-    }
+    if(!targets.length) { statusEl.textContent = 'No users in this segment.'; sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
 
-    const confirmed = confirm('Send to ' + targets.length + ' user' + (targets.length !== 1 ? 's' : '') + '? Subject: "' + subject + '"');
-    if(!confirmed) { sendBtn.disabled = false; sendBtn.textContent = '📤 Send emails'; return; }
+    const confirmed = confirm('Send to ' + targets.length + ' user' + (targets.length!==1?'s':'') + '? Subject: "' + subject + '"');
+    if(!confirmed) { sendBtn.disabled=false; sendBtn.textContent='📤 Send emails'; return; }
 
     sendBtn.textContent = '⏳ Sending 0/' + targets.length + '...';
     let sent = 0, failed = 0;
 
-    const RESEND_KEY = 'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS';
-
     for(const u of targets) {
-      const name = (u.name || 'there').split(' ')[0];
+      const name = (u.name||'there').split(' ')[0];
       const personalBody = body.replace(/\{name\}/g, name) + (link ? '\n\n👉 ' + link : '');
       const personalSubject = subject.replace(/\{name\}/g, name);
 
       try {
         const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
-          headers: { 'Authorization': RESEND_KEY, 'Content-Type': 'application/json' },
+          headers: {
+            'Authorization': 'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS',
+            'Content-Type': 'application/json'
+          },
           body: JSON.stringify({
             from: fromName + ' <hello@myrandwise.co.za>',
             to: [u.email],
@@ -1595,11 +1474,11 @@ async function sendEmailCampaign() {
             text: personalBody
           })
         });
-        if (resp.ok) sent++; else failed++;
+        if(resp.ok) sent++; else failed++;
       } catch(e) { failed++; }
 
       sendBtn.textContent = '⏳ Sending ' + sent + '/' + targets.length + '...';
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r=>setTimeout(r,200));
     }
 
     const logEl = document.getElementById('email-log');
@@ -1607,21 +1486,25 @@ async function sendEmailCampaign() {
       if(logEl.textContent.includes('No emails sent')) logEl.innerHTML = '';
       const logEntry = document.createElement('div');
       logEntry.style.cssText = 'padding:10px;background:#f7f6f2;border-radius:8px;margin-bottom:8px;font-size:12px';
-      logEntry.innerHTML = '<strong>' + new Date().toLocaleString('en-ZA') + '</strong> — "' + subject + '" → ' + sent + ' sent' + (failed > 0 ? ' (' + failed + ' failed)' : '') + ' · ' + to + ' segment';
+      logEntry.innerHTML = '<strong>' + new Date().toLocaleString('en-ZA') + '</strong> — "' + subject + '" → ' + sent + ' sent' + (failed>0?' ('+failed+' failed)':'') + ' · ' + to + ' segment';
       logEl.insertBefore(logEntry, logEl.firstChild);
     }
 
-    statusEl.textContent = '✅ ' + sent + ' email' + (sent !== 1 ? 's' : '') + ' sent' + (failed > 0 ? ' · ' + failed + ' failed' : '');
+    statusEl.textContent = '✅ ' + sent + ' email' + (sent!==1?'s':'') + ' sent' + (failed>0?' · '+failed+' failed':'');
     statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
     sendBtn.textContent = '📤 Send emails';
     sendBtn.disabled = false;
 
   } catch(e) {
-    statusEl.textContent = 'Error: ' + (e.message || e);
+    statusEl.textContent = 'Error: ' + (e.message||e);
     statusEl.style.color = '#a32d2d';
-    sendBtn.disabled = false;
-    sendBtn.textContent = '📤 Send emails';
+    sendBtn.disabled=false;
+    sendBtn.textContent='📤 Send emails';
   }
+}
+
+async function sbFetch(path) {
+  try { return await sbGet(path); } catch(e) { console.error('sbFetch:', e); return []; }
 }
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -1641,90 +1524,21 @@ function tierBadge(t) {
 
 // ── Load all data ──────────────────────────────────────────────
 async function loadAll() {
-  const updEl = document.getElementById('last-updated');
-  updEl.textContent = 'Loading...';
-
-  // ── Step 1: Discover which tables exist ──────────────────────
-  const userTableCandidates = ['beta_testers', 'users', 'testers', 'profiles'];
-  const expenseTableCandidates = ['expenses', 'tester_expenses', 'user_expenses', 'transactions'];
-  const consentCandidates = ['consent_log', 'audit_log', 'consent_logs'];
-
-  let usersRaw = null, expensesRaw = null, consentRaw = [];
-  let userTableFound = null, expTableFound = null;
-  const errors = [];
-
-  for (const t of userTableCandidates) {
-    try {
-      const r = await sbGet(`${t}?select=*&order=created_at.desc&limit=500`);
-      if (Array.isArray(r) && r !== null) { usersRaw = r; userTableFound = t; _usersTable = t; break; }
-    } catch(e) {
-      errors.push(`❌ ${t}: ${e.message}`);
-    }
+  document.getElementById('last-updated').textContent = 'Loading...';
+  try {
+    const [users, expenses, consent] = await Promise.all([
+      sbGet('beta_testers?select=*&order=created_at.desc&limit=500'),
+      sbGet('expenses?select=*&order=logged_at.desc&limit=1000'),
+      sbGet('consent_log?select=tester_id,action,created_at&order=created_at.desc&limit=200'),
+    ]);
+    allUsers = users || [];
+    allExpenses = expenses || [];
+    renderAll(allUsers, allExpenses, consent || []);
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-ZA');
+  } catch(e) {
+    document.getElementById('last-updated').textContent = 'Error: ' + e.message;
   }
-
-  if (!userTableFound) {
-    // Show diagnostic panel on overview
-    showDiagError(errors, 'Users table not found. Tried: ' + userTableCandidates.join(', '));
-    updEl.textContent = 'Failed — see Overview for details';
-    return;
-  }
-
-  for (const t of expenseTableCandidates) {
-    try {
-      const r = await sbGet(`${t}?select=*&order=logged_at.desc&limit=1000`);
-      if (Array.isArray(r)) { expensesRaw = r; expTableFound = t; _expensesTable = t; break; }
-    } catch(e) {
-      // Try created_at as sort key
-      try {
-        const r2 = await sbGet(`${t}?select=*&order=created_at.desc&limit=1000`);
-        if (Array.isArray(r2)) { expensesRaw = r2; expTableFound = t; _expensesTable = t; break; }
-      } catch(e2) { /* ignore */ }
-    }
-  }
-  if (!expensesRaw) expensesRaw = [];
-
-  for (const t of consentCandidates) {
-    try {
-      const r = await sbGet(`${t}?select=tester_id,action,created_at&order=created_at.desc&limit=200`);
-      if (Array.isArray(r)) { consentRaw = r; break; }
-    } catch(e) { /* optional table */ }
-  }
-
-  allUsers = usersRaw || [];
-  allExpenses = expensesRaw || [];
-
-  // Remove any old error banners
-  const old = document.getElementById('diag-banner');
-  if (old) old.remove();
-
-  // Show a soft info if expenses table wasn't found
-  if (!expTableFound) {
-    const banner = document.createElement('div');
-    banner.id = 'diag-banner';
-    banner.style.cssText = 'background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:var(--amber);';
-    banner.innerHTML = `⚠️ Expenses table not found (tried: ${expenseTableCandidates.join(', ')}). Expenses count will show 0. Other data is live.`;
-    document.getElementById('tab-overview').prepend(banner);
-  }
-
-  renderAll(allUsers, allExpenses, consentRaw);
-  updEl.textContent = `Updated ${new Date().toLocaleTimeString('en-ZA')} · ${allUsers.length} users · table: ${userTableFound}`;
-}
-
-function showDiagError(errors, summary) {
-  const statsEl = document.getElementById('overview-stats');
-  statsEl.innerHTML = `
-    <div style="grid-column:1/-1;background:var(--red-l);border:1px solid var(--red);border-radius:12px;padding:20px;">
-      <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ Supabase connection issue</div>
-      <div style="font-size:13px;color:var(--red);margin-bottom:12px">${summary}</div>
-      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--mid);line-height:1.8">${errors.map(e=>`<div>${e}</div>`).join('')}</div>
-      <div style="margin-top:12px;font-size:12px;color:var(--mid)">
-        <b>Check:</b> 1) Supabase project is not paused &nbsp;·&nbsp;
-        2) RLS has a SELECT policy for anon role on your users table &nbsp;·&nbsp;
-        3) Table name exactly matches one of: beta_testers, users, testers, profiles
-      </div>
-      <button onclick="loadAll()" style="margin-top:12px;padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Retry</button>
-    </div>
-  `;
 }
 
 function renderAll(users, expenses, consent) {
@@ -1734,7 +1548,7 @@ function renderAll(users, expenses, consent) {
   renderReferrals(users);
   renderRevenue(users);
   renderAI(users);
-  renderBuildTracker();  // async, non-blocking
+  renderBuildTracker();
   renderAlerts();
   renderLegal(users, consent);
   renderReserves(users);
@@ -1902,79 +1716,31 @@ function showSegment(id) {
 
 // ── REFERRALS ─────────────────────────────────────────────────
 function renderReferrals(users) {
-  // Kick off async load — referral data lives in its own table
-  loadReferralData(users);
-}
+  const referrers = users.filter(u => u.referral_count > 0 || u.earnings_total > 0);
+  document.getElementById('ref-total').textContent = referrers.length;
+  const pending = referrers.reduce((s,u)=>(s + (u.earnings_pending||0)),0);
+  const paid = referrers.reduce((s,u)=>(s + (u.earnings_paid||0)),0);
+  document.getElementById('ref-pending').textContent = fmt(pending);
+  document.getElementById('ref-paid').textContent = fmt(paid);
 
-async function loadReferralData(users) {
-  const refBodyEl = document.getElementById('referral-body');
-  const payBodyEl = document.getElementById('payout-body');
-  refBodyEl.innerHTML = '<tr><td colspan="6" class="empty"><div class="spinner" style="display:inline-block"></div> Loading...</td></tr>';
-
-  // Build lookup by id and referral_code
-  const userById = {};
-  const userByCode = {};
-  users.forEach(u => {
-    userById[u.id] = u;
-    if (u.referral_code) userByCode[(u.referral_code+'').toLowerCase()] = u;
-  });
-
-  // ── Use referred_by column on beta_testers directly ──────────
-  {
-    const referred = users.filter(u => u.referred_by && u.referred_by !== '');
-    const byReferrer = {};
-
-    referred.forEach(u => {
-      const code = (u.referred_by || '').toLowerCase().trim();
-      const referrer = userByCode[code];
-      if (!referrer) return;
-      if (!byReferrer[referrer.id]) byReferrer[referrer.id] = { user: referrer, signups: [], converted: 0 };
-      byReferrer[referrer.id].signups.push(u);
-      if (u.tier !== 'free') byReferrer[referrer.id].converted++;
-    });
-
-    const rows = Object.values(byReferrer);
-    document.getElementById('ref-total').textContent = rows.length || referred.length > 0 ? rows.length : '—';
-    const pendingTotal = rows.reduce((s, r) => s + (r.converted * 15), 0);
-    document.getElementById('ref-pending').textContent = fmt(pendingTotal);
-    document.getElementById('ref-paid').textContent = fmt(users.reduce((s,u)=>(s+(u.earnings_paid||0)),0));
-
-    if (rows.length) {
-      refBodyEl.innerHTML = rows.map(r => {
-        const pending = r.converted * 15;
-        const canPay = pending >= 50;
+  document.getElementById('referral-body').innerHTML = referrers.length
+    ? referrers.map(u => {
+        const canPay = (u.earnings_pending||0) >= 50;
         return `<tr>
-          <td><b>${r.user.name||'—'}</b><div style="font-size:10px;color:var(--muted)">${r.user.email||''}</div></td>
-          <td style="font-family:'DM Mono',monospace;font-size:11px">${r.user.referral_code||'—'}</td>
-          <td>${r.signups.length}</td>
-          <td>${r.converted}</td>
-          <td style="font-family:'DM Mono',monospace">${fmt(pending)}</td>
-          <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${r.user.id}','${r.user.name}',${pending})">${canPay?'Pay R'+pending:'Below R50'}</button></td>
+          <td><b>${u.name||'—'}</b></td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
+          <td>${u.referral_count||0}</td>
+          <td>—</td>
+          <td style="font-family:'DM Mono',monospace">${fmt(u.earnings_pending||0)}</td>
+          <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${u.id}','${u.name}',${u.earnings_pending||0})">${canPay?'Pay R'+(u.earnings_pending||0):'Below R50'}</button></td>
         </tr>`;
-      }).join('');
-    } else if (referred.length > 0) {
-      // There are referred users but codes don't match any referrer's code
-      refBodyEl.innerHTML = `<tr><td colspan="6" style="padding:16px;font-size:12px;color:var(--amber)">
-        ⚠️ ${referred.length} user(s) have a referred_by value, but no matching referral_code found.<br>
-        <small style="color:var(--muted)">Check that referral_code on beta_testers matches referred_by values.</small>
-      </td></tr>`;
-    } else {
-      refBodyEl.innerHTML = `<tr><td colspan="6" class="empty">
-        No referrals yet. Share your referral link to start earning.<br>
-        <small style="color:var(--muted)">Reads referred_by column on ${_usersTable}</small>
-      </td></tr>`;
-      document.getElementById('ref-total').textContent = '0';
-      document.getElementById('ref-pending').textContent = 'R0';
-      document.getElementById('ref-paid').textContent = 'R0';
-    }
-
-    if (payBodyEl) payBodyEl.innerHTML = '<tr><td colspan="4" class="empty">No payout history yet</td></tr>';
-  }
+      }).join('')
+    : '<tr><td colspan="6" class="empty">No referrers yet</td></tr>';
 }
 
 async function markPaid(id, name, amount) {
   if (!confirm(`Mark R${amount} as paid to ${name}?`)) return;
-  await sbPatch(`${_usersTable}?id=eq.${id}`, {
+  await sbPatch(`beta_testers?id=eq.${id}`, {
     earnings_paid: amount, earnings_pending: 0,
     last_payout_at: new Date().toISOString()
   });
@@ -2034,9 +1800,7 @@ function renderReserves(users) {
   const mrr = (pro*49)+(prem*129);
   const target = 5000;
   const pct = Math.min((mrr/target)*100,100).toFixed(0);
-  const el = document.getElementById('salary-progress');
-  if (!el) return;
-  el.innerHTML = `
+  document.getElementById('salary-progress').innerHTML = `
     <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
       <span style="color:var(--mid)">Monthly revenue toward R5,000 salary trigger</span>
       <span style="font-weight:700;color:var(--${mrr>=5000?'green':'mid'}">${fmt(mrr)} / R5,000</span>
@@ -2115,29 +1879,12 @@ function dismissSuggestion(i) {
 }
 
 // ── BUILD TRACKER ─────────────────────────────────────────────
-async function renderBuildTracker() {
+function renderBuildTracker() {
   const start = new Date('2026-04-07');
   const days = Math.floor((Date.now()-start.getTime())/86400000);
   document.getElementById('days-built').textContent = days;
 
-  // Pull live counts from Supabase for real stats
-  try {
-    const users = await sbGet(_usersTable + '?select=id,tier,created_at');
-    const total = users.length;
-    const paid = users.filter(u => u.tier === 'pro' || u.tier === 'premium').length;
-
-    const hoursEl = document.getElementById('hours-built');
-    const valueEl = document.getElementById('project-value');
-    const screensEl = document.getElementById('screens-built');
-    // Update stat sub-labels with live data
-    const hoursSubEl = document.querySelector('[data-stat="hours-sub"]');
-    const usersSubEl = document.querySelector('[data-stat="users-sub"]');
-    if (hoursSubEl) hoursSubEl.textContent = total + ' users registered';
-    if (usersSubEl) usersSubEl.textContent = paid + ' paying users';
-  } catch(e) { /* non-critical */ }
-
   const features = [
-    // ✅ Built
     ['OnboardingScreen (5-step + Supabase)', true],
     ['DashboardScreen (real data)', true],
     ['WeeklyScreen (envelopes + expenses)', true],
@@ -2150,30 +1897,17 @@ async function renderBuildTracker() {
     ['14-day trial + upgrade banner', true],
     ['Supabase RLS security', true],
     ['.env security (keys out of code)', true],
-    ['Admin dashboard v1', true],
-    ['Admin dashboard v2 (this version)', true],
+    ['Admin dashboard (this page)', true],
     ['Co-founder agreement PDF', true],
     ['NDA PDF', true],
-    ['OTP email verification (Resend)', true],
-    ['Weekly newsletter system (52 tips)', true],
-    ['Newsletter admin panel', true],
-    ['Landing page v2 (standalone HTML)', true],
-    // 🔲 In progress / upcoming
     ['Connect real data to DebtScreen', false],
     ['Connect real data to GrowScreen', false],
-    ['PayFast live (awaiting bank verification)', false],
-    ['Dark/Premium theme', false],
-    ['Push notifications (50-user milestone)', false],
-    ['Personalised tips by user segment', false],
-    ['Google Play Store listing', false],
-    ['Apple App Store listing', false],
-    ['Amazon Appstore listing', false],
-    ['Huawei AppGallery listing', false],
+    ['PayFast live (awaiting verification)', false],
     ['CIPC registration', false],
     ['Trademark filing', false],
     ['50 beta testers', false],
-    ['WhatsApp support number (50-user milestone)', false],
-    ['Supabase Auth migration (login/session)', false],
+    ['Push notifications', false],
+    ['Supabase Auth (login/session)', false],
   ];
 
   document.getElementById('feature-checklist').innerHTML = features.map(([label, done]) => `
@@ -2182,19 +1916,6 @@ async function renderBuildTracker() {
       <span style="font-size:12px;color:${done?'var(--text)':'var(--muted)'}">${label}</span>
     </div>
   `).join('');
-
-  // Progress summary
-  const done = features.filter(([,d])=>d).length;
-  const pct = Math.round((done/features.length)*100);
-  const existingProgress = document.getElementById('build-progress');
-  if (existingProgress) {
-    existingProgress.innerHTML = `
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-        <span style="color:var(--mid)">${done} of ${features.length} features complete</span>
-        <span style="font-weight:700;color:var(--green)">${pct}%</span>
-      </div>
-      <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>`;
-  }
 }
 
 // ── ALERTS ────────────────────────────────────────────────────
@@ -2266,359 +1987,6 @@ function renderLegal(users, consent) {
       <td style="color:var(--muted);font-size:11px">${ago(c.created_at)}</td>
     </tr>`;
   }).join('') || '<tr><td colspan="3" class="empty">No consent logs yet</td></tr>';
-}
-
-// ── NEWSLETTER ────────────────────────────────────────────────
-let allTips = [];
-let currentWeekNum = 1;
-
-function getWeekNumber() {
-  const now = new Date();
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
-  const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
-  return ((weekNum - 1) % 52) + 1;
-}
-
-async function loadNewsletter() {
-  currentWeekNum = getWeekNumber();
-  const weekBadge = document.getElementById('nl-week-badge');
-  const overrideWeekEl = document.getElementById('nl-override-week-num');
-  if (weekBadge) weekBadge.textContent = 'Week ' + currentWeekNum;
-  if (overrideWeekEl) overrideWeekEl.textContent = currentWeekNum;
-
-  // Subscriber stats
-  try {
-    const subs = await sbGet('newsletter_subscribers?select=active,created_at,email,unsubscribe_token&order=created_at.desc');
-    const total = subs.length;
-    const active = subs.filter(s => s.active).length;
-    const unsub = total - active;
-    const retention = total > 0 ? Math.round((active/total)*100) : 0;
-    document.getElementById('nl-total').textContent = total;
-    document.getElementById('nl-active').textContent = active;
-    document.getElementById('nl-unsub').textContent = unsub;
-    document.getElementById('nl-retention').textContent = retention + '%';
-    document.getElementById('nl-subs-count').textContent = '(' + total + ')';
-
-    const recent = subs.slice(0, 8);
-    document.getElementById('nl-recent-subs').innerHTML = recent.length === 0
-      ? '<div class="empty">No subscribers yet — share the landing page!</div>'
-      : recent.map(s => `
-        <div class="reserve-item">
-          <div>
-            <div class="reserve-name" style="font-size:13px">${s.email}</div>
-            <div class="reserve-purpose">${ago(s.created_at)}</div>
-          </div>
-          <span class="badge ${s.active ? 'badge-pro' : 'badge-free'}">${s.active ? 'Active' : 'Unsub'}</span>
-        </div>`).join('');
-  } catch(e) {
-    ['nl-total','nl-active','nl-unsub','nl-retention'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='0'; });
-    const rEl = document.getElementById('nl-recent-subs');
-    if (rEl) rEl.innerHTML = `<div style="background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:14px;font-size:12px;color:#7a4a00">
-      <b>⚠️ Tables exist but RLS is blocking reads. Run this SQL once in Supabase → SQL Editor:</b>
-      <pre id="rls-fix-sql" style="background:#fff;border-radius:6px;padding:10px;margin-top:8px;font-size:10px;overflow-x:auto;color:#333;white-space:pre">-- Allow admin dashboard to read newsletter tables
-CREATE POLICY IF NOT EXISTS "anon_read_subscribers" ON newsletter_subscribers FOR SELECT USING (true);
-CREATE POLICY IF NOT EXISTS "anon_read_tips" ON weekly_tips FOR SELECT USING (true);</pre>
-      <button onclick="const t=document.getElementById('rls-fix-sql');navigator.clipboard.writeText(t.textContent).then(()=>this.textContent='✅ Copied!').catch(()=>alert(t.textContent))" style="margin-top:8px;padding:6px 12px;background:var(--amber);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy SQL</button>
-      <div style="margin-top:8px;font-size:11px;color:var(--mid)">Supabase → randwise-beta → SQL Editor → paste → Run → then click Refresh</div>
-    </div>`;
-  }
-
-  // On/off toggle
-  try {
-    const cfg = await sbGet('app_config?key=eq.newsletter_enabled&select=value');
-    const enabled = cfg.length === 0 || cfg[0].value !== 'false';
-    const tog = document.getElementById('nl-master-toggle');
-    const lbl = document.getElementById('nl-toggle-label');
-    if (tog) tog.checked = enabled;
-    if (lbl) lbl.textContent = enabled ? '✅ Newsletter ON' : '⏸ Newsletter OFF';
-  } catch(e) {
-    const tog = document.getElementById('nl-master-toggle');
-    const lbl = document.getElementById('nl-toggle-label');
-    if (tog) tog.checked = true;
-    if (lbl) lbl.textContent = '✅ Newsletter ON (app_config missing)';
-  }
-
-  // Tips
-  try {
-    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
-    allTips = tips;
-    renderTipsList(tips);
-    const current = tips.find(t => t.week_number === currentWeekNum);
-    const tipEl = document.getElementById('nl-current-tip');
-    if (current && tipEl) {
-      tipEl.innerHTML = `
-        <div style="margin-bottom:8px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Subject</div>
-          <div style="font-size:13px;font-weight:600;color:var(--text)">${current.subject}</div>
-        </div>
-        <div style="margin-bottom:8px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Headline</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text)">${current.headline}</div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Body preview</div>
-          <div style="font-size:12px;color:var(--mid);line-height:1.6;background:var(--bg);padding:12px;border-radius:8px;max-height:90px;overflow:hidden">${current.body.substring(0,200)}…</div>
-        </div>`;
-      document.getElementById('nl-ov-subject').value = current.subject;
-      document.getElementById('nl-ov-headline').value = current.headline;
-      document.getElementById('nl-ov-body').value = current.body;
-      document.getElementById('nl-ov-cta').value = current.cta_text || 'Open MyRandWise →';
-    } else if (tipEl) {
-      tipEl.innerHTML = '<div class="empty">No tip for week ' + currentWeekNum + ' — add one below</div>';
-    }
-  } catch(e) {
-    const tl = document.getElementById('nl-tips-list');
-    const ct = document.getElementById('nl-current-tip');
-    const rlsSQL = `ALTER TABLE weekly_tips ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "anon_read_tips" ON weekly_tips FOR SELECT USING (true);\n\nALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "anon_read_subscribers" ON newsletter_subscribers FOR SELECT USING (true);`;
-    const fixHtml = `<div style="background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:14px;font-size:12px;color:#7a4a00">
-      <b>⚠️ weekly_tips blocked by RLS — run this SQL in Supabase:</b>
-      <pre id="rls-sql-block" style="background:#fff;border-radius:6px;padding:10px;margin-top:8px;font-size:10px;color:#333;white-space:pre;overflow-x:auto">${rlsSQL}</pre>
-      <button onclick="navigator.clipboard.writeText(document.getElementById('rls-sql-block').textContent).then(()=>this.textContent='✅ Copied!').catch(()=>alert('Copy failed'))" style="margin-top:8px;padding:6px 12px;background:var(--amber);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy SQL</button>
-      <div style="margin-top:8px;font-size:11px;color:var(--mid)">Supabase → randwise-beta → SQL Editor → paste → Run → refresh this page</div>
-    </div>`;
-    if (tl) tl.innerHTML = fixHtml;
-    if (ct) ct.innerHTML = '<div class="empty" style="color:var(--amber)">RLS blocking weekly_tips — see "All Tips" section below for the fix SQL</div>';
-  }
-}
-
-function renderTipsList(tips) {
-  const el = document.getElementById('nl-tips-list');
-  if (!el) return;
-  if (!tips.length) { el.innerHTML = '<div class="empty">No tips found</div>'; return; }
-  el.innerHTML = `
-    <table class="data-table">
-      <thead><tr><th style="width:60px">Week</th><th>Subject</th><th>Headline</th><th style="width:80px">Action</th></tr></thead>
-      <tbody>${tips.map(t => `
-        <tr style="${t.week_number === currentWeekNum ? 'background:var(--green-l)' : ''}">
-          <td>
-            <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">W${String(t.week_number).padStart(2,'0')}</span>
-            ${t.week_number === currentWeekNum ? '<span style="font-size:9px;background:var(--green);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700">THIS WEEK</span>' : ''}
-          </td>
-          <td style="font-size:12px;color:var(--mid)">${t.subject}</td>
-          <td style="font-size:12px;font-weight:600;color:var(--text)">${t.headline}</td>
-          <td><button onclick="editTip(${t.week_number})" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">Edit</button></td>
-        </tr>`).join('')}</tbody>
-    </table>`;
-}
-
-function filterTips() {
-  const q = (document.getElementById('nl-tip-search')?.value||'').toLowerCase();
-  const filtered = allTips.filter(t =>
-    t.subject.toLowerCase().includes(q) ||
-    t.headline.toLowerCase().includes(q) ||
-    t.body.toLowerCase().includes(q)
-  );
-  renderTipsList(filtered);
-}
-
-function editTip(weekNum) {
-  const tip = allTips.find(t => t.week_number === weekNum);
-  if (!tip) return;
-  const overWkEl = document.getElementById('nl-override-week-num');
-  if (overWkEl) overWkEl.textContent = weekNum;
-  document.getElementById('nl-ov-subject').value = tip.subject;
-  document.getElementById('nl-ov-headline').value = tip.headline;
-  document.getElementById('nl-ov-body').value = tip.body;
-  document.getElementById('nl-ov-cta').value = tip.cta_text || 'Open MyRandWise →';
-  openOverrideForm(weekNum);
-  const st = document.getElementById('nl-ov-status');
-  if (st) st.textContent = '';
-}
-
-let overrideWeekNum = null;
-function openOverrideForm(weekNum) {
-  overrideWeekNum = weekNum || currentWeekNum;
-  const wkEl = document.getElementById('nl-override-week-num');
-  if (wkEl) wkEl.textContent = overrideWeekNum;
-  const form = document.getElementById('nl-override-form');
-  const card = document.getElementById('nl-recent-subs-card');
-  if (form) form.style.display = 'block';
-  if (card) card.style.display = 'none';
-}
-
-function closeOverrideForm() {
-  const form = document.getElementById('nl-override-form');
-  const card = document.getElementById('nl-recent-subs-card');
-  if (form) form.style.display = 'none';
-  if (card) card.style.display = 'block';
-}
-
-async function saveOverride() {
-  const wk = overrideWeekNum || currentWeekNum;
-  const body = {
-    subject: document.getElementById('nl-ov-subject').value,
-    headline: document.getElementById('nl-ov-headline').value,
-    body: document.getElementById('nl-ov-body').value,
-    cta_text: document.getElementById('nl-ov-cta').value
-  };
-  const status = document.getElementById('nl-ov-status');
-  if (status) { status.textContent = 'Saving...'; status.style.color = 'var(--muted)'; }
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/weekly_tips?week_number=eq.${wk}`, {
-      method: 'PATCH',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify(body)
-    });
-    if (status) { status.textContent = '✅ Week ' + wk + ' saved'; status.style.color = 'var(--green)'; }
-    await loadNewsletter();
-  } catch(e) {
-    if (status) { status.textContent = '❌ Save failed: ' + e.message; status.style.color = 'var(--red)'; }
-  }
-}
-
-async function toggleNewsletter(enabled) {
-  const lbl = document.getElementById('nl-toggle-label');
-  if (lbl) lbl.textContent = enabled ? '✅ Newsletter ON' : '⏸ Newsletter OFF';
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({ key: 'newsletter_enabled', value: String(enabled) })
-    });
-  } catch(e) { console.log('app_config not available:', e.message); }
-}
-
-async function sendTestTip() {
-  const btn = document.getElementById('nl-test-btn');
-  const status = document.getElementById('nl-test-status');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending...'; }
-  if (status) { status.textContent = 'Fetching tip...'; status.style.color = 'var(--muted)'; }
-
-  try {
-    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
-    const wk = getWeekNumber();
-    const tip = tips.find(t => t.week_number === wk) || tips[0];
-
-    if (!tip) {
-      if (status) { status.textContent = '❌ No tips in database'; status.style.color = 'var(--red)'; }
-      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
-      return;
-    }
-
-    const adminEmail = 'nyanisokhoza@gmail.com';
-    const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f7f9f4;font-family:sans-serif">
-      <div style="max-width:520px;margin:0 auto;padding:24px 16px">
-        <div style="background:linear-gradient(155deg,#0a3d20,#1a7a4a);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px">
-          <div style="font-size:32px;margin-bottom:6px">🌱</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700">Weekly Money Tip — Week ${wk}</div>
-          <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.2">${tip.headline}</div>
-        </div>
-        <div style="background:#fff;border-radius:16px;padding:24px;border:1px solid #eef2e8">
-          <p style="font-size:15px;color:#2c2c2a;line-height:1.75;margin:0 0 22px">${tip.body.replace(/\n/g,'<br>')}</p>
-          <a href="${tip.cta_url||'https://myrandwise.co.za'}" style="display:block;background:#1a7a4a;color:#fff;text-decoration:none;border-radius:12px;padding:15px;text-align:center;font-size:15px;font-weight:800">${tip.cta_text||'Open MyRandWise →'}</a>
-        </div>
-        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:12px">TEST EMAIL · MyRandWise Admin · Week ${wk}</p>
-      </div></body></html>`;
-
-    const resp = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'MyRandWise Tips <hello@myrandwise.co.za>',
-        to: [adminEmail],
-        subject: '[TEST] Week ' + wk + ': ' + tip.subject,
-        html: html
-      })
-    });
-
-    const result = await resp.json();
-    if (status) {
-      if (resp.ok) {
-        status.textContent = '✅ Sent to ' + adminEmail + ' — check your inbox!';
-        status.style.color = 'var(--green)';
-      } else {
-        status.textContent = '❌ Resend error: ' + (result.message || result.name || JSON.stringify(result));
-        status.style.color = 'var(--red)';
-      }
-    }
-  } catch(e) {
-    if (status) {
-      status.textContent = '❌ ' + e.message + (e.message.includes('fetch') ? ' — try Option 3 (SQL Editor) below' : '');
-      status.style.color = 'var(--red)';
-    }
-    // Remove any existing modal
-    const old = document.getElementById('test-tip-modal');
-    if (old) old.remove();
-  }
-
-  if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
-}
-
-// ── IMPORT USERS AS NEWSLETTER SUBSCRIBERS ────────────────────
-async function importUsersAsSubscribers() {
-  const btn = document.getElementById('nl-import-btn');
-  const statusEl = document.getElementById('nl-import-status');
-  btn.disabled = true;
-  btn.textContent = '⏳ Importing...';
-  statusEl.textContent = '';
-
-  try {
-    // Get all registered users with emails
-    const users = await sbGet(_usersTable + '?select=id,name,email,created_at&order=created_at.asc');
-    const withEmail = users.filter(u => u.email && u.email.includes('@'));
-
-    if (!withEmail.length) {
-      statusEl.textContent = 'No users with emails found.';
-      btn.disabled = false; btn.textContent = '👥 Import all users';
-      return;
-    }
-
-    // Get existing subscribers so we don't double-insert
-    let existing = [];
-    try {
-      existing = await sbGet('newsletter_subscribers?select=email&order=created_at.desc&limit=500');
-    } catch(e) { existing = []; }
-    const existingEmails = new Set(existing.map(s => s.email.toLowerCase()));
-
-    const toInsert = withEmail.filter(u => !existingEmails.has(u.email.toLowerCase()));
-
-    if (!toInsert.length) {
-      statusEl.textContent = '✅ All ' + withEmail.length + ' users already subscribed';
-      btn.disabled = false; btn.textContent = '👥 Import all users';
-      return;
-    }
-
-    // Insert in batches of 50
-    let imported = 0, failed = 0;
-    const batch = toInsert.map(u => ({
-      email: u.email,
-      name: u.name || null,
-      source: 'app_user_import',
-      active: true
-    }));
-
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON,
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=ignore-duplicates'
-      },
-      body: JSON.stringify(batch)
-    });
-
-    if (resp.ok || resp.status === 201 || resp.status === 200) {
-      imported = toInsert.length;
-      statusEl.textContent = '✅ Imported ' + imported + ' user' + (imported !== 1 ? 's' : '') + ' as subscribers';
-      statusEl.style.color = 'var(--green)';
-      // Refresh newsletter stats
-      setTimeout(() => loadNewsletter(), 800);
-    } else {
-      const err = await resp.text();
-      statusEl.textContent = '❌ Import failed: ' + err.substring(0, 80);
-      statusEl.style.color = 'var(--red)';
-    }
-  } catch(e) {
-    statusEl.textContent = '❌ Error: ' + e.message;
-    statusEl.style.color = 'var(--red)';
-  }
-
-  btn.disabled = false;
-  btn.textContent = '👥 Import all users';
 }
 
 // ── Init ──────────────────────────────────────────────────────
