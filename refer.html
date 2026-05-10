@@ -63,9 +63,16 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a3d20;min-height:10
   <a href="https://myrandwise.co.za/app.html" class="cta" onclick="saveRefAndGo(event,'app')">
     🌱 Get started free — 14 days trial
   </a>
-  <a href="https://myrandwise.co.za/MyRandWise.apk" class="apk" onclick="saveRefAndGo(event,'apk')">
-    ⬇️ Download Android APK instead
-  </a>
+  <div id="apk-section">
+    <button class="apk" onclick="showApkEmail()">⬇️ Download Android APK instead</button>
+  </div>
+  <div id="apk-email-section" style="display:none;margin-bottom:20px">
+    <p style="font-size:12px;color:#6b7280;margin-bottom:8px;text-align:left">Enter your email so we can link your referral bonus when you register:</p>
+    <input id="apk-email-input" type="email" placeholder="your@email.com"
+      style="width:100%;padding:12px;border:1.5px solid #d1ead9;border-radius:10px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;outline:none;box-sizing:border-box">
+    <button onclick="downloadApkWithEmail()" class="cta" style="margin-bottom:6px">⬇️ Download APK now</button>
+    <button onclick="skipApkEmail()" style="width:100%;background:none;border:none;font-size:12px;color:#9ca3af;cursor:pointer;padding:6px;font-family:'Plus Jakarta Sans',sans-serif">Skip — download without linking referral</button>
+  </div>
 
   <p class="fine">
     No credit card needed. POPIA compliant.<br>
@@ -102,12 +109,48 @@ if(refCode){
   document.querySelector('.code-box').style.display = 'none';
 }
 
+function showApkEmail(){
+  document.getElementById('apk-section').style.display='none';
+  document.getElementById('apk-email-section').style.display='block';
+  document.getElementById('apk-email-input').focus();
+}
+
+async function downloadApkWithEmail(){
+  const email = document.getElementById('apk-email-input').value.trim().toLowerCase();
+  if(email && email.includes('@')){
+    // Save to newsletter_subscribers with referral source
+    try {
+      await fetch('https://mmezkseblafurjolkfkt.supabase.co/rest/v1/newsletter_subscribers',{
+        method:'POST',
+        headers:{
+          'apikey':'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+          'Authorization':'Bearer sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+          'Content-Type':'application/json',
+          'Prefer':'resolution=ignore-duplicates'
+        },
+        body:JSON.stringify({
+          email,
+          source:'apk_referral',
+          active:true,
+          name: refCode ? 'APK ref:'+refCode : 'APK download'
+        })
+      });
+    } catch(e){}
+    // Also store pending ref so if they use browser app later it's linked
+    if(refCode) localStorage.setItem('rw_pending_ref', refCode);
+    localStorage.setItem('rw_pending_email', email);
+  }
+  window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
+}
+
+function skipApkEmail(){
+  if(refCode) localStorage.setItem('rw_pending_ref', refCode);
+  window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
+}
+
 function saveRefAndGo(e, dest){
   e.preventDefault();
-  // Save ref code to localStorage so app.html picks it up
-  if(refCode){
-    localStorage.setItem('rw_pending_ref', refCode);
-  }
+  if(refCode) localStorage.setItem('rw_pending_ref', refCode);
   if(dest === 'apk'){
     window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
   } else {
