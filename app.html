@@ -2320,8 +2320,16 @@ function getH(){
 const H={'apikey':AK,'Authorization':'Bearer '+AK,'Content-Type':'application/json'};
 let user=null,expenses=[],selectedCat=null,debts=[];
 let ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:''};
-// Auto-fill referral code from URL ?ref=
-(()=>{const p=new URLSearchParams(window.location.search);const rc=p.get('ref');if(rc){ob.referralCode=rc;const el=document.getElementById('r-ref');if(el)el.value=rc;}})();
+// Auto-fill referral code from URL ?ref= OR from localStorage (set by refer.html)
+(()=>{
+  const p=new URLSearchParams(window.location.search);
+  const rc=p.get('ref')||localStorage.getItem('rw_pending_ref')||'';
+  if(rc){
+    ob.referralCode=rc;
+    const el=document.getElementById('r-ref');
+    if(el) el.value=rc;
+  }
+})();
 let step=1;
 const CATS=[
   {id:'groceries',e:'🛒',l:'Groceries',c:'#1a7a4a'},{id:'transport',e:'🚌',l:'Transport',c:'#639922'},
@@ -2458,7 +2466,10 @@ async function doRegister(){
     const m=ob.incomeFreq==='Weekly'?a*4:ob.incomeFreq==='Daily'?a*22:a;
     const res=await sbP('beta_testers',{auth_id:authId,email:ob.email.trim().toLowerCase(),name:ob.name.trim(),language:'English',life_stage:ob.stage,life_stage_emoji:ob.stageEmoji,income_type:ob.incomeType,income_amount:m,income_freq:ob.incomeFreq,goals:ob.goals,tier:'free',consent_given:true,consented:true,referral_joined:ob.referralCode?true:false,referred_by:ob.referralCode||null,status:'active',phone:ob.phone||null});
     user=res?.[0];
-    if(user)localStorage.setItem('rw_user',JSON.stringify(user));
+    if(user){
+      localStorage.setItem('rw_user',JSON.stringify(user));
+      localStorage.removeItem('rw_pending_ref'); // clear referral code after use
+    }
     // Fire alert email to owner (non-blocking)
     sendOwnerAlert('new_user',{name:ob.name.trim(),email:ob.email.trim(),life_stage:ob.stage,income_amount:m,referred_by:ob.referralCode||null});
     // Goal-triggered welcome email (non-blocking)
@@ -4660,8 +4671,9 @@ async function deleteGoalPWA(id){
 function showToast(msg,dur=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
 function shareApp(){
   const code=user?.referral_code||'';
-  const tx=`Hey! I'm using MyRandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings. Join free:\n${APP_URL}${code?'\n\nUse my code: '+code:''}`;
-  if(navigator.share)navigator.share({title:'MyRandWise',text:tx,url:APP_URL});
+  const refUrl=code?`https://myrandwise.co.za/refer.html?ref=${code}`:'https://myrandwise.co.za';
+  const tx=`Hey! I'm using MyRandWise — a free money app built for South Africans 🇿🇦\n\nTracks spending, debt and savings in rands. Try it free for 14 days:\n${refUrl}`;
+  if(navigator.share)navigator.share({title:'MyRandWise',text:tx,url:refUrl});
   else window.open('https://wa.me/?text='+encodeURIComponent(tx));
 }
 function doSignOut(){
@@ -7779,35 +7791,53 @@ function doAppUpdate(){
   } else { location.reload(true); }
 }
 
-let ownerTapCount=0,ownerTapTimer=null;
+let ownerTapCount=0,ownerTapTimer=null,ownerPinAction='panel';
+const TIERS=['free','pro','premium'];
 function ownerTap(){
   ownerTapCount++;
   clearTimeout(ownerTapTimer);
-  ownerTapTimer=setTimeout(()=>{ownerTapCount=0;},2000);
-  if(ownerTapCount>=5){
+  ownerTapTimer=setTimeout(()=>{
+    if(ownerTapCount===1) switchTab('profile');
     ownerTapCount=0;
-    document.getElementById('owner-pin-modal').style.display='flex';
-    document.getElementById('owner-pin-input').value='';
-    document.getElementById('owner-pin-err').style.display='none';
-    setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
+  },800);
+  if(ownerTapCount>=5){
+    clearTimeout(ownerTapTimer);
+    ownerTapCount=0;
+    ownerPinAction='panel';
+    openOwnerPinModal();
   } else if(ownerTapCount===3){
-    // 3 taps — open edit profile
-    switchTab('profile');
-    setTimeout(()=>openEditProfile(),300);
-  } else if(ownerTapCount===1){
-    // Single tap — go to profile tab
-    switchTab('profile');
+    clearTimeout(ownerTapTimer);
+    ownerTapCount=0;
+    ownerPinAction='tier';
+    openOwnerPinModal();
   }
+}
+function openOwnerPinModal(){
+  document.getElementById('owner-pin-modal').style.display='flex';
+  document.getElementById('owner-pin-input').value='';
+  document.getElementById('owner-pin-err').style.display='none';
+  setTimeout(()=>document.getElementById('owner-pin-input').focus(),100);
 }
 async function checkOwnerPin(){
   const pin=document.getElementById('owner-pin-input').value;
-  // SHA-256 of '0826' — change this hash if you change your PIN
   const VALID_HASH='625b43807ec2899fc6365fe066a44035c92c57f6e46a4363fc15d9181e587af1';
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pin));
   const hash=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   if(hash===VALID_HASH){
     document.getElementById('owner-pin-modal').style.display='none';
-    openOwnerPanel();
+    if(ownerPinAction==='tier'){
+      // Cycle tier
+      const currentTier=user?.tier||'free';
+      const nextTier=TIERS[(TIERS.indexOf(currentTier)+1)%TIERS.length];
+      if(user) user.tier=nextTier;
+      localStorage.setItem('rw_user',JSON.stringify(user));
+      if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{tier:nextTier}).catch(()=>{});
+      applyTierTheme();
+      renderDash();
+      showToast(`🔄 Switched to ${nextTier.toUpperCase()} — triple-tap again to cycle`);
+    } else {
+      openOwnerPanel();
+    }
   } else {
     document.getElementById('owner-pin-err').style.display='block';
     document.getElementById('owner-pin-input').value='';
@@ -9309,12 +9339,15 @@ function initReferralCard(){
 }
 function shareReferral(){
   const code=user?.referral_code||'';
-  const name=user?.name?.split(' ')[0]||'';
-  const msg=`Most of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for us, not for people who already have financial advisors. 🇿🇦\n\nTry it free for 14 days — no card needed.\n👉 https://myrandwise.co.za?ref=${code}\n\nShared by a MyRandWise team member.`;
+  const name=user?.name?.split(' ')[0]||'a friend';
+  const refUrl=`https://myrandwise.co.za/refer.html?ref=${code}`;
+  const msg=`${name} invited you to MyRandWise 🌱\n\nMost of us get paid on the 25th and wonder where it all went by the 10th. MyRandWise was built to fix that — for real South African life.\n\nTry it free for 14 days — no card needed.\n👉 ${refUrl}`;
   if(navigator.share){
-    navigator.share({ title:'MyRandWise 🌱', text:msg }).catch(()=>{});
+    navigator.share({title:'MyRandWise 🌱',text:msg,url:refUrl}).catch(()=>{});
   } else {
-    navigator.clipboard?.writeText(msg).then(()=>showToast('✅ Share message copied!')).catch(()=>{});
+    navigator.clipboard?.writeText(msg).then(()=>showToast('✅ Link copied!')).catch(()=>{
+      window.open('https://wa.me/?text='+encodeURIComponent(msg));
+    });
   }
 }
 
