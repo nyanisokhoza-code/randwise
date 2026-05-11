@@ -2516,62 +2516,42 @@ async function sendTestTip() {
   const btn = document.getElementById('nl-test-btn');
   const status = document.getElementById('nl-test-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending...'; }
-  if (status) { status.textContent = 'Sending test email...'; status.style.color = 'var(--muted)'; }
+  if (status) { status.textContent = 'Sending...'; status.style.color = 'var(--muted)'; }
 
   try {
     const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
 
-    // Get current week's tip directly from Supabase (no Edge Function needed)
-    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
-    const wk = getWeekNumber();
-    const tip = tips.find(t => t.week_number === wk) || tips[0];
-
-    if (!tip) {
-      if (status) { status.textContent = '❌ No tips in database yet — run weekly_tips_setup.sql first'; status.style.color = 'var(--red)'; }
-      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
-      return;
-    }
-
-    const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f7f9f4;font-family:sans-serif">
-      <div style="max-width:520px;margin:0 auto;padding:24px 16px">
-        <div style="background:linear-gradient(155deg,#0a3d20,#1a7a4a);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px">
-          <div style="font-size:32px;margin-bottom:6px">🌱</div>
-          <div style="font-size:13px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700">Weekly Money Tip — Week ${wk}</div>
-          <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.2">${tip.headline}</div>
-        </div>
-        <div style="background:#fff;border-radius:16px;padding:24px;border:1px solid #eef2e8">
-          <p style="font-size:15px;color:#2c2c2a;line-height:1.75;margin:0 0 22px">${tip.body.replace(/\n/g,'<br>')}</p>
-          <a href="${tip.cta_url || 'https://myrandwise.co.za'}" style="display:block;background:#1a7a4a;color:#fff;text-decoration:none;border-radius:12px;padding:15px;text-align:center;font-size:15px;font-weight:800">${tip.cta_text || 'Open MyRandWise →'}</a>
-        </div>
-        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:12px">TEST EMAIL · MyRandWise Admin</p>
-      </div></body></html>`;
-
-    const resp = await fetch('https://api.resend.com/emails', {
+    // Call Edge Function — runs server-side, no CORS issue
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-weekly-tip`, {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON}`
       },
-      body: JSON.stringify({
-        from: 'MyRandWise Tips <hello@myrandwise.co.za>',
-        to: [adminEmail],
-        subject: '[TEST] Week ' + wk + ': ' + tip.subject,
-        html: html
-      })
+      body: JSON.stringify({ test_email: adminEmail })
     });
 
     const result = await resp.json();
     if (status) {
       if (resp.ok) {
-        status.textContent = '✅ Test sent to ' + adminEmail + ' — check inbox! (Tip: "' + tip.headline + '")';
+        status.textContent = '✅ Test sent to ' + adminEmail + ' — check inbox!';
         status.style.color = 'var(--green)';
       } else {
-        status.textContent = '❌ Resend error: ' + (result.message || result.name || JSON.stringify(result));
-        status.style.color = 'var(--red)';
+        // Edge Function failed — show SQL fallback option
+        status.innerHTML = '⚠️ Edge Function error: ' + (result.error || 'unknown') +
+          '<br><small style="color:var(--muted)">Run this in Supabase SQL Editor instead:<br>' +
+          '<code style="background:var(--bg2);padding:2px 6px;border-radius:4px;font-size:10px">' +
+          'SELECT net.http_post(url := \'https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip\', ' +
+          'headers := \'{"Content-Type":"application/json","Authorization":"Bearer ' + SUPABASE_ANON + '"}\'::jsonb, ' +
+          'body := \'{"test_email":"' + adminEmail + '"}\'::jsonb);</code></small>';
+        status.style.color = 'var(--amber)';
       }
     }
   } catch(e) {
-    if (status) { status.textContent = '❌ Error: ' + e.message; status.style.color = 'var(--red)'; }
+    if (status) {
+      status.textContent = '❌ ' + e.message + ' — try the SQL Editor option below';
+      status.style.color = 'var(--red)';
+    }
   }
   if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
 }
