@@ -2516,12 +2516,29 @@ async function sendTestTip() {
   const btn = document.getElementById('nl-test-btn');
   const status = document.getElementById('nl-test-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending...'; }
-  if (status) { status.textContent = 'Sending...'; status.style.color = 'var(--muted)'; }
+  if (status) { status.textContent = 'Connecting...'; status.style.color = 'var(--muted)'; }
 
+  const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
+
+  // Step 1: Test basic Supabase connectivity first
   try {
-    const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
+    const ping = await fetch(`${SUPABASE_URL}/rest/v1/weekly_tips?select=week_number&limit=1`, {
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+    });
+    if (!ping.ok) {
+      if (status) { status.textContent = `❌ Supabase unreachable (${ping.status}) — check your internet connection`; status.style.color = 'var(--red)'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+      return;
+    }
+  } catch(e) {
+    if (status) { status.textContent = `❌ No internet connection — cannot reach Supabase (${e.message})`; status.style.color = 'var(--red)'; }
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+    return;
+  }
 
-    // Call Edge Function — runs server-side, no CORS issue
+  // Step 2: Try Edge Function
+  try {
+    if (status) { status.textContent = '⏳ Calling Edge Function...'; }
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-weekly-tip`, {
       method: 'POST',
       headers: {
@@ -2531,28 +2548,39 @@ async function sendTestTip() {
       body: JSON.stringify({ test_email: adminEmail })
     });
 
-    const result = await resp.json();
-    if (status) {
-      if (resp.ok) {
-        status.textContent = '✅ Test sent to ' + adminEmail + ' — check inbox!';
-        status.style.color = 'var(--green)';
-      } else {
-        // Edge Function failed — show SQL fallback option
-        status.innerHTML = '⚠️ Edge Function error: ' + (result.error || 'unknown') +
-          '<br><small style="color:var(--muted)">Run this in Supabase SQL Editor instead:<br>' +
-          '<code style="background:var(--bg2);padding:2px 6px;border-radius:4px;font-size:10px">' +
-          'SELECT net.http_post(url := \'https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip\', ' +
-          'headers := \'{"Content-Type":"application/json","Authorization":"Bearer ' + SUPABASE_ANON + '"}\'::jsonb, ' +
-          'body := \'{"test_email":"' + adminEmail + '"}\'::jsonb);</code></small>';
+    let result = {};
+    try { result = await resp.json(); } catch(e) {}
+
+    if (resp.ok) {
+      if (status) { status.textContent = '✅ Sent to ' + adminEmail + ' — check inbox!'; status.style.color = 'var(--green)'; }
+    } else if (resp.status === 404) {
+      if (status) {
+        status.innerHTML = `⚠️ Edge Function not deployed.<br>
+          <small style="color:var(--mid)">Run in terminal: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px">supabase functions deploy send-weekly-tip --project-ref mmezkseblafurjolkfkt</code><br><br>
+          Or test via SQL Editor:<br>
+          <code style="background:var(--bg2);padding:3px 6px;border-radius:4px;display:block;margin-top:4px;font-size:10px">
+SELECT net.http_post(url:='https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer ${SUPABASE_ANON}"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);</code></small>`;
         status.style.color = 'var(--amber)';
       }
+    } else if (resp.status === 401) {
+      if (status) { status.textContent = `❌ Auth error (401) — anon key rejected by Edge Function. Check function CORS settings.`; status.style.color = 'var(--red)'; }
+    } else if (resp.status === 500) {
+      if (status) { status.textContent = `❌ Edge Function crashed (500): ${result.error || 'Check Supabase → Edge Functions → Logs'}`;  status.style.color = 'var(--red)'; }
+    } else {
+      if (status) { status.textContent = `❌ HTTP ${resp.status}: ${result.error || result.message || JSON.stringify(result)}`; status.style.color = 'var(--red)'; }
     }
   } catch(e) {
+    // Edge Function fetch itself failed
     if (status) {
-      status.textContent = '❌ ' + e.message + ' — try the SQL Editor option below';
-      status.style.color = 'var(--red)';
+      status.innerHTML = `❌ Edge Function unreachable: ${e.message}<br>
+        <small style="color:var(--mid)">This usually means the function isn't deployed yet.<br>
+        Use this SQL in Supabase SQL Editor to send the test instead:<br>
+        <code style="background:var(--bg2);padding:3px 6px;border-radius:4px;display:block;margin-top:4px;font-size:10px;word-break:break-all">
+SELECT net.http_post(url:='https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer ${SUPABASE_ANON}"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);</code></small>`;
+      status.style.color = 'var(--amber)';
     }
   }
+
   if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
 }
 
