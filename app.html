@@ -115,6 +115,11 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 @keyframes splashRingDraw{0%{stroke-dasharray:0 365}100%{stroke-dasharray:365 365}}
 @keyframes splashFadeUp{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes bbPulse{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0);border-color:#d1ead9}50%{box-shadow:0 0 0 6px rgba(251,191,36,0.4);border-color:#fbbf24}}
+@keyframes coinShake{0%,100%{transform:rotate(0deg)}15%{transform:rotate(-8deg)}30%{transform:rotate(8deg)}45%{transform:rotate(-6deg)}60%{transform:rotate(6deg)}75%{transform:rotate(-3deg)}90%{transform:rotate(3deg)}}
+@keyframes coinSpin{0%{transform:rotateY(0deg)}50%{transform:rotateY(90deg) scale(0.85)}100%{transform:rotateY(0deg)}}
+@keyframes coinGlow{0%,100%{box-shadow:0 0 0px rgba(74,222,128,0)}50%{box-shadow:0 0 14px rgba(74,222,128,0.6)}}
+.coin-shake{animation:coinShake 0.5s ease, coinGlow 0.5s ease !important;}
+.coin-spin{animation:coinSpin 0.6s ease 0.5s !important;}
 #hero-front,#hero-week-back{transition:opacity .25s ease;}
 
 /* DONE */
@@ -1255,7 +1260,7 @@ if('serviceWorker' in navigator){
                     <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;font-style:italic;user-select:none" id="hdr-after-msg">Tap breakdown to confirm</div>
                   </div>
                 </div>
-                <div style="font-size:9px;color:rgba(255,255,255,.25);align-self:flex-end;padding-bottom:2px;cursor:pointer" onclick="toggleHeroFlip()">week →</div>
+                <div style="font-size:9px;color:rgba(255,255,255,.55);align-self:flex-end;cursor:pointer;background:rgba(255,255,255,.1);border-radius:8px;padding:3px 8px;letter-spacing:.3px" onclick="toggleHeroFlip()">week →</div>
             </div>
             <!-- BACK: weekly progress (hidden by default) -->
             <div id="hero-week-back" onclick="toggleHeroFlip()" style="display:none;flex-direction:column;justify-content:center;cursor:pointer;width:100%;min-height:80px">
@@ -2641,6 +2646,7 @@ function hideErr(id){document.getElementById(id).style.display='none';}
 async function openDash(){
   show('main');
   startLockTimer();
+  setTimeout(()=>startCoinIdleAnimation(), 5000);
   // Reset scroll to top
   setTimeout(()=>{
     const dc=document.getElementById('dash-main-content');
@@ -3220,24 +3226,41 @@ async function renderDash(){
       const allDebts=await sbG(`debts?tester_id=eq.${user.id}&select=balance,category,vehicle_value,property_value`);
       const totalSavings=(allGoals||[]).reduce((s,g)=>s+Number(g.saved||0),0);
       const totalDebt=(allDebts||[]).reduce((s,d)=>s+Number(d.balance||0),0);
-      // Add vehicle values and property equity as assets
-      const totalVehicleValue=(allDebts||[]).filter(d=>d.category==='Vehicle'||d.category==='vehicle').reduce((s,d)=>s+Number(d.vehicle_value||0),0);
-      const totalPropertyValue=(allDebts||[]).filter(d=>d.category==='Bond/Home loan'||d.category==='bond').reduce((s,d)=>s+Number(d.property_value||0),0);
-      const totalAssets=totalSavings+totalVehicleValue+totalPropertyValue;
-      const netWorth=totalAssets-totalDebt;
+      // Vehicle equity = what car is worth MINUS what you still owe on it
+      // (can be negative if "underwater" — owe more than car is worth)
+      const vehicleDebts=(allDebts||[]).filter(d=>d.category==='Vehicle'||d.category==='vehicle');
+      const totalVehicleValue=vehicleDebts.reduce((s,d)=>s+Number(d.vehicle_value||0),0);
+      const totalVehicleBalance=vehicleDebts.reduce((s,d)=>s+Number(d.balance||0),0);
+      const vehicleEquity=totalVehicleValue-totalVehicleBalance; // negative if underwater
+      const propertyDebts=(allDebts||[]).filter(d=>d.category==='Bond/Home loan'||d.category==='bond');
+      const totalPropertyValue=propertyDebts.reduce((s,d)=>s+Number(d.property_value||0),0);
+      const totalPropertyBalance=propertyDebts.reduce((s,d)=>s+Number(d.balance||0),0);
+      const propertyEquity=totalPropertyValue-totalPropertyBalance;
+      // Non-asset debts (store, personal loan, credit card etc.)
+      const unsecuredDebt=(allDebts||[]).filter(d=>d.category!=='Vehicle'&&d.category!=='vehicle'&&d.category!=='Bond/Home loan'&&d.category!=='bond').reduce((s,d)=>s+Number(d.balance||0),0);
+      const totalAssets=totalSavings+(vehicleEquity>0?vehicleEquity:0)+(propertyEquity>0?propertyEquity:0);
+      const netWorth=totalSavings+vehicleEquity+propertyEquity-unsecuredDebt;
       const nwEl=document.getElementById('net-worth-amt');
       const nwCard=document.getElementById('net-worth-card');
       if(nwEl){
         nwEl.textContent=(netWorth<0?'-':'')+'R'+Math.abs(Math.round(netWorth)).toLocaleString('en-ZA');
         nwEl.style.color=netWorth>=0?'#1a5c35':'#c62828';
       }
-      set('nw-savings','R'+Math.round(totalAssets).toLocaleString('en-ZA'));
-      set('nw-debt','R'+Math.round(totalDebt).toLocaleString('en-ZA'));
+      set('nw-savings','R'+Math.round(totalSavings).toLocaleString('en-ZA'));
+      set('nw-debt','R'+Math.round(unsecuredDebt).toLocaleString('en-ZA'));
       // Update labels
       const savLabel=document.getElementById('nw-savings-label');
-      if(savLabel) savLabel.textContent=totalVehicleValue>0||totalPropertyValue>0?'Assets':'Savings';
+      if(savLabel) savLabel.textContent='Savings';
+      // Show vehicle equity note if relevant
       const sub=document.getElementById('net-worth-sub');
-      if(sub) sub.textContent=netWorth>=0?'↑ Growing — keep it up':'↓ Debt exceeds assets — focus on debt';
+      let subText = netWorth>=0?'↑ Growing — keep it up':'↓ Debt exceeds assets — focus on debt';
+      if(totalVehicleValue>0){
+        const eqLabel = vehicleEquity>=0
+          ? `Car equity: +R${Math.abs(Math.round(vehicleEquity)).toLocaleString('en-ZA')}`
+          : `Car underwater: −R${Math.abs(Math.round(vehicleEquity)).toLocaleString('en-ZA')} (owe more than it's worth)`;
+        subText += ' · ' + eqLabel;
+      }
+      if(sub) sub.textContent=subText;
       if(nwCard) nwCard.style.display=(totalAssets>0||totalDebt>0)?'block':'none';
     }catch{}
   }catch(e){console.warn('Savings goal home card error:',e);}
@@ -6660,6 +6683,7 @@ window.addEventListener('load',async()=>{
         show('main');
         startLockTimer();
         setTimeout(()=>schedulePushNudges(), 3000);
+        setTimeout(()=>startCoinIdleAnimation(), 5000);
         // Only show intro if user has never seen it
         const introSeen=localStorage.getItem('rw_intro_seen');
         if(!introSeen){
@@ -7666,7 +7690,32 @@ async function saveEdit(){
 // ══ VERSION CHECK & UPDATE BANNER ════════════════════════════
 let _heroFlipTimer = null;
 let _heroFlipState = 'front'; // 'front' or 'back'
+// ── Coin idle animation — shake then spin to attract attention ──
+let _coinIdleTimer = null;
+let _coinIdleDiscovered = false;
+function startCoinIdleAnimation(){
+  if(_coinIdleDiscovered) return; // user already tapped it
+  clearTimeout(_coinIdleTimer);
+  // First fire after 30 seconds, then every 3 minutes
+  _coinIdleTimer = setTimeout(function fireCoinAnim(){
+    if(_coinIdleDiscovered || _heroFlipState !== 'front') {
+      _coinIdleTimer = setTimeout(fireCoinAnim, 180000); return;
+    }
+    const ring = document.getElementById('ring-wrap');
+    const svg = document.getElementById('ring-svg');
+    if(!ring) { _coinIdleTimer = setTimeout(fireCoinAnim, 180000); return; }
+    // Only animate if ring is visible (salary confirmed)
+    const target = svg && svg.style.opacity !== '0' ? ring : ring;
+    target.classList.add('coin-shake');
+    setTimeout(()=>{ target.classList.remove('coin-shake'); target.classList.add('coin-spin'); }, 550);
+    setTimeout(()=>{ target.classList.remove('coin-spin'); }, 1200);
+    _coinIdleTimer = setTimeout(fireCoinAnim, 180000); // every 3 min
+  }, 30000);
+}
+function stopCoinIdleAnimation(){ _coinIdleDiscovered = true; clearTimeout(_coinIdleTimer); }
+
 function toggleHeroFlip(){
+  stopCoinIdleAnimation(); // user discovered the coin — stop nudging
   const front = document.getElementById('hero-front');
   const back = document.getElementById('hero-week-back');
   if(!front || !back) return;
@@ -7734,7 +7783,7 @@ function updateHeroWeekPanel(sp, wbOverride){
   if(rem){ rem.textContent=overspent?'-R'+(weekSpent-wb).toLocaleString('en-ZA'):'R'+remaining.toLocaleString('en-ZA'); rem.style.color=overspent?'#f87171':'white'; }
 }
 
-const APP_VERSION = '2026-05-07-v181';
+const APP_VERSION = '2026-05-11-v182';
 
 // ── SUPABASE KEEP-ALIVE — prevents free tier project pausing ──
 // Pings Supabase every 3 days with a lightweight query
