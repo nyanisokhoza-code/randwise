@@ -2519,70 +2519,75 @@ async function sendTestTip() {
   if (status) { status.textContent = 'Connecting...'; status.style.color = 'var(--muted)'; }
 
   const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
+  // Service key never stored in frontend — entered at runtime only
+  let SERVICE_KEY = localStorage.getItem('rw_svc_key') || '';
 
-  // Step 1: Test basic Supabase connectivity first
+  // If no service key stored, prompt once
+  if (!SERVICE_KEY) {
+    SERVICE_KEY = prompt('Enter your Supabase service role key (stored locally, never uploaded):\n\nFind it at: Supabase → Settings → API Keys → Secret keys');
+    if (!SERVICE_KEY) {
+      if (status) { status.textContent = '❌ Service key required to send test email'; status.style.color = 'var(--red)'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+      return;
+    }
+    localStorage.setItem('rw_svc_key', SERVICE_KEY.trim());
+    SERVICE_KEY = SERVICE_KEY.trim();
+  }
+  const SQL_CMD = `SELECT net.http_post(url:='${SUPABASE_URL}/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer YOUR_SERVICE_KEY_HERE"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);`;
+
+  // Step 1: Test connectivity
   try {
     const ping = await fetch(`${SUPABASE_URL}/rest/v1/weekly_tips?select=week_number&limit=1`, {
       headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
     });
     if (!ping.ok) {
-      if (status) { status.textContent = `❌ Supabase unreachable (${ping.status}) — check your internet connection`; status.style.color = 'var(--red)'; }
+      if (status) { status.textContent = `❌ Supabase unreachable (${ping.status})`; status.style.color = 'var(--red)'; }
       if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
       return;
     }
   } catch(e) {
-    if (status) { status.textContent = `❌ No internet connection — cannot reach Supabase (${e.message})`; status.style.color = 'var(--red)'; }
+    if (status) { status.textContent = `❌ No internet (${e.message})`; status.style.color = 'var(--red)'; }
     if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
     return;
   }
 
-  // Step 2: Try Edge Function
+  // Step 2: Try Edge Function with service key
   try {
     if (status) { status.textContent = '⏳ Calling Edge Function...'; }
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-weekly-tip`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SERVICE_KEY}` },
       body: JSON.stringify({ test_email: adminEmail })
     });
-
     let result = {};
     try { result = await resp.json(); } catch(e) {}
-
     if (resp.ok) {
       if (status) { status.textContent = '✅ Sent to ' + adminEmail + ' — check inbox!'; status.style.color = 'var(--green)'; }
-    } else if (resp.status === 404) {
-      if (status) {
-        status.innerHTML = `⚠️ Edge Function not deployed.<br>
-          <small style="color:var(--mid)">Run in terminal: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px">supabase functions deploy send-weekly-tip --project-ref mmezkseblafurjolkfkt</code><br><br>
-          Or test via SQL Editor:<br>
-          <code style="background:var(--bg2);padding:3px 6px;border-radius:4px;display:block;margin-top:4px;font-size:10px">
-SELECT net.http_post(url:='https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer ${SUPABASE_ANON}"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);</code></small>`;
-        status.style.color = 'var(--amber)';
-      }
-    } else if (resp.status === 401) {
-      if (status) { status.textContent = `❌ Auth error (401) — anon key rejected by Edge Function. Check function CORS settings.`; status.style.color = 'var(--red)'; }
-    } else if (resp.status === 500) {
-      if (status) { status.textContent = `❌ Edge Function crashed (500): ${result.error || 'Check Supabase → Edge Functions → Logs'}`;  status.style.color = 'var(--red)'; }
-    } else {
-      if (status) { status.textContent = `❌ HTTP ${resp.status}: ${result.error || result.message || JSON.stringify(result)}`; status.style.color = 'var(--red)'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+      return;
     }
+    const errMsg = resp.status === 403 ? 'CORS blocked (403)' : resp.status === 404 ? 'Function not found (404)' : `HTTP ${resp.status}`;
+    showSqlFallback(status, errMsg, SQL_CMD);
   } catch(e) {
-    // Edge Function fetch itself failed
-    if (status) {
-      status.innerHTML = `❌ Edge Function unreachable: ${e.message}<br>
-        <small style="color:var(--mid)">This usually means the function isn't deployed yet.<br>
-        Use this SQL in Supabase SQL Editor to send the test instead:<br>
-        <code style="background:var(--bg2);padding:3px 6px;border-radius:4px;display:block;margin-top:4px;font-size:10px;word-break:break-all">
-SELECT net.http_post(url:='https://mmezkseblafurjolkfkt.supabase.co/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer ${SUPABASE_ANON}"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);</code></small>`;
-      status.style.color = 'var(--amber)';
-    }
+    showSqlFallback(status, 'Failed to fetch — ' + e.message, SQL_CMD);
   }
-
   if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
 }
+
+function showSqlFallback(statusEl, errMsg, sql) {
+  if (!statusEl) return;
+  statusEl.innerHTML = `<span style="color:var(--amber)">⚠️ ${errMsg}</span><br>
+    <div style="margin-top:8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px">
+      <div style="font-size:11px;font-weight:700;color:var(--mid);margin-bottom:6px">Run in Supabase SQL Editor:</div>
+      <code id="sql-test-cmd" style="font-size:10px;color:#333;display:block;word-break:break-all;line-height:1.5;background:#f5f5f5;padding:8px;border-radius:4px">${sql}</code>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('sql-test-cmd').textContent).then(()=>{this.textContent='✅ Copied!';setTimeout(()=>this.textContent='📋 Copy SQL',2000)})"
+          style="padding:5px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copy SQL</button>
+        <span style="font-size:10px;color:var(--muted)">Also enable pg_net: Database → Extensions → pg_net</span>
+      </div>
+    </div>`;
+}
+
 
 // ── IMPORT USERS AS NEWSLETTER SUBSCRIBERS ────────────────────
 async function importUsersAsSubscribers() {
