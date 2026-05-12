@@ -2300,7 +2300,8 @@ async function refreshTokenIfNeeded(){
     const res=await fetch(`${SB}/auth/v1/token?grant_type=refresh_token`,{
       method:'POST',
       headers:{'apikey':AK,'Content-Type':'application/json'},
-      body:JSON.stringify({refresh_token:ref})
+      body:JSON.stringify({refresh_token:ref}),
+      signal:AbortSignal.timeout(3000)
     });
     const data=await res.json();
     if(data.access_token){
@@ -6643,33 +6644,33 @@ window.addEventListener('load',async()=>{
     try{
       user=JSON.parse(s);
       if(user?.id){
-        // Load data FIRST, then show main — no flash
-        try{
-          const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
-          if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});}
-        }catch{}
-        try{await loadExp();}catch{expenses=[];}
-        try{
-          const d=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
-          debts=Array.isArray(d)?d:[];
-        }catch{debts=[];}
-        // Sync monthly needs from Supabase (cross-device sync)
-        await loadMonthlyNeedsFromSupabase().catch(()=>{});
+        // ── Show app IMMEDIATELY from cache — no waiting ──────────
         try{renderDash();}catch{}
-        // Hide splash loader, show main
         const _splashLoader=document.getElementById('splash-loader');
         if(_splashLoader) _splashLoader.style.display='none';
         show('main');
         startLockTimer();
         setTimeout(()=>schedulePushNudges(), 3000);
-        // Only show intro if user has never seen it
         const introSeen=localStorage.getItem('rw_intro_seen');
         if(!introSeen){
           setTimeout(()=>{try{showIntro();localStorage.setItem('rw_intro_seen','1');}catch{}},600);
         } else {
-          // Show what's new popup for returning users on new version
           setTimeout(()=>showWhatsNew(APP_VERSION), 1500);
         }
+        // ── Refresh data in background (non-blocking) ─────────────
+        setTimeout(async()=>{
+          try{
+            const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
+            if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});}
+          }catch{}
+          try{await loadExp();}catch{expenses=[];}
+          try{
+            const d=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
+            debts=Array.isArray(d)?d:[];
+          }catch{debts=[];}
+          await loadMonthlyNeedsFromSupabase().catch(()=>{});
+          try{renderDash();}catch{} // Re-render with fresh data
+        }, 100);
       }
     }catch{
       show('splash');
