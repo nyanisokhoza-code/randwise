@@ -753,7 +753,7 @@
         <div class="card">
           <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
           <table class="data-table">
-            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th></tr></thead>
+            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th><th>Last Seen</th></tr></thead>
             <tbody id="recent-users-body"></tbody>
           </table>
         </div>
@@ -783,7 +783,7 @@
         <table class="data-table" id="users-table">
           <thead><tr>
             <th>Name</th><th>Life Stage</th><th>Income</th>
-            <th>Tier</th><th>Referral Code</th><th>Joined</th>
+            <th>Tier</th><th>Referral Code</th><th>Joined</th><th>Last Seen</th>
           </tr></thead>
           <tbody id="users-body"></tbody>
         </table>
@@ -1753,16 +1753,32 @@ function renderOverview(users, expenses) {
   const start = new Date('2026-04-07');
   const daysSince = Math.floor((Date.now() - start.getTime()) / 86400000);
 
+  const now = Date.now();
+  const activeToday = users.filter(u => u.last_active && Math.floor((now - new Date(u.last_active).getTime()) / 86400000) === 0).length;
+  const activeWeek = users.filter(u => u.last_active && Math.floor((now - new Date(u.last_active).getTime()) / 86400000) < 7).length;
+  const inactive7 = users.filter(u => !u.last_active || Math.floor((now - new Date(u.last_active).getTime()) / 86400000) >= 7).length;
+  const neverOpened = users.filter(u => !u.last_active).length;
+
   document.getElementById('overview-stats').innerHTML = `
     <div class="stat-card green">
       <div class="stat-label">Total Users</div>
       <div class="stat-value">${users.length}</div>
       <div class="stat-sub">All time</div>
     </div>
+    <div class="stat-card green">
+      <div class="stat-label">Active Today</div>
+      <div class="stat-value">${activeToday}</div>
+      <div class="stat-sub">${activeWeek} this week</div>
+    </div>
     <div class="stat-card purple">
       <div class="stat-label">Paid Users</div>
       <div class="stat-value">${paid}</div>
       <div class="stat-sub">${conv}% conversion</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Inactive 7d+</div>
+      <div class="stat-value">${inactive7}</div>
+      <div class="stat-sub">${neverOpened} never opened</div>
     </div>
     <div class="stat-card amber">
       <div class="stat-label">Expenses Logged</div>
@@ -1784,8 +1800,9 @@ function renderOverview(users, expenses) {
       <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
       <td>${tierBadge(u.tier)}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+      <td>${lastSeenBadge(u.last_active)}</td>
     </tr>
-  `).join('') || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
+  `).join('') || '<tr><td colspan="5" class="empty">No users yet</td></tr>';
   document.getElementById('reg-count').textContent = `${users.length} total`;
 
   // Tier bars
@@ -1829,23 +1846,37 @@ function renderUsers(users) {
   filterUsers();
 }
 
+function lastSeenBadge(last_active) {
+  if (!last_active) return '<span style="font-size:11px;color:var(--muted)">Never opened</span>';
+  const days = Math.floor((Date.now() - new Date(last_active).getTime()) / 86400000);
+  if (days === 0) return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#1a7a4a">🟢 Today</span>';
+  if (days === 1) return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#1a7a4a">🟢 Yesterday</span>';
+  if (days <= 7)  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#ba7517">🟡 ${days}d ago</span>`;
+  if (days <= 30) return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#a32d2d">🔴 ${days}d ago</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)">⚫ ${days}d ago</span>`;
+}
+
 function filterUsers() {
   const q = (document.getElementById('user-search').value||'').toLowerCase();
   const filtered = allUsers.filter(u => {
-    const matchQ = !q || (u.name||'').toLowerCase().includes(q) || (u.life_stage||'').toLowerCase().includes(q);
+    const matchQ = !q || (u.name||'').toLowerCase().includes(q) || (u.life_stage||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
     const matchT = tierFilter === 'all' || (u.tier||'free') === tierFilter;
     return matchQ && matchT;
   });
   document.getElementById('users-body').innerHTML = filtered.map(u => `
     <tr>
-      <td><b>${u.name||'—'}</b></td>
+      <td>
+        <b>${u.name||'—'}</b>
+        <div style="font-size:10px;color:var(--muted)">${u.email||''}</div>
+      </td>
       <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
       <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
       <td>${tierBadge(u.tier)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+      <td>${lastSeenBadge(u.last_active)}</td>
     </tr>
-  `).join('') || '<tr><td colspan="6" class="empty">No users match this filter</td></tr>';
+  `).join('') || '<tr><td colspan="7" class="empty">No users match this filter</td></tr>';
 }
 
 function setTierFilter(t, el) {
