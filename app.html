@@ -6728,8 +6728,16 @@ window.addEventListener('load',async()=>{
     </div>
   </div>
   <button id="uw-continue" onclick="document.getElementById('upgrade-wall').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:none">Continue with limited access</button>
+  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
+      <span style="font-size:11px;color:rgba(255,255,255,.3)">or</span>
+      <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
+    </div>
+    <button onclick="continueFreePlan()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px;font-size:14px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer">Continue with free plan</button>
+    <div style="font-size:11px;color:rgba(255,255,255,.22);margin-top:8px;line-height:1.5">Basic budget tracking only. Your data is always safe.</div>
+  </div>
 </div>
-
 <!-- ══ EDIT EXPENSE SHEET ═════════════════════════════════════ -->
 <div class="overlay" id="edit-ov" onclick="closeEditSheet()"></div>
 <div class="sheet" id="edit-sheet">
@@ -7562,16 +7570,19 @@ function applyTierTheme(){
 function showUpgradeWall(hardBlock){
   const wall=document.getElementById('upgrade-wall');
   wall.style.display='flex';
+  const freePlanDiv=document.getElementById('uw-free-plan');
   if(!hardBlock){
     document.getElementById('uw-icon').textContent='⭐';
     document.getElementById('uw-title').textContent='Unlock the full MyRandWise';
     document.getElementById('uw-sub').textContent='You\'re on the free plan. Upgrade to Pro for bank imports, AI nudges, and more.';
     document.getElementById('uw-continue').style.display='block';
+    if(freePlanDiv) freePlanDiv.style.display='none';
   } else {
     document.getElementById('uw-icon').textContent='⏰';
     document.getElementById('uw-title').textContent='Your free trial has ended';
     document.getElementById('uw-sub').textContent='You\'ve experienced what MyRandWise can do. Don\'t lose your data — upgrade to keep going.';
     document.getElementById('uw-continue').style.display='none';
+    if(freePlanDiv) freePlanDiv.style.display='block';
     // Intercept back button so users can't navigate away
     history.pushState(null,'',location.href);
     window.onpopstate=()=>{
@@ -7583,6 +7594,46 @@ function showUpgradeWall(hardBlock){
       history.pushState(null,'',location.href);
     };
   }
+}
+function continueFreePlan(){
+  // Set tier to free in Supabase and locally
+  if(user?.id) sbP('beta_testers',{tier:'free'},'id=eq.'+user.id).catch(()=>{});
+  if(user) user.tier='free';
+  localStorage.setItem('rw_tier','free');
+  document.getElementById('upgrade-wall').style.display='none';
+  applyTierTheme('free');
+  showToast('You\'re on the free plan. Upgrade anytime from your profile.');
+  // Schedule upgrade nudge cards — shown periodically while on free plan
+  scheduleUpgradeNudges();
+}
+function scheduleUpgradeNudges(){
+  // Show first nudge after 2 minutes, then every 5 minutes, max 3 per session
+  let nudgeCount=0;
+  const maxNudges=3;
+  const nudgeMessages=[
+    {title:'📊 Unlock Debt Payoff Strategy',body:'See exactly how to clear your debt faster — from R49/month'},
+    {title:'🎯 Unlock Savings Goals',body:'Set and track goals for what matters most — from R49/month'},
+    {title:'💡 Unlock AI Money Nudges',body:'Get personalised tips based on your spending — from R49/month'},
+  ];
+  const showNudge=()=>{
+    if(nudgeCount>=maxNudges) return;
+    const tier=user?.tier||localStorage.getItem('rw_tier')||'free';
+    if(tier!=='free') return; // Stop if they upgraded
+    const msg=nudgeMessages[nudgeCount];
+    nudgeCount++;
+    // Remove existing nudge if any
+    document.getElementById('upgrade-nudge-card')?.remove();
+    const card=document.createElement('div');
+    card.id='upgrade-nudge-card';
+    card.style.cssText='position:fixed;bottom:76px;left:16px;right:16px;background:#132e1e;border:1.5px solid rgba(74,222,128,.4);border-radius:14px;padding:14px 16px;z-index:300;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:slideUp .3s ease';
+    card.innerHTML=`<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">${msg.title}</div><div style="font-size:12px;color:rgba(255,255,255,.55)">${msg.body}</div></div><div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><button onclick="showUpgradeWall(false)" style="background:#4ade80;color:#0d3d22;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer">Upgrade</button><button onclick="this.closest('#upgrade-nudge-card').remove()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;padding:2px">Not now</button></div>`;
+    document.body.appendChild(card);
+    // Auto-dismiss after 8 seconds
+    setTimeout(()=>document.getElementById('upgrade-nudge-card')?.remove(), 8000);
+    // Schedule next nudge
+    if(nudgeCount<maxNudges) setTimeout(showNudge, 5*60*1000);
+  };
+  setTimeout(showNudge, 2*60*1000);
 }
 function doUpgrade(plan){
   const mid='17641839',mkey='ggvw6iyb2c213';
