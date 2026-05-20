@@ -8998,7 +8998,12 @@ async function confirmSalaryReceived(received){
   const cycleKey=`rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
   if(received){
     localStorage.setItem(cycleKey,'confirmed:'+new Date().toISOString());
-    try{await sbPatch(`beta_testers?id=eq.${user.id}`,{salary_last_confirmed:new Date().toISOString()});}catch{}
+    try{
+      await sbPatch(`beta_testers?id=eq.${user.id}`,{
+        salary_last_confirmed:new Date().toISOString(),
+        salary_confirmed_key:cycleKey
+      });
+    }catch{}
     showToast('✅ Salary confirmed');
     checkBreakdownUnlock();
     setTimeout(maybeShowPaydayCheckin,1000);
@@ -9615,10 +9620,14 @@ function initStoryConsent(){
 async function loadMonthlyNeedsFromSupabase(){
   if(!user?.id) return;
   try{
-    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs,debit_orders,income_amount,pay_day`);
+    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs,debit_orders,income_amount,pay_day,salary_last_confirmed,salary_confirmed_key`);
     const row=rows?.[0];
 
-    // ── Restore debit orders from Supabase if localStorage is empty ──
+    // ── Restore salary confirmation from Supabase if localStorage missing ──
+    const salaryKey=row?.salary_confirmed_key;
+    if(salaryKey && !localStorage.getItem(salaryKey)){
+      localStorage.setItem(salaryKey,'confirmed:'+row.salary_last_confirmed);
+    }
     const localDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
     if(localDOs.length===0 && row?.debit_orders?.length>0){
       localStorage.setItem('rw_debit_orders',JSON.stringify(row.debit_orders));
