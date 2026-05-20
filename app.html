@@ -3736,6 +3736,7 @@ function addDebitOrder(){
   if(!name||!amount){showToast('Enter name and amount');return;}
   debitOrders.push({name,amount});
   localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
+  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:debitOrders}).catch(()=>{});
   document.getElementById('do-name').value='';
   document.getElementById('do-amount').value='';
   renderDebitOrdersList();
@@ -3745,6 +3746,7 @@ function addDebitOrder(){
 function removeDebitOrder(i){
   debitOrders.splice(i,1);
   localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
+  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:debitOrders}).catch(()=>{});
   renderDebitOrdersList();
   renderDash();
   showToast('Removed');
@@ -7612,7 +7614,7 @@ function showUpgradeWall(hardBlock){
 }
 function continueFreePlan(){
   // Set tier to free in Supabase and locally
-  if(user?.id) sbP('beta_testers',{tier:'free'},'id=eq.'+user.id).catch(()=>{});
+  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{tier:'free'}).catch(()=>{});
   if(user) user.tier='free';
   localStorage.setItem('rw_tier','free');
   document.getElementById('upgrade-wall').style.display='none';
@@ -9613,8 +9615,21 @@ function initStoryConsent(){
 async function loadMonthlyNeedsFromSupabase(){
   if(!user?.id) return;
   try{
-    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs`);
-    const dbNeeds=rows?.[0]?.monthly_needs;
+    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs,debit_orders,income_amount,pay_day`);
+    const row=rows?.[0];
+
+    // ── Restore debit orders from Supabase if localStorage is empty ──
+    const localDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
+    if(localDOs.length===0 && row?.debit_orders?.length>0){
+      localStorage.setItem('rw_debit_orders',JSON.stringify(row.debit_orders));
+      debitOrders=row.debit_orders;
+    } else if(localDOs.length>0 && (!row?.debit_orders||row.debit_orders.length===0)){
+      // Push local to Supabase if Supabase is empty
+      sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:localDOs}).catch(()=>{});
+    }
+
+    // ── Restore monthly needs ──
+    const dbNeeds=row?.monthly_needs;
     if(dbNeeds&&typeof dbNeeds==='object'){
       if(dbNeeds.preset&&Object.keys(dbNeeds.preset).length>0){
         localStorage.setItem('rw_monthly_needs',JSON.stringify(dbNeeds.preset));
@@ -9627,12 +9642,10 @@ async function loadMonthlyNeedsFromSupabase(){
       const localNeeds=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
       const localCustom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
       if(Object.keys(localNeeds).length>0){
-        await sbPatch(`beta_testers?id=eq.${user.id}`,{
-          monthly_needs:{preset:localNeeds,custom:localCustom}
-        }).catch(()=>{});
+        await sbPatch(`beta_testers?id=eq.${user.id}`,{monthly_needs:{preset:localNeeds,custom:localCustom}}).catch(()=>{});
       }
     }
-  }catch(e){console.warn('Could not load monthly needs from Supabase:',e);}
+  }catch(e){console.warn('Could not load data from Supabase:',e);}
 }
 
 // ── Push Notifications (Web Push / VAPID) ─────────────────────
@@ -9785,6 +9798,7 @@ function addDebtAsDebitOrder(id, name, amount){
   if(dos.find(d=>d.name===name)){showToast('Already added as debit order');return;}
   dos.push({name, amount:Number(amount), addedFromDebt:true});
   localStorage.setItem('rw_debit_orders',JSON.stringify(dos));
+  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:dos}).catch(()=>{});
   debitOrders=dos;
   showToast('✅ '+name+' added as debit order');
   loadDebtsPWA();
