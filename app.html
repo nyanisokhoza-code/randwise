@@ -6705,7 +6705,7 @@ window.addEventListener('load',async()=>{
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
-<div id="upgrade-wall" style="display:none;position:fixed;inset:0;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 24px;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+<div id="upgrade-wall" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 24px 48px;text-align:center;overflow-y:scroll;-webkit-overflow-scrolling:touch;box-sizing:border-box;">
   <div style="font-size:56px;margin-bottom:12px" id="uw-icon">⏰</div>
   <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px" id="uw-title">Your free trial has ended</div>
   <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:28px;max-width:300px" id="uw-sub">You've experienced what MyRandWise can do. Don't lose your data — upgrade to keep going.</div>
@@ -6728,7 +6728,7 @@ window.addEventListener('load',async()=>{
     </div>
   </div>
   <button id="uw-continue" onclick="document.getElementById('upgrade-wall').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:none">Continue with limited access</button>
-  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px">
+  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px;padding-bottom:32px">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
       <span style="font-size:11px;color:rgba(255,255,255,.3)">or</span>
@@ -7417,6 +7417,9 @@ window.addEventListener('load', ()=>{
   setInterval(async()=>{
     if(document.hidden) return;
 
+    // Skip if maintenance suppressed (e.g. right after choosing free plan)
+    if(window._suppressMaintenanceUntil && Date.now() < window._suppressMaintenanceUntil) return;
+
     // Don't redirect during PIN setup, lock screen, or any open sheet
     const anySheetOpen = document.querySelector('.sheet.open');
     const lockVisible = document.getElementById('app-lock-screen')?.style?.display === 'flex';
@@ -7518,7 +7521,8 @@ function applyTierTheme(){
   }
 
   // Pro-gated features (soft lock — user sees blurred card, taps to upgrade)
-  const proFeatures=['daily-dots-row','stat-debt-card','stat-goal-card','snowball-card','debt-score-card','debt-total-bar'];
+  // NOTE: stat-debt-card and stat-goal-card are FREE per landing page pricing
+  const proFeatures=['daily-dots-row','snowball-card','debt-score-card','debt-total-bar'];
   proFeatures.forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
@@ -7601,7 +7605,9 @@ function continueFreePlan(){
   if(user) user.tier='free';
   localStorage.setItem('rw_tier','free');
   document.getElementById('upgrade-wall').style.display='none';
-  applyTierTheme('free');
+  // Suppress connectivity/maintenance check for 60s to avoid false maintenance screen
+  window._suppressMaintenanceUntil = Date.now() + 60000;
+  applyTierTheme();
   showToast('You\'re on the free plan. Upgrade anytime from your profile.');
   // Schedule upgrade nudge cards — shown periodically while on free plan
   scheduleUpgradeNudges();
