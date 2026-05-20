@@ -1,4 +1,4 @@
-const CACHE='rw-v148';
+const CACHE='rw-v149';
 const STATIC=[
   './app.html',
   './manifest.json',
@@ -24,12 +24,6 @@ self.addEventListener('fetch',e=>{
   // Root / and index.html → serve landing page (index.html) fresh always
   if(url.pathname==='/'||url.pathname==='/index.html'){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./index.html')));
-    return;
-  }
-
-  // admin_dashboard.html → always fresh — never serve cached version
-  if(url.pathname==='/admin_dashboard.html'||url.pathname.endsWith('/admin_dashboard.html')){
-    e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./admin_dashboard.html')));
     return;
   }
 
