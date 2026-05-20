@@ -147,7 +147,7 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .topbar {
@@ -200,6 +200,7 @@
     flex: 1;
     overflow-y: auto;
     height: calc(100vh - 60px);
+    max-height: calc(100vh - 60px);
   }
 
   /* ── Tab pages ─────────────────────────── */
