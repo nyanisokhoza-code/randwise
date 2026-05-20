@@ -6728,14 +6728,25 @@ window.addEventListener('load',async()=>{
     </div>
   </div>
   <button id="uw-continue" onclick="document.getElementById('upgrade-wall').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:none">Continue with limited access</button>
-  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px;padding-bottom:32px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px;padding-bottom:40px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
-      <span style="font-size:11px;color:rgba(255,255,255,.3)">or</span>
+      <span style="font-size:11px;color:rgba(255,255,255,.3)">or continue with</span>
       <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
     </div>
-    <button onclick="continueFreePlan()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:14px;font-size:14px;font-weight:600;color:rgba(255,255,255,.55);cursor:pointer">Continue with free plan</button>
-    <div style="font-size:11px;color:rgba(255,255,255,.22);margin-top:8px;line-height:1.5">Basic budget tracking only. Your data is always safe.</div>
+    <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:20px;text-align:left">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">FREE</div>
+      <div style="font-size:28px;font-weight:800;color:#fff;margin-bottom:2px">R0</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px">Always free · Basic access</div>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Expense tracking</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Basic budget management</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Debt tracker</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> 1 savings goal</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> 14-day Pro trial included</div>
+      </div>
+      <button onclick="continueFreePlan()" style="width:100%;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);cursor:pointer">Continue with free plan →</button>
+    </div>
   </div>
 </div>
 <!-- ══ EDIT EXPENSE SHEET ═════════════════════════════════════ -->
