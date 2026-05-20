@@ -27,7 +27,7 @@ self.addEventListener('fetch',e=>{
     return;
   }
 
-  // admin_dashboard.html → always fetch fresh (never serve cached version)
+  // admin_dashboard.html → always fresh — never serve cached version
   if(url.pathname==='/admin_dashboard.html'||url.pathname.endsWith('/admin_dashboard.html')){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match('./admin_dashboard.html')));
     return;

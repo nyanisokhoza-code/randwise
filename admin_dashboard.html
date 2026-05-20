@@ -1340,115 +1340,204 @@
 
     <!-- ── ACCOUNT MANAGER ──────────────────── -->
     <div id="tab-accounts" class="tab-page">
-      <div style="margin-bottom:16px;font-size:13px;color:var(--mid)">
-        Manually activate trial extensions or grant subscription access to specific users. All changes write directly to Supabase.
+      <div style="margin-bottom:20px;font-size:13px;color:var(--mid)">
+        Grant, extend, cancel, or add user accounts. All actions write directly to Supabase in real time and are logged permanently.
       </div>
 
-      <!-- Grant access card -->
+      <!-- ── GRANT / EXTEND / CANCEL ── -->
       <div class="card">
-        <div class="card-title">🎁 Grant or Extend User Access</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card-title">🎁 Grant, Extend or Cancel Access</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px">
           <div>
-            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">User Email or Name</label>
-            <input id="acc-search-input" type="text" placeholder="Search user..." oninput="searchAccUsers()"
-              style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
-            <div id="acc-user-results" style="margin-top:6px;max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;display:none;background:var(--white)"></div>
-            <div id="acc-selected-user" style="margin-top:8px;display:none;padding:10px 12px;background:var(--green-l);border:1px solid var(--green);border-radius:8px">
-              <div style="font-size:12px;font-weight:700;color:var(--green)" id="acc-sel-name">—</div>
-              <div style="font-size:11px;color:var(--mid)" id="acc-sel-email">—</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px" id="acc-sel-tier">—</div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Search User</label>
+            <input id="acc-search" type="text" placeholder="Name or email..." oninput="accSearch()"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
+            <div id="acc-results" style="position:relative;z-index:50"></div>
+            <div id="acc-selected" style="display:none;margin-top:8px;padding:12px 14px;background:var(--green-l);border:1.5px solid var(--green);border-radius:10px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--green)" id="acc-sel-name"></div>
+                  <div style="font-size:11px;color:var(--mid);margin-top:2px" id="acc-sel-email"></div>
+                  <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+                    <span id="acc-sel-badge"></span>
+                    <span style="font-size:11px;color:var(--muted)" id="acc-sel-expiry"></span>
+                  </div>
+                </div>
+                <button onclick="accClear()" style="border:none;background:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1">×</button>
+              </div>
             </div>
           </div>
           <div>
-            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access Type</label>
-            <select id="acc-tier-select" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
-              <option value="trial_7">🕐 Trial — 7 days (Free tier, extended trial)</option>
-              <option value="trial_14">🕐 Trial — 14 days (reset to fresh 14-day trial)</option>
-              <option value="pro_3">⭐ Pro — 3 months</option>
-              <option value="pro_6">⭐ Pro — 6 months</option>
-              <option value="pro_9">⭐ Pro — 9 months</option>
-              <option value="pro_12">⭐ Pro — 12 months</option>
-              <option value="premium_3">👑 Premium — 3 months</option>
-              <option value="premium_6">👑 Premium — 6 months</option>
-              <option value="premium_9">👑 Premium — 9 months</option>
-              <option value="premium_12">👑 Premium — 12 months</option>
-              <option value="free">🔓 Downgrade to Free</option>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Action</label>
+            <select id="acc-action" onchange="accActionChanged()"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);margin-bottom:10px">
+              <optgroup label="── Trial">
+                <option value="trial_7">🕐 Activate 7-day trial</option>
+                <option value="trial_14">🕐 Activate / Reset 14-day trial</option>
+              </optgroup>
+              <optgroup label="── Pro Subscription">
+                <option value="pro_3">⭐ Grant Pro — 3 months</option>
+                <option value="pro_6">⭐ Grant Pro — 6 months</option>
+                <option value="pro_9">⭐ Grant Pro — 9 months</option>
+                <option value="pro_12">⭐ Grant Pro — 12 months</option>
+              </optgroup>
+              <optgroup label="── Premium Subscription">
+                <option value="premium_3">👑 Grant Premium — 3 months</option>
+                <option value="premium_6">👑 Grant Premium — 6 months</option>
+                <option value="premium_9">👑 Grant Premium — 9 months</option>
+                <option value="premium_12">👑 Grant Premium — 12 months</option>
+              </optgroup>
+              <optgroup label="── Cancel / Downgrade">
+                <option value="cancel">❌ Cancel subscription → Free</option>
+                <option value="cancel_immediate">🚫 Cancel immediately (no access)</option>
+              </optgroup>
             </select>
-            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-top:12px;margin-bottom:6px">Note (optional)</label>
-            <input id="acc-note" type="text" placeholder="e.g. NYDA grant beneficiary, campus ambassador..."
-              style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
+            <div id="acc-action-info" style="font-size:11px;color:var(--muted);margin-bottom:10px;min-height:16px"></div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Admin Note (logged permanently)</label>
+            <input id="acc-note" type="text" placeholder="e.g. NYDA grant, campus ambassador, support case..."
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <button onclick="grantAccess()"
-            style="padding:10px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
-            ✅ Apply Access
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button onclick="accApply()"
+            style="padding:11px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            ✅ Apply Now
           </button>
-          <button onclick="clearAccForm()"
-            style="padding:10px 16px;background:var(--bg2);color:var(--mid);border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
+          <button onclick="accClear()"
+            style="padding:11px 16px;background:var(--bg2);color:var(--mid);border:1px solid var(--border);border-radius:9px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">
             Clear
           </button>
-          <span id="acc-status" style="font-size:12px;color:var(--muted)"></span>
+          <div id="acc-status" style="font-size:12px;min-height:18px"></div>
         </div>
       </div>
 
-      <!-- Bulk grant card -->
+      <!-- ── ADD NEW USER ── -->
       <div class="card">
-        <div class="card-title">📋 Bulk Grant List <span>Paste emails, one per line — all get same access</span></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px">
+        <div class="card-title">➕ Add New User Manually</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
           <div>
-            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Email List (one per line)</label>
-            <textarea id="acc-bulk-emails" rows="6" placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com"
-              style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Mono',monospace;resize:vertical;outline:none"></textarea>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Full Name *</label>
+            <input id="new-name" type="text" placeholder="e.g. Thabo Mokoena"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
           </div>
           <div>
-            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access Type for all</label>
-            <select id="acc-bulk-tier" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
-              <option value="trial_7">🕐 Trial — 7 days</option>
-              <option value="trial_14">🕐 Trial — 14 days</option>
-              <option value="pro_3">⭐ Pro — 3 months</option>
-              <option value="pro_6">⭐ Pro — 6 months</option>
-              <option value="pro_12">⭐ Pro — 12 months</option>
-              <option value="premium_3">👑 Premium — 3 months</option>
-              <option value="premium_6">👑 Premium — 6 months</option>
-              <option value="premium_12">👑 Premium — 12 months</option>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Email *</label>
+            <input id="new-email" type="email" placeholder="e.g. thabo@email.com"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Phone (optional)</label>
+            <input id="new-phone" type="text" placeholder="e.g. 0821234567"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Starting Tier</label>
+            <select id="new-tier" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
             </select>
-            <div style="margin-top:12px;padding:10px 12px;background:var(--amber-l);border-radius:8px;font-size:11px;color:var(--amber)">
-              ⚠️ Only updates users who already have an account. Users not found are skipped.
-            </div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Access Duration</label>
+            <select id="new-duration" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
+              <option value="0">Indefinite (no expiry)</option>
+              <option value="7">7 days</option>
+              <option value="14">14 days</option>
+              <option value="30">1 month</option>
+              <option value="90">3 months</option>
+              <option value="180">6 months</option>
+              <option value="365">12 months</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Note</label>
+            <input id="new-note" type="text" placeholder="e.g. NYDA cohort 1, campus rep..."
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none">
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <button onclick="grantBulkAccess()"
-            style="padding:10px 22px;background:var(--amber);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
-            📋 Apply to All
+          <button onclick="addNewUser()"
+            style="padding:11px 24px;background:var(--purple);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            ➕ Add User
           </button>
-          <span id="acc-bulk-status" style="font-size:12px;color:var(--muted)"></span>
+          <div id="new-user-status" style="font-size:12px;min-height:18px"></div>
         </div>
-        <div id="acc-bulk-results" style="margin-top:12px"></div>
       </div>
 
-      <!-- Access log -->
+      <!-- ── BULK GRANT ── -->
       <div class="card">
-        <div class="card-title">📜 Access Grant Log <span id="acc-log-count"></span>
-          <button onclick="loadAccountManager()" style="padding:4px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Refresh</button>
+        <div class="card-title">📋 Bulk Grant <span>Paste emails one per line — all get the same access</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:14px">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Email List</label>
+            <textarea id="bulk-emails" rows="6" placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com"
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Mono',monospace;resize:vertical;outline:none"></textarea>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Access Type</label>
+            <select id="bulk-action" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white);margin-bottom:10px">
+              <option value="trial_7">🕐 Trial 7 days</option>
+              <option value="trial_14">🕐 Trial 14 days</option>
+              <option value="pro_3">⭐ Pro 3 months</option>
+              <option value="pro_6">⭐ Pro 6 months</option>
+              <option value="pro_12">⭐ Pro 12 months</option>
+              <option value="premium_3">👑 Premium 3 months</option>
+              <option value="premium_6">👑 Premium 6 months</option>
+              <option value="premium_12">👑 Premium 12 months</option>
+              <option value="cancel">❌ Cancel → Free</option>
+            </select>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Bulk Note</label>
+            <input id="bulk-note" type="text" placeholder="e.g. NYDA batch Jan 2027..."
+              style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:10px">
+            <div style="padding:10px 12px;background:var(--amber-l);border-radius:8px;font-size:11px;color:var(--amber)">
+              ⚠️ Only updates users who already have an account. Emails not found are listed separately.
+            </div>
+          </div>
         </div>
-        <div id="acc-log-list">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button onclick="bulkGrant()"
+            style="padding:11px 24px;background:var(--amber);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            📋 Apply to All
+          </button>
+          <div id="bulk-status" style="font-size:12px;min-height:18px"></div>
+        </div>
+        <div id="bulk-results" style="margin-top:10px"></div>
+      </div>
+
+      <!-- ── ACCESS LOG ── -->
+      <div class="card">
+        <div class="card-title">📜 Access Log — Live from Supabase
+          <button onclick="loadAccLog()"
+            style="padding:5px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Refresh</button>
+        </div>
+        <div id="acc-log">
           <div class="loading"><div class="spinner"></div> Loading...</div>
         </div>
       </div>
 
-      <!-- All users with current access status -->
+      <!-- ── ALL USERS TABLE ── -->
       <div class="card">
-        <div class="card-title">👥 All Users — Access Status
-          <input id="acc-filter-input" type="text" placeholder="🔍 Filter..." oninput="filterAccTable()"
-            style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:180px">
+        <div class="card-title">👥 All Users — Live Access Status
+          <div style="display:flex;gap:8px">
+            <input id="acc-table-filter" type="text" placeholder="🔍 Filter..." oninput="filterAccTable()"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:160px">
+            <select id="acc-table-tier" onchange="filterAccTable()"
+              style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;background:var(--white)">
+              <option value="all">All tiers</option>
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
         </div>
         <table class="data-table">
           <thead><tr>
-            <th>Name</th><th>Email</th><th>Tier</th><th>Access Expires</th><th>Joined</th><th>Action</th>
+            <th>Name</th><th>Email</th><th>Tier</th><th>Access Expires</th><th>Joined</th><th>Last Seen</th><th>Actions</th>
           </tr></thead>
-          <tbody id="acc-users-table"></tbody>
+          <tbody id="acc-table-body">
+            <tr><td colspan="7" class="empty"><div class="spinner" style="display:inline-block"></div> Loading...</td></tr>
+          </tbody>
         </table>
       </div>
     </div>
@@ -2811,253 +2900,409 @@ async function importUsersAsSubscribers() {
   btn.textContent = '👥 Import all users';
 }
 
-// ── ACCOUNT MANAGER ───────────────────────────────────────────
-let accSelectedUser = null;
-let accAllUsers = [];
+// ══════════════════════════════════════════════════════════════
+// ACCOUNT MANAGER — Full Supabase-connected implementation
+// ══════════════════════════════════════════════════════════════
+let accUsers = [];       // all users cache
+let accSel   = null;     // currently selected user
 
-async function loadAccountManager() {
-  // Load all users for the table and search
-  try {
-    const users = await sbGet(_usersTable + '?select=id,name,email,tier,created_at,last_active,access_expires_at,referral_code&order=created_at.desc');
-    accAllUsers = users;
-    renderAccTable(users);
-    document.getElementById('acc-log-count').textContent = '(' + users.length + ' users)';
-  } catch(e) {
-    const el = document.getElementById('acc-users-table');
-    if (el) el.innerHTML = '<tr><td colspan="6" class="empty" style="color:var(--red)">Error loading users: ' + e.message + '</td></tr>';
-  }
-
-  // Load access log from app_config or a custom table
-  const logEl = document.getElementById('acc-log-list');
-  try {
-    const log = JSON.parse(localStorage.getItem('rw_access_log') || '[]');
-    if (!log.length) {
-      logEl.innerHTML = '<div class="empty" style="padding:12px">No access grants recorded yet in this browser session.</div>';
-    } else {
-      logEl.innerHTML = '<table class="data-table"><thead><tr><th>User</th><th>Access Granted</th><th>Note</th><th>By</th><th>Date</th></tr></thead><tbody>' +
-        log.slice().reverse().map(l => `<tr>
-          <td><b>${l.name}</b><div style="font-size:10px;color:var(--muted)">${l.email}</div></td>
-          <td>${l.access}</td>
-          <td style="color:var(--muted);font-size:11px">${l.note || '—'}</td>
-          <td style="font-size:11px">Admin</td>
-          <td style="font-size:11px;color:var(--muted)">${new Date(l.ts).toLocaleString('en-ZA')}</td>
-        </tr>`).join('') +
-        '</tbody></table>';
-    }
-  } catch(e) {
-    logEl.innerHTML = '<div class="empty">No log available.</div>';
-  }
+// ── Helpers ───────────────────────────────────────────────────
+function parseAction(val) {
+  if (val.startsWith('trial_'))   return { tier:'free',    days:parseInt(val.split('_')[1]), months:0,  cancel:false };
+  if (val.startsWith('pro_'))     return { tier:'pro',     days:0, months:parseInt(val.split('_')[1]),  cancel:false };
+  if (val.startsWith('premium_')) return { tier:'premium', days:0, months:parseInt(val.split('_')[1]),  cancel:false };
+  if (val === 'cancel')           return { tier:'free',    days:0, months:0, cancel:true,  immediate:false };
+  if (val === 'cancel_immediate') return { tier:'free',    days:0, months:0, cancel:true,  immediate:true  };
+  return { tier:'free', days:0, months:0, cancel:false };
 }
 
-function renderAccTable(users) {
+function calcExpiry(days, months) {
   const now = new Date();
-  const tbody = document.getElementById('acc-users-table');
-  if (!tbody) return;
-  tbody.innerHTML = users.map(u => {
-    const exp = u.access_expires_at ? new Date(u.access_expires_at) : null;
-    const expStr = exp ? (exp < now ? '<span style="color:var(--red);font-weight:700">Expired ' + ago(u.access_expires_at) + '</span>' : '<span style="color:var(--green)">' + exp.toLocaleDateString('en-ZA') + '</span>') : '<span style="color:var(--muted)">No expiry set</span>';
-    return `<tr>
-      <td><b>${u.name || '—'}</b></td>
-      <td style="font-size:11px;color:var(--muted)">${u.email || '—'}</td>
-      <td>${tierBadge(u.tier)}</td>
-      <td style="font-size:12px">${expStr}</td>
-      <td style="font-size:11px;color:var(--muted)">${ago(u.created_at)}</td>
-      <td>
-        <button onclick="quickGrant('${u.id}','${(u.name||'').replace(/'/g,"\\'")}','${u.email||''}','${u.tier||'free'}')"
-          style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
-          Grant
-        </button>
-      </td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="6" class="empty">No users found</td></tr>';
+  if (days  > 0) return new Date(now.getTime() + days * 86400000).toISOString();
+  if (months > 0) return new Date(now.getFullYear(), now.getMonth() + months, now.getDate()).toISOString();
+  return null;
 }
 
-function filterAccTable() {
-  const q = document.getElementById('acc-filter-input').value.toLowerCase();
-  const filtered = accAllUsers.filter(u =>
-    (u.name || '').toLowerCase().includes(q) ||
-    (u.email || '').toLowerCase().includes(q) ||
-    (u.tier || '').toLowerCase().includes(q)
-  );
-  renderAccTable(filtered);
+function accActionLabel(val) {
+  const map = {
+    trial_7:'7-day trial activated', trial_14:'14-day trial reset',
+    pro_3:'Pro 3 months', pro_6:'Pro 6 months', pro_9:'Pro 9 months', pro_12:'Pro 12 months',
+    premium_3:'Premium 3 months', premium_6:'Premium 6 months',
+    premium_9:'Premium 9 months', premium_12:'Premium 12 months',
+    cancel:'Cancelled → Free (keeps access until expiry)',
+    cancel_immediate:'Cancelled immediately — no access'
+  };
+  return map[val] || val;
 }
 
-function quickGrant(id, name, email, tier) {
-  accSelectedUser = { id, name, email, tier };
-  document.getElementById('acc-sel-name').textContent = name;
-  document.getElementById('acc-sel-email').textContent = email;
-  document.getElementById('acc-sel-tier').textContent = 'Current tier: ' + tier;
-  document.getElementById('acc-selected-user').style.display = 'block';
-  document.getElementById('acc-search-input').value = name;
-  document.getElementById('acc-user-results').style.display = 'none';
-  // Scroll to top of accounts tab
-  document.querySelector('#tab-accounts').scrollIntoView({ behavior: 'smooth' });
-}
+// ── Search ────────────────────────────────────────────────────
+async function accSearch() {
+  const q = document.getElementById('acc-search').value.toLowerCase().trim();
+  const box = document.getElementById('acc-results');
+  if (!q) { box.innerHTML = ''; return; }
 
-function searchAccUsers() {
-  const q = document.getElementById('acc-search-input').value.toLowerCase().trim();
-  if (!q) { document.getElementById('acc-user-results').style.display = 'none'; return; }
-  const results = accAllUsers.filter(u =>
-    (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
+  if (!accUsers.length) {
+    accUsers = await sbGet(`${_usersTable}?select=id,name,email,tier,access_expires_at,created_at,last_active,cancelled_at&order=created_at.desc&limit=500`).catch(()=>[]);
+  }
+
+  const hits = accUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)
   ).slice(0, 8);
-  const el = document.getElementById('acc-user-results');
-  if (!results.length) { el.style.display = 'none'; return; }
-  el.style.display = 'block';
-  el.innerHTML = results.map(u => `
-    <div onclick="selectAccUser('${u.id}','${(u.name||'').replace(/'/g,"\\'")}','${u.email||''}','${u.tier||'free'}')"
-      style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bg2);font-size:13px"
+
+  if (!hits.length) { box.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--muted);border:1px solid var(--border);border-radius:8px;margin-top:4px">No users found</div>'; return; }
+
+  box.innerHTML = `<div style="border:1.5px solid var(--border);border-radius:8px;overflow:hidden;margin-top:4px;background:var(--white)">` +
+    hits.map(u => `<div onclick="accSelect('${u.id}')"
+      style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"
       onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-      <b>${u.name || '—'}</b>
-      <span style="color:var(--muted);font-size:11px;margin-left:8px">${u.email || ''}</span>
+      <div>
+        <b style="font-size:13px">${u.name||'—'}</b>
+        <span style="font-size:11px;color:var(--muted);margin-left:8px">${u.email||''}</span>
+      </div>
       ${tierBadge(u.tier)}
-    </div>`).join('');
+    </div>`).join('') + '</div>';
 }
 
-function selectAccUser(id, name, email, tier) {
-  accSelectedUser = { id, name, email, tier };
-  document.getElementById('acc-sel-name').textContent = name;
-  document.getElementById('acc-sel-email').textContent = email;
-  document.getElementById('acc-sel-tier').textContent = 'Current tier: ' + tier;
-  document.getElementById('acc-selected-user').style.display = 'block';
-  document.getElementById('acc-search-input').value = name;
-  document.getElementById('acc-user-results').style.display = 'none';
-}
-
-function clearAccForm() {
-  accSelectedUser = null;
-  document.getElementById('acc-search-input').value = '';
-  document.getElementById('acc-selected-user').style.display = 'none';
-  document.getElementById('acc-user-results').style.display = 'none';
-  document.getElementById('acc-note').value = '';
-  document.getElementById('acc-status').textContent = '';
-}
-
-function parseAccessType(val) {
-  // returns { tier, months } or { trial, days }
-  if (val.startsWith('trial_')) return { trial: true, days: parseInt(val.split('_')[1]), tier: 'free' };
-  if (val === 'free') return { tier: 'free', months: 0 };
-  const [tier, months] = val.split('_');
-  return { tier, months: parseInt(months) };
-}
-
-async function grantAccess() {
-  const statusEl = document.getElementById('acc-status');
-  if (!accSelectedUser) { statusEl.textContent = '⚠️ Select a user first'; statusEl.style.color = 'var(--amber)'; return; }
-
-  const val = document.getElementById('acc-tier-select').value;
-  const note = document.getElementById('acc-note').value.trim();
-  const { tier, months, trial, days } = parseAccessType(val);
+function accSelect(id) {
+  accSel = accUsers.find(u => u.id === id);
+  if (!accSel) return;
+  document.getElementById('acc-search').value = accSel.name || accSel.email;
+  document.getElementById('acc-results').innerHTML = '';
+  document.getElementById('acc-sel-name').textContent = accSel.name || '—';
+  document.getElementById('acc-sel-email').textContent = accSel.email || '—';
+  document.getElementById('acc-sel-badge').innerHTML = tierBadge(accSel.tier);
 
   const now = new Date();
-  let expires = null;
-  let newTier = tier;
+  const exp = accSel.access_expires_at ? new Date(accSel.access_expires_at) : null;
+  let expText = 'No expiry set';
+  if (exp) expText = exp < now ? '⚠️ Expired ' + ago(accSel.access_expires_at) : '✅ Expires ' + exp.toLocaleDateString('en-ZA');
+  if (accSel.cancelled_at) expText = '❌ Cancelled ' + ago(accSel.cancelled_at);
+  document.getElementById('acc-sel-expiry').textContent = expText;
+  document.getElementById('acc-selected').style.display = 'block';
+}
 
-  if (trial) {
-    expires = new Date(now.getTime() + days * 86400000).toISOString();
-    newTier = 'free';
-  } else if (months > 0) {
-    expires = new Date(now.getFullYear(), now.getMonth() + months, now.getDate()).toISOString();
-    newTier = tier;
-  }
+function accClear() {
+  accSel = null;
+  document.getElementById('acc-search').value = '';
+  document.getElementById('acc-results').innerHTML = '';
+  document.getElementById('acc-selected').style.display = 'none';
+  document.getElementById('acc-status').textContent = '';
+  document.getElementById('acc-status').style.color = '';
+}
 
-  statusEl.textContent = '⏳ Applying...'; statusEl.style.color = 'var(--muted)';
+function accActionChanged() {
+  const val = document.getElementById('acc-action').value;
+  const infoEl = document.getElementById('acc-action-info');
+  const infoMap = {
+    trial_7:'Sets tier to free, access_expires_at = today + 7 days',
+    trial_14:'Resets trial — tier free, access_expires_at = today + 14 days',
+    pro_3:'Sets tier to pro, access_expires_at = today + 3 months',
+    pro_6:'Sets tier to pro, access_expires_at = today + 6 months',
+    pro_9:'Sets tier to pro, access_expires_at = today + 9 months',
+    pro_12:'Sets tier to pro, access_expires_at = today + 12 months',
+    premium_3:'Sets tier to premium, access_expires_at = today + 3 months',
+    premium_6:'Sets tier to premium, access_expires_at = today + 6 months',
+    premium_9:'Sets tier to premium, access_expires_at = today + 9 months',
+    premium_12:'Sets tier to premium, access_expires_at = today + 12 months',
+    cancel:'Sets tier to free, records cancelled_at. User keeps access until expiry.',
+    cancel_immediate:'Sets tier to free, clears access_expires_at immediately. No more access.',
+  };
+  infoEl.textContent = infoMap[val] || '';
+}
+
+// ── Apply single user ─────────────────────────────────────────
+async function accApply() {
+  const statusEl = document.getElementById('acc-status');
+  if (!accSel) { statusEl.textContent = '⚠️ Select a user first'; statusEl.style.color='var(--amber)'; return; }
+
+  const val = document.getElementById('acc-action').value;
+  const note = document.getElementById('acc-note').value.trim();
+  const { tier, days, months, cancel, immediate } = parseAction(val);
+
+  const expires = immediate ? null : calcExpiry(days, months);
+  const now = new Date().toISOString();
+
+  statusEl.textContent = '⏳ Saving to Supabase...';
+  statusEl.style.color = 'var(--muted)';
+
+  const patch = {
+    tier,
+    access_note: note || null,
+    admin_tier_override: true,
+  };
+  if (expires !== undefined) patch.access_expires_at = expires;
+  if (cancel) patch.cancelled_at = now;
+  if (!cancel) patch.cancelled_at = null; // clear any previous cancellation
 
   try {
-    const patch = { tier: newTier };
-    if (expires) patch.access_expires_at = expires;
+    await sbPatch(`${_usersTable}?id=eq.${accSel.id}`, patch);
 
-    await sbPatch(`${_usersTable}?id=eq.${accSelectedUser.id}`, patch);
-
-    // Log to localStorage
-    const log = JSON.parse(localStorage.getItem('rw_access_log') || '[]');
-    log.push({
-      id: accSelectedUser.id, name: accSelectedUser.name, email: accSelectedUser.email,
-      access: val, note, ts: new Date().toISOString()
+    // Log to admin_access_log
+    await sbPost('admin_access_log', {
+      user_id: accSel.id,
+      user_email: accSel.email,
+      user_name: accSel.name,
+      action: cancel ? (immediate ? 'cancel_immediate' : 'cancel') : (days > 0 ? 'grant_trial' : `grant_${tier}`),
+      access_type: val,
+      tier_before: accSel.tier,
+      tier_after: tier,
+      expires_at: expires,
+      note: accActionLabel(val),
+      admin_note: note || null,
     });
-    if (log.length > 200) log.splice(0, log.length - 200);
-    localStorage.setItem('rw_access_log', JSON.stringify(log));
 
-    statusEl.textContent = '✅ Access granted to ' + accSelectedUser.name + (expires ? ' — expires ' + new Date(expires).toLocaleDateString('en-ZA') : '');
+    statusEl.textContent = `✅ Done — ${accSel.name}: ${accActionLabel(val)}` + (expires ? ` · expires ${new Date(expires).toLocaleDateString('en-ZA')}` : '');
     statusEl.style.color = 'var(--green)';
 
-    // Refresh the table
-    setTimeout(() => loadAccountManager(), 800);
-    clearAccForm();
+    // Update local cache
+    const idx = accUsers.findIndex(u => u.id === accSel.id);
+    if (idx >= 0) { accUsers[idx].tier = tier; accUsers[idx].access_expires_at = expires; }
+    accSel.tier = tier; accSel.access_expires_at = expires;
+    accSelect(accSel.id); // re-render selected card
+
+    setTimeout(() => { loadAccLog(); loadAccTable(); }, 600);
   } catch(e) {
     statusEl.textContent = '❌ Failed: ' + e.message;
     statusEl.style.color = 'var(--red)';
   }
 }
 
-async function grantBulkAccess() {
-  const statusEl = document.getElementById('acc-bulk-status');
-  const resultsEl = document.getElementById('acc-bulk-results');
-  const rawEmails = document.getElementById('acc-bulk-emails').value;
-  const val = document.getElementById('acc-bulk-tier').value;
+// ── Add new user ──────────────────────────────────────────────
+async function addNewUser() {
+  const statusEl = document.getElementById('new-user-status');
+  const name  = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim().toLowerCase();
+  const phone = document.getElementById('new-phone').value.trim();
+  const tier  = document.getElementById('new-tier').value;
+  const days  = parseInt(document.getElementById('new-duration').value);
+  const note  = document.getElementById('new-note').value.trim();
 
+  if (!name)  { statusEl.textContent = '⚠️ Name required'; statusEl.style.color='var(--amber)'; return; }
+  if (!email || !email.includes('@')) { statusEl.textContent = '⚠️ Valid email required'; statusEl.style.color='var(--amber)'; return; }
+
+  // Check for duplicate
+  const exists = accUsers.find(u => (u.email||'').toLowerCase() === email);
+  if (exists) { statusEl.textContent = '⚠️ User with this email already exists'; statusEl.style.color='var(--amber)'; return; }
+
+  const expires = days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : null;
+  const refCode = 'RW' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+  statusEl.textContent = '⏳ Creating user...'; statusEl.style.color='var(--muted)';
+
+  try {
+    const newUser = {
+      name, email, tier,
+      referral_code: refCode,
+      access_expires_at: expires,
+      access_note: note || null,
+      admin_tier_override: true,
+    };
+    if (phone) newUser.phone = phone;
+
+    await sbPost(_usersTable, newUser);
+
+    // Log
+    await sbPost('admin_access_log', {
+      user_email: email, user_name: name,
+      action: 'add_user',
+      access_type: tier + (days > 0 ? '_' + days + 'd' : '_unlimited'),
+      tier_before: null, tier_after: tier,
+      expires_at: expires,
+      note: 'Manually added by admin',
+      admin_note: note || null,
+    });
+
+    statusEl.textContent = `✅ User created — ${name} (${email}) · ${tier}` + (expires ? ` · expires ${new Date(expires).toLocaleDateString('en-ZA')}` : ' · no expiry');
+    statusEl.style.color = 'var(--green)';
+
+    // Clear form
+    ['new-name','new-email','new-phone','new-note'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('new-tier').value = 'free';
+    document.getElementById('new-duration').value = '0';
+
+    // Refresh cache and table
+    accUsers = [];
+    setTimeout(() => { loadAccTable(); loadAccLog(); }, 600);
+  } catch(e) {
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+// ── Bulk grant ────────────────────────────────────────────────
+async function bulkGrant() {
+  const statusEl = document.getElementById('bulk-status');
+  const resultsEl = document.getElementById('bulk-results');
+  const val  = document.getElementById('bulk-action').value;
+  const note = document.getElementById('bulk-note').value.trim();
+  const rawEmails = document.getElementById('bulk-emails').value;
   const emails = rawEmails.split('\n').map(e => e.trim().toLowerCase()).filter(e => e.includes('@'));
-  if (!emails.length) { statusEl.textContent = '⚠️ No valid emails found'; statusEl.style.color = 'var(--amber)'; return; }
 
-  const { tier, months, trial, days } = parseAccessType(val);
-  const now = new Date();
-  let expires = null;
-  let newTier = tier;
-  if (trial) { expires = new Date(now.getTime() + days * 86400000).toISOString(); newTier = 'free'; }
-  else if (months > 0) { expires = new Date(now.getFullYear(), now.getMonth() + months, now.getDate()).toISOString(); newTier = tier; }
+  if (!emails.length) { statusEl.textContent = '⚠️ No valid emails'; statusEl.style.color='var(--amber)'; return; }
 
-  statusEl.textContent = '⏳ Processing ' + emails.length + ' emails...'; statusEl.style.color = 'var(--muted)';
-
-  let done = 0, notFound = 0, failed = 0;
-  const notFoundList = [];
-
-  for (const email of emails) {
-    const user = accAllUsers.find(u => (u.email || '').toLowerCase() === email);
-    if (!user) { notFound++; notFoundList.push(email); continue; }
-    try {
-      const patch = { tier: newTier };
-      if (expires) patch.access_expires_at = expires;
-      await sbPatch(`${_usersTable}?id=eq.${user.id}`, patch);
-      done++;
-    } catch(e) { failed++; }
+  if (!accUsers.length) {
+    accUsers = await sbGet(`${_usersTable}?select=id,name,email,tier,access_expires_at&order=created_at.desc&limit=500`).catch(()=>[]);
   }
 
-  statusEl.textContent = `✅ ${done} updated · ${notFound} not found · ${failed} failed`;
+  const { tier, days, months, cancel, immediate } = parseAction(val);
+  const expires = immediate ? null : calcExpiry(days, months);
+
+  statusEl.textContent = `⏳ Processing ${emails.length} emails...`; statusEl.style.color='var(--muted)';
+
+  let done=0, notFound=[], failed=[];
+  for (const email of emails) {
+    const user = accUsers.find(u => (u.email||'').toLowerCase() === email);
+    if (!user) { notFound.push(email); continue; }
+    try {
+      const patch = { tier, admin_tier_override: true };
+      if (expires !== undefined) patch.access_expires_at = expires;
+      if (cancel) patch.cancelled_at = new Date().toISOString();
+      await sbPatch(`${_usersTable}?id=eq.${user.id}`, patch);
+      await sbPost('admin_access_log', {
+        user_id: user.id, user_email: user.email, user_name: user.name,
+        action: 'bulk_grant', access_type: val, tier_before: user.tier, tier_after: tier,
+        expires_at: expires, note: 'Bulk: ' + accActionLabel(val), admin_note: note||null,
+      });
+      done++;
+    } catch(e) { failed.push(email); }
+  }
+
+  statusEl.textContent = `✅ ${done} updated · ${notFound.length} not found · ${failed.length} failed`;
   statusEl.style.color = done > 0 ? 'var(--green)' : 'var(--amber)';
 
-  if (notFoundList.length) {
-    resultsEl.innerHTML = `<div style="margin-top:8px;padding:10px 12px;background:var(--amber-l);border-radius:8px;font-size:11px;color:var(--amber)">
-      <b>Not found (${notFoundList.length}):</b> ${notFoundList.join(', ')}
-    </div>`;
-  } else {
-    resultsEl.innerHTML = '';
-  }
+  let html = '';
+  if (notFound.length) html += `<div style="margin-top:8px;padding:10px 12px;background:var(--amber-l);border-radius:8px;font-size:11px;color:var(--amber)"><b>Not found (${notFound.length}):</b> ${notFound.join(', ')}</div>`;
+  if (failed.length)   html += `<div style="margin-top:6px;padding:10px 12px;background:#ffeaea;border-radius:8px;font-size:11px;color:var(--red)"><b>Failed (${failed.length}):</b> ${failed.join(', ')}</div>`;
+  if (done > 0)        html += `<div style="margin-top:6px;padding:10px 12px;background:var(--green-l);border-radius:8px;font-size:11px;color:var(--green)">✅ ${done} accounts updated — ${accActionLabel(val)}</div>`;
+  resultsEl.innerHTML = html;
 
-  setTimeout(() => loadAccountManager(), 1000);
+  accUsers = [];
+  setTimeout(() => { loadAccTable(); loadAccLog(); }, 600);
 }
 
-// ── FIX: Force no-cache on admin_dashboard.html itself ────────
-// The cache issue is in sw.js — admin_dashboard.html was being
-// cached. The sw.js fix below ensures admin always fetches fresh.
-// The real fix is in sw.js: bump CACHE version AND add admin to no-store list.
-
-// ── FIX: Newsletter — ensure table exists and reload properly ──
-async function fixNewsletter() {
-  // Re-check newsletter_subscribers RLS
+// ── Access Log ────────────────────────────────────────────────
+async function loadAccLog() {
+  const el = document.getElementById('acc-log');
+  if (!el) return;
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> Loading...</div>';
   try {
-    const test = await sbGet('newsletter_subscribers?select=email&limit=1');
-    return true;
+    const log = await sbGet('admin_access_log?select=*&order=created_at.desc&limit=100');
+    if (!log.length) { el.innerHTML = '<div class="empty">No access grants logged yet.</div>'; return; }
+    el.innerHTML = `<table class="data-table"><thead><tr>
+      <th>User</th><th>Action</th><th>Tier Change</th><th>Expires</th><th>Note</th><th>Date</th>
+    </tr></thead><tbody>` +
+    log.map(l => `<tr>
+      <td><b>${l.user_name||'—'}</b><div style="font-size:10px;color:var(--muted)">${l.user_email||''}</div></td>
+      <td style="font-size:12px">${l.note||l.action||'—'}</td>
+      <td>${l.tier_before ? `<span style="color:var(--muted)">${l.tier_before}</span> → ` : ''}${tierBadge(l.tier_after)}</td>
+      <td style="font-size:11px;color:var(--muted)">${l.expires_at ? new Date(l.expires_at).toLocaleDateString('en-ZA') : '—'}</td>
+      <td style="font-size:11px;color:var(--muted);max-width:160px">${l.admin_note||'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${ago(l.created_at)}</td>
+    </tr>`).join('') + '</tbody></table>';
   } catch(e) {
-    console.warn('newsletter_subscribers not accessible:', e.message);
-    return false;
+    el.innerHTML = `<div class="empty" style="color:var(--red)">Error loading log: ${e.message}</div>`;
   }
 }
 
-// ── FIX: Referrals — use referred_by column from beta_testers ──
-// The referral data is on beta_testers.referred_by
-// This override ensures we always check beta_testers columns correctly
-async function refreshReferrals() {
-  const users = allUsers.length ? allUsers : await sbFetch(_usersTable + '?select=*&order=created_at.desc&limit=500');
-  if (users.length) renderReferrals(users);
+// ── Users Table ───────────────────────────────────────────────
+async function loadAccTable() {
+  const tbody = document.getElementById('acc-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" class="empty"><div class="spinner" style="display:inline-block"></div></td></tr>';
+  try {
+    accUsers = await sbGet(`${_usersTable}?select=id,name,email,tier,access_expires_at,cancelled_at,created_at,last_active&order=created_at.desc&limit=500`);
+    renderAccTable(accUsers);
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty" style="color:var(--red)">Error: ${e.message}</td></tr>`;
+  }
+}
+
+function renderAccTable(users) {
+  const tbody = document.getElementById('acc-table-body');
+  if (!tbody) return;
+  const now = new Date();
+  tbody.innerHTML = users.map(u => {
+    const exp = u.access_expires_at ? new Date(u.access_expires_at) : null;
+    const expStr = u.cancelled_at
+      ? `<span style="color:var(--red);font-size:11px">❌ Cancelled ${ago(u.cancelled_at)}</span>`
+      : exp
+        ? (exp < now
+          ? `<span style="color:var(--amber);font-size:11px">⚠️ Expired ${ago(u.access_expires_at)}</span>`
+          : `<span style="color:var(--green);font-size:11px">✅ ${exp.toLocaleDateString('en-ZA')}</span>`)
+        : `<span style="color:var(--muted);font-size:11px">—</span>`;
+    return `<tr>
+      <td><b style="font-size:13px">${u.name||'—'}</b></td>
+      <td style="font-size:11px;color:var(--muted)">${u.email||'—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td>${expStr}</td>
+      <td style="font-size:11px;color:var(--muted)">${ago(u.created_at)}</td>
+      <td style="font-size:11px;color:var(--muted)">${u.last_active ? ago(u.last_active) : '—'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button onclick="accSelect('${u.id}');document.querySelector('#tab-accounts').scrollIntoView({behavior:'smooth'})"
+            style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            Grant
+          </button>
+          <button onclick="quickCancel('${u.id}','${(u.name||'').replace(/'/g,"\\'")}','${u.email||''}')"
+            style="padding:4px 10px;background:var(--bg2);color:var(--red);border:1px solid var(--red);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            Cancel
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="empty">No users found</td></tr>';
+}
+
+function filterAccTable() {
+  const q    = (document.getElementById('acc-table-filter').value || '').toLowerCase();
+  const tier = document.getElementById('acc-table-tier').value;
+  const filtered = accUsers.filter(u =>
+    (tier === 'all' || u.tier === tier) &&
+    ((u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q))
+  );
+  renderAccTable(filtered);
+}
+
+async function quickCancel(id, name, email) {
+  if (!confirm(`Cancel subscription for ${name} (${email})?\n\nThis sets tier to Free and records cancellation. They keep access until current expiry.`)) return;
+  try {
+    await sbPatch(`${_usersTable}?id=eq.${id}`, { tier:'free', cancelled_at: new Date().toISOString(), admin_tier_override:true });
+    await sbPost('admin_access_log', {
+      user_id:id, user_email:email, user_name:name,
+      action:'cancel', access_type:'cancel', tier_after:'free',
+      note:'Cancelled by admin', admin_note:null,
+    });
+    // Update cache
+    const idx = accUsers.findIndex(u => u.id === id);
+    if (idx >= 0) { accUsers[idx].tier = 'free'; accUsers[idx].cancelled_at = new Date().toISOString(); }
+    renderAccTable(accUsers);
+    loadAccLog();
+    alert(`✅ ${name} subscription cancelled.`);
+  } catch(e) { alert('❌ Failed: ' + e.message); }
+}
+
+// ── loadAccountManager entry point ───────────────────────────
+async function loadAccountManager() {
+  await loadAccTable();
+  await loadAccLog();
+}
+
+// ── sbPost helper (may not exist yet) ─────────────────────────
+if (typeof sbPost === 'undefined') {
+  window.sbPost = async function(path, body) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method:'POST',
+      headers:{
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) { const t=await r.text(); throw new Error(t); }
+    return r;
+  };
 }
 
 // ── Init ──────────────────────────────────────────────────────
