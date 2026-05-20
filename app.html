@@ -7769,10 +7769,10 @@ function pulseCoin(){
     return;
   }
   // Shake for 1.5s then spin for 1.5s = 3s total
-  coin.style.animation = 'coinShake 0.3s ease infinite';
+  coin.style.animation = 'coinShake 0.6s ease infinite';
   setTimeout(()=>{
     if(_coinDiscovered) return;
-    coin.style.animation = 'coinSpin 0.4s ease infinite';
+    coin.style.animation = 'coinSpin 1.2s linear infinite';
     setTimeout(()=>{
       if(_coinDiscovered) return;
       coin.style.animation = '';
