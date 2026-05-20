@@ -3064,8 +3064,23 @@ async function renderDash(){
       const trialC=document.getElementById('trial-c');
       if(trialC)trialC.onclick=()=>showUpgradeWall(false);
     } else {
-      showUpgradeWall(true);
-      return;
+      // Only hard-block if user hasn't explicitly chosen the free plan
+      const choseFree = localStorage.getItem('rw_chose_free')==='1';
+      if(!choseFree){
+        showUpgradeWall(true);
+        return;
+      }
+      // Free plan user — show soft banner, don't block
+      const tb=document.getElementById('trial');
+      if(tb){
+        tb.style.display='flex';
+        tb.style.background='#f3e5f5';
+        tb.style.borderBottom='.5px solid #ce93d8';
+      }
+      const trialT=document.getElementById('trial-t');
+      const trialC2=document.getElementById('trial-c');
+      if(trialT){trialT.textContent='🔓 Free plan — tap to unlock Pro features';trialT.style.color='#6a1b9a';}
+      if(trialC2){trialC2.textContent='Upgrade →';trialC2.style.color='#6a1b9a';trialC2.onclick=()=>showUpgradeWall(false);}
     }
   }
 
@@ -3342,7 +3357,9 @@ async function renderDash(){
 
   // ── DEBIT ORDERS — manual DOs + debt minimums (no double counting) ──
   const storedDOsForCard=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-  const manualDOsForCard=storedDOsForCard.filter(d=>!d.addedFromDebt);
+  // Use global debitOrders if populated (restored from Supabase), else use localStorage
+  const allDOsForCard=(debitOrders&&debitOrders.length>0)?debitOrders:storedDOsForCard;
+  const manualDOsForCard=allDOsForCard.filter(d=>!d.addedFromDebt);
   const manualDOTotal=manualDOsForCard.reduce((s,d)=>s+Number(d.amount||0),0);
   const debtListForCard=(typeof debts!=='undefined'&&Array.isArray(debts))?debts:[];
   const debtMinForCard=debtListForCard.reduce((s,d)=>s+Number(d.min_payment||0),0);
@@ -3725,7 +3742,7 @@ function renderDebitOrdersList(){
   el.innerHTML='<div style="background:#f0faf4;border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#5a8a6a">Total commitments</span><span style="font-size:14px;font-weight:800;color:#1a5c35">R'+total.toLocaleString('en-ZA')+'/mo</span></div>'+
   allItems.map((d,i)=>{
     const badge=d.auto?'<span style="font-size:10px;background:#e8f5e9;color:#1a7a4a;padding:2px 6px;border-radius:6px;margin-left:6px">via Debt</span>':'';
-    const removeBtn=d.auto?'':'<button onclick="removeDebitOrder('+i+')" style="background:#fee2e2;border:none;color:#c62828;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>';
+    const removeBtn=d.auto?'<button onclick="addDebtAsDebitOrder(null,\''+d.name+'\','+d.amount+')" style="background:#e8f5e9;border:1px solid #1a7a4a;color:#1a5c35;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;white-space:nowrap">+ Add</button>':'<button onclick="removeDebitOrder('+i+')" style="background:#fee2e2;border:none;color:#c62828;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>';
     const sub=d.auto?'<div style="font-size:11px;color:var(--mu)">Tracked under debts</div>':'';
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0faf4"><div><div style="font-size:13px;font-weight:600">'+d.name+badge+'</div>'+sub+'</div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700;color:#1a5c35">R'+Number(d.amount).toLocaleString('en-ZA')+'/mo</span>'+removeBtn+'</div></div>';
   }).join('');
@@ -7617,6 +7634,7 @@ function continueFreePlan(){
   if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{tier:'free'}).catch(()=>{});
   if(user) user.tier='free';
   localStorage.setItem('rw_tier','free');
+  localStorage.setItem('rw_chose_free','1'); // prevents hard block on renderDash
   document.getElementById('upgrade-wall').style.display='none';
   // Suppress connectivity/maintenance check for 60s to avoid false maintenance screen
   window._suppressMaintenanceUntil = Date.now() + 60000;
@@ -9804,13 +9822,14 @@ function renderSeeAll(){
 
 function addDebtAsDebitOrder(id, name, amount){
   const dos=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-  if(dos.find(d=>d.name===name)){showToast('Already added as debit order');return;}
+  if(dos.find(d=>d.name===name)){showToast('Already in debit orders');return;}
   dos.push({name, amount:Number(amount), addedFromDebt:true});
   localStorage.setItem('rw_debit_orders',JSON.stringify(dos));
   if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:dos}).catch(()=>{});
   debitOrders=dos;
   showToast('✅ '+name+' added as debit order');
-  loadDebtsPWA();
+  if(id) loadDebtsPWA();
+  renderDebitOrdersList();
   renderDash();
 }
 
