@@ -1821,6 +1821,59 @@ if('serviceWorker' in navigator){
   </div>
 </div>
 
+<!-- ── ADMIN ACCESS WELCOME CELEBRATION MODAL ─────────────────── -->
+<div id="access-welcome-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:24px;max-width:380px;width:100%;padding:0;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.3);animation:welcomePop 0.4s cubic-bezier(0.34,1.56,0.64,1)">
+    <!-- Confetti header -->
+    <div id="welcome-header" style="background:linear-gradient(135deg,#1a5c35 0%,#2d9a5c 100%);padding:32px 24px 24px;text-align:center;position:relative;overflow:hidden">
+      <div id="welcome-confetti" style="position:absolute;inset:0;pointer-events:none"></div>
+      <div style="font-size:56px;margin-bottom:8px" id="welcome-emoji">🎉</div>
+      <div style="color:#fff;font-size:22px;font-weight:800;font-family:'DM Sans',sans-serif;line-height:1.2" id="welcome-title">Congratulations!</div>
+      <div style="color:rgba(255,255,255,0.85);font-size:14px;margin-top:6px;font-family:'DM Sans',sans-serif" id="welcome-subtitle">Your access has been activated</div>
+    </div>
+    <!-- Body -->
+    <div style="padding:24px">
+      <div style="background:#f0faf5;border-radius:14px;padding:16px 18px;margin-bottom:16px;border:1px solid #c3e6d0">
+        <div style="font-size:13px;color:#555;margin-bottom:10px;font-family:'DM Sans',sans-serif">Your access details:</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span style="font-size:28px" id="welcome-tier-emoji">⭐</span>
+          <div>
+            <div style="font-size:17px;font-weight:800;color:#1a5c35;font-family:'DM Sans',sans-serif" id="welcome-tier-name">Pro Plan</div>
+            <div style="font-size:12px;color:#777;font-family:'DM Sans',sans-serif" id="welcome-duration">Valid for 7 days</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#888;font-family:'DM Sans',sans-serif" id="welcome-expiry-text"></div>
+      </div>
+      <div style="font-size:13px;color:#555;line-height:1.6;font-family:'DM Sans',sans-serif;margin-bottom:20px" id="welcome-message">
+        You now have full access to MyRandWise. Start tracking your money, managing debt, and building your savings today.
+      </div>
+      <button id="welcome-cta-btn" onclick="closeAccessWelcome()"
+        style="width:100%;padding:15px;background:linear-gradient(135deg,#1a5c35,#2d9a5c);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px">
+        Let's go! 🚀
+      </button>
+      <div style="text-align:center;margin-top:12px;font-size:11px;color:#aaa;font-family:'DM Sans',sans-serif" id="welcome-from">Activated by RandWise Admin</div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes welcomePop {
+  from { transform: scale(0.7) translateY(40px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);      opacity: 1; }
+}
+.confetti-piece {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
+  100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+}
+</style>
+
 <!-- TAB BAR — outside all screens, controlled by show() -->
 <div class="tab-bar" id="main-tab-bar" style="display:none">
   <button class="tab-btn act" id="tb-home" onclick="switchTab('home')"><span class="tab-icon">⌂</span><span class="tab-lbl">Home</span></button>
@@ -2561,9 +2614,6 @@ async function doLogin(){
       ]);
     }catch(ex){expenses=[];debts=[];}
     await loadMonthlyNeedsFromSupabase().catch(()=>{});
-    // Load debts fully (auto-syncs debit orders) and goals (updates dashboard cards)
-    loadDebtsPWA().catch(()=>{});
-    loadGoalsPWA().catch(()=>{});
     try{renderDash();}catch(ex){console.error('renderDash error:',ex);}
     if(!auth.user?.email_confirmed_at){
       otpEmail=user?.email||email.toLowerCase();
@@ -2578,6 +2628,10 @@ async function doLogin(){
     show('main');
     try{setTimeout(showIntro,400);}catch(ex){}
     setTimeout(checkPhonePopup, 1500);
+    // Check for admin-granted access and show welcome celebration
+    setTimeout(()=>checkAdminAccessWelcome(user), 800);
+    // Check if access has expired and downgrade if needed
+    checkAccessExpiry(user);
     btn.disabled=false;btn.textContent='Sign in →';
   }catch(e){
     loginAttempts++;
@@ -3067,23 +3121,8 @@ async function renderDash(){
       const trialC=document.getElementById('trial-c');
       if(trialC)trialC.onclick=()=>showUpgradeWall(false);
     } else {
-      // Only hard-block if user hasn't explicitly chosen the free plan
-      const choseFree = localStorage.getItem('rw_chose_free')==='1';
-      if(!choseFree){
-        showUpgradeWall(true);
-        return;
-      }
-      // Free plan user — show soft banner, don't block
-      const tb=document.getElementById('trial');
-      if(tb){
-        tb.style.display='flex';
-        tb.style.background='#f3e5f5';
-        tb.style.borderBottom='.5px solid #ce93d8';
-      }
-      const trialT=document.getElementById('trial-t');
-      const trialC2=document.getElementById('trial-c');
-      if(trialT){trialT.textContent='🔓 Free plan — tap to unlock Pro features';trialT.style.color='#6a1b9a';}
-      if(trialC2){trialC2.textContent='Upgrade →';trialC2.style.color='#6a1b9a';trialC2.onclick=()=>showUpgradeWall(false);}
+      showUpgradeWall(true);
+      return;
     }
   }
 
@@ -3360,9 +3399,7 @@ async function renderDash(){
 
   // ── DEBIT ORDERS — manual DOs + debt minimums (no double counting) ──
   const storedDOsForCard=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-  // Use global debitOrders if populated (restored from Supabase), else use localStorage
-  const allDOsForCard=(debitOrders&&debitOrders.length>0)?debitOrders:storedDOsForCard;
-  const manualDOsForCard=allDOsForCard.filter(d=>!d.addedFromDebt);
+  const manualDOsForCard=storedDOsForCard.filter(d=>!d.addedFromDebt);
   const manualDOTotal=manualDOsForCard.reduce((s,d)=>s+Number(d.amount||0),0);
   const debtListForCard=(typeof debts!=='undefined'&&Array.isArray(debts))?debts:[];
   const debtMinForCard=debtListForCard.reduce((s,d)=>s+Number(d.min_payment||0),0);
@@ -3673,10 +3710,8 @@ function switchTab(t){
   if(t==='home'){
     const dc=document.getElementById('dash-main-content');
     if(dc) dc.scrollTop=0;
-    // Load debts (auto-syncs to debit orders) then render dash
-    loadDebtsPWA().then(()=>renderDash()).catch(()=>renderDash());
-    // Load goals to update savings goal card on dashboard
-    loadGoalsPWA().catch(()=>{});
+    // Always reload debts before rendering so smart budget is accurate
+    sbG(`debts?tester_id=eq.${user?.id}&order=balance.asc`).then(d=>{debts=d||[];renderDash();}).catch(()=>{renderDash();});
   }
   if(t==='debt')loadDebtsPWA();
   if(t==='grow'){loadGoalsPWA();loadStokvelList();}
@@ -3747,7 +3782,7 @@ function renderDebitOrdersList(){
   el.innerHTML='<div style="background:#f0faf4;border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:#5a8a6a">Total commitments</span><span style="font-size:14px;font-weight:800;color:#1a5c35">R'+total.toLocaleString('en-ZA')+'/mo</span></div>'+
   allItems.map((d,i)=>{
     const badge=d.auto?'<span style="font-size:10px;background:#e8f5e9;color:#1a7a4a;padding:2px 6px;border-radius:6px;margin-left:6px">via Debt</span>':'';
-    const removeBtn=d.auto?'<button onclick="addDebtAsDebitOrder(null,\''+d.name+'\','+d.amount+')" style="background:#e8f5e9;border:1px solid #1a7a4a;color:#1a5c35;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;white-space:nowrap">+ Add</button>':'<button onclick="removeDebitOrder('+i+')" style="background:#fee2e2;border:none;color:#c62828;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>';
+    const removeBtn=d.auto?'':'<button onclick="removeDebitOrder('+i+')" style="background:#fee2e2;border:none;color:#c62828;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">✕</button>';
     const sub=d.auto?'<div style="font-size:11px;color:var(--mu)">Tracked under debts</div>':'';
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0faf4"><div><div style="font-size:13px;font-weight:600">'+d.name+badge+'</div>'+sub+'</div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:13px;font-weight:700;color:#1a5c35">R'+Number(d.amount).toLocaleString('en-ZA')+'/mo</span>'+removeBtn+'</div></div>';
   }).join('');
@@ -3758,7 +3793,6 @@ function addDebitOrder(){
   if(!name||!amount){showToast('Enter name and amount');return;}
   debitOrders.push({name,amount});
   localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
-  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:debitOrders}).catch(()=>{});
   document.getElementById('do-name').value='';
   document.getElementById('do-amount').value='';
   renderDebitOrdersList();
@@ -3768,7 +3802,6 @@ function addDebitOrder(){
 function removeDebitOrder(i){
   debitOrders.splice(i,1);
   localStorage.setItem('rw_debit_orders',JSON.stringify(debitOrders));
-  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:debitOrders}).catch(()=>{});
   renderDebitOrdersList();
   renderDash();
   showToast('Removed');
@@ -3781,32 +3814,6 @@ async function loadDebtsPWA(){
   try{
     const loadedDebts=await sbG(`debts?tester_id=eq.${user.id}&order=balance.asc`);
     debts=loadedDebts||[]; // Update global
-
-    // ── Auto-sync debt minimums into debitOrders so dashboard card shows correctly ──
-    const currentDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-    let doChanged=false;
-    debts.forEach(d=>{
-      if(!Number(d.min_payment)||d.min_payment<=0) return;
-      const alreadyIn=currentDOs.find(o=>o.name===d.name&&o.addedFromDebt);
-      if(!alreadyIn){
-        currentDOs.push({name:d.name, amount:Number(d.min_payment), addedFromDebt:true});
-        doChanged=true;
-      } else if(alreadyIn.amount!==Number(d.min_payment)){
-        alreadyIn.amount=Number(d.min_payment);
-        doChanged=true;
-      }
-    });
-    // Remove stale debt debit orders (debt deleted)
-    const debtNames=debts.map(d=>d.name);
-    const filtered=currentDOs.filter(o=>!o.addedFromDebt||debtNames.includes(o.name));
-    if(filtered.length!==currentDOs.length) doChanged=true;
-    if(doChanged){
-      localStorage.setItem('rw_debit_orders',JSON.stringify(filtered));
-      debitOrders=filtered;
-      if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:filtered}).catch(()=>{});
-    } else {
-      debitOrders=currentDOs;
-    }
     const el=document.getElementById('debt-list-pwa');
     if(!debts?.length){
       el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">💳</div><div style="font-size:14px;font-weight:600;color:var(--t)">No debts added yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first debt to start your payoff plan</div></div>';
@@ -4595,17 +4602,6 @@ async function loadGoalsPWA(){
   try{
     if(!user?.id)return;
   const goals=await sbG(`savings_goals?tester_id=eq.${user.id}&order=created_at.desc`);
-
-    // ── Update dashboard savings goal card ──
-    if(goals?.length){
-      const g=goals[0];
-      const saved=Number(g.saved||0),target=Number(g.target||0);
-      const pct=target>0?Math.min(100,Math.round(saved/target*100)):0;
-      const amtEl=document.getElementById('stat-goal-amt');
-      const labelEl=document.getElementById('stat-goal-label');
-      if(amtEl)amtEl.textContent='R'+saved.toLocaleString('en-ZA');
-      if(labelEl)labelEl.textContent=(g.name||'Goal')+' · '+pct+'% saved';
-    }
     const el=document.getElementById('goals-list-pwa');
     if(!goals?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">🌱</div><div style="font-size:14px;font-weight:600;color:var(--t)">No savings goals yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first goal to start growing</div></div>';return;}
     el.innerHTML=goals.map(g=>{
@@ -6722,7 +6718,10 @@ window.addEventListener('load',async()=>{
         setTimeout(async()=>{
           try{
             const f=await sbG(`beta_testers?id=eq.${user.id}&limit=1&select=*`);
-            if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});}
+            if(f?.[0]){user=f[0];localStorage.setItem('rw_user',JSON.stringify(user));sbPatch(`beta_testers?id=eq.${user.id}`,{last_active:new Date().toISOString()}).catch(()=>{});
+              // Check access expiry with fresh data
+              checkAccessExpiry(user);
+            }
           }catch{}
           try{await loadExp();}catch{expenses=[];}
           try{
@@ -6766,7 +6765,7 @@ window.addEventListener('load',async()=>{
 });
 </script>
 <!-- ══ UPGRADE WALL ════════════════════════════════════════════ -->
-<div id="upgrade-wall" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 24px 48px;text-align:center;overflow-y:scroll;-webkit-overflow-scrolling:touch;box-sizing:border-box;">
+<div id="upgrade-wall" style="display:none;position:fixed;inset:0;z-index:400;background:#0d3d22;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;text-align:center;">
   <div style="font-size:56px;margin-bottom:12px" id="uw-icon">⏰</div>
   <div style="font-size:26px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px" id="uw-title">Your free trial has ended</div>
   <div style="font-size:14px;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:28px;max-width:300px" id="uw-sub">You've experienced what MyRandWise can do. Don't lose your data — upgrade to keep going.</div>
@@ -6789,27 +6788,8 @@ window.addEventListener('load',async()=>{
     </div>
   </div>
   <button id="uw-continue" onclick="document.getElementById('upgrade-wall').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;display:none">Continue with limited access</button>
-  <div id="uw-free-plan" style="display:none;width:100%;max-width:320px;margin-top:8px;padding-bottom:40px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
-      <span style="font-size:11px;color:rgba(255,255,255,.3)">or continue with</span>
-      <div style="flex:1;height:1px;background:rgba(255,255,255,.12)"></div>
-    </div>
-    <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:20px;text-align:left">
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">FREE</div>
-      <div style="font-size:28px;font-weight:800;color:#fff;margin-bottom:2px">R0</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:16px">Always free · Basic access</div>
-      <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:20px">
-        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Expense tracking</div>
-        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Basic budget management</div>
-        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> Debt tracker</div>
-        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> 1 savings goal</div>
-        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:rgba(255,255,255,.65)"><span style="color:#4ade80;font-weight:700">✓</span> 14-day Pro trial included</div>
-      </div>
-      <button onclick="continueFreePlan()" style="width:100%;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);border-radius:12px;padding:14px;font-size:14px;font-weight:700;color:rgba(255,255,255,.75);cursor:pointer">Continue with free plan →</button>
-    </div>
-  </div>
 </div>
+
 <!-- ══ EDIT EXPENSE SHEET ═════════════════════════════════════ -->
 <div class="overlay" id="edit-ov" onclick="closeEditSheet()"></div>
 <div class="sheet" id="edit-sheet">
@@ -7489,9 +7469,6 @@ window.addEventListener('load', ()=>{
   setInterval(async()=>{
     if(document.hidden) return;
 
-    // Skip if maintenance suppressed (e.g. right after choosing free plan)
-    if(window._suppressMaintenanceUntil && Date.now() < window._suppressMaintenanceUntil) return;
-
     // Don't redirect during PIN setup, lock screen, or any open sheet
     const anySheetOpen = document.querySelector('.sheet.open');
     const lockVisible = document.getElementById('app-lock-screen')?.style?.display === 'flex';
@@ -7593,8 +7570,7 @@ function applyTierTheme(){
   }
 
   // Pro-gated features (soft lock — user sees blurred card, taps to upgrade)
-  // NOTE: stat-debt-card and stat-goal-card are FREE per landing page pricing
-  const proFeatures=['daily-dots-row','snowball-card','debt-score-card','debt-total-bar'];
+  const proFeatures=['daily-dots-row','stat-debt-card','stat-goal-card','snowball-card','debt-score-card','debt-total-bar'];
   proFeatures.forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
@@ -7646,19 +7622,16 @@ function applyTierTheme(){
 function showUpgradeWall(hardBlock){
   const wall=document.getElementById('upgrade-wall');
   wall.style.display='flex';
-  const freePlanDiv=document.getElementById('uw-free-plan');
   if(!hardBlock){
     document.getElementById('uw-icon').textContent='⭐';
     document.getElementById('uw-title').textContent='Unlock the full MyRandWise';
     document.getElementById('uw-sub').textContent='You\'re on the free plan. Upgrade to Pro for bank imports, AI nudges, and more.';
     document.getElementById('uw-continue').style.display='block';
-    if(freePlanDiv) freePlanDiv.style.display='none';
   } else {
     document.getElementById('uw-icon').textContent='⏰';
     document.getElementById('uw-title').textContent='Your free trial has ended';
     document.getElementById('uw-sub').textContent='You\'ve experienced what MyRandWise can do. Don\'t lose your data — upgrade to keep going.';
     document.getElementById('uw-continue').style.display='none';
-    if(freePlanDiv) freePlanDiv.style.display='block';
     // Intercept back button so users can't navigate away
     history.pushState(null,'',location.href);
     window.onpopstate=()=>{
@@ -7670,49 +7643,6 @@ function showUpgradeWall(hardBlock){
       history.pushState(null,'',location.href);
     };
   }
-}
-function continueFreePlan(){
-  // Set tier to free in Supabase and locally
-  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{tier:'free'}).catch(()=>{});
-  if(user) user.tier='free';
-  localStorage.setItem('rw_tier','free');
-  localStorage.setItem('rw_chose_free','1'); // prevents hard block on renderDash
-  document.getElementById('upgrade-wall').style.display='none';
-  // Suppress connectivity/maintenance check for 60s to avoid false maintenance screen
-  window._suppressMaintenanceUntil = Date.now() + 60000;
-  applyTierTheme();
-  showToast('You\'re on the free plan. Upgrade anytime from your profile.');
-  // Schedule upgrade nudge cards — shown periodically while on free plan
-  scheduleUpgradeNudges();
-}
-function scheduleUpgradeNudges(){
-  // Show first nudge after 2 minutes, then every 5 minutes, max 3 per session
-  let nudgeCount=0;
-  const maxNudges=3;
-  const nudgeMessages=[
-    {title:'📊 Unlock Debt Payoff Strategy',body:'See exactly how to clear your debt faster — from R49/month'},
-    {title:'🎯 Unlock Savings Goals',body:'Set and track goals for what matters most — from R49/month'},
-    {title:'💡 Unlock AI Money Nudges',body:'Get personalised tips based on your spending — from R49/month'},
-  ];
-  const showNudge=()=>{
-    if(nudgeCount>=maxNudges) return;
-    const tier=user?.tier||localStorage.getItem('rw_tier')||'free';
-    if(tier!=='free') return; // Stop if they upgraded
-    const msg=nudgeMessages[nudgeCount];
-    nudgeCount++;
-    // Remove existing nudge if any
-    document.getElementById('upgrade-nudge-card')?.remove();
-    const card=document.createElement('div');
-    card.id='upgrade-nudge-card';
-    card.style.cssText='position:fixed;bottom:76px;left:16px;right:16px;background:#132e1e;border:1.5px solid rgba(74,222,128,.4);border-radius:14px;padding:14px 16px;z-index:300;display:flex;align-items:center;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:slideUp .3s ease';
-    card.innerHTML=`<div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">${msg.title}</div><div style="font-size:12px;color:rgba(255,255,255,.55)">${msg.body}</div></div><div style="display:flex;flex-direction:column;gap:5px;align-items:flex-end"><button onclick="showUpgradeWall(false)" style="background:#4ade80;color:#0d3d22;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:800;cursor:pointer">Upgrade</button><button onclick="this.closest('#upgrade-nudge-card').remove()" style="background:none;border:none;color:rgba(255,255,255,.25);font-size:11px;cursor:pointer;padding:2px">Not now</button></div>`;
-    document.body.appendChild(card);
-    // Auto-dismiss after 8 seconds
-    setTimeout(()=>document.getElementById('upgrade-nudge-card')?.remove(), 8000);
-    // Schedule next nudge
-    if(nudgeCount<maxNudges) setTimeout(showNudge, 5*60*1000);
-  };
-  setTimeout(showNudge, 2*60*1000);
 }
 function doUpgrade(plan){
   const mid='17641839',mkey='ggvw6iyb2c213';
@@ -7831,10 +7761,10 @@ function pulseCoin(){
     return;
   }
   // Shake for 1.5s then spin for 1.5s = 3s total
-  coin.style.animation = 'coinShake 0.6s ease infinite';
+  coin.style.animation = 'coinShake 0.3s ease infinite';
   setTimeout(()=>{
     if(_coinDiscovered) return;
-    coin.style.animation = 'coinSpin 1.2s linear infinite';
+    coin.style.animation = 'coinSpin 0.4s ease infinite';
     setTimeout(()=>{
       if(_coinDiscovered) return;
       coin.style.animation = '';
@@ -9058,12 +8988,7 @@ async function confirmSalaryReceived(received){
   const cycleKey=`rw_salary_confirmed_${now.getFullYear()}_${now.getMonth()+1}`;
   if(received){
     localStorage.setItem(cycleKey,'confirmed:'+new Date().toISOString());
-    try{
-      await sbPatch(`beta_testers?id=eq.${user.id}`,{
-        salary_last_confirmed:new Date().toISOString(),
-        salary_confirmed_key:cycleKey
-      });
-    }catch{}
+    try{await sbPatch(`beta_testers?id=eq.${user.id}`,{salary_last_confirmed:new Date().toISOString()});}catch{}
     showToast('✅ Salary confirmed');
     checkBreakdownUnlock();
     setTimeout(maybeShowPaydayCheckin,1000);
@@ -9680,25 +9605,8 @@ function initStoryConsent(){
 async function loadMonthlyNeedsFromSupabase(){
   if(!user?.id) return;
   try{
-    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs,debit_orders,income_amount,pay_day,salary_last_confirmed,salary_confirmed_key`);
-    const row=rows?.[0];
-
-    // ── Restore salary confirmation from Supabase if localStorage missing ──
-    const salaryKey=row?.salary_confirmed_key;
-    if(salaryKey && !localStorage.getItem(salaryKey)){
-      localStorage.setItem(salaryKey,'confirmed:'+row.salary_last_confirmed);
-    }
-    const localDOs=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-    if(localDOs.length===0 && row?.debit_orders?.length>0){
-      localStorage.setItem('rw_debit_orders',JSON.stringify(row.debit_orders));
-      debitOrders=row.debit_orders;
-    } else if(localDOs.length>0 && (!row?.debit_orders||row.debit_orders.length===0)){
-      // Push local to Supabase if Supabase is empty
-      sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:localDOs}).catch(()=>{});
-    }
-
-    // ── Restore monthly needs ──
-    const dbNeeds=row?.monthly_needs;
+    const rows=await sbG(`beta_testers?id=eq.${user.id}&select=monthly_needs`);
+    const dbNeeds=rows?.[0]?.monthly_needs;
     if(dbNeeds&&typeof dbNeeds==='object'){
       if(dbNeeds.preset&&Object.keys(dbNeeds.preset).length>0){
         localStorage.setItem('rw_monthly_needs',JSON.stringify(dbNeeds.preset));
@@ -9711,10 +9619,12 @@ async function loadMonthlyNeedsFromSupabase(){
       const localNeeds=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
       const localCustom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
       if(Object.keys(localNeeds).length>0){
-        await sbPatch(`beta_testers?id=eq.${user.id}`,{monthly_needs:{preset:localNeeds,custom:localCustom}}).catch(()=>{});
+        await sbPatch(`beta_testers?id=eq.${user.id}`,{
+          monthly_needs:{preset:localNeeds,custom:localCustom}
+        }).catch(()=>{});
       }
     }
-  }catch(e){console.warn('Could not load data from Supabase:',e);}
+  }catch(e){console.warn('Could not load monthly needs from Supabase:',e);}
 }
 
 // ── Push Notifications (Web Push / VAPID) ─────────────────────
@@ -9864,14 +9774,12 @@ function renderSeeAll(){
 
 function addDebtAsDebitOrder(id, name, amount){
   const dos=JSON.parse(localStorage.getItem('rw_debit_orders')||'[]');
-  if(dos.find(d=>d.name===name)){showToast('Already in debit orders');return;}
+  if(dos.find(d=>d.name===name)){showToast('Already added as debit order');return;}
   dos.push({name, amount:Number(amount), addedFromDebt:true});
   localStorage.setItem('rw_debit_orders',JSON.stringify(dos));
-  if(user?.id) sbPatch(`beta_testers?id=eq.${user.id}`,{debit_orders:dos}).catch(()=>{});
   debitOrders=dos;
   showToast('✅ '+name+' added as debit order');
-  if(id) loadDebtsPWA();
-  renderDebitOrdersList();
+  loadDebtsPWA();
   renderDash();
 }
 
@@ -10254,5 +10162,102 @@ function editProfilePhone(){
     </div>
   </div>
 </div>
+
+// ── ACCESS EXPIRY CHECK ────────────────────────────────────────
+function checkAccessExpiry(u) {
+  if (!u?.access_expires_at) return;
+  const now = new Date();
+  const expires = new Date(u.access_expires_at);
+  if (expires < now && u.tier !== 'free') {
+    fetch(SB+'/rest/v1/beta_testers?id=eq.'+u.id, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify({tier:'free'})
+    }).catch(()=>{});
+    u.tier = 'free'; user = u;
+    localStorage.setItem('rw_user', JSON.stringify(u));
+    showToast('Your access has expired — moved to free plan.');
+    try{renderDash();}catch{}
+  }
+}
+
+// ── ADMIN ACCESS WELCOME CELEBRATION ─────────────────────────
+const _WELCOME_KEY = 'rw_welcome_shown';
+
+function checkAdminAccessWelcome(u) {
+  if (!u || !u.admin_tier_override) return;
+  if (!u.access_expires_at && u.tier === 'free') return;
+  const shownKey = _WELCOME_KEY + '_' + u.id + '_' + (u.access_expires_at || u.tier);
+  if (localStorage.getItem(shownKey)) return;
+  showAccessWelcome(u);
+  localStorage.setItem(shownKey, '1');
+}
+
+function showAccessWelcome(u) {
+  const modal = document.getElementById('access-welcome-modal');
+  if (!modal) return;
+  const firstName = (u.name || 'there').split(' ')[0];
+  const tier = u.tier || 'free';
+  const expires = u.access_expires_at ? new Date(u.access_expires_at) : null;
+  const now = new Date();
+  let daysLeft = expires ? Math.ceil((expires - now) / 86400000) : 0;
+  if (expires && daysLeft <= 0) return;
+  let durationText = !expires ? (tier === 'free' ? 'Free tier' : 'Unlimited') :
+    daysLeft <= 14 ? `Valid for ${daysLeft} day${daysLeft!==1?'s':''}` :
+    daysLeft <= 31 ? `Valid for ${Math.ceil(daysLeft/7)} weeks` :
+    `Valid for ${Math.ceil(daysLeft/30)} month${Math.ceil(daysLeft/30)!==1?'s':''}`;
+  const tierMap = {
+    free:    {emoji:'🌱', name:'Free Trial',   color:'#4a7c5c'},
+    pro:     {emoji:'⭐', name:'Pro Plan',      color:'#1a5c35'},
+    premium: {emoji:'👑', name:'Premium Plan',  color:'#8b5e00'},
+  };
+  const t = tierMap[tier] || tierMap.free;
+  const expiryText = expires ? 'Expires ' + expires.toLocaleDateString('en-ZA',{day:'numeric',month:'long',year:'numeric'}) : '';
+  const msgMap = {
+    free: `You have a ${daysLeft}-day free trial — everything is unlocked! Track income, expenses, and build your budget.`,
+    pro: `You now have Pro access! Unlimited expense tracking, debt management, and savings goals are all yours.`,
+    premium: `Premium access activated — our highest tier. Enjoy all features including advanced analytics and priority support.`
+  };
+  document.getElementById('welcome-title').textContent = `Hey ${firstName}! 🎉`;
+  document.getElementById('welcome-subtitle').textContent = 'Your access has been activated';
+  document.getElementById('welcome-tier-emoji').textContent = t.emoji;
+  document.getElementById('welcome-tier-name').textContent = t.name;
+  document.getElementById('welcome-tier-name').style.color = t.color;
+  document.getElementById('welcome-duration').textContent = durationText;
+  document.getElementById('welcome-expiry-text').textContent = expiryText;
+  document.getElementById('welcome-message').textContent = msgMap[tier] || msgMap.free;
+  modal.style.display = 'flex';
+  launchConfetti();
+}
+
+function closeAccessWelcome() {
+  const modal = document.getElementById('access-welcome-modal');
+  if (!modal) return;
+  modal.style.transition = 'all 0.25s ease';
+  modal.style.opacity = '0'; modal.style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    modal.style.display = 'none';
+    modal.style.opacity = ''; modal.style.transform = '';
+  }, 250);
+}
+
+function launchConfetti() {
+  const container = document.getElementById('welcome-confetti');
+  if (!container) return;
+  const colors = ['#fff','#ffd700','#ff6b6b','#4ecdc4','#ffe66d','#a8e6cf','#ff8b94'];
+  container.innerHTML = '';
+  for (let i = 0; i < 35; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*20}%;`+
+      `background:${colors[Math.floor(Math.random()*colors.length)]};`+
+      `width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;`+
+      `border-radius:${Math.random()>0.5?'50%':'2px'};`+
+      `animation-duration:${0.8+Math.random()*1.2}s;`+
+      `animation-delay:${Math.random()*0.5}s;`;
+    container.appendChild(piece);
+  }
+  setTimeout(() => { if(container) container.innerHTML=''; }, 2500);
+}
+
 </body>
 </html>
