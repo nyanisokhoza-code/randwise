@@ -1341,7 +1341,7 @@
 <script>
 // ── Config ─────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://mmezkseblafurjolkfkt.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+const SUPABASE_ANON = 'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm';
 
 async function sbGet(path) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -1953,15 +1953,8 @@ async function loadReferralData(users) {
     if (u.referral_code) userByCode[u.referral_code.toLowerCase()] = u;
   });
 
-  // Try to find the referrals table
+  // Referral data lives on beta_testers.referred_by — no separate referrals table
   let refs = [];
-  const refTableCandidates = ['referrals', 'referral_events', 'referral_log', 'user_referrals'];
-  for (const t of refTableCandidates) {
-    try {
-      refs = await sbGet(t + '?select=*&order=created_at.desc&limit=500');
-      if (Array.isArray(refs)) break;
-    } catch(e) { refs = []; }
-  }
 
   // If no referrals table, fall back to referral_code + referred_by columns on users table
   if (!refs.length) {
