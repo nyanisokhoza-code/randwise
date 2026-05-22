@@ -4593,20 +4593,9 @@ async function saveDebtPWA(){
 async function loadGoalsPWA(){
   if(!user?.id)return;
   try{
-    if(!user?.id)return;
-  const goals=await sbG(`savings_goals?tester_id=eq.${user.id}&order=created_at.desc`);
+    const goals=await sbG(`savings_goals?tester_id=eq.${user.id}&order=created_at.desc`);
 
-    // ── Update dashboard savings goal card ──
-    if(goals?.length){
-      const g=goals[0];
-      const saved=Number(g.saved||0),target=Number(g.target||0);
-      const pct=target>0?Math.min(100,Math.round(saved/target*100)):0;
-      const amtEl=document.getElementById('stat-goal-amt');
-      const labelEl=document.getElementById('stat-goal-label');
-      if(amtEl)amtEl.textContent='R'+saved.toLocaleString('en-ZA');
-      if(labelEl)labelEl.textContent=(g.name||'Goal')+' · '+pct+'% saved';
-    }
-    // ── Always update dashboard savings goal card ──
+    // ── ALWAYS update dashboard home card (works from any tab) ──
     const amtEl=document.getElementById('stat-goal-amt');
     const labelEl=document.getElementById('stat-goal-label');
     if(goals?.length){
@@ -4620,10 +4609,16 @@ async function loadGoalsPWA(){
       if(labelEl) labelEl.textContent='tap to add a goal';
     }
 
+    // ── Update Grow tab list (only if element exists) ──
     const el=document.getElementById('goals-list-pwa');
-    if(!goals?.length){el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">🌱</div><div style="font-size:14px;font-weight:600;color:var(--t)">No savings goals yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first goal to start growing</div></div>';return;}
+    if(!el) return; // not on grow tab — home card already updated above
 
-    // Free plan: hide + Add button if already has 1 goal
+    if(!goals?.length){
+      el.innerHTML='<div style="text-align:center;padding:32px 0"><div style="font-size:32px;margin-bottom:8px">🌱</div><div style="font-size:14px;font-weight:600;color:var(--t)">No savings goals yet</div><div style="font-size:12px;color:var(--mu);margin-top:4px">Add your first goal to start growing</div></div>';
+      return;
+    }
+
+    // Free plan: update + Add button if already has 1 goal
     const {isPro}=getTier();
     const choseFree=localStorage.getItem('rw_chose_free')==='1';
     const addGoalBtn=document.querySelector('[onclick="openAddGoalPWA()"]');
@@ -4642,6 +4637,7 @@ async function loadGoalsPWA(){
         addGoalBtn.onclick=openAddGoalPWA;
       }
     }
+
     el.innerHTML=goals.map(g=>{
       const savedAmt=Number(g.saved||0),targetAmt=Number(g.target||0);
       const pct=targetAmt>0?Math.min(100,Math.round(savedAmt/targetAmt*100)):0;
@@ -4655,99 +4651,26 @@ async function loadGoalsPWA(){
       const nickname=g.account_nickname?`<div style="font-size:11px;color:var(--mu);margin-top:2px">🏦 ${g.account_nickname}</div>`:'';
       return `<div style="background:var(--w);border-radius:14px;border:.5px solid var(--bd);padding:14px 16px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-          <div style="flex:1"><div style="font-size:14px;font-weight:700">${g.emoji||'🎯'} ${g.name}</div>${g.target_date?`<div style="font-size:11px;color:var(--mu);margin-top:1px">Target: ${new Date(g.target_date).toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`:''} ${nickname}</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:700">${g.emoji||'🎯'} ${g.name}</div>${g.target_date?`<div style="font-size:11px;color:var(--mu);margin-top:1px">Target: ${new Date(g.target_date).toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}</div>`:''}${nickname}</div>
           <div style="font-size:14px;font-weight:800;color:${pct>=100?'var(--g)':'var(--t)'};margin-left:8px">${pct}%</div>
         </div>
-        <div style="background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div style="background:${barCol};height:100%;width:${pct}%;border-radius:4px;transition:width .5s"></div></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:6px"><span>R${savedAmt.toLocaleString('en-ZA')} saved</span><span>R${targetAmt.toLocaleString('en-ZA')} goal</span></div>
+        <div style="background:#e8f5e9;border-radius:6px;height:8px;overflow:hidden;margin-bottom:8px">
+          <div style="background:${barCol};height:100%;width:${pct}%;border-radius:6px;transition:width .4s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:10px">
+          <span>R${savedAmt.toLocaleString('en-ZA')} saved</span>
+          <span>R${targetAmt.toLocaleString('en-ZA')} goal</span>
+        </div>
         ${monthlyInfo}
-                <div style="display:flex;gap:8px;margin-top:12px">
-          <button onclick="openContribSheet('${g.id}','${(g.name||'').replace(/'/g,"\'")}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer">➕ Add money</button>
-          <button onclick="deleteGoalPWA('${g.id}')" style="padding:13px 16px;background:var(--rl);color:var(--r);border:none;border-radius:12px;font-size:14px;cursor:pointer">🗑</button>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button onclick="openContribSheet('${g.id}','${g.name}',${targetAmt},${savedAmt},${g.monthly_contribution||0})" style="flex:1;background:var(--g);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer">+ Log contribution</button>
+          <button onclick="deleteGoalPWA('${g.id}')" style="background:#fee2e2;color:#c62828;border:none;border-radius:10px;padding:10px 14px;font-size:13px;cursor:pointer">🗑</button>
         </div>
       </div>`;
     }).join('');
-  }catch(e){document.getElementById('goals-list-pwa').innerHTML='<div style="color:var(--mu);font-size:13px;text-align:center;padding:20px">Could not load goals</div>';}
+  }catch(e){console.warn('loadGoalsPWA error:',e);}
 }
 
-let selectedGoalEmoji='🏖️';
-function selectGoalChip(el,emoji,name){
-  document.querySelectorAll('.goal-chip').forEach(c=>c.classList.remove('act'));
-  el.classList.add('act'); selectedGoalEmoji=emoji;
-  const nameEl=document.getElementById('goal-name');
-  if(nameEl&&!nameEl.value)nameEl.value=name;
-  calcGoalMonthly();
-}
-function calcGoalMonthly(){
-  const target=parseFloat(document.getElementById('goal-target')?.value)||0;
-  const saved=parseFloat(document.getElementById('goal-saved')?.value)||0;
-  const dateVal=document.getElementById('goal-date')?.value;
-  const resultEl=document.getElementById('goal-calc-result');
-  if(!resultEl)return;
-  if(!target||!dateVal){resultEl.style.display='none';return;}
-  const months=Math.max(1,Math.round((new Date(dateVal+'-01')-new Date())/(1000*60*60*24*30)));
-  const needed=Math.ceil(Math.max(0,target-saved)/months);
-  resultEl.style.display='block';
-  document.getElementById('goal-calc-amount').textContent=`R${needed.toLocaleString('en-ZA')}/month`;
-  document.getElementById('goal-calc-desc').textContent=`for ${months} month${months!==1?'s':''} — reach R${target.toLocaleString('en-ZA')} by ${new Date(dateVal+'-01').toLocaleDateString('en-ZA',{month:'long',year:'numeric'})}`;
-}
-function openAddGoalPWA(){
-  // Free plan: limit to 1 savings goal
-  const {isPro} = getTier();
-  const choseFree = localStorage.getItem('rw_chose_free')==='1';
-  if(!isPro || choseFree){
-    // Count existing goals
-    sbG(`savings_goals?tester_id=eq.${user.id}&select=id`).then(existing=>{
-      if((existing||[]).length>=1){
-        showToast('Free plan: 1 savings goal only. Upgrade to Pro for unlimited goals.');
-        showUpgradeWall(false);
-        return;
-      }
-      _openAddGoalSheet();
-    }).catch(()=>_openAddGoalSheet());
-    return;
-  }
-  _openAddGoalSheet();
-}
-function _openAddGoalSheet(){
-  ['goal-name','goal-target','goal-saved','goal-date','goal-nickname'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  const r=document.getElementById('goal-calc-result');if(r)r.style.display='none';
-  document.querySelectorAll('.goal-chip').forEach((c,i)=>c.classList.toggle('act',i===0));
-  selectedGoalEmoji='🏖️';
-  document.getElementById('add-goal-sheet').classList.add('open');
-  document.getElementById('add-goal-ov').classList.add('open');
-}
-function closeAddGoalPWA(){
-  document.getElementById('add-goal-sheet').classList.remove('open');
-  document.getElementById('add-goal-ov').classList.remove('open');
-}
-async function saveGoalPWA(){
-  const name=document.getElementById('goal-name').value.trim();
-  const target=parseFloat(document.getElementById('goal-target').value)||0;
-  const saved=parseFloat(document.getElementById('goal-saved').value)||0;
-  const dateVal=document.getElementById('goal-date')?.value||null;
-  const nickname=document.getElementById('goal-nickname')?.value?.trim()||null;
-  if(!name||!target){showToast('Enter goal name and target amount');return;}
-  const btn=document.getElementById('goal-save-btn');
-  btn.disabled=true;btn.textContent='Saving...';
-  let monthly=0;
-  if(dateVal){
-    const months=Math.max(1,Math.round((new Date(dateVal+'-01')-new Date())/(1000*60*60*24*30)));
-    monthly=Math.ceil(Math.max(0,target-saved)/months);
-  }
-  try{
-    await sbP('savings_goals',{tester_id:user.id,name,target,saved,emoji:selectedGoalEmoji||'🎯',target_date:dateVal,monthly_contribution:monthly,account_nickname:nickname});
-    closeAddGoalPWA();
-    // Update dashboard goal card immediately
-    const amtEl=document.getElementById('stat-goal-amt');
-    const labelEl=document.getElementById('stat-goal-label');
-    if(amtEl) amtEl.textContent='R'+saved.toLocaleString('en-ZA');
-    if(labelEl) labelEl.textContent=(selectedGoalEmoji||'🎯')+' '+name+(monthly?' · R'+monthly.toLocaleString('en-ZA')+'/mo':'');
-    loadGoalsPWA();
-    showToast('✅ Goal saved'+(monthly?` — save R${monthly.toLocaleString('en-ZA')}/mo`:''));
-  }catch(e){showToast('Could not save. Try again.');}
-  btn.disabled=false;btn.textContent='Save goal';
-}
 function openContribSheet(id,name,target,saved,monthly){
   document.getElementById('contrib-goal-id').value=id;
   document.getElementById('contrib-title').textContent=`Log contribution — ${name}`;
