@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>RandWise — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
@@ -43,12 +46,13 @@
   .sidebar {
     width: var(--sidebar-w);
     background: var(--green-d);
-    min-height: 100vh;
+    height: 100vh;
     position: fixed;
     top: 0; left: 0;
     display: flex;
     flex-direction: column;
     z-index: 100;
+    overflow: hidden;
   }
 
   .sidebar-brand {
@@ -713,6 +717,9 @@
     </div>
 
     <div class="nav-section" style="margin-top:8px">Settings</div>
+    <div class="nav-item" onclick="showTab('account',this)">
+      <span class="nav-icon">🔑</span> Account Manager
+    </div>
     <div class="nav-item" onclick="showTab('alerts',this)">
       <span class="nav-icon">🔔</span> Alerts
     </div>
@@ -1335,6 +1342,129 @@
       </div>
     </div>
 
+    <!-- ── Account Manager ──────────────────────────────────── -->
+    <div id="tab-account" class="tab-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">🔑 Account Manager</h2>
+          <p style="color:var(--muted);font-size:13px">Grant, cancel, and manage user subscription access. All writes go directly to Supabase.</p>
+        </div>
+        <button onclick="loadAccountManager()" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">↻ Refresh</button>
+      </div>
+
+      <!-- Single user grant -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Grant / Modify Access</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-top:16px">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">USER (name or email)</label>
+            <input id="am-user-search" type="text" placeholder="Search user..." oninput="filterAmUsers()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+            <div id="am-user-dropdown" style="display:none;position:absolute;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:999;min-width:260px"></div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">ACCESS TYPE</label>
+            <select id="am-access-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+              <optgroup label="── Trial ──">
+                <option value="trial-7">🌱 Free Trial — 7 days</option>
+                <option value="trial-14">🌱 Free Trial — 14 days</option>
+              </optgroup>
+              <optgroup label="── Pro ──">
+                <option value="pro-1">⭐ Pro — 1 month</option>
+                <option value="pro-3">⭐ Pro — 3 months</option>
+                <option value="pro-6">⭐ Pro — 6 months</option>
+                <option value="pro-12">⭐ Pro — 12 months</option>
+              </optgroup>
+              <optgroup label="── Premium ──">
+                <option value="premium-1">👑 Premium — 1 month</option>
+                <option value="premium-3">👑 Premium — 3 months</option>
+                <option value="premium-6">👑 Premium — 6 months</option>
+                <option value="premium-12">👑 Premium — 12 months</option>
+              </optgroup>
+              <optgroup label="── Cancel ──">
+                <option value="cancel-soft">⏸ Cancel (keep until expiry)</option>
+                <option value="cancel-immediate">❌ Cancel immediately → Free</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">NOTE (optional)</label>
+            <input id="am-note" type="text" placeholder="e.g. NYDA grant, Beta tester" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+          </div>
+          <button onclick="applyAccountAccess()" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Apply →</button>
+        </div>
+        <div id="am-selected-user" style="margin-top:10px;font-size:12px;color:var(--muted)">No user selected</div>
+        <div id="am-result" style="margin-top:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- Add new user -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Add New User</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;margin-top:16px">
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">FULL NAME</label>
+            <input id="am-new-name" type="text" placeholder="Full name" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">EMAIL</label>
+            <input id="am-new-email" type="email" placeholder="user@email.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">TIER</label>
+            <select id="am-new-tier" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">ACCESS MONTHS</label>
+            <input id="am-new-months" type="number" placeholder="0 = no expiry" min="0" value="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+          </div>
+          <button onclick="addNewUser()" style="padding:10px 20px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
+        </div>
+        <div id="am-add-result" style="margin-top:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- Bulk grant -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">Bulk Grant</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste one email per line. Applies the same access type selected above.</p>
+        <textarea id="am-bulk-emails" rows="4" placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Mono',monospace;resize:vertical;background:var(--surface)"></textarea>
+        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+          <button onclick="applyBulkAccess()" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Apply to all →</button>
+          <div id="am-bulk-result" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+      </div>
+
+      <!-- All users access table -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">All Users — Access Status</div>
+        <div style="overflow-x:auto;margin-top:16px">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1.5px solid var(--border)">
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Name</th>
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Email</th>
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Tier</th>
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Expiry</th>
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Note</th>
+                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Action</th>
+              </tr>
+            </thead>
+            <tbody id="am-users-table">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Access log -->
+      <div class="card">
+        <div class="card-title">Access Log <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Live from Supabase</span></div>
+        <div id="am-log" style="margin-top:16px;font-size:12px;color:var(--muted)">Loading log...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1392,7 +1522,7 @@ function showTab(name, el) {
     overview:'Overview', users:'Users', segments:'Segments',
     referrals:'Referrals', revenue:'Revenue & Financials', reserves:'Reserves & Team',
     ai:'AI Suggestions', build:'Build Tracker', alerts:'Alerts', legal:'Legal & POPIA',
-    email:'Email Users', newsletter:'Newsletter'
+    email:'Email Users', newsletter:'Newsletter', account:'Account Manager'
   };
   document.getElementById('page-title').textContent = titles[name] || name;
   if (name === 'newsletter') loadNewsletter();
@@ -1953,8 +2083,15 @@ async function loadReferralData(users) {
     if (u.referral_code) userByCode[u.referral_code.toLowerCase()] = u;
   });
 
-  // Referral data lives on beta_testers.referred_by — no separate referrals table
+  // Try to find the referrals table
   let refs = [];
+  const refTableCandidates = ['referrals', 'referral_events', 'referral_log', 'user_referrals'];
+  for (const t of refTableCandidates) {
+    try {
+      refs = await sbGet(t + '?select=*&order=created_at.desc&limit=500');
+      if (Array.isArray(refs)) break;
+    } catch(e) { refs = []; }
+  }
 
   // If no referrals table, fall back to referral_code + referred_by columns on users table
   if (!refs.length) {
@@ -2679,6 +2816,187 @@ async function importUsersAsSubscribers() {
   btn.disabled = false;
   btn.textContent = '👥 Import all users';
 }
+
+// ══════════════════════════════════════════════════════════════
+// ACCOUNT MANAGER
+// ══════════════════════════════════════════════════════════════
+let _amAllUsers=[];
+let _amSelectedUser=null;
+
+async function loadAccountManager(){
+  await loadAmUsersTable();
+  await loadAmLog();
+}
+
+async function loadAmUsersTable(){
+  const tbody=document.getElementById('am-users-table');
+  if(!tbody)return;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,email,tier,access_expires_at,access_note,cancelled_at&order=created_at.desc`,{headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`}});
+    const users=await res.json();
+    _amAllUsers=Array.isArray(users)?users:[];
+    if(!_amAllUsers.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No users found</td></tr>';return;}
+    tbody.innerHTML=_amAllUsers.map(u=>{
+      const exp=u.access_expires_at?new Date(u.access_expires_at):null;
+      const expired=exp&&exp<new Date();
+      const expText=exp?`<span style="color:${expired?'#c0392b':'#1a7a4a'};font-weight:600">${expired?'⚠️ Expired ':'✅ '}${exp.toLocaleDateString('en-ZA')}</span>`:'<span style="color:var(--muted)">No expiry</span>';
+      const tb={free:'<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">FREE</span>',pro:'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">PRO</span>',premium:'<span style="background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">PREMIUM</span>'}[u.tier||'free']||'';
+      return`<tr style="border-bottom:.5px solid var(--border)">
+        <td style="padding:10px 12px;font-size:13px;font-weight:600">${u.name||'—'}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--muted)">${u.email||'—'}</td>
+        <td style="padding:10px 12px">${tb}</td>
+        <td style="padding:10px 12px;font-size:12px">${expText}</td>
+        <td style="padding:10px 12px;font-size:12px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.access_note||'—'}</td>
+        <td style="padding:10px 12px;display:flex;gap:6px">
+          <button onclick="quickGrant('${u.id}','${(u.name||u.email||'').replace(/'/g,"")}')" style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">Grant</button>
+          <button onclick="quickCancel('${u.id}','${(u.name||u.email||'').replace(/'/g,"")}')" style="background:#fee2e2;color:#c0392b;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">Cancel</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }catch(e){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:#c0392b">Error loading users: ${e.message}</td></tr>`;}
+}
+
+async function loadAmLog(){
+  const el=document.getElementById('am-log');
+  if(!el)return;
+  try{
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log?select=*&order=created_at.desc&limit=50`,{headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`}});
+    const logs=await res.json();
+    if(!Array.isArray(logs)||!logs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">No actions logged yet</p>';return;}
+    el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+logs.map(l=>`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;background:var(--surface);border-radius:8px;border:.5px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${l.action_type||'grant'} → <strong>${l.user_name||l.user_email||l.user_id||'—'}</strong></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${l.access_type||''} ${l.expires_at?'· expires '+new Date(l.expires_at).toLocaleDateString('en-ZA'):''} ${l.note?'· '+l.note:''}</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);white-space:nowrap;margin-left:12px">${new Date(l.created_at).toLocaleString('en-ZA',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`).join('')+'</div>';
+  }catch(e){el.innerHTML=`<p style="color:#c0392b">Log error: ${e.message}</p>`;}
+}
+
+function filterAmUsers(){
+  const q=(document.getElementById('am-user-search')?.value||'').toLowerCase();
+  const dd=document.getElementById('am-user-dropdown');
+  if(!q||!_amAllUsers.length){if(dd)dd.style.display='none';return;}
+  const matches=_amAllUsers.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)).slice(0,8);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.style.display='block';
+  dd.innerHTML=matches.map(u=>`<div onclick="selectAmUser('${u.id}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:.5px solid var(--border)" onmouseover="this.style.background='#f0faf4'" onmouseout="this.style.background=''"><strong>${u.name||'—'}</strong> <span style="color:var(--muted);font-size:11px">${u.email||''}</span><span style="float:right;font-size:11px;background:#f3f4f6;padding:1px 6px;border-radius:4px">${u.tier||'free'}</span></div>`).join('');
+}
+
+function selectAmUser(id){
+  _amSelectedUser=_amAllUsers.find(u=>u.id===id);
+  if(!_amSelectedUser)return;
+  document.getElementById('am-user-search').value=_amSelectedUser.name||_amSelectedUser.email;
+  document.getElementById('am-user-dropdown').style.display='none';
+  const exp=_amSelectedUser.access_expires_at?new Date(_amSelectedUser.access_expires_at).toLocaleDateString('en-ZA'):'No expiry';
+  document.getElementById('am-selected-user').innerHTML=`<span style="color:var(--green);font-weight:600">✅ Selected: ${_amSelectedUser.name||'—'}</span> · ${_amSelectedUser.email} · Tier: <strong>${_amSelectedUser.tier||'free'}</strong> · Expiry: <strong>${exp}</strong>`;
+}
+
+async function _applyAccess(userId,userName,userEmail,accessType,note){
+  const now=new Date();
+  let tier='free',expiresAt=null;
+  if(accessType.startsWith('trial-')){
+    tier='free';
+    expiresAt=new Date(now.getTime()+parseInt(accessType.split('-')[1])*24*60*60*1000).toISOString();
+  } else if(accessType.startsWith('pro-')||accessType.startsWith('premium-')){
+    const parts=accessType.split('-');
+    tier=parts[0];
+    const exp=new Date(now);exp.setMonth(exp.getMonth()+parseInt(parts[1]));
+    expiresAt=exp.toISOString();
+  } else if(accessType==='cancel-soft'){
+    tier='free';
+    expiresAt=_amAllUsers.find(u=>u.id===userId)?.access_expires_at||null;
+  } else if(accessType==='cancel-immediate'){
+    tier='free';expiresAt=null;
+  }
+  const patch={tier,access_expires_at:expiresAt,access_note:note||null,admin_tier_override:true,cancelled_at:accessType.includes('cancel')?now.toISOString():null};
+  let r=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?id=eq.${userId}`,{method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(patch)});
+  if(!r.ok)throw new Error(`Patch failed: ${r.status}`);
+  // Log
+  await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:userId,user_name:userName,user_email:userEmail,action_type:accessType.includes('cancel')?'cancel':'grant',access_type:accessType,expires_at:expiresAt,note:note||null,granted_by:'admin'})});
+}
+
+async function applyAccountAccess(){
+  if(!_amSelectedUser){document.getElementById('am-result').innerHTML='<span style="color:#c0392b">⚠️ Select a user first</span>';return;}
+  const accessType=document.getElementById('am-access-type').value;
+  const note=document.getElementById('am-note').value;
+  const res=document.getElementById('am-result');
+  res.innerHTML='Applying...';
+  try{
+    await _applyAccess(_amSelectedUser.id,_amSelectedUser.name||_amSelectedUser.email,_amSelectedUser.email||'',accessType,note);
+    res.innerHTML=`<span style="color:var(--green)">✅ Access applied to ${_amSelectedUser.name||_amSelectedUser.email}</span>`;
+    await loadAmUsersTable();await loadAmLog();
+  }catch(e){res.innerHTML=`<span style="color:#c0392b">❌ ${e.message}</span>`;}
+}
+
+async function quickGrant(userId,userName){
+  const accessType=document.getElementById('am-access-type')?.value||'trial-14';
+  try{
+    const u=_amAllUsers.find(u=>u.id===userId);
+    await _applyAccess(userId,userName,u?.email||'',accessType,'Quick grant');
+    showAdminToast(`✅ ${accessType} granted to ${userName}`);
+    await loadAmUsersTable();await loadAmLog();
+  }catch(e){showAdminToast(`❌ ${e.message}`);}
+}
+
+async function quickCancel(userId,userName){
+  try{
+    const u=_amAllUsers.find(u=>u.id===userId);
+    await _applyAccess(userId,userName,u?.email||'','cancel-immediate','Quick cancel');
+    showAdminToast(`✅ ${userName} downgraded to free`);
+    await loadAmUsersTable();await loadAmLog();
+  }catch(e){showAdminToast(`❌ ${e.message}`);}
+}
+
+async function applyBulkAccess(){
+  const emails=(document.getElementById('am-bulk-emails')?.value||'').split('\n').map(e=>e.trim()).filter(Boolean);
+  const accessType=document.getElementById('am-access-type')?.value||'trial-14';
+  const note=document.getElementById('am-note')?.value||'Bulk grant';
+  const res=document.getElementById('am-bulk-result');
+  if(!emails.length){res.textContent='No emails entered';return;}
+  res.textContent=`Processing ${emails.length} emails...`;
+  let ok=0,notFound=[];
+  for(const email of emails){
+    const u=_amAllUsers.find(u=>(u.email||'').toLowerCase()===email.toLowerCase());
+    if(!u){notFound.push(email);continue;}
+    try{await _applyAccess(u.id,u.name||email,email,accessType,note);ok++;}catch{notFound.push(email);}
+  }
+  res.innerHTML=`<span style="color:var(--green)">✅ ${ok} updated</span>${notFound.length?` · <span style="color:#c0392b">Not found: ${notFound.join(', ')}</span>`:''}`;
+  await loadAmUsersTable();await loadAmLog();
+}
+
+async function addNewUser(){
+  const name=document.getElementById('am-new-name')?.value?.trim();
+  const email=document.getElementById('am-new-email')?.value?.trim();
+  const tier=document.getElementById('am-new-tier')?.value||'free';
+  const months=parseInt(document.getElementById('am-new-months')?.value)||0;
+  const res=document.getElementById('am-add-result');
+  if(!name||!email){res.innerHTML='<span style="color:#c0392b">Name and email required</span>';return;}
+  res.innerHTML='Creating...';
+  try{
+    const now=new Date();
+    const expiresAt=months>0?new Date(now.setMonth(now.getMonth()+months)).toISOString():null;
+    const refCode=name.slice(0,3).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
+    let r=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name,email,tier,access_expires_at:expiresAt,referral_code:refCode,admin_tier_override:true,access_note:'Added by admin'})});
+    if(!r.ok)throw new Error(`Insert failed: ${r.status}`);
+    await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_name:name,user_email:email,action_type:'add_user',access_type:tier+(months?`-${months}mo`:''),expires_at:expiresAt,note:'New user added from admin',granted_by:'admin'})});
+    res.innerHTML=`<span style="color:var(--green)">✅ ${name} added as ${tier}</span>`;
+    document.getElementById('am-new-name').value='';document.getElementById('am-new-email').value='';
+    await loadAmUsersTable();await loadAmLog();
+  }catch(e){res.innerHTML=`<span style="color:#c0392b">❌ ${e.message}</span>`;}
+}
+
+function showAdminToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1a3d2b;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3000);
+}
+
+// Override showTab to load Account Manager data
+const _origShowTab=showTab;
+showTab=function(t,el){_origShowTab(t,el);if(t==='account')loadAccountManager();};
 
 // ── Init ──────────────────────────────────────────────────────
 loadAll();
