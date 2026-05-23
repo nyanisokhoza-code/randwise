@@ -133,7 +133,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
 /* MAIN APP */
 #main{background:var(--bg)}
-.tab-content{flex:1;overflow-y:auto}
+.tab-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--tb,72px) + var(--sb,20px) + 8px)}
 .tab-pane{display:none;min-height:100%}
 .tab-pane.active{display:flex;flex-direction:column}
 .tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0;position:sticky;bottom:0;z-index:100}
@@ -2369,6 +2369,12 @@ function show(id){
   // Tab bar only visible on main screen
   const tabBar=document.getElementById('main-tab-bar');
   if(tabBar) tabBar.style.display=id==='main'?'flex':'none';
+  if(id==='main'&&tabBar){
+    requestAnimationFrame(()=>{
+      const h=tabBar.getBoundingClientRect().height||72;
+      document.documentElement.style.setProperty('--tb',h+'px');
+    });
+  }
 }
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
@@ -10235,5 +10241,24 @@ function editProfilePhone(){
     </div>
   </div>
 </div>
+
+// ── Auto-measure tab bar → --tb CSS variable (keeps ALL pages clear automatically) ──
+(function(){
+  function setTabH(){
+    const tb=document.getElementById('main-tab-bar');
+    if(!tb||tb.style.display==='none') return;
+    const h=tb.getBoundingClientRect().height||72;
+    if(h>0) document.documentElement.style.setProperty('--tb',h+'px');
+  }
+  window.addEventListener('load',setTabH);
+  window.addEventListener('resize',setTabH);
+  window.addEventListener('orientationchange',()=>setTimeout(setTabH,200));
+  if(typeof ResizeObserver!=='undefined'){
+    const ro=new ResizeObserver(setTabH);
+    const tb=document.getElementById('main-tab-bar');
+    if(tb) ro.observe(tb);
+  }
+  setTimeout(setTabH,500);
+})();
 </body>
 </html>
