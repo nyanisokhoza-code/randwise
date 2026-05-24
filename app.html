@@ -1216,7 +1216,7 @@ if('serviceWorker' in navigator){
   </div>
   <div class="tab-content">
     <div class="tab-pane active" id="tp-home">
-      <div style="display:flex;flex-direction:column;height:100%">
+      <div style="display:flex;flex-direction:column;flex:1">
 
         <!-- DARK GREEN HEADER — greeting + mini ring + salary -->
         <div style="background:linear-gradient(160deg,#0a3d20 0%,#1a7a4a 100%);padding:calc(var(--st) + 10px) 18px 18px;flex-shrink:0;position:relative;overflow:hidden">
@@ -1436,7 +1436,7 @@ if('serviceWorker' in navigator){
       </div>
     </div>
     <div class="tab-pane" id="tp-profile">
-      <div style="padding:calc(var(--st) + 12px) 20px 120px;overflow-y:auto;height:100%;-webkit-overflow-scrolling:touch">
+      <div style="padding:calc(var(--st) + 12px) 20px calc(var(--tb,72px) + var(--sb,20px) + 24px);overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch">
         <div style="text-align:center;padding:20px 0 18px">
           <div class="avatar" style="width:72px;height:72px;border-radius:50%;font-size:28px;margin:0 auto 12px" id="pav">U</div>
           <div style="font-size:20px;font-weight:800" id="pname">—</div>
@@ -1529,7 +1529,7 @@ if('serviceWorker' in navigator){
 
     <!-- DEBT TAB -->
     <div class="tab-pane" id="tp-debt">
-      <div style="padding:calc(var(--st) + 12px) 16px 120px;overflow-y:auto;height:100%">
+      <div style="padding:calc(var(--st) + 12px) 16px calc(var(--tb,72px) + var(--sb,20px) + 24px);overflow-y:auto;flex:1">
         <div style="font-size:18px;font-weight:800;margin-bottom:2px">Your debts</div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:14px">Track what you owe and build a payoff plan</div>
 
@@ -1616,7 +1616,7 @@ if('serviceWorker' in navigator){
 
     <!-- GROW TAB -->
     <div class="tab-pane" id="tp-grow">
-      <div style="padding:calc(var(--st) + 12px) 20px 120px;overflow-y:auto;height:100%">
+      <div style="padding:calc(var(--st) + 12px) 20px calc(var(--tb,72px) + var(--sb,20px) + 24px);overflow-y:auto;flex:1">
         <div style="font-size:18px;font-weight:800;margin-bottom:4px">Grow your money</div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Savings goals and investment guidance</div>
         <div id="goals-list-pwa"><div style="text-align:center;padding:40px 0;color:var(--mu);font-size:13px">Loading...</div></div>
@@ -1645,7 +1645,7 @@ if('serviceWorker' in navigator){
 
     <!-- FINANCIAL HEALTH TAB -->
     <div class="tab-pane" id="tp-import">
-      <div style="padding:calc(var(--st) + 12px) 16px 120px;overflow-y:auto;height:100%">
+      <div style="padding:calc(var(--st) + 12px) 16px calc(var(--tb,72px) + var(--sb,20px) + 24px);overflow-y:auto;flex:1">
         <div style="font-size:18px;font-weight:800;margin-bottom:2px">Financial health</div>
         <div style="font-size:13px;color:var(--mu);margin-bottom:16px">Tools to build a stronger financial future</div>
 
@@ -10242,7 +10242,7 @@ function editProfilePhone(){
   </div>
 </div>
 
-// ── Auto-measure tab bar → --tb CSS variable (keeps ALL pages clear automatically) ──
+// ── Auto-measure tab bar → --tb CSS variable ─────────────────
 (function(){
   function setTabH(){
     const tb=document.getElementById('main-tab-bar');
