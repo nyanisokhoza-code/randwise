@@ -1358,8 +1358,10 @@
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-top:16px">
           <div>
             <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">USER (name or email)</label>
-            <input id="am-user-search" type="text" placeholder="Search user..." oninput="filterAmUsers()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-            <div id="am-user-dropdown" style="display:none;position:absolute;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:999;min-width:260px"></div>
+            <div style="position:relative">
+              <input id="am-user-search" type="text" placeholder="Search user..." oninput="filterAmUsers()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
+              <div id="am-user-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:999;margin-top:4px"></div>
+            </div>
           </div>
           <div>
             <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">ACCESS TYPE</label>
@@ -2861,6 +2863,22 @@ async function loadAmLog(){
   if(!el)return;
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log?select=*&order=created_at.desc&limit=50`,{headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`}});
+    if(res.status===404||res.status===400){
+      el.innerHTML=`<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;font-size:13px">
+        <strong>⚠️ admin_access_log table not created yet.</strong><br>
+        Run this SQL in Supabase → SQL Editor:<br>
+        <code style="display:block;margin-top:8px;background:#fff;padding:10px;border-radius:6px;font-size:11px;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS admin_access_log (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id text, user_name text, user_email text,
+  action_type text, access_type text,
+  expires_at timestamptz, note text, granted_by text,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE admin_access_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "admin_full" ON admin_access_log FOR ALL USING (true);</code>
+      </div>`;
+      return;
+    }
     const logs=await res.json();
     if(!Array.isArray(logs)||!logs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">No actions logged yet</p>';return;}
     el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+logs.map(l=>`
@@ -2913,8 +2931,10 @@ async function _applyAccess(userId,userName,userEmail,accessType,note){
   const patch={tier,access_expires_at:expiresAt,access_note:note||null,admin_tier_override:true,cancelled_at:accessType.includes('cancel')?now.toISOString():null};
   let r=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?id=eq.${userId}`,{method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(patch)});
   if(!r.ok)throw new Error(`Patch failed: ${r.status}`);
-  // Log
-  await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:userId,user_name:userName,user_email:userEmail,action_type:accessType.includes('cancel')?'cancel':'grant',access_type:accessType,expires_at:expiresAt,note:note||null,granted_by:'admin'})});
+  // Log action — non-fatal if table doesn't exist yet
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:userId,user_name:userName,user_email:userEmail,action_type:accessType.includes('cancel')?'cancel':'grant',access_type:accessType,expires_at:expiresAt,note:note||null,granted_by:'admin'})});
+  }catch(logErr){console.warn('Access log insert failed (table may not exist yet):',logErr);}
 }
 
 async function applyAccountAccess(){
