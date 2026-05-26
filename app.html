@@ -134,8 +134,8 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 /* MAIN APP */
 #main{background:var(--bg)}
 .tab-content{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-.tab-pane{display:none;flex:1;flex-direction:column;min-height:0}
-.tab-pane.active{display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden}
+.tab-pane{display:none;min-height:0;flex:1;flex-direction:column}
+.tab-pane.active{display:flex;flex:1;flex-direction:column;overflow:hidden;min-height:0}
 .tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0;position:sticky;bottom:0;z-index:100}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;cursor:pointer;border:none;background:none}
 .tab-icon{font-size:20px;line-height:1}
@@ -1394,9 +1394,10 @@ if('serviceWorker' in navigator){
               </div>
             </div>
             <div id="nudge-body" style="display:none;margin-top:8px">
-            <div style="font-size:13px;color:#1a5c35;line-height:1.6;font-weight:500" id="ai-nudge-text">Analysing your spending...</div>
-            <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
-          </div>
+              <div style="font-size:13px;color:#1a5c35;line-height:1.6;font-weight:500" id="ai-nudge-text">Analysing your spending...</div>
+              <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
+            </div>
+          </div><!-- END ai-nudge-card -->
 
           <!-- SPENDING INSIGHTS -->
           <div style="padding:14px 14px 0" id="insights-section">
@@ -10242,7 +10243,7 @@ function editProfilePhone(){
   </div>
 </div>
 
-// ── Tab bar height → --tb (auto-updates on resize/rotation) ──
+// ── Tab bar height → --tb CSS variable (auto on resize/rotation) ──
 (function(){
   function setTabH(){
     const tb=document.getElementById('main-tab-bar');
