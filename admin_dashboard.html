@@ -2915,7 +2915,7 @@ async function _applyAccess(userId,userName,userEmail,accessType,note){
   const now=new Date();
   let tier='free',expiresAt=null;
   if(accessType.startsWith('trial-')){
-    tier='free';
+    tier='pro'; // admin trial = pro access until expiry date
     expiresAt=new Date(now.getTime()+parseInt(accessType.split('-')[1])*24*60*60*1000).toISOString();
   } else if(accessType.startsWith('pro-')||accessType.startsWith('premium-')){
     const parts=accessType.split('-');
