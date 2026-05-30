@@ -1384,8 +1384,8 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- AI NUDGE CARD - collapsed by default -->
-          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1.5px solid #d1ead9;border-radius:16px;padding:10px 14px;overflow:hidden">
-            <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleNudgeExpand()">
+          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:10px 14px">
+            <div style="display:flex;justify-content:space-between;align-items:center" onclick="toggleNudgeExpand()" style="cursor:pointer">
               <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.8px">🤖 Weekly insight</div>
               <div style="display:flex;gap:6px;align-items:center">
                 <button onclick="event.stopPropagation();refreshAINudge()" id="nudge-refresh-btn" style="background:none;border:none;color:#5a8a6a;font-size:11px;cursor:pointer;font-weight:600;padding:2px 6px;border-radius:6px">↻</button>
@@ -4597,6 +4597,105 @@ async function saveDebtPWA(){
 }
 
 // ── Goals PWA ─────────────────────────────────────────────────
+// ── SAVINGS GOALS — missing functions ────────────────────────
+function openAddGoalPWA(){
+  // Clear form
+  document.getElementById('goal-target').value='';
+  document.getElementById('goal-date').value='';
+  document.getElementById('goal-saved').value='0';
+  document.getElementById('goal-monthly-hint').textContent='';
+  // Reset chips — first chip active by default
+  document.querySelectorAll('.goal-chip').forEach((c,i)=>c.classList.toggle('act',i===0));
+  document.getElementById('add-goal-sheet').classList.add('open');
+  document.getElementById('add-goal-ov').classList.add('open');
+}
+
+function closeAddGoalPWA(){
+  document.getElementById('add-goal-sheet').classList.remove('open');
+  document.getElementById('add-goal-ov').classList.remove('open');
+}
+
+function selectGoalChip(el, emoji, name){
+  document.querySelectorAll('.goal-chip').forEach(c=>c.classList.remove('act'));
+  el.classList.add('act');
+  el._emoji = emoji;
+  el._name = name;
+}
+
+function calcGoalMonthly(){
+  const target = parseFloat(document.getElementById('goal-target').value)||0;
+  const saved  = parseFloat(document.getElementById('goal-saved').value)||0;
+  const dateVal = document.getElementById('goal-date').value;
+  const calcBox = document.getElementById('goal-calc-result');
+  const calcAmt = document.getElementById('goal-calc-amount');
+  const calcDesc = document.getElementById('goal-calc-desc');
+  const hint = document.getElementById('goal-monthly-hint');
+  if(calcBox && target>0 && dateVal){
+    const months = Math.max(1, Math.round((new Date(dateVal)-new Date())/(1000*60*60*24*30)));
+    const needed = Math.ceil(Math.max(0, target-saved)/months);
+    calcBox.style.display='block';
+    if(calcAmt) calcAmt.textContent = needed>0 ? `R${needed.toLocaleString('en-ZA')}/month` : 'Already there!';
+    if(calcDesc) calcDesc.textContent = needed>0 ? `to reach R${target.toLocaleString('en-ZA')} by ${new Date(dateVal+'-01').toLocaleDateString('en-ZA',{month:'short',year:'numeric'})}` : '🎉 Already at or above target!';
+  } else if(calcBox){
+    calcBox.style.display='none';
+  }
+  if(hint) hint.textContent='';
+}
+
+async function saveGoalPWA(){
+  if(!user?.id){ showToast('Not logged in'); return; }
+
+  // Get selected chip for emoji
+  const activeChip = document.querySelector('.goal-chip.act');
+  const emoji = activeChip?._emoji || activeChip?.textContent?.trim().split(' ')[0] || '🎯';
+
+  // Use goal-name field (exists in HTML)
+  const nameField = document.getElementById('goal-name');
+  const name = (nameField?.value?.trim()) ||
+    activeChip?._name ||
+    activeChip?.textContent?.trim().replace(/^\S+\s*/,'') ||
+    'My goal';
+
+  const target   = parseFloat(document.getElementById('goal-target').value)||0;
+  const saved    = parseFloat(document.getElementById('goal-saved').value)||0;
+  const dateVal  = document.getElementById('goal-date').value;
+  const nickname = document.getElementById('goal-nickname')?.value?.trim()||null;
+
+  if(!target||target<=0){ showToast('Enter a target amount'); return; }
+
+  const btn = document.getElementById('goal-save-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Saving...'; }
+
+  try{
+    const months = dateVal ? Math.max(1,Math.round((new Date(dateVal+'-01')-new Date())/(1000*60*60*24*30))) : 0;
+    const monthly = months>0 ? Math.ceil(Math.max(0,target-saved)/months) : 0;
+
+    const payload = {
+      tester_id: user.id,
+      name, emoji, target, saved,
+      monthly_contribution: monthly,
+    };
+    if(dateVal) payload.target_date = dateVal+'-01';
+    if(nickname) payload.account_nickname = nickname;
+
+    const r = await fetch(`${SB}/rest/v1/savings_goals`,{
+      method:'POST',
+      headers:{...H,'Prefer':'return=minimal'},
+      body:JSON.stringify(payload)
+    });
+    if(!r.ok){ const t=await r.text(); throw new Error(t); }
+
+    closeAddGoalPWA();
+    showToast('✅ Goal saved!');
+    await loadGoalsPWA();
+
+  }catch(e){
+    showToast('Could not save: '+e.message);
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='Save goal'; }
+  }
+}
+
 async function loadGoalsPWA(){
   if(!user?.id)return;
   try{
@@ -7840,7 +7939,7 @@ function stopCoinAnim(){
 }
 
 function toggleHeroFlip(){
-  stopCoinAnim(); // User discovered it — stop animating
+  stopCoinAnim();
   const front = document.getElementById('hero-front');
   const back = document.getElementById('hero-week-back');
   if(!front || !back) return;
@@ -10244,26 +10343,7 @@ function editProfilePhone(){
   </div>
 </div>
 
-// ── Tab bar height → --tb (auto on resize/rotation) ──────────
-(function(){
-  function setTabH(){
-    const tb=document.getElementById('main-tab-bar');
-    if(!tb||tb.style.display==='none') return;
-    const h=tb.getBoundingClientRect().height;
-    if(h>0) document.documentElement.style.setProperty('--tb',h+'px');
-  }
-  window.addEventListener('load',setTabH);
-  window.addEventListener('resize',setTabH);
-  window.addEventListener('orientationchange',()=>setTimeout(setTabH,300));
-  if(typeof ResizeObserver!=='undefined'){
-    const tb=document.getElementById('main-tab-bar');
-    if(tb) new ResizeObserver(setTabH).observe(tb);
-  }
-  setTimeout(setTabH,400);
-  setTimeout(setTabH,1200);
-})();
-
-// ── Tab bar height → --tb (auto on resize/rotation) ──────────
+// ── Tab bar height → --tb ────────────────────────────────────
 (function(){
   function setTabH(){
     const tb=document.getElementById('main-tab-bar');

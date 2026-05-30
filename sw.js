@@ -1,4 +1,4 @@
-const CACHE='rw-v153';
+const CACHE='rw-v154';
 const STATIC=[
   './app.html',
   './manifest.json',
