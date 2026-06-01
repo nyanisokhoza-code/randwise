@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>You're invited to MyRandWise 🌱</title>
+<meta name="description" content="Your friend invited you to MyRandWise — the personal finance app built for real South African life.">
+<meta property="og:title" content="You're invited to MyRandWise 🌱">
+<meta property="og:description" content="Track spending, crush debt, grow savings. Built for South Africans. Free for 14 days.">
+<meta property="og:image" content="https://myrandwise.co.za/icon_512.png">
+<meta property="og:url" content="https://myrandwise.co.za/refer.html">
+<meta name="theme-color" content="#1a7a4a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:#0a3d20;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:24px;padding:36px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.logo{width:64px;height:64px;background:#1a7a4a;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px}
+.invited-by{font-size:13px;color:#6b7280;margin-bottom:6px}
+.inviter-name{font-size:22px;font-weight:900;color:#1a1a1a;margin-bottom:4px}
+.invited-by-sub{font-size:13px;color:#6b7280;margin-bottom:24px}
+.headline{font-size:26px;font-weight:900;color:#1a1a1a;line-height:1.2;margin-bottom:8px}
+.headline span{color:#1a7a4a}
+.sub{font-size:14px;color:#6b7280;line-height:1.6;margin-bottom:24px}
+.features{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;text-align:left}
+.feat{display:flex;align-items:center;gap:10px;font-size:13px;color:#374151;font-weight:600}
+.feat-icon{font-size:18px;flex-shrink:0}
+.cta{display:block;width:100%;padding:16px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:12px;transition:background .15s}
+.cta:hover{background:#155f3a}
+.apk{display:block;width:100%;padding:13px;background:#f0f9f4;color:#1a7a4a;border:2px solid #d1ead9;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:20px}
+.code-box{background:#f0f9f4;border:1px solid #d1ead9;border-radius:12px;padding:14px;margin-bottom:20px}
+.code-label{font-size:11px;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.code-val{font-size:20px;font-weight:900;color:#1a7a4a;letter-spacing:2px}
+.fine{font-size:11px;color:#9ca3af;line-height:1.5}
+.fine a{color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🌱</div>
+
+  <div class="invited-by">You've been invited by</div>
+  <div class="inviter-name" id="inviter-name">a friend</div>
+  <div class="invited-by-sub">to try MyRandWise free for 14 days</div>
+
+  <div class="headline">Your money,<br><span>your rules.</span></div>
+  <p class="sub">The personal finance app built for real South African life — not American, not European. Ours.</p>
+
+  <div class="features">
+    <div class="feat"><span class="feat-icon">📊</span>Track every rand you spend</div>
+    <div class="feat"><span class="feat-icon">💳</span>Know your debt score</div>
+    <div class="feat"><span class="feat-icon">🎯</span>Set savings goals that stick</div>
+    <div class="feat"><span class="feat-icon">🏠</span>See your real net worth</div>
+    <div class="feat"><span class="feat-icon">🇿🇦</span>Built for SA — rands, stokvels, payday</div>
+  </div>
+
+  <div class="code-box">
+    <div class="code-label">Your referral code</div>
+    <div class="code-val" id="ref-code">—</div>
+  </div>
+
+  <a href="https://myrandwise.co.za/app.html" class="cta" onclick="saveRefAndGo(event,'app')">
+    🌱 Get started free — 14 days trial
+  </a>
+  <div id="apk-section">
+    <button class="apk" onclick="showApkEmail()">⬇️ Download Android APK instead</button>
+  </div>
+  <div id="apk-email-section" style="display:none;margin-bottom:20px">
+    <p style="font-size:12px;color:#6b7280;margin-bottom:8px;text-align:left">Enter your email so we can link your referral bonus when you register:</p>
+    <input id="apk-email-input" type="email" placeholder="your@email.com"
+      style="width:100%;padding:12px;border:1.5px solid #d1ead9;border-radius:10px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;outline:none;box-sizing:border-box">
+    <button onclick="downloadApkWithEmail()" class="cta" style="margin-bottom:6px">⬇️ Download APK now</button>
+    <button onclick="skipApkEmail()" style="width:100%;background:none;border:none;font-size:12px;color:#9ca3af;cursor:pointer;padding:6px;font-family:'Plus Jakarta Sans',sans-serif">Skip — download without linking referral</button>
+  </div>
+
+  <p class="fine">
+    No credit card needed. POPIA compliant.<br>
+    <a href="https://myrandwise.co.za/privacy-policy.html">Privacy policy</a> · 
+    <a href="https://myrandwise.co.za/delete-account.html">Delete account</a>
+  </p>
+</div>
+
+<script>
+// Read ?ref= from URL
+const params = new URLSearchParams(window.location.search);
+const refCode = params.get('ref') || '';
+
+// Display the code
+if(refCode){
+  document.getElementById('ref-code').textContent = refCode;
+  // Try to look up the referrer's name from Supabase
+  fetch(`https://mmezkseblafurjolkfkt.supabase.co/rest/v1/beta_testers?referral_code=eq.${refCode}&select=name`, {
+    headers:{
+      'apikey':'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+      'Authorization':'Bearer sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm'
+    }
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data?.[0]?.name){
+      const first = data[0].name.trim().split(' ')[0];
+      document.getElementById('inviter-name').textContent = first;
+    }
+  })
+  .catch(()=>{});
+} else {
+  document.getElementById('ref-code').textContent = 'No code';
+  document.querySelector('.code-box').style.display = 'none';
+}
+
+function showApkEmail(){
+  document.getElementById('apk-section').style.display='none';
+  document.getElementById('apk-email-section').style.display='block';
+  document.getElementById('apk-email-input').focus();
+}
+
+async function downloadApkWithEmail(){
+  const email = document.getElementById('apk-email-input').value.trim().toLowerCase();
+  if(email && email.includes('@')){
+    // Save to newsletter_subscribers with referral source
+    try {
+      await fetch('https://mmezkseblafurjolkfkt.supabase.co/rest/v1/newsletter_subscribers',{
+        method:'POST',
+        headers:{
+          'apikey':'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+          'Authorization':'Bearer sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm',
+          'Content-Type':'application/json',
+          'Prefer':'resolution=ignore-duplicates'
+        },
+        body:JSON.stringify({
+          email,
+          source:'apk_referral',
+          active:true,
+          name: refCode ? 'APK ref:'+refCode : 'APK download'
+        })
+      });
+    } catch(e){}
+    // Also store pending ref so if they use browser app later it's linked
+    if(refCode) localStorage.setItem('rw_pending_ref', refCode);
+    localStorage.setItem('rw_pending_email', email);
+  }
+  window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
+}
+
+function skipApkEmail(){
+  if(refCode) localStorage.setItem('rw_pending_ref', refCode);
+  window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
+}
+
+function saveRefAndGo(e, dest){
+  e.preventDefault();
+  if(refCode) localStorage.setItem('rw_pending_ref', refCode);
+  if(dest === 'apk'){
+    window.location.href = 'https://myrandwise.co.za/MyRandWise.apk';
+  } else {
+    window.location.href = 'https://myrandwise.co.za/app.html';
+  }
+}
+</script>
+</body>
+</html>

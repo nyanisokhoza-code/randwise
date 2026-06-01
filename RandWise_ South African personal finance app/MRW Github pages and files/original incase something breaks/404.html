@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RandWise</title>
+<script>
+// GitHub Pages 404 redirect handler
+// Catches Supabase auth callbacks that land on root domain
+const hash = window.location.hash;
+const search = window.location.search;
+const path = window.location.pathname;
+
+// If it's a Supabase auth callback (has access_token in hash)
+if (hash && hash.includes('access_token')) {
+  const params = new URLSearchParams(hash.slice(1));
+  const type = params.get('type');
+  
+  if (type === 'recovery') {
+    window.location.replace(
+      'https://myrandwise.co.za/reset-password.html' + hash
+    );
+  } else {
+    window.location.replace(
+      'https://myrandwise.co.za/' + hash
+    );
+  }
+} else if (hash && hash.includes('error=access_denied')) {
+  // Expired or invalid link — send back to app with message
+  window.location.replace(
+    'https://myrandwise.co.za/reset-password.html?expired=1'
+  );
+} else {
+  window.location.replace('https://myrandwise.co.za/');
+}
+</script>
+<noscript>
+  <meta http-equiv="refresh" content="0;url=https://myrandwise.co.za/">
+</noscript>
+</head>
+<body></body>
+</html>
