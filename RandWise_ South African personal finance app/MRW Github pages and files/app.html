@@ -270,6 +270,21 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .otp-box.filled{border-color:var(--m);background:#e8f5ee;}
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
+<style>
+/* Smooth collapse for Recent transactions */
+#exp-list {
+  transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease;
+  max-height: 2000px;
+  opacity: 1;
+  overflow: hidden;
+}
+#exp-list.collapsed {
+  max-height: 0 !important;
+  opacity: 0;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+</style>
 </head>
 <script>
 // ── SERVICE WORKER — always get latest version ────────────────
@@ -1400,7 +1415,7 @@ if('serviceWorker' in navigator){
           </div><!-- /ai-nudge-card -->
 
           <!-- SPENDING INSIGHTS -->
-          <div style="padding:14px 14px 0;margin-top:20px;border-top:1px solid #e0e0e0">
+          <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div style="font-size:15px;font-weight:700;color:var(--t)">💡 Spending insights</div>
               <div onclick="openMonthlySummary()" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px">📊 Monthly summary</div>
@@ -1420,7 +1435,7 @@ if('serviceWorker' in navigator){
               <div style="background:rgba(255,255,255,.15);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:800;color:#fff;white-space:nowrap">Share →</div>
             </div>
           </div>
-          <div style="padding:14px 14px 0;margin-top:16px">
+          <div style="p<div style="padding:14px 14px 0;margin-top:60px;border-top:2px solid #e0e0e0;background:#fff;position:relative;z-index:1">adding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div style="font-size:15px;font-weight:700;color:var(--t);display:flex;justify-content:space-between;align-items:center;">
   <span>Recent transactions</span>
@@ -9728,7 +9743,17 @@ function shareReferral(){
     });
   }
 }
-
+function dismissReferral(){
+  var card = document.getElementById('referral-home-card');
+  if(card){ card.style.display = 'none'; localStorage.setItem('refDismissed', Date.now()); }
+}
+(function(){
+  var dismissed = localStorage.getItem('refDismissed');
+  if(dismissed && Date.now() - parseInt(dismissed) < 7*24*60*60*1000){
+    var card = document.getElementById('referral-home-card');
+    if(card) card.style.display = 'none';
+  }
+})();
 
 
 // ── Monthly Check-in ──────────────────────────────────────────
@@ -10443,33 +10468,32 @@ function editProfilePhone(){
   </div>
 </div>
 
-// ── Referral dismiss ─────────────────────────────────────────
-function dismissReferral(){
-  var card = document.getElementById('referral-home-card');
-  if(card){ card.style.display = 'none'; localStorage.setItem('refDismissed', Date.now()); }
-}
-(function(){
-  var dismissed = localStorage.getItem('refDismissed');
-  if(dismissed && Date.now() - parseInt(dismissed) < 7*24*60*60*1000){
-    var card = document.getElementById('referral-home-card');
-    if(card) card.style.display = 'none';
-  }
-})();
-
-
-// ── Recent transactions toggle ───────────────────────────────
 function toggleRecentTx(){
   var list = document.getElementById('exp-list');
   var btn = document.querySelector('[onclick="toggleRecentTx()"]');
   if(!list) return;
-  if(list.style.display === 'none'){
-    list.style.display = 'block';
+  
+  if(list.classList.contains('collapsed')){
+    list.classList.remove('collapsed');
     if(btn) btn.textContent = '−';
   } else {
-    list.style.display = 'none';
+    list.classList.add('collapsed');
     if(btn) btn.textContent = '+';
   }
 }
+})();
+
+// ── Recent transactions toggle ───────────────────────────────
+// Auto-collapse Recent transactions on page load
+(function(){
+  var list = document.getElementById('exp-list');
+  var btn = document.querySelector('[onclick="toggleRecentTx()"]');
+  if(list){
+    list.classList.add('collapsed');
+  }
+  if(btn) btn.textContent = '+';
+})();
+
 (function(){
   function setTabH(){
     const tb=document.getElementById('main-tab-bar');
