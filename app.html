@@ -133,9 +133,9 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
 /* MAIN APP */
 #main{background:var(--bg)}
-.tab-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.tab-pane{display:none;height:100%}
-.tab-pane.active{display:flex;flex-direction:column;height:100%}
+.tab-content{flex:1;overflow-y:auto}
+.tab-pane{display:none;min-height:100%}
+.tab-pane.active{display:flex;flex-direction:column}
 .tab-bar{display:flex;background:var(--w);border-top:.5px solid var(--bd);padding-bottom:var(--sb);flex-shrink:0;position:sticky;bottom:0;z-index:100}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 6px;cursor:pointer;border:none;background:none}
 .tab-icon{font-size:20px;line-height:1}
@@ -270,6 +270,19 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .otp-box.filled{border-color:var(--m);background:#e8f5ee;}
 </style>
 <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a7a4a'/><text y='.9em' font-size='80'>🌱</text></svg>">
+<style>
+
+
+  /* === FORCE STAT CARDS VISIBLE === */
+  #week-stat-card,#stat-debt-card,#stat-goal-card,#daily-dots-row,#net-worth-card{
+    display:block !important;visibility:visible !important;opacity:1 !important;
+  }
+  #budget-breakdown-card{display:block !important;}
+  /* Ensure grid doesn't collapse */
+  #week-stat-card{min-height:120px;}
+  #stat-debt-card{min-height:120px;}
+  #stat-goal-card{min-height:120px;}
+</style>
 </head>
 <script>
 // ── SERVICE WORKER — always get latest version ────────────────
@@ -1365,7 +1378,7 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- BUDGET BREAKDOWN CARD -->
-          <div id="budget-breakdown-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:13px 14px" onclick="handleBreakdownTap()">
+          <div id="budget-breakdown-card" style="display:block;margin:10px 14px 0;background:#f0faf4;border-radius:16px;border:1px solid #d1ead9;padding:13px 14px" onclick="handleBreakdownTap()">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div style="font-size:10px;color:#5a8a6a;font-weight:700;text-transform:uppercase;letter-spacing:.8px">Budget breakdown</div>
               <div style="font-size:11px;color:#1a5c35;font-weight:700" id="bb-weekly">R0/wk free</div>
@@ -1375,7 +1388,7 @@ if('serviceWorker' in navigator){
               <div style="font-size:11px;color:#5a8a6a">After commitments</div>
               <div style="font-size:13px;font-weight:800;color:#1a5c35" id="bb-disposable">R0/mo</div>
             </div>
-          </div></div>
+          </div>
 
           <!-- SMART NUDGE -->
           <div id="rollover-nudge" style="display:none;margin:10px 14px 0;background:#fff8e1;border:1px solid #fbbf24;border-radius:12px;padding:11px 13px">
@@ -1384,7 +1397,7 @@ if('serviceWorker' in navigator){
           </div>
 
           <!-- AI NUDGE CARD - collapsed by default -->
-          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:10px 14px">
+          <div id="ai-nudge-card" style="display:none;margin:10px 14px 0;background:#f0faf4;border:1px solid #d1ead9;border-radius:16px;padding:12px 14px">
             <div style="display:flex;justify-content:space-between;align-items:center" onclick="toggleNudgeExpand()" style="cursor:pointer">
               <div style="font-size:11px;color:#1a5c35;font-weight:700;text-transform:uppercase;letter-spacing:.8px">🤖 Weekly insight</div>
               <div style="display:flex;gap:6px;align-items:center">
@@ -1393,14 +1406,14 @@ if('serviceWorker' in navigator){
                 <span id="nudge-toggle-icon" style="font-size:12px;color:#5a8a6a">▼</span>
               </div>
             </div>
-            <div id="nudge-body" style="display:none;margin-top:8px;overflow-y:auto;max-height:60vh;-webkit-overflow-scrolling:touch">
+            <div id="nudge-body" style="display:none;margin-top:8px">
               <div style="font-size:13px;color:#1a5c35;line-height:1.6;font-weight:500" id="ai-nudge-text">Analysing your spending...</div>
               <div style="font-size:10px;color:#5a8a6a;margin-top:8px" id="ai-nudge-date"></div>
             </div>
           </div><!-- /ai-nudge-card -->
 
           <!-- SPENDING INSIGHTS -->
-          <div style="padding:14px 14px 0" id="insights-section">
+          <div style="padding:14px 14px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div style="font-size:15px;font-weight:700;color:var(--t)">💡 Spending insights</div>
               <div onclick="openMonthlySummary()" style="font-size:12px;color:var(--g);font-weight:600;cursor:pointer;padding:4px 10px;background:#e8f5e9;border-radius:20px">📊 Monthly summary</div>
@@ -1410,8 +1423,9 @@ if('serviceWorker' in navigator){
 
           <!-- RECENT TRANSACTIONS -->
           <!-- Referral card - shown periodically -->
-          <div id="referral-home-card" style="display:none;margin:0 14px 12px;background:linear-gradient(135deg,#0d4a2a,#1a7a4a);border-radius:16px;padding:16px;cursor:pointer" onclick="shareReferral()">
-            <div style="display:flex;justify-content:space-between;align-items:center">
+          <div id="referral-home-card" style="display:none;margin:0 14px 12px;background:linear-gradient(135deg,#0d4a2a,#1a7a4a);border-radius:12px;padding:14px;position:relative;"
+              <div style="display:flex;justify-content:space-between;align-items:center;position:relative;">
+    <button onclick="dismissReferral()" style="position:absolute;right:-6px;top:-10px;background:rgba(255,255,255,.25);border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;color:#fff;line-height:22px;text-align:center;padding:0;">×</button>
               <div>
                 <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:3px">🌱 Know someone who needs this?</div>
                 <div style="font-size:11px;color:rgba(255,255,255,.7)">Share MyRandWise — earn when they upgrade</div>
@@ -2365,8 +2379,10 @@ function show(id){
   }
   document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none';});
   const el=document.getElementById(id);
+if(el){
   el.classList.add('active');
   el.style.display='flex';
+}
   // Tab bar only visible on main screen
   const tabBar=document.getElementById('main-tab-bar');
   if(tabBar) tabBar.style.display=id==='main'?'flex':'none';
@@ -2965,7 +2981,14 @@ function getSmartWeeklyBudget(){
   const needsPresetTotal = Object.values(savedNeeds).reduce((s,v)=>s+Number(v),0);
   const needsCustomTotal = customNeedsData.reduce((s,n)=>s+Number(n.amount||0),0);
   const needsTotal = needsPresetTotal + needsCustomTotal;
-  if(needsTotal>0) breakdown.push({label:'Monthly needs', amount:needsTotal});
+  // GUARD: New user with no transactions/debts should show R0 for needs
+const hasTransactions = (typeof transactions !== 'undefined' && transactions && transactions.length > 0);
+const hasDebts = (typeof debts !== 'undefined' && debts && debts.length > 0);
+if(needsTotal > 0 && (hasTransactions || hasDebts)) {
+    breakdown.push({label:'Monthly needs', amount:needsTotal});
+} else if (!hasTransactions && !hasDebts) {
+    breakdown.push({label:'Monthly needs', amount:0});
+}
 
   // NOTE: Recurring expenses are intentionally NOT included here
   // They overlap with monthly needs (e.g. Electricity is both a recurring expense AND a monthly need)
@@ -3037,8 +3060,18 @@ async function renderDash(){
     return;
   } else {
     if(gate)gate.style.display='none';
-    if(mainContent){mainContent.style.display='block';mainContent.style.flex='1';}
+    if(mainContent){
+      mainContent.style.display='block';
+      mainContent.style.flex='1';
+      mainContent.style.visibility='visible';
+      mainContent.style.opacity='1';
+    }
   }
+  // Ensure stat cards are always visible (override any Pro/Free gating)
+  ['week-stat-card','stat-debt-card','stat-goal-card','daily-dots-row','net-worth-card','budget-breakdown-card'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='block';el.style.visibility='visible';el.style.opacity='1';}
+  });
   set('ptier',user.tier||'free');
   set('pref',user.referral_code||'—');
   set('pemail',user.email||'—');
@@ -3669,7 +3702,8 @@ function switchTab(t){
   }
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('act'));
-  document.getElementById('tp-'+t).classList.add('active');
+  const tpPane = document.getElementById('tp-'+t);
+if(tpPane) tpPane.classList.add('active');
   const btn=document.getElementById('tb-'+t);
   if(btn)btn.classList.add('act');
   // Reset scroll to top
@@ -3679,7 +3713,9 @@ function switchTab(t){
   if(tabContent) tabContent.scrollTop=0;
   if(t==='home'){
     const dc=document.getElementById('dash-main-content');
-    if(dc) dc.scrollTop=0;
+    if(dc){dc.scrollTop=0;dc.scrollTo({top:0,behavior:'instant'});}
+    const tc=document.querySelector('.tab-content');
+    if(tc){tc.scrollTop=0;tc.scrollTo({top:0,behavior:'instant'});}
     // Load debts (auto-syncs to debit orders) then render dash
     loadDebtsPWA().then(()=>renderDash()).catch(()=>renderDash());
     // Load goals to update savings goal card on dashboard
@@ -4693,6 +4729,73 @@ async function saveGoalPWA(){
     showToast('Could not save: '+e.message);
   } finally {
     if(btn){ btn.disabled=false; btn.textContent='Save goal'; }
+  }
+}
+
+// ── SAVINGS GOAL FUNCTIONS ───────────────────────────────────
+function openAddGoalPWA(){
+  var sheet = document.getElementById('add-goal-sheet');
+  if(!sheet) return;
+  sheet.classList.add('active');
+  var gn = document.getElementById('goal-name');
+  var gt = document.getElementById('goal-target');
+  var gs = document.getElementById('goal-saved');
+  var gd = document.getElementById('goal-date');
+  var gr = document.getElementById('goal-calc-result');
+  if(gn) gn.value = '';
+  if(gt) gt.value = '';
+  if(gs) gs.value = '';
+  if(gd) gd.value = '';
+  if(gr) gr.textContent = '';
+}
+
+function closeAddGoalPWA(){
+  var sheet = document.getElementById('add-goal-sheet');
+  if(sheet) sheet.classList.remove('active');
+}
+
+function calcGoalMonthly(){
+  var targetEl = document.getElementById('goal-target');
+  var savedEl = document.getElementById('goal-saved');
+  var dateEl = document.getElementById('goal-date');
+  var resultEl = document.getElementById('goal-calc-result');
+  if(!resultEl || !targetEl) return;
+  var target = parseFloat(targetEl.value || 0);
+  var saved = parseFloat(savedEl ? savedEl.value : 0) || 0;
+  var dateStr = dateEl ? dateEl.value : '';
+  if(!target || !dateStr){ resultEl.textContent = ''; return; }
+  var remaining = target - saved;
+  if(remaining <= 0){ resultEl.textContent = 'Goal already reached!'; return; }
+  var targetDate = new Date(dateStr);
+  var today = new Date();
+  var months = Math.max(1, Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24 * 30)));
+  var monthly = remaining / months;
+  resultEl.textContent = 'Save R' + monthly.toFixed(0) + '/month for ' + months + ' months';
+}
+
+function saveGoalPWA(){
+  var nameEl = document.getElementById('goal-name');
+  var targetEl = document.getElementById('goal-target');
+  var savedEl = document.getElementById('goal-saved');
+  var dateEl = document.getElementById('goal-date');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var target = parseFloat(targetEl ? targetEl.value : 0) || 0;
+  var saved = parseFloat(savedEl ? savedEl.value : 0) || 0;
+  var dateStr = dateEl ? dateEl.value : '';
+  if(!name || !target || !dateStr){
+    if(typeof toast === 'function') toast('Please fill in goal name, target amount and target date');
+    return;
+  }
+  var goal = {
+    tester_id: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.id : null,
+    name: name, emoji: 'goal', target: target, saved: saved || 0,
+    target_date: dateStr, monthly_contribution: 0, account_nickname: ''
+  };
+  if(typeof sbPost === 'function'){
+    sbPost('savings_goals', goal).then(function(res){
+      if(res.error){ console.error('saveGoalPWA error:', res.error); if(typeof toast === 'function') toast('Failed to save goal.'); }
+      else { if(typeof toast === 'function') toast('Goal saved!'); closeAddGoalPWA(); if(typeof loadGoalsPWA === 'function') loadGoalsPWA(); }
+    });
   }
 }
 
@@ -9628,7 +9731,17 @@ function shareReferral(){
     });
   }
 }
-
+function dismissReferral(){
+  var card = document.getElementById('referral-home-card');
+  if(card){ card.style.display = 'none'; localStorage.setItem('refDismissed', Date.now()); }
+}
+(function(){
+  var dismissed = localStorage.getItem('refDismissed');
+  if(dismissed && Date.now() - parseInt(dismissed) < 7*24*60*60*1000){
+    var card = document.getElementById('referral-home-card');
+    if(card) card.style.display = 'none';
+  }
+})();
 
 
 // ── Monthly Check-in ──────────────────────────────────────────
@@ -10343,7 +10456,19 @@ function editProfilePhone(){
   </div>
 </div>
 
-// ── Tab bar height → --tb ────────────────────────────────────
+
+
+// ── Recent transactions toggle ───────────────────────────────
+// Auto-collapse Recent transactions on page load
+(function(){
+  var list = document.getElementById('exp-list');
+  var btn = document.querySelector('[onclick="toggleRecentTx()"]');
+  if(list){
+    list.classList.add('collapsed');
+  }
+  if(btn) btn.textContent = '+';
+})();
+
 (function(){
   function setTabH(){
     const tb=document.getElementById('main-tab-bar');
