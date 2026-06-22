@@ -218,14 +218,15 @@ The app gets more useful the more you use it. Most users see their full financia
 </html>`;
 
   try{
-    await fetch('https://api.resend.com/emails',{
+    const token = localStorage.getItem('rw_token') || AK;
+    await fetch(`${SB}/functions/v1/send-email`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS'},
+      headers:{'Content-Type':'application/json','apikey':AK,'Authorization':'Bearer '+token},
       body:JSON.stringify({
         from:'MyRandWise <support@myrandwise.co.za>',
         to:[email],
         subject: t.subject,
-        html
+        html: html
       })
     });
   }catch(e){ console.warn('Goal welcome email failed:',e); }
