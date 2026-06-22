@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Budget on a South African Salary (50/30/20 Made Simple) | MyRandWise</title>
+<meta name="description" content="The 50/30/20 budget rule adapted for South African salaries, taxes, and the rising cost of living. A practical guide from MyRandWise.">
+<meta property="og:title" content="How to Budget on a South African Salary">
+<meta property="og:description" content="The 50/30/20 rule — made real for South Africa's cost of living.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green:       #1D9E75;
+  --green-dark:  #0F6E56;
+  --green-light: #E1F5EE;
+  --green-text:  #085041;
+  --sand:        #F7F5F0;
+  --sand-dark:   #EAE7DF;
+  --text:        #171714;
+  --text-2:      #585852;
+  --text-3:      #99998F;
+  --border:      rgba(0,0,0,0.09);
+  --radius:      10px;
+  --radius-sm:   7px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #fff;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); }
+.nav-dot { width: 28px; height: 28px; background: var(--green); border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; }
+.nav-name { font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 600; letter-spacing: -0.02em; }
+.nav-cta { padding: 7px 16px; background: var(--green); color: #fff; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; text-decoration: none; }
+.nav-cta:hover { background: var(--green-dark); }
+
+/* ARTICLE LAYOUT */
+.article-wrap {
+  display: grid;
+  grid-template-columns: 1fr min(680px, 100%) 1fr;
+  padding: 0 16px;
+}
+.article-wrap > * { grid-column: 2; }
+.full-bleed { grid-column: 1 / -1; }
+
+/* HERO */
+.article-hero {
+  padding: 52px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+.article-cat {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--green);
+  background: var(--green-light);
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+.article-hero h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  margin-bottom: 16px;
+}
+.article-lede {
+  font-size: 19px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-weight: 400;
+}
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-3);
+  flex-wrap: wrap;
+}
+.meta-author {
+  display: flex; align-items: center; gap: 8px;
+}
+.author-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--green-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--green-text);
+}
+.meta-sep { color: var(--border); }
+.meta-read {
+  background: var(--sand);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+/* BODY TYPOGRAPHY */
+.article-body {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--text);
+}
+.article-body p { margin-bottom: 22px; }
+.article-body h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 44px 0 16px;
+  color: var(--text);
+}
+.article-body h3 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 32px 0 12px;
+}
+.article-body ul, .article-body ol {
+  padding-left: 22px;
+  margin-bottom: 22px;
+}
+.article-body li { margin-bottom: 8px; }
+.article-body strong { font-weight: 600; color: var(--text); }
+.article-body em { font-style: italic; color: var(--text-2); }
+.article-body a { color: var(--green); text-decoration: underline; text-underline-offset: 3px; }
+.article-body a:hover { color: var(--green-dark); }
+
+/* CALLOUT BOXES */
+.callout {
+  background: var(--green-light);
+  border-left: 3px solid var(--green);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 18px 20px;
+  margin: 28px 0;
+  font-size: 15px;
+  color: var(--green-text);
+  line-height: 1.6;
+}
+.callout strong { color: var(--green-text); }
+
+.warning-box {
+  background: #FAEEDA;
+  border-left: 3px solid #BA7517;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 18px 20px;
+  margin: 28px 0;
+  font-size: 15px;
+  color: #633806;
+  line-height: 1.6;
+}
+
+/* DATA TABLE */
+.data-table-wrap { overflow-x: auto; margin: 28px 0; }
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+.data-table th {
+  background: var(--sand);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td.green { color: var(--green); font-weight: 600; }
+.data-table td.muted { color: var(--text-3); }
+
+/* INLINE STAT */
+.inline-stat {
+  display: inline-block;
+  font-family: 'Sora', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* FULL BLEED INTERLUDE */
+.interlude {
+  background: var(--sand);
+  padding: 48px 24px;
+  margin: 48px 0;
+  text-align: center;
+}
+.interlude-quote {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--text);
+  max-width: 560px;
+  margin: 0 auto;
+}
+.interlude-quote em { font-style: normal; color: var(--green); }
+
+/* CTA EMBED */
+.article-cta {
+  background: var(--green);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  margin: 40px 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.article-cta h3 { font-family: 'Sora', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
+.article-cta p { font-size: 14px; opacity: 0.85; }
+.article-cta a {
+  white-space: nowrap;
+  padding: 11px 22px;
+  background: #fff;
+  color: var(--green-text);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.article-cta a:hover { background: var(--green-light); }
+
+/* AUTHOR BIO */
+.author-bio {
+  border-top: 1px solid var(--border);
+  margin-top: 56px;
+  padding-top: 32px;
+  margin-bottom: 56px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+.bio-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--green-light);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Sora', sans-serif;
+  font-size: 18px; font-weight: 700; color: var(--green-text);
+  flex-shrink: 0;
+}
+.bio-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.bio-desc { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+
+/* RELATED */
+.related-section {
+  background: var(--sand);
+  padding: 56px 24px;
+}
+.related-section h2 {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  max-width: 680px; margin-left: auto; margin-right: auto;
+}
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.related-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 22px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: box-shadow 0.15s;
+}
+.related-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.related-cat { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--green); margin-bottom: 8px; }
+.related-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; margin-bottom: 8px; }
+.related-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+footer p { font-size: 12px; color: var(--text-3); }
+footer a { font-size: 12px; color: var(--green); text-decoration: none; }
+
+/* PROGRESS BAR */
+.reading-progress {
+  position: fixed; top: 0; left: 0;
+  height: 3px; background: var(--green);
+  z-index: 200;
+  transition: width 0.1s linear;
+}
+
+@media (max-width: 600px) {
+  .article-cta { flex-direction: column; }
+  .article-cta a { width: 100%; text-align: center; }
+  nav .nav-name { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="reading-progress" id="progress"></div>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="../index.html">
+    <div class="nav-dot">R</div>
+    <span class="nav-name">MyRandWise</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <div class="nav-links" id="navLinks" style="display:flex;align-items:center;gap:18px;">
+      <a href="../index.html" style="font-size:14px;color:var(--text-2);text-decoration:none;font-weight:500;">Home</a>
+      <a href="about.html" style="font-size:14px;color:var(--text-2);text-decoration:none;font-weight:500;">About</a>
+      <a href="partners.html" style="font-size:14px;color:var(--text-2);text-decoration:none;font-weight:500;">Partners</a>
+    </div>
+    <a class="nav-cta" href="https://myrandwise.co.za/app.html">Start budgeting free</a>
+  </div>
+</nav>
+<style>
+@media (max-width: 640px){ .nav-links{ display:none !important; } }
+</style>
+
+<!-- Article -->
+<article>
+  <div class="article-wrap">
+
+    <!-- Hero -->
+    <header class="article-hero">
+      <span class="article-cat">Budgeting basics</span>
+      <h1>How to Budget on a South African Salary (The 50/30/20 Rule, Adapted)</h1>
+      <p class="article-lede">The classic budgeting framework works — but it needs a local translation. Here's how to make it fit rising food prices, load shedding costs, and a South African tax bracket.</p>
+      <div class="article-meta">
+        <div class="meta-author">
+          <div class="author-avatar">MW</div>
+          <span>MyRandWise Team</span>
+        </div>
+        <span class="meta-sep">·</span>
+        <span>12 June 2025</span>
+        <span class="meta-sep">·</span>
+        <span class="meta-read">8 min read</span>
+      </div>
+    </header>
+
+    <!-- Body -->
+    <div class="article-body">
+
+      <p>The 50/30/20 rule is everywhere in personal finance content. Spend 50% on needs, 30% on wants, and save 20%. It's clean. It's memorable. And if you're earning a median South African salary, it might feel completely disconnected from your reality.</p>
+
+      <p>This guide doesn't throw the rule out. It adapts it — accounting for things like a high debt-to-income average, erratic electricity costs, the reality of supporting extended family, and what "needs" actually means when transport alone can eat 15% of your income.</p>
+
+      <h2>What the 50/30/20 rule actually means</h2>
+
+      <p>The framework was popularised by US Senator Elizabeth Warren in her book <em>All Your Worth</em>. The idea: divide your after-tax income into three buckets.</p>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Bucket</th><th>% of take-home</th><th>What goes here</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Needs</strong></td><td class="green">50%</td><td>Rent / bond, food, transport, utilities, minimum debt payments</td></tr>
+            <tr><td><strong>Wants</strong></td><td class="green">30%</td><td>Eating out, entertainment, clothing, subscriptions</td></tr>
+            <tr><td><strong>Savings</strong></td><td class="green">20%</td><td>Emergency fund, retirement, extra debt payments, goals</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The original version was designed for American households. It assumes relatively low fixed costs and a stable utility bill. In South Africa, the picture looks different.</p>
+
+      <div class="callout">
+        <strong>SA context:</strong> According to Stats SA, the average South African household spends over 70% of income on essential expenses — food, housing, and transport alone. Working toward 50% is a journey, not a starting point.
+      </div>
+
+      <h2>Why the 50% "needs" bucket is harder to hit in South Africa</h2>
+
+      <p>Let's run the numbers on a realistic take-home salary of <span class="inline-stat">R18 000</span> per month — roughly what a teacher, nurse, or mid-level administrator earns after tax.</p>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Expense</th><th>Monthly cost</th><th>% of income</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Rent (shared, Johannesburg south)</td><td>R5 500</td><td class="green">31%</td></tr>
+            <tr><td>Groceries</td><td>R2 800</td><td class="green">16%</td></tr>
+            <tr><td>Transport (taxi / fuel)</td><td>R2 200</td><td class="green">12%</td></tr>
+            <tr><td>Electricity + data</td><td>R1 100</td><td class="green">6%</td></tr>
+            <tr><td>Minimum debt repayments</td><td>R1 800</td><td class="green">10%</td></tr>
+            <tr><td><strong>Total needs</strong></td><td><strong>R13 400</strong></td><td class="green"><strong>74%</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>That leaves R4 600 for everything else — wants, savings, unexpected costs, family support. Before we even get to "wants," there's almost nothing left for savings.</p>
+
+      <p>This isn't a failure of the rule. It's a data point. The number tells you exactly where the leverage is.</p>
+
+      <h2>The adapted framework: 60/20/20 as a realistic starting point</h2>
+
+      <p>For most South African earners, a more honest starting framework is:</p>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Bucket</th><th>Adapted %</th><th>Goal to work toward</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Needs</td><td class="green">60%</td><td>Get to 50% over 12–24 months</td></tr>
+            <tr><td>Wants</td><td class="green">20%</td><td>Keep flat as income grows</td></tr>
+            <tr><td>Savings / debt extra</td><td class="green">20%</td><td>Split: 10% emergency fund, 10% goals</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>The goal is direction, not perfection. A household moving from 74% needs to 65% needs over a year has made meaningful progress — even if it never hits the textbook 50%.</p>
+
+    </div>
+  </div>
+
+  <!-- Full bleed interlude -->
+  <div class="interlude full-bleed">
+    <p class="interlude-quote">"The number isn't the goal. <em>The direction is.</em> A household moving from 74% needs to 65% has done something real."</p>
+  </div>
+
+  <div class="article-wrap">
+    <div class="article-body">
+
+      <h2>Where most South Africans leak money without realising</h2>
+
+      <p>Tracking 1 000 household budgets reveals a consistent pattern: the bleed is rarely in the big line items. It's in the invisible ones.</p>
+
+      <ul>
+        <li><strong>Multiple DSTV / streaming subscriptions</strong> — households paying for both DStv and Netflix and Showmax simultaneously, often on accounts that overlap.</li>
+        <li><strong>Insurance premiums not reviewed in 3+ years</strong> — car and home insurance especially. Loyalty doesn't get rewarded; switching often saves R300–R800/month.</li>
+        <li><strong>Bank fees on the wrong account type</strong> — moving to a pay-as-you-use account can save R150–R300/month for low-transaction households.</li>
+        <li><strong>Airtime and data top-ups vs monthly bundles</strong> — prepaid airtime purchases outside of bundles cost 30–60% more per MB than equivalent monthly data contracts.</li>
+        <li><strong>Store account minimum payments only</strong> — paying only the minimum on a Truworths or Woolworths account at 28% interest means a R3 000 balance can take 4+ years to clear.</li>
+      </ul>
+
+      <div class="warning-box">
+        <strong>Watch out:</strong> Buy-now-pay-later services (like Payflex, Float, and Mobicred) make it easy to smooth spending but create invisible debt. If you can't see all your BNPL commitments in one place, you're almost certainly overspent on credit.
+      </div>
+
+      <h2>Building your first real budget in four steps</h2>
+
+      <h3>Step 1: Know your actual take-home</h3>
+      <p>Use your bank statement, not your gross salary. After income tax, UIF, medical aid, and pension deductions, your actual take-home is often 20–30% less than your cost-to-company figure. Budget from the number that hits your account.</p>
+
+      <h3>Step 2: List every fixed commitment</h3>
+      <p>These are non-negotiables: rent or bond, car repayment, insurance premiums, school fees, minimum debt repayments. Write the exact rand amount for each. This is your floor — the number below which your budget cannot drop.</p>
+
+      <h3>Step 3: Estimate variable spending by category</h3>
+      <p>Go through your last three months of bank statements and average your spending in each category: groceries, transport, eating out, entertainment, clothing. Most people are surprised by the eating-out number.</p>
+
+      <h3>Step 4: Assign what's left deliberately</h3>
+      <p>Whatever remains after fixed commitments and variable spending should be allocated before the month starts — not after. Even R200 moved to savings on payday becomes money you don't accidentally spend.</p>
+
+      <!-- CTA mid-article -->
+      <div class="article-cta">
+        <div>
+          <h3>Try the free budget calculator</h3>
+          <p>Enter your income and fixed costs — MyRandWise shows your personalised 50/30/20 split in seconds.</p>
+        </div>
+        <a href="randwise-tools-widget.html">Open the calculator →</a>
+      </div>
+
+      <h2>What to do when there's nothing left to save</h2>
+
+      <p>If your fixed costs genuinely consume more than 80% of your income, the savings conversation is premature. The priority is reducing fixed costs first — and that usually means one of three things:</p>
+
+      <ul>
+        <li>Renegotiating or refinancing high-interest debt (personal loans, clothing accounts)</li>
+        <li>Moving to a cheaper living arrangement — even temporarily, even just a flatmate</li>
+        <li>Growing income: a second skill, freelance work, or requesting a formal salary review</li>
+      </ul>
+
+      <p>Cutting R50 off your grocery budget when 78% of income goes to fixed costs is optimising in the wrong place. Fix the structure first.</p>
+
+      <div class="callout">
+        <strong>One thing to do today:</strong> Open your last bank statement and add up every debit order and recurring payment. Most people have at least one they've forgotten about — an old gym membership, a software subscription, a streaming service they no longer use. Cancel it this week.
+      </div>
+
+      <h2>The key metric to track: your savings rate</h2>
+
+      <p>More than any budget category, your savings rate is the number that determines your long-term financial health. It's simple: what percentage of your take-home income are you keeping?</p>
+
+      <p>Even a 5% savings rate on R18 000 is R900/month. Over 12 months that's R10 800. In three years with basic interest, it's enough for a proper emergency fund — the single biggest protector against financial shock.</p>
+
+      <p>Track this number monthly. Celebrate when it goes up. Investigate when it drops. Everything else is a sub-question of this one metric.</p>
+
+    </div>
+
+    <!-- Author bio -->
+    <div class="author-bio">
+      <div class="bio-avatar">MW</div>
+      <div>
+        <div class="bio-name">MyRandWise Team</div>
+        <div class="bio-desc">We build tools and write guides to help South Africans understand their money better — without the jargon. All our tools are free to use at <a href="https://myrandwise.co.za" style="color:var(--green)">myrandwise.co.za</a>.</div>
+      </div>
+    </div>
+
+  </div><!-- end article-wrap -->
+</article>
+
+<!-- Footer -->
+<footer>
+  <p>© 2026 MyRandWise · Not financial advice · POPIA compliant · 🇿🇦</p>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;">
+    <a href="../index.html">Home</a>
+    <a href="https://myrandwise.co.za/app.html">Free app</a>
+    <a href="randwise-tools-widget.html">Budget tools</a>
+    <a href="about.html">About</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const doc = document.documentElement;
+    const scrolled = (doc.scrollTop / (doc.scrollHeight - doc.clientHeight)) * 100;
+    document.getElementById('progress').style.width = scrolled + '%';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,4150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RandWise — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green:      #1a7a4a;
+    --green-l:    #eaf3de;
+    --green-d:    #0d3d24;
+    --green-mid:  #639922;
+    --purple:     #534ab7;
+    --purple-l:   #eeedfe;
+    --red:        #a32d2d;
+    --red-l:      #fdecea;
+    --amber:      #ba7517;
+    --amber-l:    #faeeda;
+    --white:      #ffffff;
+    --bg:         #f4f3ee;
+    --bg2:        #eeede6;
+    --border:     #e0ddd4;
+    --text:       #1e1e1a;
+    --mid:        #5a5a52;
+    --muted:      #8a8a7e;
+    --hint:       #b8b8aa;
+    --sidebar-w:  240px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── PIN Gate ─────────────────────────── */
+  .pin-gate {
+    position: fixed; inset: 0;
+    background: var(--green-d);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pin-gate-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px 36px;
+    text-align: center;
+    width: 340px;
+  }
+  .pin-gate-logo { font-size: 36px; margin-bottom: 12px; }
+  .pin-gate-title { font-family: 'DM Serif Display',serif; font-size: 22px; color: #fff; margin-bottom: 6px; }
+  .pin-gate-sub { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 28px; }
+  .pin-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 24px; text-align: center;
+    font-family: 'DM Mono',monospace; letter-spacing: 8px;
+    outline: none; transition: border 0.2s;
+    margin-bottom: 14px;
+  }
+  .pin-input:focus { border-color: #a8d96e; }
+  .pin-input::placeholder { letter-spacing: 2px; font-size: 14px; color: rgba(255,255,255,0.3); }
+  .pin-btn {
+    width: 100%; padding: 13px; background: #1a7a4a;
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans',sans-serif; transition: opacity 0.15s;
+  }
+  .pin-btn:hover { opacity: 0.85; }
+  .pin-error { font-size: 12px; color: #ff8080; margin-top: 10px; min-height: 18px; }
+
+  /* ── Toast ─────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--green-d); color: #fff;
+    padding: 12px 20px; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 5000; opacity: 0; transform: translateY(12px);
+    transition: all 0.25s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: var(--red); }
+  .toast.warn { background: var(--amber); }
+
+  /* ── User Detail Panel ─────────────────── */
+  .panel-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .panel-overlay.open { opacity: 1; pointer-events: all; }
+  .user-panel {
+    position: fixed; top: 0; right: -520px;
+    width: 500px; height: 100vh;
+    background: var(--white); z-index: 401;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+    transition: right 0.3s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .user-panel.open { right: 0; }
+  .panel-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--green-d);
+  }
+  .panel-header-name { font-family:'DM Serif Display',serif; font-size:18px; color:#fff; }
+  .panel-header-meta { font-size:11px; color:rgba(255,255,255,0.5); margin-top:2px; }
+  .panel-close {
+    width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);
+    border:none;color:#fff;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .panel-close:hover { background:rgba(255,255,255,0.2); }
+  .panel-body { flex:1; overflow-y:auto; padding:20px 24px; }
+  .panel-section { margin-bottom:20px; }
+  .panel-section-title {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:var(--muted); margin-bottom:10px;
+  }
+  .panel-stat-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+  }
+  .panel-stat {
+    background:var(--bg); border-radius:10px; padding:12px;
+  }
+  .panel-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; }
+  .panel-stat-value { font-size:18px; font-weight:800; color:var(--text); margin-top:2px; }
+  .panel-exp-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 0; border-bottom:1px solid var(--bg2);
+    font-size:12px;
+  }
+  .panel-exp-row:last-child { border-bottom:none; }
+  .panel-actions { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; }
+  .panel-action-btn {
+    flex:1; padding:10px; border-radius:10px; font-size:12px;
+    font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+    border:none; transition:opacity 0.15s;
+  }
+  .panel-action-btn:hover { opacity:0.85; }
+
+  /* ── Signup sparkline ──────────────────── */
+  .sparkline-bars {
+    display:flex; align-items:flex-end; gap:4px; height:48px; margin-top:8px;
+  }
+  .spark-bar {
+    flex:1; border-radius:4px 4px 0 0;
+    background:var(--green); opacity:0.7;
+    min-height:4px; transition:height 0.3s;
+    position:relative;
+  }
+  .spark-bar:hover { opacity:1; }
+  .spark-label {
+    font-size:9px; color:var(--muted); text-align:center; margin-top:4px;
+  }
+
+  /* ── Investment readiness toggles ──────── */
+  .invest-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-bottom:1px solid var(--bg2);
+  }
+  .invest-row:last-child { border-bottom:none; }
+  .invest-label { font-size:13px; color:var(--text); }
+  .invest-note { font-size:11px; color:var(--muted); margin-top:2px; }
+  .invest-status {
+    font-size:11px; font-weight:700; padding:4px 10px;
+    border-radius:20px; white-space:nowrap; cursor:pointer;
+    border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s;
+  }
+  .invest-status.pending { background:var(--amber-l); color:var(--amber); }
+  .invest-status.done { background:var(--green-l); color:var(--green); }
+
+  /* ── Rows clickable ────────────────────── */
+  #users-body tr { cursor:pointer; }
+  #users-body tr:hover td { background:var(--bg); }
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--green-d);
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+  .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .sidebar-brand-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar-brand-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    padding: 8px 20px 4px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 600;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    font-weight: 400;
+    border-left: 3px solid transparent;
+    margin: 1px 0;
+  }
+
+  .nav-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-item.active {
+    background: rgba(168,217,110,0.12);
+    color: #a8d96e;
+    border-left-color: #a8d96e;
+    font-weight: 600;
+  }
+
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(168,217,110,0.15);
+    border: 1px solid rgba(168,217,110,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: #a8d96e;
+    font-weight: 600;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #a8d96e;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Main content ─────────────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .topbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .refresh-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .refresh-btn:hover { opacity: 0.85; }
+
+  .last-updated {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .content {
+    padding: 28px 32px;
+    flex: 1;
+    overflow-y: auto;
+    height: calc(100vh - 60px);
+  }
+
+  /* ── Tab pages ─────────────────────────── */
+  .tab-page { display: none; }
+  .tab-page.active { display: block; }
+
+  /* ── Stat cards ────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.purple::before { background: var(--purple); }
+  .stat-card.amber::before { background: var(--amber); }
+  .stat-card.red::before { background: var(--red); }
+
+  .stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Cards ─────────────────────────────── */
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title span { color: var(--muted); font-weight: 400; font-size: 12px; }
+
+  /* ── Table ─────────────────────────────── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .data-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--bg2);
+    color: var(--text);
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg); }
+
+  /* ── Badges ────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-free    { background: var(--bg2); color: var(--mid); }
+  .badge-pro     { background: var(--green-l); color: var(--green); }
+  .badge-premium { background: var(--purple-l); color: var(--purple); }
+  .badge-new     { background: var(--amber-l); color: var(--amber); }
+
+  /* ── Progress bars ─────────────────────── */
+  .progress-wrap { background: var(--bg2); border-radius: 99px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+
+  /* ── Grid 2col ─────────────────────────── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Segment pills ─────────────────────── */
+  .segment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .segment-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .segment-card:hover, .segment-card.active {
+    border-color: var(--green);
+    background: var(--green-l);
+  }
+
+  .segment-emoji { font-size: 24px; margin-bottom: 8px; }
+  .segment-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .segment-count { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── AI suggestions ────────────────────── */
+  .suggestion-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .suggestion-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .suggestion-body { flex: 1; }
+  .suggestion-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .suggestion-desc { font-size: 12px; color: var(--mid); line-height: 1.5; }
+  .suggestion-meta { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+  .suggestion-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+  .btn-approve {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-dismiss {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Referral table ────────────────────── */
+  .pay-btn {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .pay-btn:disabled {
+    background: var(--bg2);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  /* ── Timeline ──────────────────────────── */
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px; top: 8px; bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -21px; top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--white);
+  }
+
+  .timeline-date { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 2px; }
+  .timeline-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .timeline-desc { font-size: 12px; color: var(--mid); }
+
+  /* ── Reserves ──────────────────────────── */
+  .reserve-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
+  .reserve-item:last-child { border-bottom: none; }
+  .reserve-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .reserve-purpose { font-size: 11px; color: var(--muted); }
+  .reserve-amount { font-size: 15px; font-weight: 700; color: var(--green); font-family: 'DM Mono', monospace; }
+
+  /* ── Team payments ─────────────────────── */
+  .team-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .team-avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .team-info { flex: 1; }
+  .team-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .team-role { font-size: 11px; color: var(--muted); }
+  .team-equity { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* ── Alerts ────────────────────────────── */
+  .alert-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
+  .alert-row:last-child { border-bottom: none; }
+
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 99px;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--green); }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+  .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+  /* ── Pitch / financials ─────────────────── */
+  .metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--bg2);
+  }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-label { font-size: 12px; color: var(--mid); }
+  .metric-value { font-size: 13px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; }
+
+  /* ── Loading ───────────────────────────── */
+  .loading {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--muted); font-size: 12px;
+    padding: 16px 0;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Empty state ───────────────────────── */
+  .empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .search-bar {
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+
+  .search-bar:focus { outline: none; border-color: var(--green); }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .filter-btn {
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--mid);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* POPIA tag */
+  .popia-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--green-l); color: var(--green);
+    border: 1px solid rgba(26,122,74,0.2);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .grid2 { grid-template-columns: 1fr; }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div id="rw-auth-wall" style="position:fixed;inset:0;background:#0d3d22;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,sans-serif">
+  <div style="background:#1a5c35;border-radius:20px;padding:40px 32px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="font-size:48px;margin-bottom:16px">🌱</div>
+    <div style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px">MyRandWise Admin</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:28px">Enter password to continue</div>
+    <input id="rw-pw-input" type="password" placeholder="Password" 
+      style="width:100%;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:15px;outline:none;box-sizing:border-box;margin-bottom:12px;font-family:inherit"
+      onkeydown="if(event.key==='Enter')rwCheckAuth()">
+    <div id="rw-pw-error" style="color:#ff8a80;font-size:13px;margin-bottom:12px;min-height:18px"></div>
+    <button onclick="rwCheckAuth()" style="width:100%;padding:14px;background:#4ade80;color:#0d3d22;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer">Unlock →</button>
+    <div id="rw-lockout-timer" style="color:rgba(255,255,255,.5);font-size:12px;margin-top:12px"></div>
+  </div>
+</div>
+<script>
+(function(){
+  const HASH='c368098d5d663f46273e7e74fe7d116931beb1270eb5d339abc0382bb8e9a66a';
+  const SK='rw_admin_auth',AK='rw_auth_attempts',LK='rw_auth_lockout';
+  if(sessionStorage.getItem(SK)===HASH){document.getElementById('rw-auth-wall').style.display='none';return;}
+  checkLock();
+  async function hashStr(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  function checkLock(){
+    const l=Number(localStorage.getItem(LK)||0),now=Date.now();
+    if(l>now){
+      const s=Math.ceil((l-now)/1000);
+      document.getElementById('rw-pw-input').disabled=true;
+      document.getElementById('rw-lockout-timer').textContent='Too many attempts. Try again in '+s+'s';
+      setTimeout(checkLock,1000);
+    } else {
+      document.getElementById('rw-pw-input').disabled=false;
+      document.getElementById('rw-lockout-timer').textContent='';
+      localStorage.removeItem(LK);
+    }
+  }
+  window.rwCheckAuth=async function(){
+    if(Number(localStorage.getItem(LK)||0)>Date.now())return;
+    const h=await hashStr(document.getElementById('rw-pw-input').value);
+    if(h===HASH){
+      sessionStorage.setItem(SK,HASH);
+      localStorage.removeItem(AK);localStorage.removeItem(LK);
+      document.getElementById('rw-auth-wall').style.display='none';
+    } else {
+      let a=Number(localStorage.getItem(AK)||0)+1;
+      localStorage.setItem(AK,a);
+      const r=3-a;
+      if(r<=0){localStorage.setItem(LK,Date.now()+30000);localStorage.removeItem(AK);document.getElementById('rw-pw-error').textContent='Too many attempts. Locked for 30 seconds.';checkLock();}
+      else document.getElementById('rw-pw-error').textContent='Incorrect password. '+r+' attempt'+(r!==1?'s':'')+' remaining.';
+      document.getElementById('rw-pw-input').value='';document.getElementById('rw-pw-input').focus();
+    }
+  };
+  document.getElementById('rw-pw-input').focus();
+})();
+</script>
+
+<!-- ── Toast ─────────────────────────────────────────── -->
+<div class="toast" id="admin-toast"></div>
+
+<!-- ── User Detail Panel ─────────────────────────────── -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeUserPanel()"></div>
+<div class="user-panel" id="user-panel">
+  <div class="panel-header">
+    <div>
+      <div class="panel-header-name" id="panel-name">—</div>
+      <div class="panel-header-meta" id="panel-meta">—</div>
+    </div>
+    <button class="panel-close" onclick="closeUserPanel()">×</button>
+  </div>
+  <div class="panel-body" id="panel-body">
+    <div class="loading"><div class="spinner"></div> Loading user data...</div>
+  </div>
+  <div class="panel-actions">
+    <button class="panel-action-btn" id="panel-email-btn"
+      style="background:var(--green);color:#fff"
+      onclick="emailPanelUser()">✉️ Email this user</button>
+    <button class="panel-action-btn"
+      style="background:var(--bg);color:var(--mid);border:1px solid var(--border)"
+      onclick="closeUserPanel()">Close</button>
+  </div>
+</div>
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-name">RandWise</div>
+    <div class="sidebar-brand-sub">Admin Dashboard</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showTab('overview',this)">
+      <span class="nav-icon">📊</span> Overview
+    </div>
+    <div class="nav-item" onclick="showTab('users',this)">
+      <span class="nav-icon">👥</span> Users
+    </div>
+    <div class="nav-item" onclick="showTab('segments',this)">
+      <span class="nav-icon">🎯</span> Segments
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Business</div>
+    <div class="nav-item" onclick="showTab('referrals',this)">
+      <span class="nav-icon">🤝</span> Referrals
+    </div>
+    <div class="nav-item" onclick="showTab('revenue',this)">
+      <span class="nav-icon">💰</span> Revenue & Financials
+    </div>
+    <div class="nav-item" onclick="showTab('reserves',this)">
+      <span class="nav-icon">🏦</span> Reserves & Team
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Intelligence</div>
+    <div class="nav-item" onclick="showTab('ai',this)">
+      <span class="nav-icon">🤖</span> AI Suggestions
+    </div>
+    <div class="nav-item" onclick="showTab('build',this)">
+      <span class="nav-icon">⏱️</span> Build Tracker
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Marketing</div>
+    <div class="nav-item" onclick="showTab('newsletter',this)">
+      <span class="nav-icon">📧</span> Newsletter
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">Settings</div>
+    <div class="nav-item" onclick="showTab('account',this)">
+      <span class="nav-icon">🔑</span> Account Manager
+    </div>
+    <div class="nav-item" onclick="showTab('alerts',this)">
+      <span class="nav-icon">🔔</span> Alerts
+    </div>
+    <div class="nav-item" onclick="showTab('legal',this)">
+      <span class="nav-icon">📄</span> Legal & POPIA
+    </div>
+    <div class="nav-item" onclick="showTab('email',this)">
+      <span class="nav-icon">✉️</span> Email Users
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live · Supabase
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="page-title">Overview</div>
+    <div class="topbar-right">
+      <div class="last-updated" id="last-updated">Loading...</div>
+      <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── OVERVIEW ─────────────────────── -->
+    <div id="tab-overview" class="tab-page active">
+      <div class="stats-grid" id="overview-stats">
+        <div class="loading"><div class="spinner"></div> Loading...</div>
+      </div>
+      <div class="card" style="margin-bottom:20px;padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Signups — last 7 days</div>
+          <div style="font-size:11px;color:var(--muted)" id="last-signup-label">Last signup: —</div>
+        </div>
+        <div class="sparkline-bars" id="sparkline-bars">
+          <div class="spark-bar" style="height:4px"></div>
+        </div>
+        <div style="display:flex;gap:4px" id="sparkline-labels"></div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th></tr></thead>
+            <tbody id="recent-users-body"></tbody>
+          </table>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">Tier Breakdown</div>
+            <div id="tier-bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Life Stage Breakdown</div>
+            <div id="stage-bars"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── USERS ─────────────────────────── -->
+    <div id="tab-users" class="tab-page">
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <input class="search-bar" style="flex:1;min-width:200px;margin-bottom:0"
+          id="user-search" placeholder="🔍  Search name, email, or life stage..."
+          oninput="filterUsers()">
+        <select id="user-date-filter" onchange="filterUsers()"
+          style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--white);font-family:'DM Sans',sans-serif;color:var(--text)">
+          <option value="all">All time</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+      <div class="filter-row" id="tier-filters">
+        <button class="filter-btn active" onclick="setTierFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setTierFilter('free',this)">Free</button>
+        <button class="filter-btn" onclick="setTierFilter('pro',this)">Pro</button>
+        <button class="filter-btn" onclick="setTierFilter('premium',this)">Premium</button>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden">
+        <table class="data-table" id="users-table">
+          <thead><tr>
+            <th>Name</th><th>Email</th><th>Life Stage</th><th>Income</th>
+            <th>Tier</th><th>Ref Code</th><th>Joined</th>
+          </tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+      <div id="users-count" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right"></div>
+    </div>
+
+    <!-- ── SEGMENTS ───────────────────────── -->
+    <div id="tab-segments" class="tab-page">
+      <div class="segment-grid" id="segment-grid"></div>
+      <div class="card" id="segment-detail" style="display:none">
+        <div class="card-title" id="segment-detail-title">Segment Detail</div>
+        <table class="data-table">
+          <thead><tr><th>Name</th><th>Income</th><th>Tier</th><th>Goals</th><th>Joined</th></tr></thead>
+          <tbody id="segment-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── REFERRALS ──────────────────────── -->
+    <div id="tab-referrals" class="tab-page">
+      <div class="stats-grid" id="referral-stats">
+        <div class="stat-card green">
+          <div class="stat-label">Total Referrers</div>
+          <div class="stat-value" id="ref-total">—</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Pending Payouts</div>
+          <div class="stat-value" id="ref-pending">—</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Total Paid Out</div>
+          <div class="stat-value" id="ref-paid">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Referral Leaderboard
+          <span>R10 upfront + R5/month loyalty, max R40 · Min payout R50 · Batched monthly · Based on real purchases only</span>
+        </div>
+        <table class="data-table">
+          <thead><tr>
+            <th>Referrer</th><th>Code</th><th>Referred</th>
+            <th>Converted</th><th>Pending</th><th>Action</th>
+          </tr></thead>
+          <tbody id="referral-body"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">📝 Log a Confirmed Purchase</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 14px">
+          For payments collected outside PayFast (EFT, cash, manual arrangement) — or while PayFast integration is being fixed.
+          Only log <strong>real, confirmed</strong> payments here. This directly affects referral reward payouts.
+        </p>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">User</label>
+            <input id="purchase-user-search" type="text" placeholder="Search name or email..."
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box"
+              oninput="purchaseSearchUsers(this.value)" autocomplete="off">
+            <div id="purchase-search-results" style="display:none;position:relative;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:180px;overflow-y:auto;margin-top:4px"></div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Tier</label>
+            <select id="purchase-tier" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg)">
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Amount (R)</label>
+            <input id="purchase-amount" type="number" placeholder="49" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Paid on</label>
+            <input id="purchase-date" type="date" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="logManualPurchase()" style="padding:11px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Log it →</button>
+        </div>
+        <div id="purchase-log-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Payout History</div>
+        <table class="data-table">
+          <thead><tr><th>Referrer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="payout-body"><tr><td colspan="4" class="empty">No payouts yet</td></tr></tbody>
+        </table>
+      </div>
+      <div id="referral-diagnostic"></div>
+    </div>
+
+    <!-- ── REVENUE & FINANCIALS ───────────── -->
+    <div id="tab-revenue" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">MRR (est.)</div>
+          <div class="stat-value" id="mrr-val">R0</div>
+          <div class="stat-sub">Monthly recurring revenue</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">ARR (est.)</div>
+          <div class="stat-value" id="arr-val">R0</div>
+          <div class="stat-sub">Annual run rate</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">PayFast Fees</div>
+          <div class="stat-value" id="fees-val">R0</div>
+          <div class="stat-sub">3.5% + R1 per txn</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Running Costs</div>
+          <div class="stat-value">R900</div>
+          <div class="stat-sub">Per month (est.)</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Break-Even Tracker</div>
+          <div id="breakeven-content"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Pricing Reference</div>
+          <div class="metric-row"><span class="metric-label">Free tier</span><span class="metric-value">R0</span></div>
+          <div class="metric-row"><span class="metric-label">Pro monthly</span><span class="metric-value">R49/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Pro annual</span><span class="metric-value">R470/yr</span></div>
+          <div class="metric-row"><span class="metric-label">Premium monthly</span><span class="metric-value">R129/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Premium annual</span><span class="metric-value">R1,238/yr</span></div>
+          <div class="metric-row"><span class="metric-label">Electricity add-on</span><span class="metric-value">R10/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Household add-on</span><span class="metric-value">R15/mo</span></div>
+          <div class="metric-row"><span class="metric-label">Bond score add-on</span><span class="metric-value">R10/mo</span></div>
+          <div class="metric-row"><span class="metric-label">PayFast fee (Pro)</span><span class="metric-value">R2.72 → keep R46.28</span></div>
+          <div class="metric-row"><span class="metric-label">PayFast fee (Premium)</span><span class="metric-value">R5.52 → keep R123.48</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Investment Readiness <span style="font-size:11px;color:var(--muted);font-weight:400">— click to toggle, saves to Supabase</span></div>
+        <div id="invest-readiness-rows"></div>
+      </div>
+    </div>
+
+    <!-- ── RESERVES & TEAM ────────────────── -->
+    <div id="tab-reserves" class="tab-page">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Company Reserves
+            <span>Minimum: R9,700</span>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Operational Buffer</div><div class="reserve-purpose">3 months running costs</div></div>
+            <div class="reserve-amount">R2,700</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Legal Fund</div><div class="reserve-purpose">T&C updates, disputes, CIPC</div></div>
+            <div class="reserve-amount">R5,000</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Referral Payout Reserve</div><div class="reserve-purpose">Always cover pending payouts</div></div>
+            <div class="reserve-amount">R2,000</div>
+          </div>
+          <div class="reserve-item" style="border-top: 2px solid var(--green)">
+            <div><div class="reserve-name" style="color:var(--green)">Total Minimum</div></div>
+            <div class="reserve-amount">R9,700</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Monthly Running Costs</div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Claude API</div><div class="reserve-purpose">AI features</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R400</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Claude Subscription</div><div class="reserve-purpose">Development</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R350</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Supabase</div><div class="reserve-purpose">Free under 50k users</div></div>
+            <div class="reserve-amount" style="color:var(--green)">R0</div>
+          </div>
+          <div class="reserve-item">
+            <div><div class="reserve-name">Domain + Hosting</div><div class="reserve-purpose">randwise.app</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R150</div>
+          </div>
+          <div class="reserve-item" style="border-top: 2px solid var(--border)">
+            <div><div class="reserve-name">Total Monthly</div></div>
+            <div class="reserve-amount" style="color:var(--mid)">~R900</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Team & Equity</div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--green)">B</div>
+          <div class="team-info">
+            <div class="team-name">Bongane Khoza</div>
+            <div class="team-role">CEO / Founder / Product</div>
+          </div>
+          <div>
+            <div class="team-equity">60% equity</div>
+            <div class="badge badge-pro" style="margin-top:4px">Active</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--purple)">T</div>
+          <div class="team-info">
+            <div class="team-name">Twin (Co-Founder)</div>
+            <div class="team-role">Growth & Community</div>
+          </div>
+          <div>
+            <div class="team-equity">20% equity (vesting)</div>
+            <div class="badge badge-free" style="margin-top:4px">24-mo vest</div>
+          </div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:var(--amber)">R</div>
+          <div class="team-info">
+            <div class="team-name">Reserved Pool</div>
+            <div class="team-role">Future investors / key hires</div>
+          </div>
+          <div>
+            <div class="team-equity">20% equity</div>
+            <div class="badge badge-new" style="margin-top:4px">Unallocated</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Team Salary Trigger</div>
+        <p style="font-size:12px;color:var(--mid);margin-bottom:12px">
+          No salary is payable until the Company achieves R5,000/month sustained revenue.
+          Bongane recovers R50,000 founding investment from profits before any dividends are distributed.
+        </p>
+        <div id="salary-progress"></div>
+      </div>
+    </div>
+
+    <!-- ── AI SUGGESTIONS ────────────────── -->
+    <div id="tab-ai" class="tab-page">
+      <div style="margin-bottom:16px;font-size:13px;color:var(--mid)">
+        AI-generated feature suggestions based on user segment data. Review and approve to schedule rollout, or dismiss to hide.
+      </div>
+      <div id="ai-suggestions"></div>
+    </div>
+
+    <!-- ── BUILD TRACKER ─────────────────── -->
+    <div id="tab-build" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Days Since Start</div>
+          <div class="stat-value" id="days-built">—</div>
+          <div class="stat-sub">Started 7 April 2026</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Hours Logged</div>
+          <div class="stat-value">120</div>
+          <div class="stat-sub">~3 weeks intensive</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Project Value</div>
+          <div class="stat-value">R50k</div>
+          <div class="stat-sub">R90k agency equivalent</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Screens Built</div>
+          <div class="stat-value">8</div>
+          <div class="stat-sub">All live on phone</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Build Timeline</div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">7 April 2026</div>
+              <div class="timeline-title">Project started</div>
+              <div class="timeline-desc">DashboardScreen first built and live on phone</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">7–8 April 2026</div>
+              <div class="timeline-title">Core screens</div>
+              <div class="timeline-desc">WeeklyScreen, DebtScreen, OnboardingScreen (5-step), GrowScreen, ProfileScreen</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">8 April 2026</div>
+              <div class="timeline-title">Supabase integration live</div>
+              <div class="timeline-desc">Users + expenses saving to database in real time</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">8–9 April 2026</div>
+              <div class="timeline-title">Referral system + admin v1</div>
+              <div class="timeline-desc">Referral SQL, T&Cs, commission structure locked</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">9 April 2026</div>
+              <div class="timeline-title">Trial + upgrade flow</div>
+              <div class="timeline-desc">14-day trial, UpgradeModal, trial banner below camera notch</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">10 April 2026</div>
+              <div class="timeline-title">PayFast wired (sandbox)</div>
+              <div class="timeline-desc">Test payment successful. Awaiting PayFast account verification.</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">10 April 2026</div>
+              <div class="timeline-title">Owner hidden panel live</div>
+              <div class="timeline-desc">Hidden panel accessible via avatar tap sequence → live Supabase stats</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">Late April 2026</div>
+              <div class="timeline-title">OTP verification + security</div>
+              <div class="timeline-desc">Email OTP via Resend, RLS hardened, .env keys secured</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">May 2026</div>
+              <div class="timeline-title">Newsletter system built</div>
+              <div class="timeline-desc">52-week automated tips, Supabase cron, Edge Function, POPIA unsubscribe</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-date">May 2026</div>
+              <div class="timeline-title">Admin dashboard v2</div>
+              <div class="timeline-desc">Newsletter tab, user import, referral table detection, build tracker live data</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot" style="background:var(--border)"></div>
+              <div class="timeline-date">Next</div>
+              <div class="timeline-title" style="color:var(--muted)">Connect real data to Debt + Grow screens · Amazon + Huawei listings</div>
+              <div class="timeline-desc" style="color:var(--hint)">Add debts table, savings goals, app store submissions</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Feature Checklist</div>
+          <div id="build-progress" style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+              <span style="color:var(--mid)">Calculating...</span>
+            </div>
+          </div>
+          <div id="feature-checklist"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ALERTS ─────────────────────────── -->
+    <!-- ── ACCOUNT MANAGER ───────────────── -->
+    <div id="tab-account" class="tab-page">
+
+      <!-- Tier stats bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div id="acct-tier-stats" style="font-size:13px;font-weight:600"></div>
+        <div style="font-size:11px;color:var(--muted)">All writes go directly to Supabase</div>
+      </div>
+
+      <!-- Grant / Modify Access -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🔑 Grant / Modify Access</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 16px">Search a registered user and update their subscription tier. All writes go directly to Supabase.</p>
+
+        <div style="position:relative;margin-bottom:12px">
+          <input id="acct-search" type="text" placeholder="Search by name or email..."
+            style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;background:var(--bg)"
+            oninput="acctSearchUsers(this.value)" autocomplete="off">
+          <div id="acct-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+        </div>
+
+        <!-- Selected user preview -->
+        <div id="acct-selected-preview" style="display:none;background:var(--green-l);border:1px solid var(--green);border-radius:10px;padding:12px 16px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div id="acct-sel-name" style="font-size:14px;font-weight:700;color:var(--text)">—</div>
+              <div id="acct-sel-meta" style="font-size:11px;color:var(--mid);margin-top:2px">—</div>
+            </div>
+            <div id="acct-sel-badge"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access Type</label>
+            <select id="acct-access-type"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none">
+              <option value="trial_7">🌱 Free Trial — 7 days</option>
+              <option value="trial_14">🌱 Free Trial — 14 days</option>
+              <option value="pro_1">⭐ Pro — 1 month</option>
+              <option value="pro_3">⭐ Pro — 3 months</option>
+              <option value="pro_6">⭐ Pro — 6 months</option>
+              <option value="pro_12">⭐ Pro — 12 months</option>
+              <option value="premium_1">👑 Premium — 1 month</option>
+              <option value="premium_3">👑 Premium — 3 months</option>
+              <option value="free">🔄 Revert to Free</option>
+              <option value="revoke" style="color:var(--red);font-weight:700">❌ Revoke / Suspend</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Note (optional)</label>
+            <input id="acct-note" type="text" placeholder="e.g. NYDA grant, Beta tester"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="applyAccess()"
+            style="padding:11px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
+            Apply →
+          </button>
+        </div>
+        <div id="acct-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+
+      <!-- Active Grants -->
+      <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
+        <div style="padding:18px 20px 0">
+          <div class="card-title">👥 Active Grants <span id="active-grants-count" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
+          <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Everyone currently on Pro or Premium, newest first. Expiring within 7 days is highlighted. Scroll for more.</p>
+        </div>
+        <div style="max-height:280px;overflow-y:auto">
+          <table class="data-table" style="margin:0">
+            <thead style="position:sticky;top:0;background:var(--white);z-index:1"><tr>
+              <th>User</th><th>Tier</th><th>Expires</th><th>Note</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="active-grants-body">
+              <tr><td colspan="5" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Revoked History -->
+      <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
+        <div style="padding:18px 20px 0">
+          <div class="card-title">🚫 Revoked Access History</div>
+          <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Everyone whose access was revoked, with what tier they had and when.</p>
+        </div>
+        <div style="max-height:220px;overflow-y:auto">
+          <table class="data-table" style="margin:0">
+            <thead style="position:sticky;top:0;background:var(--white);z-index:1"><tr>
+              <th>User</th><th>Had Tier</th><th>Period</th><th>Revoked</th>
+            </tr></thead>
+            <tbody id="revoked-history-body">
+              <tr><td colspan="4" class="empty">No revocations yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add New User -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">➕ Add New User</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 16px">Manually create a beta tester record. Use this to onboard someone who hasn't signed up yet.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 140px 100px auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Full Name</label>
+            <input id="new-user-name" type="text" placeholder="Thandi Dlamini"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Email</label>
+            <input id="new-user-email" type="email" placeholder="thandi@email.com"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Tier</label>
+            <select id="new-user-tier"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access (months)</label>
+            <input id="new-user-months" type="number" value="1" min="0" max="24"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="addNewUser()"
+            style="padding:11px 20px;background:var(--purple);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
+            + Add
+          </button>
+        </div>
+        <div id="new-user-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+
+      <!-- Bulk Grant -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">📋 Bulk Grant</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Paste one email per line. Applies the same access type selected in Grant / Modify above.</p>
+        <textarea id="bulk-emails" rows="5"
+          style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-family:'DM Mono',monospace;background:var(--bg);resize:vertical;outline:none;box-sizing:border-box;color:var(--text)"
+          placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com"></textarea>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+          <button onclick="bulkGrant()"
+            style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            Grant to all →
+          </button>
+          <div id="bulk-status" style="font-size:12px;color:var(--mid)"></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">Recent Access Changes</div>
+          <span style="font-size:11px;color:var(--muted)">Saved to Supabase · persists across sessions</span>
+        </div>
+        <div id="acct-log">
+          <div class="empty">No access changes recorded yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-alerts" class="tab-page">
+      <div class="card">
+        <div class="card-title">WhatsApp Alerts</div>
+        <div id="whatsapp-number-row" style="margin-bottom:16px">
+          <label style="font-size:12px;color:var(--mid);display:block;margin-bottom:4px">Your WhatsApp number</label>
+          <input type="text" id="wa-number" placeholder="+27 82 123 4567"
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:240px;font-family:'DM Sans',sans-serif">
+          <button onclick="saveWaNumber()" style="margin-left:8px;padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Save</button>
+        </div>
+        <div id="alert-toggles"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Email Alerts</div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;color:var(--mid);display:block;margin-bottom:4px">Admin email</label>
+          <input type="text" id="email-addr" value="nyanisokhoza@gmail.com"
+            style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;width:280px;font-family:'DM Sans',sans-serif">
+          <button onclick="saveEmail()" style="margin-left:8px;padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Save</button>
+        </div>
+        <p style="font-size:12px;color:var(--mid)">Email alerts will be sent via your notification webhook when configured. Currently in manual mode — check Supabase dashboard for new registrations.</p>
+      </div>
+    </div>
+
+    <!-- ── LEGAL & POPIA ──────────────────── -->
+    <div id="tab-legal" class="tab-page">
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Consented Users</div>
+          <div class="stat-value" id="consented-count">—</div>
+          <div class="stat-sub">POPIA compliant ✅</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">CIPC Status</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">🔲</div>
+          <div class="stat-sub">Sole trader pending</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">Trademark</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">🔲</div>
+          <div class="stat-sub">Class 36 + 42 pending</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">PayFast</div>
+          <div class="stat-value" style="font-size:18px;padding-top:4px">⏳</div>
+          <div class="stat-sub">Awaiting verification</div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title">Legal Documents Status</div>
+          <div id="legal-docs"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">POPIA Compliance Log</div>
+          <table class="data-table">
+            <thead><tr><th>User</th><th>Action</th><th>Date</th></tr></thead>
+            <tbody id="popia-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Next Legal Steps</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">Register sole trader at CIPC</div>
+            <div class="timeline-desc">cipc.co.za · R175 · Trading name: "RandWise" · 20 mins online · Required before PayFast goes live</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">File trademark Class 36 + 42</div>
+            <div class="timeline-desc">cipc.co.za · R590/class = R1,180 total · Protects "RandWise" name nationally</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--amber)"></div>
+            <div class="timeline-title">Sign co-founder agreement</div>
+            <div class="timeline-desc">Both parties sign + witness · Store signed copy in Supabase storage</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--border)"></div>
+            <div class="timeline-title" style="color:var(--muted)">SARS provisional tax registration</div>
+            <div class="timeline-desc" style="color:var(--hint)">Register as soon as revenue starts · Free · Claude subscription + hosting are tax-deductible</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background:var(--border)"></div>
+            <div class="timeline-title" style="color:var(--muted)">Upgrade to (Pty) Ltd after beta</div>
+            <div class="timeline-desc" style="color:var(--hint)">After 100 paying users · Formalise twin's 20% equity on CIPC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ EMAIL USERS PAGE ══════════════════════════════════════ -->
+    <div id="tab-email" class="tab-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;color:#1a1a1a;margin-bottom:4px">✉️ Email Users</h2>
+          <p style="color:#666;font-size:13px">Send personalised emails to your users via Resend</p>
+        </div>
+      </div>
+
+      <!-- Templates -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Quick templates</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button onclick="loadEmailTemplate('welcome')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🌱 Welcome</button>
+          <button onclick="loadEmailTemplate('inactive')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">😴 Haven't seen you</button>
+          <button onclick="loadEmailTemplate('newfeature')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">✨ New features</button>
+          <button onclick="loadEmailTemplate('milestone')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🏆 Milestone</button>
+          <button onclick="loadEmailTemplate('trial')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⏰ Trial expiring</button>
+          <button onclick="loadEmailTemplate('upgrade')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⭐ Upgrade nudge</button>
+          <button onclick="loadEmailTemplate('referral')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🎁 Referral reminder</button>
+          <button onclick="loadEmailTemplate('bugfix')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🐛 Bug fixed</button>
+          <button onclick="loadEmailTemplate('maintenance')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🛠️ Maintenance</button>
+          <button onclick="loadEmailTemplate('feedback')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🗳️ Feedback request</button>
+          <button onclick="loadEmailTemplate('personal')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">💬 Personal check-in</button>
+        </div>
+      </div>
+
+      <!-- Composer -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px;margin-bottom:20px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Send to</label>
+            <select id="email-to" onchange="toggleCustomEmailInput()" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
+              <option value="all">All users</option>
+              <option value="free">Free users only</option>
+              <option value="pro">Pro users only</option>
+              <option value="trial">Trial users (active)</option>
+              <option value="inactive">Inactive (7+ days)</option>
+              <option value="custom">✏️ Custom email (testing)</option>
+            </select>
+            <input id="email-custom-input" type="text" placeholder="your@email.com, another@email.com"
+              style="display:none;width:100%;padding:10px;border:1px solid #1a7a4a;border-radius:8px;font-size:13px;background:#f0faf4;margin-top:8px;box-sizing:border-box">
+            <div id="email-custom-hint" style="display:none;font-size:11px;color:var(--muted);margin-top:4px">Comma-separate multiple addresses. Sends with your real name, not "Thandi".</div>
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">From name</label>
+            <input id="email-from-name" value="MyRandWise Team" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Subject line</label>
+          <input id="email-subject" placeholder="e.g. We've fixed the issue you reported 🌱" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:4px">Message body</label>
+          <div style="font-size:11px;color:#888;margin-bottom:6px">Use {name} to personalise — replaced with each user's first name</div>
+          <textarea id="email-body" rows="8" placeholder="Hi {name} 👋..." style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical"></textarea>
+        </div>
+        <div style="margin-bottom:16px">
+          <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Link (optional)</label>
+          <input id="email-link" placeholder="https://myrandwise.co.za/randwise/" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px">
+        </div>
+        <!-- Preview -->
+        <div style="background:#f7f6f2;border-radius:10px;padding:14px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:#888;margin-bottom:8px">PREVIEW (as Thandi would see it)</div>
+          <div id="email-preview" style="font-size:13px;color:#2c2c2a;line-height:1.6;white-space:pre-wrap"></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button onclick="sendEmailCampaign()" id="email-send-btn" style="padding:12px 24px;background:#1a7a4a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer">📤 Send emails</button>
+          <button onclick="previewEmail()" style="padding:12px 16px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer">👁 Preview</button>
+          <div id="email-status" style="font-size:13px;color:#1a7a4a;font-weight:600"></div>
+        </div>
+      </div>
+
+      <!-- Send log -->
+      <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a">Send history</div>
+          <span style="font-size:11px;color:var(--muted)">Saved to Supabase · persists across sessions</span>
+        </div>
+        <div id="email-log" style="font-size:12px;color:#666">Loading history...</div>
+      </div>
+    </div>
+
+    <!-- ── NEWSLETTER ─────────────────────── -->
+    <div id="tab-newsletter" class="tab-page">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+        <div>
+          <h2 style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">📧 Weekly Newsletter</h2>
+          <p style="color:var(--muted);font-size:13px">Automated tips sent every Monday 8am via Resend · <span class="popia-tag">POPIA</span></p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end">
+          <button onclick="importUsersAsSubscribers()" id="nl-import-btn" style="padding:8px 14px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">👥 Import all users</button>
+          <div id="nl-import-status" style="font-size:12px;color:var(--muted);max-width:200px;text-align:right"></div>
+          <span style="font-size:13px;font-weight:600;color:var(--mid)" id="nl-toggle-label">Loading...</span>
+          <label class="toggle" style="width:50px;height:26px">
+            <input type="checkbox" id="nl-master-toggle" onchange="toggleNewsletter(this.checked)">
+            <div class="toggle-track"></div>
+          </label>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card green"><div class="stat-label">Total Subscribers</div><div class="stat-value" id="nl-total">—</div><div class="stat-sub">All time sign-ups</div></div>
+        <div class="stat-card green"><div class="stat-label">Active</div><div class="stat-value" id="nl-active">—</div><div class="stat-sub">Receiving tips now</div></div>
+        <div class="stat-card red"><div class="stat-label">Unsubscribed</div><div class="stat-value" id="nl-unsub">—</div><div class="stat-sub">Opted out</div></div>
+        <div class="stat-card purple"><div class="stat-label">Retention</div><div class="stat-value" id="nl-retention">—</div><div class="stat-sub">Active ÷ total</div></div>
+      </div>
+
+      <div class="grid2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-title">This Week's Tip <span id="nl-week-badge" style="background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700"></span></div>
+          <div id="nl-current-tip"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button onclick="sendTestTip()" id="nl-test-btn" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📤 Send test to me</button>
+            <button onclick="openOverrideForm()" style="padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">✏️ Override this week</button>
+          </div>
+          <div id="nl-test-status" style="font-size:12px;color:var(--green);font-weight:600;margin-top:8px;min-height:18px"></div>
+        </div>
+
+        <div class="card" id="nl-override-form" style="display:none">
+          <div class="card-title">Override Week <span id="nl-override-week-num"></span> <span onclick="closeOverrideForm()" style="cursor:pointer;font-size:18px;color:var(--muted);font-weight:400;float:right">×</span></div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Subject line</label><input id="nl-ov-subject" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif"></div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Headline</label><input id="nl-ov-headline" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif"></div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">Body text</label><textarea id="nl-ov-body" rows="5" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;resize:vertical"></textarea></div>
+          <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:700;color:var(--mid);display:block;margin-bottom:4px">CTA button text</label><input id="nl-ov-cta" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif" value="Open MyRandWise →"></div>
+          <div style="display:flex;gap:8px">
+            <button onclick="saveOverride()" style="padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">💾 Save override</button>
+            <button onclick="closeOverrideForm()" style="padding:9px 14px;background:transparent;border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">Cancel</button>
+          </div>
+          <div id="nl-ov-status" style="font-size:12px;color:var(--green);font-weight:600;margin-top:8px;min-height:18px"></div>
+        </div>
+
+        <div class="card" id="nl-recent-subs-card">
+          <div class="card-title">Recent Subscribers <span id="nl-subs-count" style="color:var(--muted);font-weight:400;font-size:12px"></span></div>
+          <div id="nl-recent-subs"><div class="loading"><div class="spinner"></div> Loading...</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All 52 Tips
+          <input id="nl-tip-search" placeholder="🔍 Search tips..." oninput="filterTips()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;width:200px">
+        </div>
+        <div id="nl-tips-list"><div class="loading"><div class="spinner"></div> Loading tips...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Config ─────────────────────────────────────────────────────
+const SUPABASE_URL  = 'https://mmezkseblafurjolkfkt.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
+
+async function sbGet(path) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Accept': 'application/json'
+    }
+  });
+  const text = await r.text();
+  if (!r.ok) throw new Error(`[${r.status}] ${text}`);
+  try { return JSON.parse(text); } catch(e) { return []; }
+}
+
+async function sbFetch(path) {
+  try { return await sbGet(path); } catch(e) { console.error('sbFetch:', e); return []; }
+}
+
+async function sbPatch(path, body) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+      // return=representation (not minimal) so we can see exactly which
+      // rows were actually affected. With return=minimal, Postgres/PostgREST
+      // reports 204 "success" even when a Row Level Security UPDATE policy
+      // silently matches zero rows — there's no error to catch, the write
+      // just quietly doesn't happen. This was the real cause of the
+      // "Revoke sent, but Supabase still shows tier: pro" issue.
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) { const t = await r.text(); throw new Error(`PATCH failed [${r.status}]: ${t}`); }
+  const result = await r.json();
+  if (!Array.isArray(result) || result.length === 0) {
+    throw new Error(
+      `PATCH returned success but updated 0 rows. This usually means a Row Level Security ` +
+      `UPDATE policy on this table is silently blocking the write — check Supabase → ` +
+      `Authentication → Policies → ${path.split('?')[0]} for a missing or too-restrictive UPDATE policy.`
+    );
+  }
+  return result;
+}
+
+// ── Email via Edge Function (replaces direct Resend calls) ─────
+// The Edge Function lives at: supabase/functions/send-email/index.ts
+// Deploy it once: supabase functions deploy send-email
+// Set secret:     supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxx
+const SEND_EMAIL_FN = `${SUPABASE_URL}/functions/v1/send-email`;
+
+async function sendViaEdge({ from, to, subject, html, text }) {
+  const resp = await fetch(SEND_EMAIL_FN, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from, to, subject, html, text }),
+  });
+  const result = await resp.json();
+  if (!resp.ok) throw new Error(result.message || result.error || JSON.stringify(result));
+  return result;
+}
+
+// ── State ──────────────────────────────────────────────────────
+let allUsers = [];
+let allExpenses = [];
+let tierFilter = 'all';
+let _usersTable = 'beta_testers';
+let _expensesTable = 'expenses';
+
+// ── Navigation ─────────────────────────────────────────────────
+function showTab(name, el) {
+  document.querySelectorAll('.tab-page').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const tab = document.getElementById('tab-' + name);
+  if (tab) { tab.classList.add('active'); tab.style.display = ''; }
+  el.classList.add('active');
+  const titles = {
+    overview:'Overview', users:'Users', segments:'Segments',
+    referrals:'Referrals', revenue:'Revenue & Financials', reserves:'Reserves & Team',
+    ai:'AI Suggestions', build:'Build Tracker', alerts:'Alerts', legal:'Legal & POPIA',
+    email:'Email Users', newsletter:'Newsletter', account:'Account Manager'
+  };
+  document.getElementById('page-title').textContent = titles[name] || name;
+  if (name === 'newsletter') loadNewsletter();
+  if (name === 'email') loadEmailSendLog();
+  if (name === 'revenue') loadInvestReadiness();
+  if (name === 'account') { loadAcctLog(); renderActiveGrants(); renderRevokedHistory(); }
+}
+
+// ── Email Composer ─────────────────────────────────────────────
+const EMAIL_TEMPLATES = {
+  inactive: {
+    subject: "We haven't seen you in a while, {name} 👋",
+    body: `Hi {name} 👋
+
+We noticed you haven't logged into MyRandWise recently and wanted to check in.
+
+A lot has changed — we've been hard at work fixing bugs and adding new features based on user feedback.
+
+Here's what's new:
+• Payoff Accelerator — shows you exactly how much extra to put on each debt
+• Smarter weekly budget — your real spendable money after all commitments
+• Debt score — one clear number that improves as you pay down debt
+
+Your account and data are still safe. Come back and see how your finances look today.
+
+— MyRandWise team 🌱`
+  },
+  newfeature: {
+    subject: "New on MyRandWise — Payoff Accelerator is live ⚡",
+    body: `Hi {name}!
+
+We just launched something we think you'll love — the Payoff Accelerator.
+
+It shows you:
+• Exactly how much extra to put towards your debt each month
+• Which debt to attack first (snowball method)
+• How many months sooner you'll be debt-free
+• How much interest you'll save
+
+Just go to the Debt tab and scroll down to Payoff Accelerator. Try moving the slider — you'll see the magic.
+
+Open the app 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  trial: {
+    subject: "Your MyRandWise Pro trial ends soon ⏰",
+    body: `Hi {name},
+
+Your 14-day Pro trial is ending soon.
+
+During your trial you've had access to:
+• Debt score and snowball payoff plan
+• Weekly budget planner
+• Spending insights
+• Savings goals
+• Export PDF
+
+After your trial, you'll move to the free plan. To keep everything — upgrade to Pro for just R49/mo.
+
+Upgrade now 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  upgrade: {
+    subject: "Your money deserves the full picture, {name} 💰",
+    body: `Hi {name},
+
+You've been using MyRandWise to track your spending — great start.
+
+But here's what you're missing on the free plan:
+
+📊 Debt score — know exactly where you stand
+❄️ Snowball payoff plan — know when you'll be debt free
+📅 Weekly budget planner — your real money after all commitments
+⚡ Payoff Accelerator — see how R430 extra clears your debt 20 months sooner
+
+All of this for R49/month — less than most people spend on coffee.
+
+Upgrade to Pro 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  bugfix: {
+    subject: "We fixed the issue you reported 🛠️",
+    body: `Hi {name},
+
+Thank you for your patience — we've fixed the issue you experienced in MyRandWise.
+
+The app is now working correctly. Please open it and let us know if you're still seeing any problems.
+
+If something isn't working for you, reply to this email or use the "Report a problem" button inside the app.
+
+Open the app 👉 https://myrandwise.co.za/randwise/
+
+— MyRandWise team 🌱`
+  },
+  personal: {
+    subject: "Quick check-in from MyRandWise 🌱",
+    body: `Hi {name},
+
+Just checking in personally — how are you finding MyRandWise?
+
+We're a small team building this specifically for South Africans and your feedback genuinely shapes what we build next.
+
+A few questions:
+• Is there anything confusing or not working?
+• What would make the app more useful for you?
+• Would you recommend it to someone you know?
+
+Reply to this email — I read every response.
+
+— MyRandWise team 🌱`
+  },
+  welcome: {
+    subject: "Welcome to MyRandWise, {name} 🌱",
+    body: `Hi {name} 👋
+
+Welcome to MyRandWise! We built this for South Africans who want to actually understand their money — not another generic budgeting app that doesn't get local life.
+
+Here's how to get the most out of it in your first week:
+
+1. Log every expense, even small ones (airtime, taxi fare) — the small stuff adds up
+2. Set up your stokvel or savings goal if you have one
+3. Check your Debt tab if you're paying anything off — the payoff plan does the maths for you
+
+Any questions, just reply to this email.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  milestone: {
+    subject: "You've made real progress, {name} 🏆",
+    body: `Hi {name},
+
+We wanted to flag something — you've been consistently tracking your money on MyRandWise, and that consistency is the hardest part. Most people give up in the first two weeks. You didn't.
+
+A few things worth checking right now:
+• Your Debt tab — see how much faster you could be debt-free with small extra payments
+• Your spending breakdown — any category surprising you this month?
+• Your savings goal — even R50 added today keeps the momentum going
+
+Keep going — small consistent moves are what actually change your financial picture.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  referral: {
+    subject: "Know someone who'd love MyRandWise? 🎁",
+    body: `Hi {name},
+
+Quick one — if MyRandWise has helped you get a clearer picture of your money, there's a good chance a friend or family member could use it too.
+
+Every person you refer who joins:
+• Gets a better start with their own budgeting
+• Earns you up to R40 in rewards (R10 upfront + R5/month for 6 months)
+
+Your referral link is in the app under Profile → Refer a friend.
+
+Share it in your stokvel group, with a colleague, or family member who's always asking how you stay on top of your money.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  feedback: {
+    subject: "2 minutes of your time? 🗳️",
+    body: `Hi {name},
+
+We're a small team and every piece of feedback genuinely changes what we build next.
+
+Could you take 2 minutes to answer:
+1. What's the ONE thing that would make MyRandWise more useful for you?
+2. Is there a feature you expected that isn't there?
+3. On a scale of 1-10, how likely are you to recommend MyRandWise to a friend?
+
+Just reply to this email with your answers — no survey link, no forms, just a direct reply.
+
+Thank you for helping us build something genuinely useful.
+
+— MyRandWise team 🌱`
+  },
+  maintenance: {
+    subject: "Quick heads up — scheduled maintenance 🛠️",
+    body: `Hi {name},
+
+We're doing some scheduled maintenance on MyRandWise to improve speed and fix a few bugs.
+
+What this means for you:
+• The app may be briefly unavailable during the maintenance window
+• Your data is completely safe — nothing is lost
+• You'll be able to log back in as normal once it's done
+
+We'll send a follow-up email once everything is back to normal.
+
+Thanks for your patience — we're doing this to make the app better for you.
+
+— MyRandWise team 🌱`
+  }
+};
+
+function toggleCustomEmailInput() {
+  const isCustom = document.getElementById('email-to').value === 'custom';
+  document.getElementById('email-custom-input').style.display = isCustom ? 'block' : 'none';
+  document.getElementById('email-custom-hint').style.display = isCustom ? 'block' : 'none';
+}
+
+function loadEmailTemplate(key) {
+  const t = EMAIL_TEMPLATES[key];
+  if(!t) return;
+  document.getElementById('email-subject').value = t.subject;
+  document.getElementById('email-body').value = t.body;
+  previewEmail();
+}
+
+function previewEmail() {
+  const body = document.getElementById('email-body').value;
+  const preview = body.replace(/\{name\}/g, 'Thandi');
+  document.getElementById('email-preview').textContent = preview || 'Type a message above to preview...';
+}
+
+// Auto-preview as user types
+document.addEventListener('DOMContentLoaded', ()=>{
+  const bodyEl = document.getElementById('email-body');
+  if(bodyEl) bodyEl.addEventListener('input', previewEmail);
+  const subjEl = document.getElementById('email-subject');
+  if(subjEl) subjEl.addEventListener('input', previewEmail);
+});
+
+// ── Branded HTML wrapper for campaign emails ────────────────────
+// Wraps plain campaign text in the same visual style as the OTP
+// and access-grant emails, so manual sends from this dashboard
+// don't look like raw plain text in the inbox.
+function wrapCampaignHtml(bodyText, ctaLink) {
+  // Convert plain text body into paragraphs, preserving line breaks
+  const paragraphs = bodyText
+    .split('\n\n')
+    .map(p => `<p style="font-size:14px;color:#333;line-height:1.7;margin:0 0 16px;white-space:pre-line">${p}</p>`)
+    .join('');
+
+  const ctaButton = ctaLink ? `
+    <a href="${ctaLink}" style="display:block;background:#1a5c35;color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700;margin-top:8px">
+      Open MyRandWise →
+    </a>` : '';
+
+  return `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:#1a5c35;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:32px;margin-bottom:6px">🌱</div>
+        <div style="font-size:18px;font-weight:900;color:#fff">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        ${paragraphs}
+        ${ctaButton}
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center;line-height:1.6;margin:0">
+        🇿🇦 Built in South Africa · POPIA Compliant<br>
+        © 2026 MyRandWise · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a>
+      </p>
+    </div>`;
+}
+
+async function sendEmailCampaign() {
+  const to = document.getElementById('email-to').value;
+  const subject = document.getElementById('email-subject').value.trim();
+  const body = document.getElementById('email-body').value.trim();
+  const fromName = document.getElementById('email-from-name').value.trim() || 'MyRandWise Team';
+  const link = document.getElementById('email-link').value.trim();
+  const statusEl = document.getElementById('email-status');
+  const sendBtn = document.getElementById('email-send-btn');
+
+  if(!subject || !body) { alert('Please fill in subject and message body.'); return; }
+
+  sendBtn.disabled = true;
+  statusEl.textContent = '';
+
+  // ── Custom email path — bypasses user fetch/segment filtering entirely ──
+  if (to === 'custom') {
+    const rawEmails = (document.getElementById('email-custom-input').value || '').trim();
+    const emails = rawEmails.split(',').map(e => e.trim()).filter(e => e.includes('@'));
+    if (!emails.length) {
+      showToast('Enter at least one email address', 'warn');
+      sendBtn.disabled = false;
+      return;
+    }
+    sendBtn.textContent = '⏳ Sending...';
+    let sent = 0, failed = 0;
+    for (const email of emails) {
+      const personalBody = body.replace(/\{name\}/g, 'there');
+      const html = wrapCampaignHtml(personalBody, link || null);
+      try {
+        await sendViaEdge({ from: fromName + ' <hello@myrandwise.co.za>', to: [email], subject, html });
+        sent++;
+      } catch(e) { failed++; }
+    }
+    statusEl.textContent = '✅ ' + sent + ' sent' + (failed > 0 ? ' · ' + failed + ' failed' : '') + ' to: ' + emails.join(', ');
+    statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
+    sendBtn.textContent = '📤 Send emails';
+    sendBtn.disabled = false;
+    showToast(`✅ Test email sent to ${emails.length} address${emails.length!==1?'es':''}`);
+    await logEmailSend(subject, sent, failed, 'custom: ' + emails.join(', '));
+    await loadEmailSendLog();
+    return;
+  }
+
+  sendBtn.textContent = '⏳ Fetching users...';
+
+  try {
+    const query = _usersTable + '?select=id,name,email,tier,created_at,last_active&order=created_at.desc';
+    const users = await sbFetch(query);
+    if(!users || !users.length) {
+      statusEl.textContent = 'No users found.';
+      sendBtn.disabled = false;
+      sendBtn.textContent = '📤 Send emails';
+      return;
+    }
+
+    const now = new Date();
+    let targets = users.filter(u => u.email);
+    if(to === 'free') targets = targets.filter(u => u.tier === 'free');
+    else if(to === 'pro') targets = targets.filter(u => u.tier === 'pro' || u.tier === 'premium');
+    else if(to === 'trial') targets = targets.filter(u => {
+      const days = Math.floor((now - new Date(u.created_at)) / 86400000);
+      return u.tier === 'free' && days <= 14;
+    });
+    else if(to === 'inactive') targets = targets.filter(u => {
+      if(!u.last_active) return true;
+      const days = Math.floor((now - new Date(u.last_active)) / 86400000);
+      return days >= 7;
+    });
+
+    if(!targets.length) {
+      statusEl.textContent = 'No users in this segment.';
+      sendBtn.disabled = false;
+      sendBtn.textContent = '📤 Send emails';
+      return;
+    }
+
+    const confirmed = confirm('Send to ' + targets.length + ' user' + (targets.length !== 1 ? 's' : '') + '? Subject: "' + subject + '"');
+    if(!confirmed) { sendBtn.disabled = false; sendBtn.textContent = '📤 Send emails'; return; }
+
+    sendBtn.textContent = '⏳ Sending 0/' + targets.length + '...';
+    let sent = 0, failed = 0;
+
+    for(const u of targets) {
+      const name = (u.name || 'there').split(' ')[0];
+      const personalBody = body.replace(/\{name\}/g, name);
+      const personalSubject = subject.replace(/\{name\}/g, name);
+      const html = wrapCampaignHtml(personalBody, link || null);
+
+      try {
+        await sendViaEdge({
+          from: fromName + ' <hello@myrandwise.co.za>',
+          to: [u.email],
+          subject: personalSubject,
+          html
+        });
+        sent++;
+      } catch(e) { failed++; }
+
+      sendBtn.textContent = '⏳ Sending ' + sent + '/' + targets.length + '...';
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    statusEl.textContent = '✅ ' + sent + ' email' + (sent !== 1 ? 's' : '') + ' sent' + (failed > 0 ? ' · ' + failed + ' failed' : '');
+    statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
+    sendBtn.textContent = '📤 Send emails';
+    sendBtn.disabled = false;
+
+    // Persist send log to Supabase
+    await logEmailSend(subject, sent, failed, to);
+    await loadEmailSendLog();
+
+  } catch(e) {
+    statusEl.textContent = 'Error: ' + (e.message || e);
+    statusEl.style.color = '#a32d2d';
+    sendBtn.disabled = false;
+    sendBtn.textContent = '📤 Send emails';
+  }
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function fmt(n) { return 'R' + Number(n||0).toLocaleString('en-ZA'); }
+function ago(d) {
+  const diff = Date.now() - new Date(d).getTime();
+  const days = Math.floor(diff / 86400000);
+  if (days === 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+  return new Date(d).toLocaleDateString('en-ZA', { day:'numeric', month:'short' });
+}
+function tierBadge(t) {
+  const map = { pro:'badge-pro', premium:'badge-premium', free:'badge-free' };
+  return `<span class="badge ${map[t]||'badge-free'}">${t||'free'}</span>`;
+}
+
+// ── Load all data ──────────────────────────────────────────────
+async function loadAll() {
+  const updEl = document.getElementById('last-updated');
+  updEl.textContent = 'Loading...';
+
+  // ── Step 1: Discover which tables exist ──────────────────────
+  const userTableCandidates = ['beta_testers', 'users', 'testers', 'profiles'];
+  const expenseTableCandidates = ['expenses', 'tester_expenses', 'user_expenses', 'transactions'];
+  const consentCandidates = ['consent_log', 'audit_log', 'consent_logs'];
+
+  let usersRaw = null, expensesRaw = null, consentRaw = [];
+  let userTableFound = null, expTableFound = null;
+  const errors = [];
+
+  for (const t of userTableCandidates) {
+    try {
+      const r = await sbGet(`${t}?select=*&order=created_at.desc&limit=500`);
+      if (Array.isArray(r) && r !== null) { usersRaw = r; userTableFound = t; _usersTable = t; break; }
+    } catch(e) {
+      errors.push(`❌ ${t}: ${e.message}`);
+    }
+  }
+
+  if (!userTableFound) {
+    // Show diagnostic panel on overview
+    showDiagError(errors, 'Users table not found. Tried: ' + userTableCandidates.join(', '));
+    updEl.textContent = 'Failed — see Overview for details';
+    return;
+  }
+
+  for (const t of expenseTableCandidates) {
+    try {
+      const r = await sbGet(`${t}?select=*&order=logged_at.desc&limit=1000`);
+      if (Array.isArray(r)) { expensesRaw = r; expTableFound = t; _expensesTable = t; break; }
+    } catch(e) {
+      // Try created_at as sort key
+      try {
+        const r2 = await sbGet(`${t}?select=*&order=created_at.desc&limit=1000`);
+        if (Array.isArray(r2)) { expensesRaw = r2; expTableFound = t; _expensesTable = t; break; }
+      } catch(e2) { /* ignore */ }
+    }
+  }
+  if (!expensesRaw) expensesRaw = [];
+
+  for (const t of consentCandidates) {
+    try {
+      const r = await sbGet(`${t}?select=tester_id,action,created_at&order=created_at.desc&limit=200`);
+      if (Array.isArray(r)) { consentRaw = r; break; }
+    } catch(e) { /* optional table */ }
+  }
+
+  allUsers = usersRaw || [];
+  allExpenses = expensesRaw || [];
+
+  // Remove any old error banners
+  const old = document.getElementById('diag-banner');
+  if (old) old.remove();
+
+  // Show a soft info if expenses table wasn't found
+  if (!expTableFound) {
+    const banner = document.createElement('div');
+    banner.id = 'diag-banner';
+    banner.style.cssText = 'background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:12px;color:var(--amber);';
+    banner.innerHTML = `⚠️ Expenses table not found (tried: ${expenseTableCandidates.join(', ')}). Expenses count will show 0. Other data is live.`;
+    document.getElementById('tab-overview').prepend(banner);
+  }
+
+  renderAll(allUsers, allExpenses, consentRaw);
+  updEl.textContent = `Updated ${new Date().toLocaleTimeString('en-ZA')} · ${allUsers.length} users · table: ${userTableFound}`;
+}
+
+function showDiagError(errors, summary) {
+  const statsEl = document.getElementById('overview-stats');
+  statsEl.innerHTML = `
+    <div style="grid-column:1/-1;background:var(--red-l);border:1px solid var(--red);border-radius:12px;padding:20px;">
+      <div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px">⚠️ Supabase connection issue</div>
+      <div style="font-size:13px;color:var(--red);margin-bottom:12px">${summary}</div>
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--mid);line-height:1.8">${errors.map(e=>`<div>${e}</div>`).join('')}</div>
+      <div style="margin-top:12px;font-size:12px;color:var(--mid)">
+        <b>Check:</b> 1) Supabase project is not paused &nbsp;·&nbsp;
+        2) RLS has a SELECT policy for anon role on your users table &nbsp;·&nbsp;
+        3) Table name exactly matches one of: beta_testers, users, testers, profiles
+      </div>
+      <button onclick="loadAll()" style="margin-top:12px;padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">↻ Retry</button>
+    </div>
+  `;
+}
+
+function renderAll(users, expenses, consent) {
+  renderOverview(users, expenses);
+  renderUsers(users);
+  renderSegments(users);
+  renderReferrals(users);
+  renderRevenue(users);
+  renderAI(users);
+  renderBuildTracker();
+  renderAlerts();
+  renderLegal(users, consent);
+  renderReserves(users);
+  loadInvestReadiness();   // saveable investment readiness toggles
+  renderActiveGrants();    // account manager active grants table
+  renderRevokedHistory();  // account manager revoked history table
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────
+function renderOverview(users, expenses) {
+  const pro = users.filter(u => u.tier === 'pro').length;
+  const prem = users.filter(u => u.tier === 'premium').length;
+  const free = users.filter(u => !u.tier || u.tier === 'free').length;
+  const paid = pro + prem;
+  const conv = users.length ? ((paid/users.length)*100).toFixed(1) : 0;
+  const start = new Date('2026-04-07');
+  const daysSince = Math.floor((Date.now() - start.getTime()) / 86400000);
+
+  document.getElementById('overview-stats').innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-label">Total Users</div>
+      <div class="stat-value">${users.length}</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Paid Users</div>
+      <div class="stat-value">${paid}</div>
+      <div class="stat-sub">${conv}% conversion</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">Expenses Logged</div>
+      <div class="stat-value">${expenses.length}</div>
+      <div class="stat-sub">All time</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Days Building</div>
+      <div class="stat-value">${daysSince}</div>
+      <div class="stat-sub">Since 7 Apr 2026</div>
+    </div>
+  `;
+
+  // Sparkline — last 7 days
+  const days7 = Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6-i)); return d;
+  });
+  const counts = days7.map(d =>
+    users.filter(u => {
+      const ud = new Date(u.created_at);
+      return ud.getDate()===d.getDate() && ud.getMonth()===d.getMonth() && ud.getFullYear()===d.getFullYear();
+    }).length
+  );
+  const maxC = Math.max(...counts, 1);
+  const barsEl = document.getElementById('sparkline-bars');
+  const labelsEl = document.getElementById('sparkline-labels');
+  if (barsEl) barsEl.innerHTML = counts.map((c,i) =>
+    `<div class="spark-bar" style="height:${Math.max(4,(c/maxC)*48)}px" title="${days7[i].toLocaleDateString('en-ZA',{weekday:'short'})}: ${c} signup${c!==1?'s':''}"></div>`
+  ).join('');
+  if (labelsEl) labelsEl.innerHTML = days7.map(d =>
+    `<div class="spark-label" style="flex:1">${d.toLocaleDateString('en-ZA',{weekday:'short'})}</div>`
+  ).join('');
+
+  // Last signup label
+  const lastEl = document.getElementById('last-signup-label');
+  if (lastEl && users.length) {
+    const newest = users.reduce((a,b) => new Date(a.created_at) > new Date(b.created_at) ? a : b);
+    lastEl.textContent = `Last signup: ${ago(newest.created_at)} · ${newest.name||newest.email||'Unknown'}`;
+  }
+
+  // Recent users
+  const tbody = document.getElementById('recent-users-body');
+  tbody.innerHTML = users.slice(0,10).map(u => `
+    <tr>
+      <td><b>${u.name||'—'}</b></td>
+      <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
+  document.getElementById('reg-count').textContent = `${users.length} total`;
+
+  // Tier bars
+  const tierData = [
+    { label:'Free', count:free, color:'var(--border)', total:users.length },
+    { label:'Pro', count:pro, color:'var(--green)', total:users.length },
+    { label:'Premium', count:prem, color:'var(--purple)', total:users.length },
+  ];
+  document.getElementById('tier-bars').innerHTML = tierData.map(t => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--mid)">${t.label}</span>
+        <span style="font-weight:700;color:var(--text)">${t.count}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${t.total?((t.count/t.total)*100).toFixed(0):0}%;background:${t.color}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Stage bars
+  const stages = {};
+  users.forEach(u => { const s = u.life_stage||'Unknown'; stages[s] = (stages[s]||0)+1; });
+  const stageSorted = Object.entries(stages).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  document.getElementById('stage-bars').innerHTML = stageSorted.map(([s,c]) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:var(--mid)">${s}</span>
+        <span style="font-weight:600;color:var(--text)">${c}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${users.length?((c/users.length)*100).toFixed(0):0}%;background:var(--green-mid)"></div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty">No data yet</div>';
+}
+
+// ── USERS ─────────────────────────────────────────────────────
+function renderUsers(users) {
+  document.getElementById('users-body').innerHTML = '';
+  filterUsers();
+}
+
+function filterUsers() {
+  const q = (document.getElementById('user-search').value||'').toLowerCase();
+  const days = parseInt(document.getElementById('user-date-filter')?.value||'all');
+  const cutoff = days !== 'all' && !isNaN(days) ? Date.now() - days*86400000 : 0;
+
+  const filtered = allUsers.filter(u => {
+    const matchQ = !q ||
+      (u.name||'').toLowerCase().includes(q) ||
+      (u.email||'').toLowerCase().includes(q) ||
+      (u.life_stage||'').toLowerCase().includes(q);
+    const matchT = tierFilter === 'all' || (u.tier||'free') === tierFilter;
+    const matchD = !cutoff || new Date(u.created_at).getTime() >= cutoff;
+    return matchQ && matchT && matchD;
+  });
+
+  document.getElementById('users-body').innerHTML = filtered.map(u => `
+    <tr onclick="openUserPanel('${u.id}')">
+      <td><b>${u.name||'—'}</b></td>
+      <td style="font-size:11px;color:var(--muted)">${u.email||'—'}</td>
+      <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
+      <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" class="empty">No users match this filter</td></tr>';
+
+  const countEl = document.getElementById('users-count');
+  if (countEl) countEl.textContent = `Showing ${filtered.length} of ${allUsers.length} users`;
+}
+
+function setTierFilter(t, el) {
+  tierFilter = t;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  filterUsers();
+}
+
+// ── SEGMENTS ──────────────────────────────────────────────────
+function renderSegments(users) {
+  const defs = [
+    { id:'student',   emoji:'🎓', name:'Students',         filter: u => u.life_stage?.toLowerCase().includes('student') },
+    { id:'domestic',  emoji:'🏠', name:'Domestic Workers', filter: u => u.life_stage?.toLowerCase().includes('domestic') },
+    { id:'salaried',  emoji:'💼', name:'Salaried',         filter: u => u.life_stage?.toLowerCase().includes('salaried') || u.life_stage?.toLowerCase().includes('employ') },
+    { id:'freelance', emoji:'💻', name:'Freelancers',      filter: u => u.life_stage?.toLowerCase().includes('freelan') || u.life_stage?.toLowerCase().includes('self') },
+    { id:'pensioner', emoji:'👴', name:'Pensioners',       filter: u => u.life_stage?.toLowerCase().includes('pension') || u.life_stage?.toLowerCase().includes('retir') },
+    { id:'new',       emoji:'🆕', name:'New (last 7 days)', filter: u => { const d = Date.now()-new Date(u.created_at).getTime(); return d < 7*86400000; } },
+    { id:'pro',       emoji:'⭐', name:'Pro Users',        filter: u => u.tier === 'pro' },
+    { id:'premium',   emoji:'👑', name:'Premium Users',    filter: u => u.tier === 'premium' },
+  ];
+
+  document.getElementById('segment-grid').innerHTML = defs.map(d => {
+    const count = users.filter(d.filter).length;
+    return `
+      <div class="segment-card" onclick="showSegment('${d.id}')">
+        <div class="segment-emoji">${d.emoji}</div>
+        <div class="segment-name">${d.name}</div>
+        <div class="segment-count">${count} user${count!==1?'s':''}</div>
+      </div>
+    `;
+  }).join('');
+
+  window._segDefs = defs;
+}
+
+function showSegment(id) {
+  const def = window._segDefs.find(d => d.id === id);
+  if (!def) return;
+  const users = allUsers.filter(def.filter);
+  document.getElementById('segment-detail').style.display = 'block';
+  document.getElementById('segment-detail-title').textContent = `${def.emoji} ${def.name} (${users.length})`;
+  document.getElementById('segment-body').innerHTML = users.map(u => `
+    <tr>
+      <td><b>${u.name||'—'}</b></td>
+      <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-size:11px;color:var(--mid)">${(u.goals||[]).slice(0,2).join(', ')||'—'}</td>
+      <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="empty">No users in this segment</td></tr>';
+  document.querySelectorAll('.segment-card').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.segment-card').forEach(c => {
+    if (c.textContent.includes(def.name)) c.classList.add('active');
+  });
+}
+
+// ── Referral reward formula: R10 upfront + R5/month loyalty, capped at 6 months (R40 max) ──
+// Verified with standalone tests before being wired in here — see test_referral_logic.js
+//
+// IMPORTANT: this now reads from the `purchases` table, NOT the `tier` column.
+// `tier` gets set the same way whether someone paid via PayFast or you manually
+// granted them access through Account Manager — using it here would mean a
+// free admin grant incorrectly triggers a referral payout. `purchases` only
+// contains real, confirmed payments, so it's the only honest source of truth
+// for "did this referral actually convert."
+function calcReferralReward(userPurchases) {
+  if (!userPurchases || !userPurchases.length) return { reward: 0, converted: false, loyaltyMonths: 0 };
+  // Use their earliest completed purchase as the conversion moment
+  const firstPurchase = userPurchases.reduce((earliest, p) =>
+    new Date(p.purchased_at) < new Date(earliest.purchased_at) ? p : earliest
+  );
+  let reward = 10;
+  const convertedAt = new Date(firstPurchase.purchased_at);
+  const monthsElapsed = Math.floor((Date.now() - convertedAt.getTime()) / (30 * 86400000));
+  const loyaltyMonths = Math.max(0, Math.min(monthsElapsed, 6));
+  reward += loyaltyMonths * 5;
+  return { reward, converted: true, loyaltyMonths };
+}
+
+// ── REFERRALS ─────────────────────────────────────────────────
+function renderReferrals(users) {
+  // Kick off async load — referral data lives in its own table
+  loadReferralData(users);
+}
+
+async function loadReferralData(users) {
+  const refBodyEl = document.getElementById('referral-body');
+  const payBodyEl = document.getElementById('payout-body');
+  refBodyEl.innerHTML = '<tr><td colspan="6" class="empty"><div class="spinner" style="display:inline-block"></div> Loading...</td></tr>';
+
+  // Build a lookup of users by id and by referral_code
+  const userById = {};
+  const userByCode = {};
+  users.forEach(u => {
+    userById[u.id] = u;
+    if (u.referral_code) userByCode[u.referral_code.toLowerCase()] = u;
+  });
+
+  // Fetch REAL completed purchases — the only honest source of truth for
+  // "did this referral actually convert," separate from manually-granted tier.
+  let purchasesByUser = {};
+  try {
+    const purchaseRows = await sbGet('purchases?status=eq.completed&select=user_id,purchased_at,amount,tier');
+    purchaseRows.forEach(p => {
+      if (!purchasesByUser[p.user_id]) purchasesByUser[p.user_id] = [];
+      purchasesByUser[p.user_id].push(p);
+    });
+  } catch(e) { /* purchases table may not exist yet — everyone shows as not-converted, which is honest */ }
+
+  // Referral data lives on beta_testers (referred_by / referral_used columns).
+  // No dedicated referrals table exists — we don't probe for one anymore
+  // since failed requests show as red errors in DevTools regardless of
+  // try/catch. If you later create a real referrals table, set its name
+  // in app_config under key 'referrals_table_name' and this will use it.
+  let refs = [];
+  try {
+    const cfg = await sbGet("app_config?key=eq.referrals_table_name&select=value&limit=1");
+    if (cfg && cfg[0] && cfg[0].value) {
+      const customTable = cfg[0].value;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${customTable}?select=*&order=created_at.desc&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      if (r.ok) refs = await r.json();
+    }
+  } catch(e) { /* no custom table configured — use column fallback below */ }
+
+  // If no referrals table, fall back to referral_code + referred_by columns on users table
+  if (!refs.length) {
+    const referred = users.filter(u => u.referred_by || u.referral_used);
+    // Group by who referred them, calculating real reward per referred user
+    const byReferrer = {};
+    const unmatched = []; // codes that don't match any known referral_code — shown in diagnostic panel
+    referred.forEach(u => {
+      const code = (u.referred_by || u.referral_used || '').toLowerCase();
+      const referrer = userByCode[code];
+      if (!referrer) { unmatched.push({ referredUser: u, code }); return; }
+      if (!byReferrer[referrer.id]) byReferrer[referrer.id] = { user: referrer, count: 0, converted: 0, rewardTotal: 0 };
+      byReferrer[referrer.id].count++;
+      const { reward, converted } = calcReferralReward(purchasesByUser[u.id]);
+      if (converted) byReferrer[referrer.id].converted++;
+      byReferrer[referrer.id].rewardTotal += reward;
+    });
+
+    const rows = Object.values(byReferrer);
+    document.getElementById('ref-total').textContent = rows.length;
+    const pendingTotal = rows.reduce((s, r) => s + Math.max(0, r.rewardTotal - (r.user.earnings_paid || 0)), 0);
+    document.getElementById('ref-pending').textContent = fmt(pendingTotal);
+    document.getElementById('ref-paid').textContent = fmt(users.reduce((s,u)=>(s+(u.earnings_paid||0)),0));
+
+    refBodyEl.innerHTML = rows.length
+      ? rows.map(r => {
+          const pending = Math.max(0, r.rewardTotal - (r.user.earnings_paid || 0));
+          const canPay = pending >= 50;
+          return `<tr>
+            <td><b>${r.user.name||'—'}</b><div style="font-size:10px;color:var(--muted)">${r.user.email||''}</div></td>
+            <td style="font-family:'DM Mono',monospace;font-size:11px">${r.user.referral_code||'—'}</td>
+            <td>${r.count}</td>
+            <td>${r.converted}</td>
+            <td style="font-family:'DM Mono',monospace">${fmt(pending)}</td>
+            <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${r.user.id}','${r.user.name}',${pending})">${canPay?'Pay R'+pending:'Below R50'}</button></td>
+          </tr>`;
+        }).join('')
+      : `<tr><td colspan="6" class="empty">No referrers yet</td></tr>`;
+
+    if (payBodyEl) payBodyEl.innerHTML = '<tr><td colspan="4" class="empty">No payouts yet</td></tr>';
+
+    // ── Self-diagnostic panel ──────────────────────────────────
+    // Instead of silently showing "No referrers yet" when matching fails,
+    // show exactly what codes exist vs what's being searched for, so the
+    // actual mismatch is visible instead of trusted on faith.
+    renderReferralDiagnostic(users, referred, unmatched, userByCode);
+    return;
+  }
+
+  // Full referrals table found
+  const byReferrer = {};
+  refs.forEach(r => {
+    const rid = r.referrer_id || r.referred_by_id;
+    if (!rid) return;
+    if (!byReferrer[rid]) byReferrer[rid] = { user: userById[rid], refs: [] };
+    byReferrer[rid].refs.push(r);
+  });
+
+  const rows = Object.values(byReferrer).filter(r => r.user);
+  document.getElementById('ref-total').textContent = rows.length;
+  const pendingTotal = rows.reduce((s,r) => s + r.refs.reduce((a,ref)=>(a+(ref.commission_pending||ref.amount||0)),0), 0);
+  const paidTotal = rows.reduce((s,r) => s + r.refs.reduce((a,ref)=>(a+(ref.commission_paid||0)),0), 0);
+  document.getElementById('ref-pending').textContent = fmt(pendingTotal);
+  document.getElementById('ref-paid').textContent = fmt(paidTotal);
+
+  refBodyEl.innerHTML = rows.length
+    ? rows.map(r => {
+        const converted = r.refs.filter(ref => ref.converted || ref.status === 'converted').length;
+        const pending = r.refs.reduce((a,ref)=>(a+(ref.commission_pending||ref.amount||0)),0);
+        const canPay = pending >= 50;
+        return `<tr>
+          <td><b>${r.user.name||'—'}</b></td>
+          <td style="font-family:'DM Mono',monospace;font-size:11px">${r.user.referral_code||'—'}</td>
+          <td>${r.refs.length}</td>
+          <td>${converted}</td>
+          <td style="font-family:'DM Mono',monospace">${fmt(pending)}</td>
+          <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${r.user.id}','${r.user.name}',${pending})">${canPay?'Pay R'+pending:'Below R50'}</button></td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="6" class="empty">No referrers yet</td></tr>';
+}
+
+// ── Self-diagnostic panel for referral matching ────────────────
+// Shows exactly which referred_by codes exist vs which referral_code
+// values are registered, so a mismatch is visible instead of just
+// producing a silent "No referrers yet".
+// ── Manual purchase logging ─────────────────────────────────────
+let _purchaseSelectedUser = null;
+
+function purchaseSearchUsers(q) {
+  const resultsEl = document.getElementById('purchase-search-results');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const matches = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 6);
+  if (!matches.length) { resultsEl.style.display = 'none'; return; }
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = matches.map(u => `
+    <div onclick="selectPurchaseUser('${u.id}')" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bg2);font-size:12px"
+      onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background='#fff'">
+      <b>${u.name||'—'}</b> <span style="color:var(--muted)">${u.email||''}</span>
+    </div>`).join('');
+}
+
+function selectPurchaseUser(id) {
+  _purchaseSelectedUser = allUsers.find(u => u.id === id);
+  if (!_purchaseSelectedUser) return;
+  document.getElementById('purchase-user-search').value = _purchaseSelectedUser.name + ' — ' + (_purchaseSelectedUser.email||'');
+  document.getElementById('purchase-search-results').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#purchase-user-search') && !e.target.closest('#purchase-search-results')) {
+    const r = document.getElementById('purchase-search-results');
+    if (r) r.style.display = 'none';
+  }
+});
+
+async function logManualPurchase() {
+  const statusEl = document.getElementById('purchase-log-status');
+  if (!_purchaseSelectedUser) { showToast('Select a user first', 'warn'); return; }
+  const tier = document.getElementById('purchase-tier').value;
+  const amount = parseFloat(document.getElementById('purchase-amount').value);
+  const dateInput = document.getElementById('purchase-date').value;
+  if (!amount || amount <= 0) { showToast('Enter a real amount', 'warn'); return; }
+  if (!dateInput) { showToast('Select the date it was paid', 'warn'); return; }
+
+  if (!confirm(`Log a confirmed ${tier} purchase of R${amount} for ${_purchaseSelectedUser.name||_purchaseSelectedUser.email} on ${dateInput}?\n\nOnly do this for REAL, verified payments — this affects referral payouts.`)) return;
+
+  statusEl.textContent = 'Logging...'; statusEl.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/purchases`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        user_id: _purchaseSelectedUser.id,
+        tier, amount,
+        payment_method: 'manual_verified',
+        status: 'completed',
+        purchased_at: new Date(dateInput).toISOString()
+      })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || JSON.stringify(result));
+
+    statusEl.textContent = `✅ Logged R${amount} ${tier} purchase for ${_purchaseSelectedUser.name||_purchaseSelectedUser.email}`;
+    statusEl.style.color = 'var(--green)';
+    showToast('✅ Purchase logged — referral rewards will recalculate');
+    document.getElementById('purchase-user-search').value = '';
+    document.getElementById('purchase-amount').value = '';
+    document.getElementById('purchase-date').value = '';
+    _purchaseSelectedUser = null;
+    await loadAll();
+  } catch(e) {
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function renderReferralDiagnostic(users, referred, unmatched, userByCode) {
+  const el = document.getElementById('referral-diagnostic');
+  if (!el) return;
+
+  const usersWithOwnCode = users.filter(u => u.referral_code);
+
+  if (!referred.length) {
+    // Nobody has referred_by set at all — genuinely no referral signups yet
+    el.innerHTML = '';
+    return;
+  }
+
+  if (!unmatched.length) {
+    // Everything matched correctly — no diagnostic needed
+    el.innerHTML = '';
+    return;
+  }
+
+  // There ARE referred_by values, but some/all failed to match a real referral_code.
+  // Show the actual data so the mismatch is self-evident.
+  el.innerHTML = `
+    <div class="card" style="border:1.5px solid var(--amber);background:#fffaf0;margin-top:16px">
+      <div class="card-title" style="color:var(--amber)">⚠️ ${unmatched.length} referral code${unmatched.length!==1?'s':''} couldn't be matched</div>
+      <p style="font-size:13px;color:var(--mid);margin:0 0 14px">
+        ${unmatched.length} user${unmatched.length!==1?'s have':' has'} a <code>referred_by</code> value that doesn't match anyone's <code>referral_code</code> in the database.
+        This is why they're not showing in the leaderboard above — not a bug, a genuine data mismatch. Compare the two lists below.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">Codes being searched for (referred_by)</div>
+          ${unmatched.map(u => `
+            <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+              <span style="font-family:'DM Mono',monospace;font-weight:700">${u.code || '(empty)'}</span>
+              <span style="color:var(--muted)">${u.referredUser.name||u.referredUser.email||'—'}</span>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">
+            Codes that actually exist (referral_code) — ${usersWithOwnCode.length} user${usersWithOwnCode.length!==1?'s':''} have one
+          </div>
+          ${usersWithOwnCode.length
+            ? usersWithOwnCode.map(u => `
+                <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+                  <span style="font-family:'DM Mono',monospace;font-weight:700">${u.referral_code}</span>
+                  <span style="color:var(--muted)">${u.name||u.email||'—'}</span>
+                </div>`).join('')
+            : '<div style="padding:10px;background:#fff;border-radius:8px;font-size:12px;color:var(--red)">⚠️ Zero users have a referral_code set at all — this is likely the actual root cause. The referral_code column may need to be generated/backfilled for existing users.</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function markPaid(id, name, amount) {
+  if (!confirm(`Mark R${amount} as paid to ${name}?`)) return;
+  try {
+    await sbPatch(`${_usersTable}?id=eq.${id}`, {
+      earnings_paid: amount, earnings_pending: 0,
+      last_payout_at: new Date().toISOString()
+    });
+    // Log payout to app_config as a simple audit trail
+    const logKey = 'payout_' + Date.now();
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: logKey, value: JSON.stringify({ name, amount, paid_at: new Date().toISOString(), user_id: id }) })
+    }).catch(() => {}); // non-blocking
+    showToast(`✅ R${amount} paid to ${name} — marked`);
+    setTimeout(loadAll, 800);
+  } catch(e) {
+    showToast('❌ Mark paid failed: ' + e.message, 'error');
+  }
+}
+
+// ── REVENUE ───────────────────────────────────────────────────
+function renderRevenue(users) {
+  const pro = users.filter(u => u.tier === 'pro').length;
+  const prem = users.filter(u => u.tier === 'premium').length;
+  const mrr = (pro * 49) + (prem * 129);
+  const fees = (pro * 2.72) + (prem * 5.52);
+  document.getElementById('mrr-val').textContent = fmt(mrr);
+  document.getElementById('arr-val').textContent = fmt(mrr * 12);
+  document.getElementById('fees-val').textContent = fmt(fees);
+
+  const costPerMonth = 900;
+  const target = 100;
+  const paid = pro + prem;
+  const pct = Math.min((paid / target) * 100, 100).toFixed(0);
+
+  document.getElementById('breakeven-content').innerHTML = `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--mid)">Cover monthly costs (19 users)</span>
+        <span style="font-weight:700">${paid >= 19 ? '✅' : paid + ' / 19'}</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${Math.min((paid/19)*100,100).toFixed(0)}%;background:var(--green)"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--mid)">Recover investment (100 users)</span>
+        <span style="font-weight:700">${paid} / 100</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-fill" style="width:${pct}%;background:var(--purple)"></div>
+      </div>
+    </div>
+    <div style="background:var(--bg);border-radius:10px;padding:12px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">CURRENT MRR BREAKDOWN</div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Pro users (${pro} × R49)</span><span class="metric-value">${fmt(pro*49)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Premium users (${prem} × R129)</span><span class="metric-value">${fmt(prem*129)}</span></div>
+      <div class="metric-row" style="padding:6px 0;border-top:1px solid var(--border)"><span class="metric-label">Total MRR</span><span class="metric-value" style="color:var(--green)">${fmt(mrr)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Less running costs</span><span class="metric-value" style="color:var(--red)">-${fmt(costPerMonth)}</span></div>
+      <div class="metric-row" style="padding:6px 0"><span class="metric-label">Net monthly</span><span class="metric-value" style="color:${mrr>=costPerMonth?'var(--green)':'var(--red)'}">${fmt(mrr-costPerMonth)}</span></div>
+    </div>
+  `;
+}
+
+// ── RESERVES ──────────────────────────────────────────────────
+function renderReserves(users) {
+  const pro = users.filter(u=>u.tier==='pro').length;
+  const prem = users.filter(u=>u.tier==='premium').length;
+  const mrr = (pro*49)+(prem*129);
+  const target = 5000;
+  const pct = Math.min((mrr/target)*100,100).toFixed(0);
+  const el = document.getElementById('salary-progress');
+  if (!el) return;
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <span style="color:var(--mid)">Monthly revenue toward R5,000 salary trigger</span>
+      <span style="font-weight:700;color:var(--${mrr>=5000?'green':'mid'}">${fmt(mrr)} / R5,000</span>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:var(--${mrr>=5000?'green':'amber'})"></div></div>
+    <p style="font-size:11px;color:var(--muted);margin-top:8px">${mrr>=5000?'✅ Salary trigger reached — review team remuneration.':'Not yet reached. Keep growing.'}</p>
+  `;
+}
+
+// ── AI SUGGESTIONS ────────────────────────────────────────────
+function renderAI(users) {
+  const students = users.filter(u=>u.life_stage?.toLowerCase().includes('student')).length;
+  const domestic = users.filter(u=>u.life_stage?.toLowerCase().includes('domestic')).length;
+  const noExpenses = users.filter(u=>{
+    return !allExpenses.find(e=>e.tester_id===u.id);
+  }).length;
+
+  const suggestions = [
+    {
+      emoji:'⚡', bg:'var(--amber-l)', color:'var(--amber)',
+      title:'Launch Electricity Tracker to all users',
+      desc:`${users.length} users registered. Electricity is a top SA expense. The tracker (R10/mo add-on) would be relevant to nearly every user — especially domestic workers and students buying prepaid tokens.`,
+      meta:`Segment: All users · Estimated uptake: 15–30% · Revenue potential: R${Math.round(users.length*0.2*10)}/mo`,
+    },
+    {
+      emoji:'📊', bg:'var(--purple-l)', color:'var(--purple)',
+      title:'Nudge inactive users to log first expense',
+      desc:`${noExpenses} user${noExpenses!==1?'s':''} registered but logged no expenses yet. A WhatsApp message saying "You're all set! Tap + to log your first spend — takes 5 seconds" could significantly improve activation.`,
+      meta:`Segment: No expenses logged · Action: WhatsApp nudge campaign`,
+    },
+    {
+      emoji:'🎓', bg:'var(--green-l)', color:'var(--green)',
+      title:'Student-specific budget templates',
+      desc:`${students} student${students!==1?'s':''} registered. Students have unique budgets (bursary income, NSFAS, transport to campus). A pre-filled student budget template on first open would improve retention for this group.`,
+      meta:`Segment: Students (${students} users) · Feature: Budget templates`,
+    },
+    {
+      emoji:'🏠', bg:'var(--red-l)', color:'var(--red)',
+      title:'Household feature campaign for domestic workers',
+      desc:`${domestic} domestic worker${domestic!==1?'s':''} on the platform. This segment often shares costs with family. A WhatsApp campaign showing the Household feature (R15/mo) could convert this group.`,
+      meta:`Segment: Domestic workers (${domestic} users) · Add-on: Household view R15/mo`,
+    },
+    {
+      emoji:'🤝', bg:'var(--purple-l)', color:'var(--purple)',
+      title:'Activate referral programme for top users',
+      desc:'Users with more than 3 expenses logged are your most engaged. Send them their referral code via an in-app nudge: "Earn R10 for every friend you bring to RandWise — share your code now."',
+      meta:`Segment: Engaged users · Action: In-app referral nudge`,
+    },
+  ];
+
+  document.getElementById('ai-suggestions').innerHTML = suggestions.map((s,i) => `
+    <div class="suggestion-card" id="sug-${i}">
+      <div class="suggestion-icon" style="background:${s.bg};color:${s.color}">${s.emoji}</div>
+      <div class="suggestion-body">
+        <div class="suggestion-title">${s.title}</div>
+        <div class="suggestion-desc">${s.desc}</div>
+        <div class="suggestion-meta">${s.meta}</div>
+        <div class="suggestion-actions">
+          <button class="btn-approve" onclick="approveSuggestion(${i})">✓ Approve rollout</button>
+          <button class="btn-dismiss" onclick="dismissSuggestion(${i})">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function approveSuggestion(i) {
+  const el = document.getElementById('sug-'+i);
+  el.style.background = 'var(--green-l)';
+  el.style.borderColor = 'var(--green)';
+  el.querySelector('.suggestion-actions').innerHTML = '<span style="color:var(--green);font-size:12px;font-weight:700">✅ Approved — rollout scheduled</span>';
+}
+
+function dismissSuggestion(i) {
+  document.getElementById('sug-'+i).style.display = 'none';
+}
+
+// ── BUILD TRACKER ─────────────────────────────────────────────
+async function renderBuildTracker() {
+  const start = new Date('2026-04-07');
+  const days = Math.floor((Date.now()-start.getTime())/86400000);
+  document.getElementById('days-built').textContent = days;
+
+  // Pull live counts from Supabase for real stats
+  try {
+    const users = await sbGet(_usersTable + '?select=id,tier,created_at');
+    const total = users.length;
+    const paid = users.filter(u => u.tier === 'pro' || u.tier === 'premium').length;
+
+    const hoursEl = document.getElementById('hours-built');
+    const valueEl = document.getElementById('project-value');
+    const screensEl = document.getElementById('screens-built');
+    // Update stat sub-labels with live data
+    const hoursSubEl = document.querySelector('[data-stat="hours-sub"]');
+    const usersSubEl = document.querySelector('[data-stat="users-sub"]');
+    if (hoursSubEl) hoursSubEl.textContent = total + ' users registered';
+    if (usersSubEl) usersSubEl.textContent = paid + ' paying users';
+  } catch(e) { /* non-critical */ }
+
+  const features = [
+    // ✅ Built
+    ['OnboardingScreen (5-step + Supabase)', true],
+    ['DashboardScreen (real data)', true],
+    ['WeeklyScreen (envelopes + expenses)', true],
+    ['AddExpenseScreen (12 categories)', true],
+    ['DebtScreen', true],
+    ['GrowScreen', true],
+    ['ProfileScreen + referral T&Cs', true],
+    ['UpgradeModal + PayFast sandbox', true],
+    ['Owner hidden panel (tap avatar 5×)', true],
+    ['14-day trial + upgrade banner', true],
+    ['Supabase RLS security', true],
+    ['.env security (keys out of code)', true],
+    ['Admin dashboard v1', true],
+    ['Admin dashboard v2 (this version)', true],
+    ['Co-founder agreement PDF', true],
+    ['NDA PDF', true],
+    ['OTP email verification (Resend)', true],
+    ['Weekly newsletter system (52 tips)', true],
+    ['Newsletter admin panel', true],
+    ['Landing page v2 (standalone HTML)', true],
+    // 🔲 In progress / upcoming
+    ['Connect real data to DebtScreen', false],
+    ['Connect real data to GrowScreen', false],
+    ['PayFast live (awaiting bank verification)', false],
+    ['Dark/Premium theme', false],
+    ['Push notifications (50-user milestone)', false],
+    ['Personalised tips by user segment', false],
+    ['Google Play Store listing', false],
+    ['Apple App Store listing', false],
+    ['Amazon Appstore listing', false],
+    ['Huawei AppGallery listing', false],
+    ['CIPC registration', false],
+    ['Trademark filing', false],
+    ['50 beta testers', false],
+    ['WhatsApp support number (50-user milestone)', false],
+    ['Supabase Auth migration (login/session)', false],
+  ];
+
+  document.getElementById('feature-checklist').innerHTML = features.map(([label, done]) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bg2)">
+      <span style="font-size:14px">${done ? '✅' : '🔲'}</span>
+      <span style="font-size:12px;color:${done?'var(--text)':'var(--muted)'}">${label}</span>
+    </div>
+  `).join('');
+
+  // Progress summary
+  const done = features.filter(([,d])=>d).length;
+  const pct = Math.round((done/features.length)*100);
+  const existingProgress = document.getElementById('build-progress');
+  if (existingProgress) {
+    existingProgress.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:var(--mid)">${done} of ${features.length} features complete</span>
+        <span style="font-weight:700;color:var(--green)">${pct}%</span>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:var(--green)"></div></div>`;
+  }
+}
+
+// ── ALERTS ────────────────────────────────────────────────────
+function renderAlerts() {
+  const events = [
+    'New user registered',
+    'User upgrades to Pro',
+    'User upgrades to Premium',
+    'User trial expires (day 14)',
+    'Referral payment due (≥R50)',
+    'Bug report submitted',
+    'User cancels / churns',
+  ];
+
+  document.getElementById('alert-toggles').innerHTML = events.map((e,i) => `
+    <div class="alert-row">
+      <span style="font-size:13px;color:var(--text)">${e}</span>
+      <label class="toggle">
+        <input type="checkbox" ${i < 4 ? 'checked' : ''}>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+  `).join('');
+}
+
+async function saveWaNumber() {
+  const n = document.getElementById('wa-number').value.trim();
+  if (!n) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'admin_wa_number', value: n })
+    });
+    showToast('✅ WhatsApp number saved: ' + n);
+  } catch(e) {
+    localStorage.setItem('rw_wa_number', n); // fallback
+    showToast('✅ Saved locally (app_config unavailable)');
+  }
+}
+
+async function saveEmail() {
+  const e = document.getElementById('email-addr').value.trim();
+  if (!e) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'admin_email', value: e })
+    });
+    showToast('✅ Admin email saved: ' + e);
+  } catch(e2) {
+    localStorage.setItem('rw_email', e);
+    showToast('✅ Saved locally (app_config unavailable)');
+  }
+}
+
+// ── LEGAL ─────────────────────────────────────────────────────
+function renderLegal(users, consent) {
+  document.getElementById('consented-count').textContent =
+    users.filter(u => u.consent_given).length;
+
+  const docs = [
+    { name:'Co-Founder Agreement', status:'🔲 Not yet signed', note:'Sign before any equity decisions' },
+    { name:'NDA (template)', status:'✅ Created', note:'Have each team member sign before access' },
+    { name:'Beta Tester Consent', status:'✅ In-app (onboarding)', note:'All users consent on signup' },
+    { name:'Referral T&Cs', status:'✅ In-app (ProfileScreen)', note:'Users opt-in before getting code' },
+    { name:'Terms of Service', status:'🔲 Pending', note:'Required before Play Store submission' },
+    { name:'Privacy Policy (POPIA)', status:'🔲 Pending', note:'Required before Play Store submission' },
+    { name:'CIPC Trading Name', status:'🔲 Pending (R175)', note:'cipc.co.za — required before PayFast live' },
+    { name:'Trademark Class 36 + 42', status:'🔲 Pending (R1,180)', note:'File as soon as CIPC done' },
+  ];
+
+  document.getElementById('legal-docs').innerHTML = docs.map(d => `
+    <div class="reserve-item">
+      <div>
+        <div class="reserve-name">${d.name}</div>
+        <div class="reserve-purpose">${d.note}</div>
+      </div>
+      <div style="font-size:12px;color:var(--mid);text-align:right">${d.status}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('popia-body').innerHTML = consent.slice(0,10).map(c => {
+    const user = allUsers.find(u => u.id === c.tester_id);
+    return `<tr>
+      <td>${user?.name || c.tester_id?.slice(0,8)+'...'}</td>
+      <td><span class="popia-tag">✓ ${c.action||'consent'}</span></td>
+      <td style="color:var(--muted);font-size:11px">${ago(c.created_at)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="3" class="empty">No consent logs yet</td></tr>';
+}
+
+// ── NEWSLETTER ────────────────────────────────────────────────
+let allTips = [];
+let currentWeekNum = 1;
+
+function getWeekNumber() {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+  return ((weekNum - 1) % 52) + 1;
+}
+
+async function loadNewsletter() {
+  currentWeekNum = getWeekNumber();
+  const weekBadge = document.getElementById('nl-week-badge');
+  const overrideWeekEl = document.getElementById('nl-override-week-num');
+  if (weekBadge) weekBadge.textContent = 'Week ' + currentWeekNum;
+  if (overrideWeekEl) overrideWeekEl.textContent = currentWeekNum;
+
+  // Subscriber stats
+  try {
+    const subs = await sbGet('newsletter_subscribers?select=active,created_at,email,unsubscribe_token&order=created_at.desc');
+    const total = subs.length;
+    const active = subs.filter(s => s.active).length;
+    const unsub = total - active;
+    const retention = total > 0 ? Math.round((active/total)*100) : 0;
+    document.getElementById('nl-total').textContent = total;
+    document.getElementById('nl-active').textContent = active;
+    document.getElementById('nl-unsub').textContent = unsub;
+    document.getElementById('nl-retention').textContent = retention + '%';
+    document.getElementById('nl-subs-count').textContent = '(' + total + ')';
+
+    const recent = subs.slice(0, 8);
+    document.getElementById('nl-recent-subs').innerHTML = recent.length === 0
+      ? '<div class="empty">No subscribers yet — share the landing page!</div>'
+      : recent.map(s => `
+        <div class="reserve-item">
+          <div>
+            <div class="reserve-name" style="font-size:13px">${s.email}</div>
+            <div class="reserve-purpose">${ago(s.created_at)}</div>
+          </div>
+          <span class="badge ${s.active ? 'badge-pro' : 'badge-free'}">${s.active ? 'Active' : 'Unsub'}</span>
+        </div>`).join('');
+  } catch(e) {
+    ['nl-total','nl-active','nl-unsub','nl-retention'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='—'; });
+    const rEl = document.getElementById('nl-recent-subs');
+    if (rEl) rEl.innerHTML = '<div class="empty" style="color:var(--amber)">newsletter_subscribers table not found — run weekly_tips_setup.sql</div>';
+  }
+
+  // On/off toggle
+  try {
+    const cfg = await sbGet('app_config?key=eq.newsletter_enabled&select=value');
+    const enabled = cfg.length === 0 || cfg[0].value !== 'false';
+    const tog = document.getElementById('nl-master-toggle');
+    const lbl = document.getElementById('nl-toggle-label');
+    if (tog) tog.checked = enabled;
+    if (lbl) lbl.textContent = enabled ? '✅ Newsletter ON' : '⏸ Newsletter OFF';
+  } catch(e) {
+    const tog = document.getElementById('nl-master-toggle');
+    const lbl = document.getElementById('nl-toggle-label');
+    if (tog) tog.checked = true;
+    if (lbl) lbl.textContent = '✅ Newsletter ON (app_config missing)';
+  }
+
+  // Tips
+  try {
+    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
+    allTips = tips;
+    renderTipsList(tips);
+    const current = tips.find(t => t.week_number === currentWeekNum);
+    const tipEl = document.getElementById('nl-current-tip');
+    if (current && tipEl) {
+      tipEl.innerHTML = `
+        <div style="margin-bottom:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Subject</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${current.subject}</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Headline</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)">${current.headline}</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px">Body preview</div>
+          <div style="font-size:12px;color:var(--mid);line-height:1.6;background:var(--bg);padding:12px;border-radius:8px;max-height:90px;overflow:hidden">${current.body.substring(0,200)}…</div>
+        </div>`;
+      document.getElementById('nl-ov-subject').value = current.subject;
+      document.getElementById('nl-ov-headline').value = current.headline;
+      document.getElementById('nl-ov-body').value = current.body;
+      document.getElementById('nl-ov-cta').value = current.cta_text || 'Open MyRandWise →';
+    } else if (tipEl) {
+      tipEl.innerHTML = '<div class="empty">No tip for week ' + currentWeekNum + ' — add one below</div>';
+    }
+  } catch(e) {
+    const tl = document.getElementById('nl-tips-list');
+    const ct = document.getElementById('nl-current-tip');
+    const errMsg = `<div style="background:var(--amber-l);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--amber)">
+      <b>⚠️ weekly_tips table blocked by RLS</b><br><br>
+      Run this SQL in Supabase → SQL Editor to allow reading tips:<br>
+      <code style="display:block;background:#fff;border-radius:6px;padding:8px;margin-top:8px;font-size:11px;color:#333;white-space:pre">CREATE POLICY "Allow anon read tips"
+  ON weekly_tips FOR SELECT
+  USING (true);
+
+-- Also run for subscribers:
+CREATE POLICY "Allow anon read subscribers"
+  ON newsletter_subscribers FOR SELECT
+  USING (true);</code>
+    </div>`;
+    if (tl) tl.innerHTML = errMsg;
+    if (ct) ct.innerHTML = '<div class="empty" style="color:var(--amber)">RLS blocking weekly_tips — see All Tips section for fix</div>';
+  }
+}
+
+function renderTipsList(tips) {
+  const el = document.getElementById('nl-tips-list');
+  if (!el) return;
+  if (!tips.length) { el.innerHTML = '<div class="empty">No tips found</div>'; return; }
+  el.innerHTML = `
+    <table class="data-table">
+      <thead><tr><th style="width:60px">Week</th><th>Subject</th><th>Headline</th><th style="width:80px">Action</th></tr></thead>
+      <tbody>${tips.map(t => `
+        <tr style="${t.week_number === currentWeekNum ? 'background:var(--green-l)' : ''}">
+          <td>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">W${String(t.week_number).padStart(2,'0')}</span>
+            ${t.week_number === currentWeekNum ? '<span style="font-size:9px;background:var(--green);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px;font-weight:700">THIS WEEK</span>' : ''}
+          </td>
+          <td style="font-size:12px;color:var(--mid)">${t.subject}</td>
+          <td style="font-size:12px;font-weight:600;color:var(--text)">${t.headline}</td>
+          <td><button onclick="editTip(${t.week_number})" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">Edit</button></td>
+        </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+function filterTips() {
+  const q = (document.getElementById('nl-tip-search')?.value||'').toLowerCase();
+  const filtered = allTips.filter(t =>
+    t.subject.toLowerCase().includes(q) ||
+    t.headline.toLowerCase().includes(q) ||
+    t.body.toLowerCase().includes(q)
+  );
+  renderTipsList(filtered);
+}
+
+function editTip(weekNum) {
+  const tip = allTips.find(t => t.week_number === weekNum);
+  if (!tip) return;
+  const overWkEl = document.getElementById('nl-override-week-num');
+  if (overWkEl) overWkEl.textContent = weekNum;
+  document.getElementById('nl-ov-subject').value = tip.subject;
+  document.getElementById('nl-ov-headline').value = tip.headline;
+  document.getElementById('nl-ov-body').value = tip.body;
+  document.getElementById('nl-ov-cta').value = tip.cta_text || 'Open MyRandWise →';
+  openOverrideForm(weekNum);
+  const st = document.getElementById('nl-ov-status');
+  if (st) st.textContent = '';
+}
+
+let overrideWeekNum = null;
+function openOverrideForm(weekNum) {
+  overrideWeekNum = weekNum || currentWeekNum;
+  const wkEl = document.getElementById('nl-override-week-num');
+  if (wkEl) wkEl.textContent = overrideWeekNum;
+  const form = document.getElementById('nl-override-form');
+  const card = document.getElementById('nl-recent-subs-card');
+  if (form) form.style.display = 'block';
+  if (card) card.style.display = 'none';
+}
+
+function closeOverrideForm() {
+  const form = document.getElementById('nl-override-form');
+  const card = document.getElementById('nl-recent-subs-card');
+  if (form) form.style.display = 'none';
+  if (card) card.style.display = 'block';
+}
+
+async function saveOverride() {
+  const wk = overrideWeekNum || currentWeekNum;
+  const body = {
+    subject: document.getElementById('nl-ov-subject').value,
+    headline: document.getElementById('nl-ov-headline').value,
+    body: document.getElementById('nl-ov-body').value,
+    cta_text: document.getElementById('nl-ov-cta').value
+  };
+  const status = document.getElementById('nl-ov-status');
+  if (status) { status.textContent = 'Saving...'; status.style.color = 'var(--muted)'; }
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/weekly_tips?week_number=eq.${wk}`, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(body)
+    });
+    if (status) { status.textContent = '✅ Week ' + wk + ' saved'; status.style.color = 'var(--green)'; }
+    await loadNewsletter();
+  } catch(e) {
+    if (status) { status.textContent = '❌ Save failed: ' + e.message; status.style.color = 'var(--red)'; }
+  }
+}
+
+async function toggleNewsletter(enabled) {
+  const lbl = document.getElementById('nl-toggle-label');
+  if (lbl) lbl.textContent = enabled ? '✅ Newsletter ON' : '⏸ Newsletter OFF';
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'newsletter_enabled', value: String(enabled) })
+    });
+  } catch(e) { console.log('app_config not available:', e.message); }
+}
+
+async function sendTestTip() {
+  const btn = document.getElementById('nl-test-btn');
+  const status = document.getElementById('nl-test-status');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending...'; }
+  if (status) { status.textContent = 'Sending test email...'; status.style.color = 'var(--muted)'; }
+
+  try {
+    const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
+
+    // Get current week's tip directly from Supabase (no Edge Function needed)
+    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
+    const wk = getWeekNumber();
+    const tip = tips.find(t => t.week_number === wk) || tips[0];
+
+    if (!tip) {
+      if (status) { status.textContent = '❌ No tips in database yet — run weekly_tips_setup.sql first'; status.style.color = 'var(--red)'; }
+      if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+      return;
+    }
+
+    const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f7f9f4;font-family:sans-serif">
+      <div style="max-width:520px;margin:0 auto;padding:24px 16px">
+        <div style="background:linear-gradient(155deg,#0a3d20,#1a7a4a);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px">
+          <div style="font-size:32px;margin-bottom:6px">🌱</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700">Weekly Money Tip — Week ${wk}</div>
+          <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.2">${tip.headline}</div>
+        </div>
+        <div style="background:#fff;border-radius:16px;padding:24px;border:1px solid #eef2e8">
+          <p style="font-size:15px;color:#2c2c2a;line-height:1.75;margin:0 0 22px">${tip.body.replace(/\n/g,'<br>')}</p>
+          <a href="${tip.cta_url || 'https://myrandwise.co.za'}" style="display:block;background:#1a7a4a;color:#fff;text-decoration:none;border-radius:12px;padding:15px;text-align:center;font-size:15px;font-weight:800">${tip.cta_text || 'Open MyRandWise →'}</a>
+        </div>
+        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:12px">TEST EMAIL · MyRandWise Admin</p>
+      </div></body></html>`;
+
+    await sendViaEdge({
+      from: 'MyRandWise Tips <hello@myrandwise.co.za>',
+      to: [adminEmail],
+      subject: '[TEST] Week ' + wk + ': ' + tip.subject,
+      html: html
+    });
+
+    const result = { id: 'sent' }; // edge function throws on failure, so we're good here
+    if (status) {
+      status.textContent = '✅ Test sent to ' + adminEmail + ' — check inbox! (Tip: "' + tip.headline + '")';
+      status.style.color = 'var(--green)';
+    }
+  } catch(e) {
+    if (status) { status.textContent = '❌ Error: ' + e.message; status.style.color = 'var(--red)'; }
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
+}
+
+// ── IMPORT USERS AS NEWSLETTER SUBSCRIBERS ────────────────────
+async function importUsersAsSubscribers() {
+  const btn = document.getElementById('nl-import-btn');
+  const statusEl = document.getElementById('nl-import-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importing...';
+  statusEl.textContent = '';
+
+  try {
+    // Get all registered users with emails
+    const users = await sbGet(_usersTable + '?select=id,name,email,created_at&order=created_at.asc');
+    const withEmail = users.filter(u => u.email && u.email.includes('@'));
+
+    if (!withEmail.length) {
+      statusEl.textContent = 'No users with emails found.';
+      btn.disabled = false; btn.textContent = '👥 Import all users';
+      return;
+    }
+
+    // Get existing subscribers so we don't double-insert
+    let existing = [];
+    try { existing = await sbGet('newsletter_subscribers?select=email'); } catch(e) {}
+    const existingEmails = new Set(existing.map(s => s.email.toLowerCase()));
+
+    const toInsert = withEmail.filter(u => !existingEmails.has(u.email.toLowerCase()));
+
+    if (!toInsert.length) {
+      statusEl.textContent = '✅ All ' + withEmail.length + ' users already subscribed';
+      btn.disabled = false; btn.textContent = '👥 Import all users';
+      return;
+    }
+
+    // Insert in batches of 50
+    let imported = 0, failed = 0;
+    const batch = toInsert.map(u => ({
+      email: u.email,
+      name: u.name || null,
+      source: 'app_user_import',
+      active: true
+    }));
+
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/newsletter_subscribers`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON,
+        'Authorization': `Bearer ${SUPABASE_ANON}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=ignore-duplicates'
+      },
+      body: JSON.stringify(batch)
+    });
+
+    if (resp.ok || resp.status === 201 || resp.status === 200) {
+      imported = toInsert.length;
+      statusEl.textContent = '✅ Imported ' + imported + ' user' + (imported !== 1 ? 's' : '') + ' as subscribers';
+      statusEl.style.color = 'var(--green)';
+      // Refresh newsletter stats
+      setTimeout(() => loadNewsletter(), 800);
+    } else {
+      const err = await resp.text();
+      statusEl.textContent = '❌ Import failed: ' + err.substring(0, 80);
+      statusEl.style.color = 'var(--red)';
+    }
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '👥 Import all users';
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const t = document.getElementById('admin-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── User Detail Panel ─────────────────────────────────────────
+let _panelUserId = null;
+function openUserPanel(userId) {
+  _panelUserId = userId;
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById('panel-name').textContent = u.name || u.email || '—';
+  document.getElementById('panel-meta').textContent =
+    `${tierBadge(u.tier)} · Joined ${ago(u.created_at)} · ${u.life_stage||'—'}`.replace(/<[^>]+>/g,'');
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('user-panel').classList.add('open');
+  renderPanelBody(u);
+}
+
+function closeUserPanel() {
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('user-panel').classList.remove('open');
+  _panelUserId = null;
+}
+
+function renderPanelBody(u) {
+  const userExpenses = allExpenses.filter(e => e.tester_id === u.id);
+  const totalSpend = userExpenses.reduce((s,e) => s+(e.amount||0), 0);
+  const expCount = userExpenses.length;
+  const lastExp = userExpenses[0];
+
+  // Category breakdown
+  const cats = {};
+  userExpenses.forEach(e => { cats[e.category||'Other'] = (cats[e.category||'Other']||0) + (e.amount||0); });
+  const topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-section">
+      <div class="panel-section-title">Overview</div>
+      <div class="panel-stat-row">
+        <div class="panel-stat">
+          <div class="panel-stat-label">Expenses logged</div>
+          <div class="panel-stat-value">${expCount}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Total spend tracked</div>
+          <div class="panel-stat-value">${fmt(totalSpend)}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Monthly income</div>
+          <div class="panel-stat-value">${u.income_amount ? fmt(u.income_amount) : '—'}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Pay day</div>
+          <div class="panel-stat-value">${u.pay_day ? u.pay_day + (u.pay_day===1?'st':u.pay_day===2?'nd':u.pay_day===3?'rd':'th') : '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Account details</div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Email</span><span>${u.email||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Phone</span><span>${u.phone||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Referral code</span><span style="font-family:'DM Mono',monospace">${u.referral_code||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Referred by</span><span style="font-family:'DM Mono',monospace">${u.referred_by||u.referral_used||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Life stage</span><span>${u.life_stage_emoji||''} ${u.life_stage||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Tier</span><span>${tierBadge(u.tier)}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Goals</span><span>${(u.goals||[]).join(', ')||'—'}</span></div>
+    </div>
+
+    ${topCats.length ? `
+    <div class="panel-section">
+      <div class="panel-section-title">Top spending categories</div>
+      ${topCats.map(([cat, amt]) => `
+        <div class="panel-exp-row">
+          <span style="color:var(--mid)">${cat}</span>
+          <span style="font-weight:700;font-family:'DM Mono',monospace">${fmt(amt)}</span>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <div class="panel-section">
+      <div class="panel-section-title">Recent expenses (last 5)</div>
+      ${userExpenses.slice(0,5).map(e => `
+        <div class="panel-exp-row">
+          <span>${e.emoji||''} ${e.category||'—'} ${e.note ? '<span style="color:var(--muted);font-size:10px">· '+e.note+'</span>' : ''}</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700">${fmt(e.amount)}</span>
+        </div>`).join('') || '<div class="empty">No expenses logged yet</div>'}
+    </div>
+  `;
+}
+
+function emailPanelUser() {
+  if (!_panelUserId) return;
+  const u = allUsers.find(x => x.id === _panelUserId);
+  if (!u || !u.email) return showToast('No email address for this user', 'warn');
+  closeUserPanel();
+  // Switch to Email tab and pre-fill
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  showTab('email', document.querySelector('[onclick="showTab(\'email\',this)"]') || {classList:{add:()=>{}}});
+  setTimeout(() => {
+    const subEl = document.getElementById('email-subject');
+    if (subEl) subEl.focus();
+    showToast(`Ready to email ${u.name||u.email}`);
+  }, 300);
+}
+
+// ── Investment Readiness (saveable) ───────────────────────────
+const INVEST_ITEMS = [
+  { key:'invest_cipc',      label:'CIPC registration',              note:'cipc.co.za · R175 · Required before PayFast live' },
+  { key:'invest_trademark', label:'Trademark (Class 36 + 42)',      note:'R1,180 · File after CIPC confirmed' },
+  { key:'invest_payfast',   label:'PayFast account verified',       note:'Awaiting bank verification email' },
+  { key:'invest_tos',       label:'Terms of Service published',     note:'Required before Play Store submission' },
+  { key:'invest_privacy',   label:'Privacy Policy (POPIA) live',   note:'Required before Play Store submission' },
+  { key:'invest_founder',   label:'Co-Founder agreement signed',   note:'Sign before any equity decisions' },
+  { key:'invest_100users',  label:'100 paying users reached',      note:'Recommended minimum before approaching investors' },
+];
+
+async function loadInvestReadiness() {
+  const el = document.getElementById('invest-readiness-rows');
+  if (!el) return;
+  let states = {};
+  try {
+    const rows = await sbGet('app_config?key=like.invest_%25&select=key,value');
+    rows.forEach(r => { states[r.key] = r.value === 'true'; });
+  } catch(e) { /* use defaults */ }
+
+  el.innerHTML = INVEST_ITEMS.map(item => {
+    const done = !!states[item.key];
+    return `<div class="invest-row">
+      <div>
+        <div class="invest-label">${item.label}</div>
+        <div class="invest-note">${item.note}</div>
+      </div>
+      <button class="invest-status ${done?'done':'pending'}"
+        onclick="toggleInvest('${item.key}',this)">${done ? '✅ Done' : '⏳ Pending'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function toggleInvest(key, btn) {
+  const isDone = btn.classList.contains('done');
+  const newVal = !isDone;
+  btn.textContent = newVal ? '✅ Done' : '⏳ Pending';
+  btn.className = 'invest-status ' + (newVal ? 'done' : 'pending');
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value: String(newVal) })
+    });
+    showToast(newVal ? '✅ Marked as done' : 'Marked as pending');
+  } catch(e) { showToast('❌ Save failed', 'error'); }
+}
+
+// ── Email send log (Supabase persistent) ─────────────────────
+async function loadEmailSendLog() {
+  const logEl = document.getElementById('email-log');
+  if (!logEl) return;
+  try {
+    const rows = await sbGet('app_config?key=like.emaillog_%25&select=key,value&order=key.desc&limit=20');
+    if (!rows.length) { logEl.textContent = 'No send history yet.'; return; }
+    logEl.innerHTML = rows.map(r => {
+      let data; try { data = JSON.parse(r.value); } catch(e) { data = { subject: r.value }; }
+      return `<div style="padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;font-size:12px">
+        <strong>${data.sent_at ? new Date(data.sent_at).toLocaleString('en-ZA') : '—'}</strong>
+        — "${data.subject||'—'}" → ${data.sent||'?'} sent${data.failed>0?' ('+data.failed+' failed)':''}
+        · <span style="color:var(--muted)">${data.segment||'all'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    logEl.textContent = 'No send history yet.';
+  }
+}
+
+async function logEmailSend(subject, sent, failed, segment) {
+  const key = 'emaillog_' + Date.now();
+  await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ key, value: JSON.stringify({ subject, sent, failed, segment, sent_at: new Date().toISOString() }) })
+  }).catch(() => {});
+}
+
+// ── Load admin config from Supabase on init ───────────────────
+async function loadAdminConfig() {
+  try {
+    const rows = await sbGet('app_config?key=in.(admin_wa_number,admin_email)&select=key,value');
+    rows.forEach(r => {
+      if (r.key === 'admin_wa_number') {
+        const el = document.getElementById('wa-number');
+        if (el && !el.value) el.value = r.value;
+      }
+      if (r.key === 'admin_email') {
+        const el = document.getElementById('email-addr');
+        if (el) el.value = r.value;
+      }
+    });
+  } catch(e) {
+    // fallback to localStorage
+    const wa = localStorage.getItem('rw_wa_number');
+    const em = localStorage.getItem('rw_email');
+    const waEl = document.getElementById('wa-number');
+    const emEl = document.getElementById('email-addr');
+    if (wa && waEl) waEl.value = wa;
+    if (em && emEl) emEl.value = em;
+  }
+}
+
+// ── ACCOUNT MANAGER ───────────────────────────────────────────
+let _acctSelectedUser = null;
+
+function acctSearchUsers(q) {
+  const resultsEl = document.getElementById('acct-results');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const matches = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 8);
+
+  if (!matches.length) { resultsEl.style.display = 'none'; return; }
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = matches.map(u => `
+    <div onclick="selectAcctUser('${u.id}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"
+      onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background='#fff'">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${u.name||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${u.email||'—'}</div>
+      </div>
+      ${tierBadge(u.tier)}
+    </div>`).join('');
+}
+
+function selectAcctUser(id) {
+  _acctSelectedUser = allUsers.find(u => u.id === id);
+  if (!_acctSelectedUser) return;
+  const u = _acctSelectedUser;
+  document.getElementById('acct-search').value = u.name + (u.email ? ' — ' + u.email : '');
+  document.getElementById('acct-results').style.display = 'none';
+  document.getElementById('acct-selected-preview').style.display = 'block';
+  document.getElementById('acct-sel-name').textContent = u.name || u.email || '—';
+  document.getElementById('acct-sel-meta').textContent =
+    `Joined ${ago(u.created_at)} · ${u.life_stage||'—'} · ${u.email||'no email'}`;
+  document.getElementById('acct-sel-badge').innerHTML = tierBadge(u.tier);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('#acct-search') && !e.target.closest('#acct-results')) {
+    const r = document.getElementById('acct-results');
+    if (r) r.style.display = 'none';
+  }
+});
+
+async function applyAccess() {
+  if (!_acctSelectedUser) { showToast('Select a user first', 'warn'); return; }
+  const accessType = document.getElementById('acct-access-type').value;
+  const note = document.getElementById('acct-note').value.trim();
+  const statusEl = document.getElementById('acct-status');
+  const u = _acctSelectedUser;
+
+  // Derive tier and expiry from access type
+  let tier = 'free', accessUntil = null;
+  const now = new Date();
+  if (accessType.startsWith('trial_')) {
+    const days = parseInt(accessType.split('_')[1]);
+    tier = 'pro'; // A "free trial" is a trial of Pro — was incorrectly set to 'free' before, which silently reset any existing Pro grant
+    accessUntil = new Date(now.getTime() + days * 86400000).toISOString();
+  } else if (accessType.startsWith('pro_')) {
+    const months = parseInt(accessType.split('_')[1]);
+    tier = 'pro';
+    accessUntil = new Date(new Date().setMonth(new Date().getMonth() + months)).toISOString();
+  } else if (accessType.startsWith('premium_')) {
+    const months = parseInt(accessType.split('_')[1]);
+    tier = 'premium';
+    accessUntil = new Date(new Date().setMonth(new Date().getMonth() + months)).toISOString();
+  } else if (accessType === 'free') {
+    tier = 'free'; accessUntil = null;
+  } else if (accessType === 'revoke') {
+    tier = 'free'; accessUntil = new Date(0).toISOString();
+  }
+
+  const accessLabel = document.getElementById('acct-access-type').selectedOptions[0].text;
+  const expiryStr = accessUntil && accessType !== 'revoke'
+    ? `\nExpires: ${new Date(accessUntil).toLocaleDateString('en-ZA', {day:'numeric',month:'long',year:'numeric'})}`
+    : '';
+  const prevTier = u.tier || 'free';
+
+  const confirmMsg = `Apply to ${u.name || u.email}?\n\nFrom: ${prevTier.toUpperCase()} → To: ${accessLabel}${expiryStr}${note ? '\nNote: ' + note : ''}`;
+  if (!confirm(confirmMsg)) return;
+
+  statusEl.textContent = 'Applying...'; statusEl.style.color = 'var(--muted)';
+
+  try {
+    const patch = { tier };
+    if (accessUntil !== undefined && accessUntil !== null) patch.access_until = accessUntil;
+    if (note) patch.admin_note = note;
+    // Set converted_at the FIRST time this user moves from free → paid.
+    // Never overwrite it on subsequent renewals — that would reset their
+    // loyalty clock and break the R5/month reward calculation.
+    if (prevTier === 'free' && tier !== 'free' && !u.converted_at) {
+      patch.converted_at = new Date().toISOString();
+    }
+
+    await sbPatch(`${_usersTable}?id=eq.${u.id}`, patch);
+
+    // Log the change
+    const logKey = 'acctlog_' + Date.now();
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: logKey, value: JSON.stringify({
+        user_name: u.name, user_email: u.email, user_id: u.id,
+        access_type: accessType, prev_tier: prevTier,
+        tier, note, access_until: accessUntil, changed_at: new Date().toISOString()
+      })})
+    }).catch(()=>{});
+
+    // Send notification email (non-blocking)
+    if (u.email && accessType !== 'free') {
+      sendAccessEmail(u, tier, accessType, accessUntil, accessLabel).catch(()=>{});
+    }
+
+    statusEl.textContent = `✅ ${u.name||u.email} → ${accessLabel} — refreshing...`;
+    statusEl.style.color = 'var(--green)';
+    showToast(`✅ ${u.name} upgraded to ${tier}`);
+    document.getElementById('acct-sel-badge').innerHTML = tierBadge(tier);
+
+    // Reset tier filter on Users tab so the upgraded user is guaranteed visible
+    tierFilter = 'all';
+    document.querySelectorAll('#tier-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('#tier-filters .filter-btn')?.classList.add('active');
+
+    document.getElementById('acct-search').value = '';
+    document.getElementById('acct-note').value = '';
+    _acctSelectedUser = null;
+    document.getElementById('acct-selected-preview').style.display = 'none';
+
+    // Properly wait for the full refetch before re-rendering Active Grants —
+    // this prevents the table from briefly showing stale data
+    await loadAll();
+    await loadAcctLog();
+    statusEl.textContent = `✅ ${u.name||u.email} → ${accessLabel}`;
+
+  } catch(e) {
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+    showToast('❌ Apply failed', 'error');
+  }
+}
+
+async function sendAccessEmail(u, tier, accessType, accessUntil, accessLabel) {
+  const isRevoke = accessType === 'revoke';
+  const name = (u.name || 'there').split(' ')[0];
+  const expiryDisplay = accessUntil && !isRevoke
+    ? new Date(accessUntil).toLocaleDateString('en-ZA', {day:'numeric', month:'long', year:'numeric'})
+    : null;
+
+  const tierEmoji = tier === 'premium' ? '👑' : tier === 'pro' ? '⭐' : '🌱';
+  const tierColour = tier === 'premium' ? '#7c3aed' : '#1a5c35';
+
+  const subject = isRevoke
+    ? 'Your MyRandWise access has been updated'
+    : `${tierEmoji} You've been upgraded to ${tier.charAt(0).toUpperCase()+tier.slice(1)}!`;
+
+  const html = isRevoke ? `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:#1a5c35;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:36px;margin-bottom:8px">🌱</div>
+        <div style="font-size:20px;font-weight:900;color:#fff">Access update</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 16px">Hi ${name} 👋</p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+          Your MyRandWise account has been updated to the <strong>Free tier</strong>.
+          You still have full access to core budgeting features.
+        </p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">
+          If you have any questions, reply to this email — we're always happy to help.
+        </p>
+        <a href="https://myrandwise.co.za/app.html" style="display:block;background:#1a5c35;color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700">Open MyRandWise →</a>
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center">🇿🇦 Built in South Africa · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a></p>
+    </div>` : `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:${tierColour};border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">${tierEmoji}</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px">You're on ${tier.charAt(0).toUpperCase()+tier.slice(1)}!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.65)">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 12px">Hi ${name} 👋</p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+          Your account has been upgraded to <strong>${accessLabel.replace(/[⭐👑🌱]/g,'').trim()}</strong>.
+          ${expiryDisplay ? `Your access runs until <strong>${expiryDisplay}</strong>.` : ''}
+        </p>
+        <div style="background:#f0faf4;border-radius:12px;padding:16px;margin-bottom:20px">
+          <div style="font-size:12px;font-weight:700;color:#1a5c35;margin-bottom:8px">What's unlocked:</div>
+          ${tier === 'pro' || tier === 'premium' ? `
+          <div style="font-size:13px;color:#333;line-height:1.8">
+            ✅ Full debt tracker &amp; payoff planner<br>
+            ✅ Goals &amp; savings tracker<br>
+            ✅ Bank statement import<br>
+            ✅ AI spending insights<br>
+            ✅ Debit order tracker<br>
+            ${tier === 'premium' ? '✅ Priority support<br>✅ All future features' : ''}
+          </div>` : ''}
+        </div>
+        <a href="https://myrandwise.co.za/app.html" style="display:block;background:${tierColour};color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700">Open MyRandWise →</a>
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center">🇿🇦 Built in South Africa · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a></p>
+    </div>`;
+
+  await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: 'MyRandWise <hello@myrandwise.co.za>', to: [u.email], subject, html })
+  });
+}
+
+async function revokeAccess(userId) {
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  const hadTier = u.tier || 'free';
+  if (hadTier === 'free') { showToast('This user is already on Free tier — nothing to revoke', 'warn'); return; }
+  if (!confirm(`Revoke ${hadTier.toUpperCase()} access for ${u.name||u.email}?\n\nThis will set them back to Free tier immediately.`)) return;
+
+  try {
+    await sbPatch(`${_usersTable}?id=eq.${userId}`, { tier: 'free', access_until: new Date(0).toISOString() });
+
+    // Hard verification — re-fetch this exact row directly from Supabase
+    // (not from cached allUsers) so the confirmation is undeniable.
+    let verified = null;
+    try {
+      const check = await sbGet(`${_usersTable}?id=eq.${userId}&select=id,name,tier`);
+      verified = check && check[0] ? check[0] : null;
+    } catch(e) { /* verification fetch failed, but the PATCH above already succeeded */ }
+
+    sendAccessEmail(u, 'free', 'revoke', null, 'Revoked').catch(()=>{});
+
+    // Log to BOTH the general access-change log AND a dedicated revoked-history log
+    // (separate keys so Active Grants and Revoked History never show the same entry)
+    const now = new Date().toISOString();
+    const logKey = 'acctlog_' + Date.now();
+    const revokeLogKey = 'revokelog_' + Date.now();
+    await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key: logKey, value: JSON.stringify({ user_name: u.name, user_email: u.email, user_id: u.id, access_type: 'revoke', prev_tier: hadTier, tier: 'free', changed_at: now }) })
+      }).catch(()=>{}),
+      fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key: revokeLogKey, value: JSON.stringify({
+          user_name: u.name, user_email: u.email, user_id: u.id,
+          had_tier: hadTier, period_start: u.converted_at || u.created_at || null,
+          period_end: u.access_until || null, revoked_at: now
+        }) })
+      }).catch(()=>{})
+    ]);
+
+    if (verified && verified.tier === 'free') {
+      showToast(`✅ Revoked — Supabase confirms ${verified.name||u.email}'s tier is now: free`, 'warn');
+    } else if (verified) {
+      showToast(`⚠️ Revoke sent, but Supabase still shows tier: ${verified.tier} — check Supabase directly`, 'error');
+    } else {
+      showToast(`Access revoked for ${u.name||u.email} (verification check unavailable)`, 'warn');
+    }
+
+    await loadAll();
+    await loadAcctLog();
+    await renderRevokedHistory();
+  } catch(e) { showToast('❌ Revoke failed: ' + e.message, 'error'); }
+}
+
+async function renderRevokedHistory() {
+  const el = document.getElementById('revoked-history-body');
+  if (!el) return;
+  try {
+    const rows = await sbGet('app_config?key=like.revokelog_%25&select=key,value&order=key.desc&limit=20');
+    if (!rows.length) { el.innerHTML = '<tr><td colspan="4" class="empty">No revocations yet</td></tr>'; return; }
+    el.innerHTML = rows.map(r => {
+      let d; try { d = JSON.parse(r.value); } catch(e) { return ''; }
+      const start = d.period_start ? new Date(d.period_start).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const end = d.period_end ? new Date(d.period_end).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      return `<tr>
+        <td><b>${d.user_name||'—'}</b><div style="font-size:10px;color:var(--muted)">${d.user_email||''}</div></td>
+        <td>${tierBadge(d.had_tier)}</td>
+        <td style="font-size:11px;color:var(--mid)">${start} → ${end}</td>
+        <td style="font-size:11px;color:var(--muted)">${d.revoked_at ? ago(d.revoked_at) : '—'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<tr><td colspan="4" class="empty">Could not load revoked history</td></tr>';
+  }
+}
+
+function renderActiveGrants() {
+  const el = document.getElementById('active-grants-body');
+  if (!el) return;
+  const now = Date.now();
+  const granted = allUsers
+    .filter(u => u.tier && u.tier !== 'free')
+    .sort((a,b) => new Date(b.access_until||0) - new Date(a.access_until||0));
+
+  // Tier stats
+  const tierCounts = { free: 0, pro: 0, premium: 0 };
+  allUsers.forEach(u => { const t = u.tier||'free'; tierCounts[t] = (tierCounts[t]||0)+1; });
+  const statsEl = document.getElementById('acct-tier-stats');
+  if (statsEl) statsEl.innerHTML = `
+    <span style="color:var(--muted)">Free: <b>${tierCounts.free}</b></span>
+    <span style="color:var(--amber)">· Pro: <b>${tierCounts.pro}</b></span>
+    <span style="color:var(--purple)">· Premium: <b>${tierCounts.premium}</b></span>`;
+
+  const countEl = document.getElementById('active-grants-count');
+  if (countEl) countEl.textContent = granted.length ? `(${granted.length})` : '';
+
+  if (!granted.length) {
+    el.innerHTML = '<tr><td colspan="5" class="empty">No active grants — use Grant / Modify Access above to upgrade a user</td></tr>';
+    return;
+  }
+  el.innerHTML = granted.map(u => {
+    const expiry = u.access_until ? new Date(u.access_until) : null;
+    const expired = expiry && expiry.getTime() < now;
+    const expiring = expiry && !expired && (expiry.getTime() - now) < 7 * 86400000;
+    const expiryDisplay = !expiry ? 'No expiry set'
+      : expired ? '⚠️ Expired'
+      : expiring ? `⚠️ ${expiry.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})}`
+      : expiry.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+    const expiryColor = expired ? 'var(--red)' : expiring ? 'var(--amber)' : 'var(--mid)';
+    return `<tr>
+      <td><b>${u.name||'—'}</b><div style="font-size:10px;color:var(--muted)">${u.email||''}</div></td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-size:12px;color:${expiryColor};font-weight:${expiring||expired?700:400}">${expiryDisplay}</td>
+      <td style="font-size:11px;color:var(--muted)">${u.admin_note||'—'}</td>
+      <td>
+        <button onclick="selectAcctUser('${u.id}')" style="padding:4px 10px;background:var(--green-l);color:var(--green);border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px">Edit</button>
+        <button onclick="revokeAccess('${u.id}')" style="padding:4px 10px;background:#fff0f0;color:var(--red);border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Revoke</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function addNewUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const tier = document.getElementById('new-user-tier').value;
+  const months = parseInt(document.getElementById('new-user-months').value) || 0;
+  const statusEl = document.getElementById('new-user-status');
+
+  if (!name || !email) { showToast('Name and email required', 'warn'); return; }
+  if (!email.includes('@')) { showToast('Enter a valid email', 'warn'); return; }
+
+  statusEl.textContent = 'Adding...'; statusEl.style.color = 'var(--muted)';
+
+  const now = new Date();
+  const accessUntil = months > 0
+    ? new Date(now.setMonth(now.getMonth() + months)).toISOString()
+    : null;
+
+  try {
+    const payload = { name, email, tier, created_at: new Date().toISOString() };
+    if (accessUntil) payload.access_until = accessUntil;
+    // If added directly as Pro/Premium, start their loyalty clock immediately
+    if (tier !== 'free') payload.converted_at = new Date().toISOString();
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${_usersTable}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok || res.status === 201) {
+      statusEl.textContent = `✅ ${name} added as ${tier}`;
+      statusEl.style.color = 'var(--green)';
+      showToast(`✅ ${name} added`);
+      document.getElementById('new-user-name').value = '';
+      document.getElementById('new-user-email').value = '';
+      // Reset tier filter on Users tab so the new user is guaranteed visible
+      tierFilter = 'all';
+      document.querySelectorAll('#tier-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('#tier-filters .filter-btn')?.classList.add('active');
+      statusEl.textContent = `✅ ${name} added — refreshing...`;
+      await loadAll();
+      statusEl.textContent = `✅ ${name} added as ${tier}`;
+    } else {
+      const err = await res.json();
+      statusEl.textContent = '❌ ' + (err.message || err.code || JSON.stringify(err)).substring(0, 80);
+      statusEl.style.color = 'var(--red)';
+    }
+  } catch(e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+async function bulkGrant() {
+  const emails = (document.getElementById('bulk-emails').value || '')
+    .split('\n').map(e => e.trim().toLowerCase()).filter(e => e.includes('@'));
+  const statusEl = document.getElementById('bulk-status');
+  if (!emails.length) { showToast('Paste at least one email', 'warn'); return; }
+
+  const accessType = document.getElementById('acct-access-type').value;
+  let tier = accessType.startsWith('pro') || accessType.startsWith('trial') ? 'pro' : accessType.startsWith('premium') ? 'premium' : 'free';
+
+  if (!confirm(`Apply "${document.getElementById('acct-access-type').selectedOptions[0].text}" to ${emails.length} email${emails.length!==1?'s':''}?`)) return;
+
+  statusEl.textContent = 'Processing...';
+  let done = 0, failed = 0;
+
+  for (const email of emails) {
+    const user = allUsers.find(u => (u.email||'').toLowerCase() === email);
+    if (user) {
+      try {
+        const patch = { tier };
+        if (user.tier === 'free' && tier !== 'free' && !user.converted_at) {
+          patch.converted_at = new Date().toISOString();
+        }
+        await sbPatch(`${_usersTable}?id=eq.${user.id}`, patch);
+        done++;
+      } catch(e) { failed++; }
+    } else {
+      failed++; // user not found
+    }
+    statusEl.textContent = `Processing ${done + failed}/${emails.length}...`;
+  }
+
+  statusEl.textContent = `✅ ${done} updated${failed > 0 ? ' · ' + failed + ' not found' : ''} — refreshing...`;
+  showToast(`✅ Bulk grant: ${done} users updated`);
+  document.getElementById('bulk-emails').value = '';
+  await loadAll();
+  statusEl.textContent = `✅ ${done} updated${failed > 0 ? ' · ' + failed + ' not found' : ''}`;
+}
+
+async function loadAcctLog() {
+  const el = document.getElementById('acct-log');
+  if (!el) return;
+  try {
+    const rows = await sbGet('app_config?key=like.acctlog_%25&select=key,value&order=key.desc&limit=15');
+    if (!rows.length) { el.innerHTML = '<div class="empty">No access changes recorded yet.</div>'; return; }
+    el.innerHTML = rows.map(r => {
+      let d; try { d = JSON.parse(r.value); } catch(e) { return ''; }
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bg2)">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${d.user_name||d.user_email||'—'}</div>
+          <div style="font-size:11px;color:var(--muted)">${d.access_type||'—'}${d.note?' · '+d.note:''}</div>
+        </div>
+        <div style="text-align:right">
+          ${tierBadge(d.tier)}
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${d.changed_at ? ago(d.changed_at) : '—'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Could not load access log.</div>';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+loadAll();
+loadAdminConfig();
+loadEmailSendLog();
+loadAcctLog();
+setInterval(loadAll, 60000); // auto-refresh every 60s
+</script>
+</body>
+</html>

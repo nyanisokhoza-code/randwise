@@ -1,0 +1,89 @@
+{
+  "name": "MyRandWise",
+  "short_name": "MyRandWise",
+  "description": "Your money, your rules. Personal finance built for South Africans.",
+  "start_url": "/app.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#0d3d22",
+  "theme_color": "#1a7a4a",
+  "lang": "en-ZA",
+  "dir": "ltr",
+  "id": "/app.html",
+  "categories": ["finance", "utilities", "productivity"],
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "icons": [
+    {
+      "src": "icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "MyRandWise home screen"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log expense",
+      "short_name": "Log",
+      "description": "Quickly log an expense",
+      "url": "/app.html?action=log-expense",
+      "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My weekly budget",
+      "short_name": "Budget",
+      "description": "View your weekly budget",
+      "url": "/app.html?action=weekly-budget",
+      "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My debts",
+      "short_name": "Debts",
+      "description": "View your debt payoff plan",
+      "url": "/app.html?action=debts",
+      "icons": [{ "src": "icon_192.png", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/app.html",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  },
+  "prefer_related_applications": false
+}

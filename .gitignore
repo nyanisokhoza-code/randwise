@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+# Local env / secrets
+.env
+*.local
+*password*
+*secret*
+*api_key*
+
+# Node (if added later)
+node_modules/
+npm-debug.log*
+
+# Build outputs (if added later)
+dist/
+build/
+
+# Staging notes
+*.draft.*
+TODO_local.md

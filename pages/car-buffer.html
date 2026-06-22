@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyRandWise — Car Finance Buffer | Protect Your Wheels</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-card: #141414;
+  --border: #1f1f1f;
+  --text: #f5f5f5;
+  --text-muted: #a0a0a0;
+  --text-dim: #666666;
+  --accent: #00c853;
+  --accent-light: #5efc82;
+  --accent-dark: #009624;
+  --accent-glow: rgba(0, 200, 83, 0.15);
+  --danger: #ff5252;
+  --danger-glow: rgba(255, 82, 82, 0.15);
+  --warning: #ffb300;
+  --warning-glow: rgba(255, 179, 0, 0.15);
+  --info: #448aff;
+  --info-glow: rgba(68, 138, 255, 0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.5);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Navigation */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(10,10,10,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+nav .container { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
+.logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 32px; list-style: none; }
+.nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: var(--transition); }
+.nav-links a:hover, .nav-links a.active { color: var(--accent); }
+.nav-cta { background: var(--accent); color: var(--bg); padding: 8px 20px; border-radius: 100px; font-weight: 600; font-size: 0.85rem; text-decoration: none; transition: var(--transition); }
+.nav-cta:hover { background: var(--accent-light); transform: translateY(-1px); }
+
+.nav-toggle { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 8px; }
+.nav-toggle span { width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: var(--transition); }
+.nav-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle.open span:nth-child(2) { opacity: 0; }
+.nav-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.mobile-panel { display: none; position: fixed; top: 64px; left: 0; right: 0; background: var(--bg-elevated); border-bottom: 1px solid var(--border); padding: 12px 24px 20px; z-index: 999; }
+.mobile-panel.open { display: block; }
+.mobile-panel a { display: flex; align-items: center; gap: 10px; padding: 12px 4px; color: var(--text); text-decoration: none; font-size: 0.95rem; font-weight: 500; border-bottom: 1px solid var(--border); }
+.mobile-panel a:last-child { border-bottom: none; }
+.mobile-panel .mp-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; padding: 14px 4px 6px; }
+
+/* Hero */
+.hero { padding: 140px 0 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before {
+  content: ''; position: absolute; top: -50%; left: -20%; width: 140%; height: 140%;
+  background: radial-gradient(ellipse at 50% 30%, var(--accent-glow) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent-glow); border: 1px solid var(--accent-dark);
+  color: var(--accent-light); padding: 8px 18px; border-radius: 100px;
+  font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 28px;
+}
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.1; margin-bottom: 20px; letter-spacing: -0.02em; }
+.hero h1 em { color: var(--accent); font-style: normal; }
+.hero p { font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-muted); max-width: 640px; margin: 0 auto 36px; }
+.hero-stats { display: flex; justify-content: center; gap: 48px; margin-top: 48px; flex-wrap: wrap; }
+.hero-stat { text-align: center; }
+.hero-stat .number { font-size: 2.2rem; font-weight: 800; color: var(--accent); display: block; }
+.hero-stat .label { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+/* Section Headers */
+.section { padding: 80px 0; }
+.section-header { text-align: center; margin-bottom: 56px; }
+.section-header h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); font-weight: 700; margin-bottom: 12px; }
+.section-header p { color: var(--text-muted); font-size: 1.05rem; max-width: 560px; margin: 0 auto; }
+
+/* Cards */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.card {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px; transition: var(--transition); position: relative; overflow: hidden;
+}
+.card:hover { border-color: var(--accent-dark); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.card-icon {
+  width: 48px; height: 48px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; margin-bottom: 20px; background: var(--accent-glow); border: 1px solid var(--accent-dark);
+}
+.card-icon.danger { background: var(--danger-glow); border-color: var(--danger); }
+.card-icon.warning { background: var(--warning-glow); border-color: var(--warning); }
+.card-icon.info { background: var(--info-glow); border-color: var(--info); }
+.card h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 10px; }
+.card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+.card .big-number { font-size: 2.4rem; font-weight: 800; margin: 8px 0; }
+.card .big-number.accent { color: var(--accent); }
+.card .big-number.danger { color: var(--danger); }
+.card .big-number.warning { color: var(--warning); }
+.card .source { font-size: 0.75rem; color: var(--text-dim); margin-top: 12px; font-style: italic; }
+
+/* Buffer Calculator Section */
+.buffer-section { background: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.buffer-container { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+@media (max-width: 768px) { .buffer-container { grid-template-columns: 1fr; } }
+
+.buffer-visual { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; }
+.buffer-bar { background: var(--bg); border-radius: 12px; height: 48px; position: relative; overflow: hidden; margin-bottom: 24px; border: 1px solid var(--border); }
+.buffer-fill { height: 100%; border-radius: 12px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+.buffer-fill.safe { width: 75%; background: linear-gradient(90deg, var(--accent-dark), var(--accent)); }
+.buffer-fill.risk { width: 35%; background: linear-gradient(90deg, var(--danger), var(--warning)); }
+.buffer-fill::after {
+  content: attr(data-label); position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 0.8rem; font-weight: 700; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.buffer-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-dim); margin-top: -16px; margin-bottom: 32px; }
+
+.owe-breakdown { display: flex; flex-direction: column; gap: 16px; }
+.owe-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.owe-row .label { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--text-muted); }
+.owe-row .amount { font-weight: 700; font-size: 1.1rem; }
+.owe-row.total { background: var(--accent-glow); border-color: var(--accent-dark); }
+.owe-row.total .amount { color: var(--accent-light); }
+
+/* CTA Section */
+.cta-section { text-align: center; padding: 100px 0; position: relative; }
+.cta-section::before {
+  content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 600px; height: 400px;
+  background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%); pointer-events: none;
+}
+.cta-section h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 16px; position: relative; }
+.cta-section p { color: var(--text-muted); font-size: 1.1rem; max-width: 520px; margin: 0 auto 36px; position: relative; }
+.cta-btn {
+  display: inline-flex; align-items: center; gap: 10px; background: var(--accent); color: var(--bg);
+  padding: 16px 36px; border-radius: 100px; font-weight: 700; font-size: 1rem; text-decoration: none;
+  transition: var(--transition); position: relative; box-shadow: 0 4px 20px rgba(0,200,83,0.3);
+}
+.cta-btn:hover { background: var(--accent-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,200,83,0.4); }
+
+/* Footer */
+footer { border-top: 1px solid var(--border); padding: 48px 0; text-align: center; }
+footer p { color: var(--text-dim); font-size: 0.85rem; }
+footer a { color: var(--text-muted); text-decoration: none; }
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate { animation: fadeUp 0.8s ease forwards; opacity: 0; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Mobile */
+@media (max-width: 640px) {
+  .hero-stats { gap: 24px; }
+  .hero-stat .number { font-size: 1.6rem; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .nav-toggle { display: flex; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="logo">🌱 <span>MyRandWise</span></a>
+    <ul class="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="partners.html">Partners</a></li>
+      <li class="ndd" style="position:relative;">
+        <span style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">Free tools <span style="font-size:9px;">▾</span></span>
+        <ul class="ndd-menu" style="position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);background:var(--bg-card);border:1px solid var(--border);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.5);padding:22px 8px 8px;margin-top:-8px;min-width:210px;list-style:none;opacity:0;visibility:hidden;transition:opacity .18s,transform .18s;z-index:200;">
+          <li><a href="randwise-dashboard.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);">📊 Spending demo</a></li>
+          <li><a href="car-buffer.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--accent);">🚗 Car buffer calculator</a></li>
+          <li><a href="randwise-tools-widget.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);">🧮 Budget tools</a></li>
+          <li><a href="randwise-referral.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--text);">🎁 Refer &amp; earn</a></li>
+        </ul>
+      </li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="https://myrandwise.co.za/app.html" class="nav-cta">Open App</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="../index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="partners.html">Partners</a>
+    <div class="mp-label">Free tools</div>
+    <a href="randwise-dashboard.html">📊 Spending demo</a>
+    <a href="car-buffer.html">🚗 Car buffer calculator</a>
+    <a href="randwise-tools-widget.html">🧮 Budget tools</a>
+    <a href="randwise-referral.html">🎁 Refer &amp; earn</a>
+  </div>
+</nav>
+<style>
+.ndd:hover .ndd-menu{opacity:1!important;visibility:visible!important;transform:translateX(-50%) translateY(0)!important}
+.ndd-menu li a:hover{background:var(--bg-elevated)}
+@media (max-width: 640px){ .ndd-menu{ position:fixed!important; left:50%!important; top:64px!important; } }
+</style>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">🇿🇦 Built for South Africa</div>
+    <h1 class="animate">Your car is at risk.<br><em>Know your buffer.</em></h1>
+    <p class="animate delay-1">Every day in South Africa, hundreds of financed vehicles face repossession. MyRandWise helps car owners track what they owe, build a payment buffer, and never lose their wheels.</p>
+    <div class="hero-stats animate delay-2">
+      <div class="hero-stat">
+        <span class="number">~2.13M</span>
+        <div class="label">Active Vehicle Finance Accounts</div>
+      </div>
+      <div class="hero-stat">
+        <span class="number">5.14%</span>
+        <div class="label">In Serious Delinquency (3+ Months)</div>
+      </div>
+      <div class="hero-stat">
+        <span class="number">R521B</span>
+        <div class="label">Total Outstanding Vehicle Debt</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>The Hard Numbers</h2>
+      <p>South Africa's vehicle finance market is under real pressure. Here's what the data says.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card animate delay-1">
+        <div class="card-icon danger">🚗</div>
+        <h3>Repossessions Are Rising</h3>
+        <div class="big-number danger">↑ 21%</div>
+        <p>Non-performing loans across SA's major banks increased by 21% in 2023, with vehicle and asset finance portfolios driving a significant portion of the R53.8 billion credit loss charge.</p>
+        <div class="source">Source: PwC Major Banks Analysis 2024</div>
+      </div>
+      <div class="card animate delay-2">
+        <div class="card-icon warning">📉</div>
+        <h3>Delinquency Rate</h3>
+        <div class="big-number warning">5.14%</div>
+        <p>Over 109,000 vehicle finance accounts are 3+ months in arrears. That's more than 1 in 20 financed cars at risk of repossession right now.</p>
+        <div class="source">Source: TransUnion Q3 2024 Industry Insights</div>
+      </div>
+      <div class="card animate delay-3">
+        <div class="card-icon info">💰</div>
+        <h3>Average Loan Size</h3>
+        <div class="big-number accent">R400,960</div>
+        <p>The average new vehicle loan in Q3 2024. With prime at 10.50% and most car loans stretching 60–72 months, the monthly burden is real.</p>
+        <div class="source">Source: TransUnion Q3 2024 Vehicle Finance Data</div>
+      </div>
+      <div class="card animate delay-4">
+        <div class="card-icon">🏦</div>
+        <h3>Bank Credit Losses</h3>
+        <div class="big-number accent">R53.8B</div>
+        <p>SA's four major banks (Absa, FirstRand, Nedbank, Standard Bank) charged R53.8 billion for credit losses in 2023 — up 26.6% from the previous year.</p>
+        <div class="source">Source: PwC Major Banks Analysis 2024</div>
+      </div>
+      <div class="card animate delay-1">
+        <div class="card-icon danger">⚖️</div>
+        <h3>Ombudsman Complaints</h3>
+        <div class="big-number danger">Rising</div>
+        <p>The Banking Services Ombudsman has noted a sharp increase in complaints about vehicle repossessions, with many consumers unaware the bank remains the legal owner until the final payment.</p>
+        <div class="source">Source: OBS South Africa, Oct 2023</div>
+      </div>
+      <div class="card animate delay-2">
+        <div class="card-icon warning">📊</div>
+        <h3>Balance at Risk</h3>
+        <div class="big-number warning">6.48%</div>
+        <p>Of the total R521 billion vehicle finance book, 6.48% by balance is in serious delinquency. That's roughly R33.8 billion in loans where the bank is actively considering recovery action.</p>
+        <div class="source">Source: TransUnion Q3 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section buffer-section">
+  <div class="container">
+    <div class="buffer-container">
+      <div class="buffer-visual">
+        <h3 style="font-size: 1.3rem; margin-bottom: 8px;">What You Owe vs. What You Have</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 32px;">A typical South African car owner with a R400k loan at prime + 2% over 72 months.</p>
+
+        <div style="margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">MONTHLY CAR PAYMENT</div>
+        <div class="buffer-bar">
+          <div class="buffer-fill risk" data-label="R7,850 / month" style="width: 78%;"></div>
+        </div>
+        <div class="buffer-labels">
+          <span>R0</span>
+          <span>R5,000</span>
+          <span>R10,000</span>
+        </div>
+
+        <div style="margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">EMERGENCY BUFFER (3 MONTHS)</div>
+        <div class="buffer-bar">
+          <div class="buffer-fill safe" data-label="R23,550 saved" style="width: 75%;"></div>
+        </div>
+        <div class="buffer-labels">
+          <span>R0</span>
+          <span>R15,000</span>
+          <span>R30,000</span>
+        </div>
+
+        <div style="margin-top: 24px; padding: 16px; background: var(--danger-glow); border: 1px solid var(--danger); border-radius: var(--radius-sm); font-size: 0.9rem;">
+          <strong style="color: var(--danger);">⚠️ Without a buffer:</strong> <span style="color: var(--text-muted);">One missed month starts the repo clock. Two missed months = legal notice. Three missed months = your car is gone — and you still owe the shortfall.</span>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="font-size: 1.8rem; margin-bottom: 16px;">Why a 3-Month Buffer Matters</h2>
+        <p style="color: var(--text-muted); margin-bottom: 32px;">Banks can legally repossess a financed vehicle once you default. In South Africa, most lenders issue a Section 129 notice after 20 days of non-payment. By day 90, the repo truck is loading your car.</p>
+
+        <div class="owe-breakdown">
+          <div class="owe-row">
+            <div class="label">🚗 Monthly instalment</div>
+            <div class="amount">R7,850</div>
+          </div>
+          <div class="owe-row">
+            <div class="label">🔧 Insurance & maintenance</div>
+            <div class="amount">R2,100</div>
+          </div>
+          <div class="owe-row">
+            <div class="label">⛽ Fuel (monthly avg)</div>
+            <div class="amount">R3,200</div>
+          </div>
+          <div class="owe-row">
+            <div class="label">📄 Licence & tracker</div>
+            <div class="amount">R450</div>
+          </div>
+          <div class="owe-row total">
+            <div class="label">💸 Total monthly car cost</div>
+            <div class="amount">R13,600</div>
+          </div>
+        </div>
+
+        <p style="color: var(--text-muted); margin-top: 24px; font-size: 0.9rem;">
+          <strong style="color: var(--accent-light);">Your buffer target:</strong> R40,800 (3 months of total car cost). MyRandWise tracks this automatically against your budget.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2>How MyRandWise Protects Car Owners</h2>
+      <p>We don't just track your budget — we guard your mobility.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card animate delay-1">
+        <div class="card-icon">📊</div>
+        <h3>Car Cost Dashboard</h3>
+        <p>See your full vehicle cost in one place — instalment, insurance, fuel, maintenance, and licences. No more guessing what your car actually costs you.</p>
+      </div>
+      <div class="card animate delay-2">
+        <div class="card-icon">🎯</div>
+        <h3>Buffer Goal Tracker</h3>
+        <p>Set a dedicated "Car Buffer" savings goal. We calculate exactly how much you need (3× your monthly car cost) and track your progress every payday.</p>
+      </div>
+      <div class="card animate delay-3">
+        <div class="card-icon">⚡</div>
+        <h3>Default Risk Alert</h3>
+        <p>Get warned 14 days before your car payment if your available balance won't cover it. We check your budget against upcoming commitments in real time.</p>
+      </div>
+      <div class="card animate delay-4">
+        <div class="card-icon">💡</div>
+        <h3>Debt Freedom Score</h3>
+        <p>Your car loan is part of your total debt picture. Our live Debt Freedom Score shows how fast you're paying it down — and what happens if you miss a payment.</p>
+      </div>
+      <div class="card animate delay-1">
+        <div class="card-icon">🏦</div>
+        <h3>Balloon Payment Planner</h3>
+        <p>Many SA car loans include a balloon. We track your balloon amount, countdown to maturity, and help you build a separate fund so you're not caught short.</p>
+      </div>
+      <div class="card animate delay-2">
+        <div class="card-icon">🤝</div>
+        <h3>Stokvel Car Fund</h3>
+        <p>Contributing to a family stokvel for a car? Track contributions, payout schedules, and who's paid what — built exactly for how South Africans actually save.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <h2 class="animate">Don't let your car become a statistic.</h2>
+    <p class="animate delay-1">Join 25+ beta testers who are already using MyRandWise to protect their vehicles, build buffers, and take control of their money.</p>
+    <a href="https://myrandwise.co.za/app.html" class="cta-btn animate delay-2">🌱 Start Free — Built for SA</a>
+    <p style="margin-top: 24px; font-size: 0.85rem; color: var(--text-dim);" class="animate delay-3">100% free during beta. No credit card. Cancel anytime.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>© 2026 MyRandWise. Built in South Africa. <a href="../index.html">Home</a> · <a href="about.html">About</a> · <a href="partners.html">Partners</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="mailto:hello@myrandwise.co.za">hello@myrandwise.co.za</a></p>
+  </div>
+</footer>
+
+<script>
+// Mobile menu toggle
+const navToggle = document.getElementById('navToggle');
+const mobilePanel = document.getElementById('mobilePanel');
+if (navToggle && mobilePanel) {
+  navToggle.addEventListener('click', () => {
+    const isOpen = mobilePanel.classList.toggle('open');
+    navToggle.classList.toggle('open', isOpen);
+    navToggle.setAttribute('aria-expanded', isOpen);
+  });
+  mobilePanel.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobilePanel.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+}
+
+// Simple intersection observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animationPlayState = 'running';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.animate').forEach(el => {
+  el.style.animationPlayState = 'paused';
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
