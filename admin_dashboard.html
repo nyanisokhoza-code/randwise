@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>RandWise — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 <style>
@@ -42,7 +39,151 @@
     font-size: 14px;
   }
 
-  /* ── Sidebar ──────────────────────────── */
+  /* ── PIN Gate ─────────────────────────── */
+  .pin-gate {
+    position: fixed; inset: 0;
+    background: var(--green-d);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .pin-gate-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 40px 36px;
+    text-align: center;
+    width: 340px;
+  }
+  .pin-gate-logo { font-size: 36px; margin-bottom: 12px; }
+  .pin-gate-title { font-family: 'DM Serif Display',serif; font-size: 22px; color: #fff; margin-bottom: 6px; }
+  .pin-gate-sub { font-size: 13px; color: rgba(255,255,255,0.45); margin-bottom: 28px; }
+  .pin-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 24px; text-align: center;
+    font-family: 'DM Mono',monospace; letter-spacing: 8px;
+    outline: none; transition: border 0.2s;
+    margin-bottom: 14px;
+  }
+  .pin-input:focus { border-color: #a8d96e; }
+  .pin-input::placeholder { letter-spacing: 2px; font-size: 14px; color: rgba(255,255,255,0.3); }
+  .pin-btn {
+    width: 100%; padding: 13px; background: #1a7a4a;
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans',sans-serif; transition: opacity 0.15s;
+  }
+  .pin-btn:hover { opacity: 0.85; }
+  .pin-error { font-size: 12px; color: #ff8080; margin-top: 10px; min-height: 18px; }
+
+  /* ── Toast ─────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: var(--green-d); color: #fff;
+    padding: 12px 20px; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    z-index: 5000; opacity: 0; transform: translateY(12px);
+    transition: all 0.25s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { background: var(--red); }
+  .toast.warn { background: var(--amber); }
+
+  /* ── User Detail Panel ─────────────────── */
+  .panel-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .panel-overlay.open { opacity: 1; pointer-events: all; }
+  .user-panel {
+    position: fixed; top: 0; right: -520px;
+    width: 500px; height: 100vh;
+    background: var(--white); z-index: 401;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+    transition: right 0.3s cubic-bezier(.4,0,.2,1);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .user-panel.open { right: 0; }
+  .panel-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--green-d);
+  }
+  .panel-header-name { font-family:'DM Serif Display',serif; font-size:18px; color:#fff; }
+  .panel-header-meta { font-size:11px; color:rgba(255,255,255,0.5); margin-top:2px; }
+  .panel-close {
+    width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);
+    border:none;color:#fff;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .panel-close:hover { background:rgba(255,255,255,0.2); }
+  .panel-body { flex:1; overflow-y:auto; padding:20px 24px; }
+  .panel-section { margin-bottom:20px; }
+  .panel-section-title {
+    font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:1.2px; color:var(--muted); margin-bottom:10px;
+  }
+  .panel-stat-row {
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;
+  }
+  .panel-stat {
+    background:var(--bg); border-radius:10px; padding:12px;
+  }
+  .panel-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; }
+  .panel-stat-value { font-size:18px; font-weight:800; color:var(--text); margin-top:2px; }
+  .panel-exp-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 0; border-bottom:1px solid var(--bg2);
+    font-size:12px;
+  }
+  .panel-exp-row:last-child { border-bottom:none; }
+  .panel-actions { padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:10px; }
+  .panel-action-btn {
+    flex:1; padding:10px; border-radius:10px; font-size:12px;
+    font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;
+    border:none; transition:opacity 0.15s;
+  }
+  .panel-action-btn:hover { opacity:0.85; }
+
+  /* ── Signup sparkline ──────────────────── */
+  .sparkline-bars {
+    display:flex; align-items:flex-end; gap:4px; height:48px; margin-top:8px;
+  }
+  .spark-bar {
+    flex:1; border-radius:4px 4px 0 0;
+    background:var(--green); opacity:0.7;
+    min-height:4px; transition:height 0.3s;
+    position:relative;
+  }
+  .spark-bar:hover { opacity:1; }
+  .spark-label {
+    font-size:9px; color:var(--muted); text-align:center; margin-top:4px;
+  }
+
+  /* ── Investment readiness toggles ──────── */
+  .invest-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0; border-bottom:1px solid var(--bg2);
+  }
+  .invest-row:last-child { border-bottom:none; }
+  .invest-label { font-size:13px; color:var(--text); }
+  .invest-note { font-size:11px; color:var(--muted); margin-top:2px; }
+  .invest-status {
+    font-size:11px; font-weight:700; padding:4px 10px;
+    border-radius:20px; white-space:nowrap; cursor:pointer;
+    border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s;
+  }
+  .invest-status.pending { background:var(--amber-l); color:var(--amber); }
+  .invest-status.done { background:var(--green-l); color:var(--green); }
+
+  /* ── Rows clickable ────────────────────── */
+  #users-body tr { cursor:pointer; }
+  #users-body tr:hover td { background:var(--bg); }
   .sidebar {
     width: var(--sidebar-w);
     background: var(--green-d);
@@ -52,8 +193,13 @@
     display: flex;
     flex-direction: column;
     z-index: 100;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+  .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
   .sidebar-brand {
     padding: 24px 20px 20px;
@@ -673,6 +819,32 @@
 })();
 </script>
 
+<!-- ── Toast ─────────────────────────────────────────── -->
+<div class="toast" id="admin-toast"></div>
+
+<!-- ── User Detail Panel ─────────────────────────────── -->
+<div class="panel-overlay" id="panel-overlay" onclick="closeUserPanel()"></div>
+<div class="user-panel" id="user-panel">
+  <div class="panel-header">
+    <div>
+      <div class="panel-header-name" id="panel-name">—</div>
+      <div class="panel-header-meta" id="panel-meta">—</div>
+    </div>
+    <button class="panel-close" onclick="closeUserPanel()">×</button>
+  </div>
+  <div class="panel-body" id="panel-body">
+    <div class="loading"><div class="spinner"></div> Loading user data...</div>
+  </div>
+  <div class="panel-actions">
+    <button class="panel-action-btn" id="panel-email-btn"
+      style="background:var(--green);color:#fff"
+      onclick="emailPanelUser()">✉️ Email this user</button>
+    <button class="panel-action-btn"
+      style="background:var(--bg);color:var(--mid);border:1px solid var(--border)"
+      onclick="closeUserPanel()">Close</button>
+  </div>
+</div>
+
 <!-- ── Sidebar ─────────────────────────────────────────────── -->
 <aside class="sidebar">
   <div class="sidebar-brand">
@@ -756,11 +928,21 @@
       <div class="stats-grid" id="overview-stats">
         <div class="loading"><div class="spinner"></div> Loading...</div>
       </div>
+      <div class="card" style="margin-bottom:20px;padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Signups — last 7 days</div>
+          <div style="font-size:11px;color:var(--muted)" id="last-signup-label">Last signup: —</div>
+        </div>
+        <div class="sparkline-bars" id="sparkline-bars">
+          <div class="spark-bar" style="height:4px"></div>
+        </div>
+        <div style="display:flex;gap:4px" id="sparkline-labels"></div>
+      </div>
       <div class="grid2">
         <div class="card">
           <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
           <table class="data-table">
-            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th><th>Last Seen</th></tr></thead>
+            <thead><tr><th>Name</th><th>Life Stage</th><th>Tier</th><th>Joined</th></tr></thead>
             <tbody id="recent-users-body"></tbody>
           </table>
         </div>
@@ -779,7 +961,18 @@
 
     <!-- ── USERS ─────────────────────────── -->
     <div id="tab-users" class="tab-page">
-      <input class="search-bar" id="user-search" placeholder="🔍  Search by name or life stage..." oninput="filterUsers()">
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <input class="search-bar" style="flex:1;min-width:200px;margin-bottom:0"
+          id="user-search" placeholder="🔍  Search name, email, or life stage..."
+          oninput="filterUsers()">
+        <select id="user-date-filter" onchange="filterUsers()"
+          style="padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;background:var(--white);font-family:'DM Sans',sans-serif;color:var(--text)">
+          <option value="all">All time</option>
+          <option value="7">Last 7 days</option>
+          <option value="30">Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
       <div class="filter-row" id="tier-filters">
         <button class="filter-btn active" onclick="setTierFilter('all',this)">All</button>
         <button class="filter-btn" onclick="setTierFilter('free',this)">Free</button>
@@ -789,12 +982,13 @@
       <div class="card" style="padding:0; overflow:hidden">
         <table class="data-table" id="users-table">
           <thead><tr>
-            <th>Name</th><th>Life Stage</th><th>Income</th>
-            <th>Tier</th><th>Referral Code</th><th>Joined</th><th>Last Seen</th>
+            <th>Name</th><th>Email</th><th>Life Stage</th><th>Income</th>
+            <th>Tier</th><th>Ref Code</th><th>Joined</th>
           </tr></thead>
           <tbody id="users-body"></tbody>
         </table>
       </div>
+      <div id="users-count" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right"></div>
     </div>
 
     <!-- ── SEGMENTS ───────────────────────── -->
@@ -827,7 +1021,7 @@
       </div>
       <div class="card">
         <div class="card-title">Referral Leaderboard
-          <span>Min payout: R50 · Batched monthly</span>
+          <span>R10 upfront + R5/month loyalty, max R40 · Min payout R50 · Batched monthly · Based on real purchases only</span>
         </div>
         <table class="data-table">
           <thead><tr>
@@ -838,12 +1032,46 @@
         </table>
       </div>
       <div class="card">
+        <div class="card-title">📝 Log a Confirmed Purchase</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 14px">
+          For payments collected outside PayFast (EFT, cash, manual arrangement) — or while PayFast integration is being fixed.
+          Only log <strong>real, confirmed</strong> payments here. This directly affects referral reward payouts.
+        </p>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">User</label>
+            <input id="purchase-user-search" type="text" placeholder="Search name or email..."
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box"
+              oninput="purchaseSearchUsers(this.value)" autocomplete="off">
+            <div id="purchase-search-results" style="display:none;position:relative;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:180px;overflow-y:auto;margin-top:4px"></div>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Tier</label>
+            <select id="purchase-tier" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg)">
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Amount (R)</label>
+            <input id="purchase-amount" type="number" placeholder="49" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Paid on</label>
+            <input id="purchase-date" type="date" style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="logManualPurchase()" style="padding:11px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Log it →</button>
+        </div>
+        <div id="purchase-log-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+      <div class="card">
         <div class="card-title">Payout History</div>
         <table class="data-table">
           <thead><tr><th>Referrer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
           <tbody id="payout-body"><tr><td colspan="4" class="empty">No payouts yet</td></tr></tbody>
         </table>
       </div>
+      <div id="referral-diagnostic"></div>
     </div>
 
     <!-- ── REVENUE & FINANCIALS ───────────── -->
@@ -890,15 +1118,8 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title">Investment Readiness</div>
-        <div class="metric-row"><span class="metric-label">Project value (your rate R417/hr × 120hrs)</span><span class="metric-value">R50,000</span></div>
-        <div class="metric-row"><span class="metric-label">Project value (agency rate R750/hr × 120hrs)</span><span class="metric-value">R90,000</span></div>
-        <div class="metric-row"><span class="metric-label">Equity structure</span><span class="metric-value">60% / 20% / 20%</span></div>
-        <div class="metric-row"><span class="metric-label">Recommended first investor max equity</span><span class="metric-value">15–20%</span></div>
-        <div class="metric-row"><span class="metric-label">Minimum users before approaching investors</span><span class="metric-value">100 paying users</span></div>
-        <div class="metric-row"><span class="metric-label">CIPC registration</span><span class="metric-value" id="cipc-status">🔲 Pending</span></div>
-        <div class="metric-row"><span class="metric-label">Trademark (Class 36 + 42)</span><span class="metric-value" id="tm-status">🔲 Pending (R1,180)</span></div>
-        <div class="metric-row"><span class="metric-label">PayFast account verified</span><span class="metric-value" id="pf-status">🔲 Awaiting email</span></div>
+        <div class="card-title">Investment Readiness <span style="font-size:11px;color:var(--muted);font-weight:400">— click to toggle, saves to Supabase</span></div>
+        <div id="invest-readiness-rows"></div>
       </div>
     </div>
 
@@ -1074,7 +1295,7 @@
               <div class="timeline-dot"></div>
               <div class="timeline-date">10 April 2026</div>
               <div class="timeline-title">Owner hidden panel live</div>
-              <div class="timeline-desc">Tap avatar 5× → PIN 1947 → live Supabase stats</div>
+              <div class="timeline-desc">Hidden panel accessible via avatar tap sequence → live Supabase stats</div>
             </div>
             <div class="timeline-item">
               <div class="timeline-dot"></div>
@@ -1115,6 +1336,169 @@
     </div>
 
     <!-- ── ALERTS ─────────────────────────── -->
+    <!-- ── ACCOUNT MANAGER ───────────────── -->
+    <div id="tab-account" class="tab-page">
+
+      <!-- Tier stats bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div id="acct-tier-stats" style="font-size:13px;font-weight:600"></div>
+        <div style="font-size:11px;color:var(--muted)">All writes go directly to Supabase</div>
+      </div>
+
+      <!-- Grant / Modify Access -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🔑 Grant / Modify Access</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 16px">Search a registered user and update their subscription tier. All writes go directly to Supabase.</p>
+
+        <div style="position:relative;margin-bottom:12px">
+          <input id="acct-search" type="text" placeholder="Search by name or email..."
+            style="width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box;background:var(--bg)"
+            oninput="acctSearchUsers(this.value)" autocomplete="off">
+          <div id="acct-results" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.1);z-index:200;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+        </div>
+
+        <!-- Selected user preview -->
+        <div id="acct-selected-preview" style="display:none;background:var(--green-l);border:1px solid var(--green);border-radius:10px;padding:12px 16px;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div id="acct-sel-name" style="font-size:14px;font-weight:700;color:var(--text)">—</div>
+              <div id="acct-sel-meta" style="font-size:11px;color:var(--mid);margin-top:2px">—</div>
+            </div>
+            <div id="acct-sel-badge"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access Type</label>
+            <select id="acct-access-type"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none">
+              <option value="trial_7">🌱 Free Trial — 7 days</option>
+              <option value="trial_14">🌱 Free Trial — 14 days</option>
+              <option value="pro_1">⭐ Pro — 1 month</option>
+              <option value="pro_3">⭐ Pro — 3 months</option>
+              <option value="pro_6">⭐ Pro — 6 months</option>
+              <option value="pro_12">⭐ Pro — 12 months</option>
+              <option value="premium_1">👑 Premium — 1 month</option>
+              <option value="premium_3">👑 Premium — 3 months</option>
+              <option value="free">🔄 Revert to Free</option>
+              <option value="revoke" style="color:var(--red);font-weight:700">❌ Revoke / Suspend</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Note (optional)</label>
+            <input id="acct-note" type="text" placeholder="e.g. NYDA grant, Beta tester"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="applyAccess()"
+            style="padding:11px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
+            Apply →
+          </button>
+        </div>
+        <div id="acct-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+
+      <!-- Active Grants -->
+      <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
+        <div style="padding:18px 20px 0">
+          <div class="card-title">👥 Active Grants <span id="active-grants-count" style="font-size:11px;color:var(--muted);font-weight:400"></span></div>
+          <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Everyone currently on Pro or Premium, newest first. Expiring within 7 days is highlighted. Scroll for more.</p>
+        </div>
+        <div style="max-height:280px;overflow-y:auto">
+          <table class="data-table" style="margin:0">
+            <thead style="position:sticky;top:0;background:var(--white);z-index:1"><tr>
+              <th>User</th><th>Tier</th><th>Expires</th><th>Note</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="active-grants-body">
+              <tr><td colspan="5" class="empty">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Revoked History -->
+      <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
+        <div style="padding:18px 20px 0">
+          <div class="card-title">🚫 Revoked Access History</div>
+          <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Everyone whose access was revoked, with what tier they had and when.</p>
+        </div>
+        <div style="max-height:220px;overflow-y:auto">
+          <table class="data-table" style="margin:0">
+            <thead style="position:sticky;top:0;background:var(--white);z-index:1"><tr>
+              <th>User</th><th>Had Tier</th><th>Period</th><th>Revoked</th>
+            </tr></thead>
+            <tbody id="revoked-history-body">
+              <tr><td colspan="4" class="empty">No revocations yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add New User -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">➕ Add New User</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 16px">Manually create a beta tester record. Use this to onboard someone who hasn't signed up yet.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 140px 100px auto;gap:10px;align-items:end">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Full Name</label>
+            <input id="new-user-name" type="text" placeholder="Thandi Dlamini"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Email</label>
+            <input id="new-user-email" type="email" placeholder="thandi@email.com"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Tier</label>
+            <select id="new-user-tier"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none">
+              <option value="free">Free</option>
+              <option value="pro">Pro</option>
+              <option value="premium">Premium</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px">Access (months)</label>
+            <input id="new-user-months" type="number" value="1" min="0" max="24"
+              style="width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);outline:none;box-sizing:border-box">
+          </div>
+          <button onclick="addNewUser()"
+            style="padding:11px 20px;background:var(--purple);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">
+            + Add
+          </button>
+        </div>
+        <div id="new-user-status" style="font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>
+
+      <!-- Bulk Grant -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">📋 Bulk Grant</div>
+        <p style="font-size:13px;color:var(--mid);margin:0 0 14px">Paste one email per line. Applies the same access type selected in Grant / Modify above.</p>
+        <textarea id="bulk-emails" rows="5"
+          style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;font-family:'DM Mono',monospace;background:var(--bg);resize:vertical;outline:none;box-sizing:border-box;color:var(--text)"
+          placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com"></textarea>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+          <button onclick="bulkGrant()"
+            style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
+            Grant to all →
+          </button>
+          <div id="bulk-status" style="font-size:12px;color:var(--mid)"></div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">Recent Access Changes</div>
+          <span style="font-size:11px;color:var(--muted)">Saved to Supabase · persists across sessions</span>
+        </div>
+        <div id="acct-log">
+          <div class="empty">No access changes recorded yet.</div>
+        </div>
+      </div>
+    </div>
+
     <div id="tab-alerts" class="tab-page">
       <div class="card">
         <div class="card-title">WhatsApp Alerts</div>
@@ -1220,12 +1604,17 @@
       <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Quick templates</div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button onclick="loadEmailTemplate('welcome')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🌱 Welcome</button>
           <button onclick="loadEmailTemplate('inactive')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">😴 Haven't seen you</button>
           <button onclick="loadEmailTemplate('newfeature')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">✨ New features</button>
+          <button onclick="loadEmailTemplate('milestone')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🏆 Milestone</button>
           <button onclick="loadEmailTemplate('trial')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⏰ Trial expiring</button>
           <button onclick="loadEmailTemplate('upgrade')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">⭐ Upgrade nudge</button>
+          <button onclick="loadEmailTemplate('referral')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🎁 Referral reminder</button>
           <button onclick="loadEmailTemplate('bugfix')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🐛 Bug fixed</button>
-          <button onclick="loadEmailTemplate('personal')" style="padding:8px 14px;background:#eaf3de;border:1px solid #a5d6a7;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#1a5c35">💬 Personal check-in</button>
+          <button onclick="loadEmailTemplate('maintenance')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🛠️ Maintenance</button>
+          <button onclick="loadEmailTemplate('feedback')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">🗳️ Feedback request</button>
+          <button onclick="loadEmailTemplate('personal')" style="padding:8px 14px;background:#f7f6f2;border:1px solid #e8e6de;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#444">💬 Personal check-in</button>
         </div>
       </div>
 
@@ -1234,13 +1623,17 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
           <div>
             <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">Send to</label>
-            <select id="email-to" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
+            <select id="email-to" onchange="toggleCustomEmailInput()" style="width:100%;padding:10px;border:1px solid #e8e6de;border-radius:8px;font-size:13px;background:#f7f6f2">
               <option value="all">All users</option>
               <option value="free">Free users only</option>
               <option value="pro">Pro users only</option>
               <option value="trial">Trial users (active)</option>
               <option value="inactive">Inactive (7+ days)</option>
+              <option value="custom">✏️ Custom email (testing)</option>
             </select>
+            <input id="email-custom-input" type="text" placeholder="your@email.com, another@email.com"
+              style="display:none;width:100%;padding:10px;border:1px solid #1a7a4a;border-radius:8px;font-size:13px;background:#f0faf4;margin-top:8px;box-sizing:border-box">
+            <div id="email-custom-hint" style="display:none;font-size:11px;color:var(--muted);margin-top:4px">Comma-separate multiple addresses. Sends with your real name, not "Thandi".</div>
           </div>
           <div>
             <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">From name</label>
@@ -1274,8 +1667,11 @@
 
       <!-- Send log -->
       <div style="background:#fff;border-radius:14px;border:1px solid #e8e6de;padding:20px">
-        <div style="font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px">Recent sends</div>
-        <div id="email-log" style="font-size:12px;color:#666">No emails sent yet this session.</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#1a1a1a">Send history</div>
+          <span style="font-size:11px;color:var(--muted)">Saved to Supabase · persists across sessions</span>
+        </div>
+        <div id="email-log" style="font-size:12px;color:#666">Loading history...</div>
       </div>
     </div>
 
@@ -1342,138 +1738,13 @@
       </div>
     </div>
 
-    <!-- ── Account Manager ──────────────────────────────────── -->
-    <div id="tab-account" class="tab-page">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
-        <div>
-          <h2 style="font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px">🔑 Account Manager</h2>
-          <p style="color:var(--muted);font-size:13px">Grant, cancel, and manage user subscription access. All writes go directly to Supabase.</p>
-        </div>
-        <button onclick="loadAccountManager()" style="padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">↻ Refresh</button>
-      </div>
-
-      <!-- Single user grant -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">Grant / Modify Access</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-top:16px">
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">USER (name or email)</label>
-            <div style="position:relative">
-              <input id="am-user-search" type="text" placeholder="Search user..." oninput="filterAmUsers()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-              <div id="am-user-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;z-index:999;margin-top:4px"></div>
-            </div>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">ACCESS TYPE</label>
-            <select id="am-access-type" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-              <optgroup label="── Trial ──">
-                <option value="trial-7">🌱 Free Trial — 7 days</option>
-                <option value="trial-14">🌱 Free Trial — 14 days</option>
-              </optgroup>
-              <optgroup label="── Pro ──">
-                <option value="pro-1">⭐ Pro — 1 month</option>
-                <option value="pro-3">⭐ Pro — 3 months</option>
-                <option value="pro-6">⭐ Pro — 6 months</option>
-                <option value="pro-12">⭐ Pro — 12 months</option>
-              </optgroup>
-              <optgroup label="── Premium ──">
-                <option value="premium-1">👑 Premium — 1 month</option>
-                <option value="premium-3">👑 Premium — 3 months</option>
-                <option value="premium-6">👑 Premium — 6 months</option>
-                <option value="premium-12">👑 Premium — 12 months</option>
-              </optgroup>
-              <optgroup label="── Cancel ──">
-                <option value="cancel-soft">⏸ Cancel (keep until expiry)</option>
-                <option value="cancel-immediate">❌ Cancel immediately → Free</option>
-              </optgroup>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">NOTE (optional)</label>
-            <input id="am-note" type="text" placeholder="e.g. NYDA grant, Beta tester" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-          </div>
-          <button onclick="applyAccountAccess()" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Apply →</button>
-        </div>
-        <div id="am-selected-user" style="margin-top:10px;font-size:12px;color:var(--muted)">No user selected</div>
-        <div id="am-result" style="margin-top:8px;font-size:13px;font-weight:600"></div>
-      </div>
-
-      <!-- Add new user -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">Add New User</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;margin-top:16px">
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">FULL NAME</label>
-            <input id="am-new-name" type="text" placeholder="Full name" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">EMAIL</label>
-            <input id="am-new-email" type="email" placeholder="user@email.com" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">TIER</label>
-            <select id="am-new-tier" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-              <option value="free">Free</option>
-              <option value="pro">Pro</option>
-              <option value="premium">Premium</option>
-            </select>
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">ACCESS MONTHS</label>
-            <input id="am-new-months" type="number" placeholder="0 = no expiry" min="0" value="0" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface)">
-          </div>
-          <button onclick="addNewUser()" style="padding:10px 20px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">+ Add</button>
-        </div>
-        <div id="am-add-result" style="margin-top:8px;font-size:13px;font-weight:600"></div>
-      </div>
-
-      <!-- Bulk grant -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">Bulk Grant</div>
-        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste one email per line. Applies the same access type selected above.</p>
-        <textarea id="am-bulk-emails" rows="4" placeholder="user1@email.com&#10;user2@email.com&#10;user3@email.com" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Mono',monospace;resize:vertical;background:var(--surface)"></textarea>
-        <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
-          <button onclick="applyBulkAccess()" style="padding:10px 20px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Apply to all →</button>
-          <div id="am-bulk-result" style="font-size:12px;color:var(--muted)"></div>
-        </div>
-      </div>
-
-      <!-- All users access table -->
-      <div class="card" style="margin-bottom:20px">
-        <div class="card-title">All Users — Access Status</div>
-        <div style="overflow-x:auto;margin-top:16px">
-          <table style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="border-bottom:1.5px solid var(--border)">
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Name</th>
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Email</th>
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Tier</th>
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Expiry</th>
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Note</th>
-                <th style="text-align:left;padding:10px 12px;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Action</th>
-              </tr>
-            </thead>
-            <tbody id="am-users-table">
-              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">Loading...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Access log -->
-      <div class="card">
-        <div class="card-title">Access Log <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Live from Supabase</span></div>
-        <div id="am-log" style="margin-top:16px;font-size:12px;color:var(--muted)">Loading log...</div>
-      </div>
-    </div>
-
   </div>
 </div>
 
 <script>
 // ── Config ─────────────────────────────────────────────────────
 const SUPABASE_URL  = 'https://mmezkseblafurjolkfkt.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_AKYpC4L4qBnwt1Gu3oWTSQ_KwKQ0tGm';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1tZXprc2VibGFmdXJqb2xrZmt0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNTI1NzEsImV4cCI6MjA5MDkyODU3MX0.iU7J7uK_EsFF9exZrABSxzy2U4n6iFtgh9RQnwbADpg';
 
 async function sbGet(path) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -1499,11 +1770,46 @@ async function sbPatch(path, body) {
       'apikey': SUPABASE_ANON,
       'Authorization': `Bearer ${SUPABASE_ANON}`,
       'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
+      // return=representation (not minimal) so we can see exactly which
+      // rows were actually affected. With return=minimal, Postgres/PostgREST
+      // reports 204 "success" even when a Row Level Security UPDATE policy
+      // silently matches zero rows — there's no error to catch, the write
+      // just quietly doesn't happen. This was the real cause of the
+      // "Revoke sent, but Supabase still shows tier: pro" issue.
+      'Prefer': 'return=representation'
     },
     body: JSON.stringify(body)
   });
   if (!r.ok) { const t = await r.text(); throw new Error(`PATCH failed [${r.status}]: ${t}`); }
+  const result = await r.json();
+  if (!Array.isArray(result) || result.length === 0) {
+    throw new Error(
+      `PATCH returned success but updated 0 rows. This usually means a Row Level Security ` +
+      `UPDATE policy on this table is silently blocking the write — check Supabase → ` +
+      `Authentication → Policies → ${path.split('?')[0]} for a missing or too-restrictive UPDATE policy.`
+    );
+  }
+  return result;
+}
+
+// ── Email via Edge Function (replaces direct Resend calls) ─────
+// The Edge Function lives at: supabase/functions/send-email/index.ts
+// Deploy it once: supabase functions deploy send-email
+// Set secret:     supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxx
+const SEND_EMAIL_FN = `${SUPABASE_URL}/functions/v1/send-email`;
+
+async function sendViaEdge({ from, to, subject, html, text }) {
+  const resp = await fetch(SEND_EMAIL_FN, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ from, to, subject, html, text }),
+  });
+  const result = await resp.json();
+  if (!resp.ok) throw new Error(result.message || result.error || JSON.stringify(result));
+  return result;
 }
 
 // ── State ──────────────────────────────────────────────────────
@@ -1528,6 +1834,9 @@ function showTab(name, el) {
   };
   document.getElementById('page-title').textContent = titles[name] || name;
   if (name === 'newsletter') loadNewsletter();
+  if (name === 'email') loadEmailSendLog();
+  if (name === 'revenue') loadInvestReadiness();
+  if (name === 'account') { loadAcctLog(); renderActiveGrants(); renderRevokedHistory(); }
 }
 
 // ── Email Composer ─────────────────────────────────────────────
@@ -1635,8 +1944,101 @@ A few questions:
 Reply to this email — I read every response.
 
 — MyRandWise team 🌱`
+  },
+  welcome: {
+    subject: "Welcome to MyRandWise, {name} 🌱",
+    body: `Hi {name} 👋
+
+Welcome to MyRandWise! We built this for South Africans who want to actually understand their money — not another generic budgeting app that doesn't get local life.
+
+Here's how to get the most out of it in your first week:
+
+1. Log every expense, even small ones (airtime, taxi fare) — the small stuff adds up
+2. Set up your stokvel or savings goal if you have one
+3. Check your Debt tab if you're paying anything off — the payoff plan does the maths for you
+
+Any questions, just reply to this email.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  milestone: {
+    subject: "You've made real progress, {name} 🏆",
+    body: `Hi {name},
+
+We wanted to flag something — you've been consistently tracking your money on MyRandWise, and that consistency is the hardest part. Most people give up in the first two weeks. You didn't.
+
+A few things worth checking right now:
+• Your Debt tab — see how much faster you could be debt-free with small extra payments
+• Your spending breakdown — any category surprising you this month?
+• Your savings goal — even R50 added today keeps the momentum going
+
+Keep going — small consistent moves are what actually change your financial picture.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  referral: {
+    subject: "Know someone who'd love MyRandWise? 🎁",
+    body: `Hi {name},
+
+Quick one — if MyRandWise has helped you get a clearer picture of your money, there's a good chance a friend or family member could use it too.
+
+Every person you refer who joins:
+• Gets a better start with their own budgeting
+• Earns you up to R40 in rewards (R10 upfront + R5/month for 6 months)
+
+Your referral link is in the app under Profile → Refer a friend.
+
+Share it in your stokvel group, with a colleague, or family member who's always asking how you stay on top of your money.
+
+Open the app 👉 https://myrandwise.co.za/app.html
+
+— MyRandWise team 🌱`
+  },
+  feedback: {
+    subject: "2 minutes of your time? 🗳️",
+    body: `Hi {name},
+
+We're a small team and every piece of feedback genuinely changes what we build next.
+
+Could you take 2 minutes to answer:
+1. What's the ONE thing that would make MyRandWise more useful for you?
+2. Is there a feature you expected that isn't there?
+3. On a scale of 1-10, how likely are you to recommend MyRandWise to a friend?
+
+Just reply to this email with your answers — no survey link, no forms, just a direct reply.
+
+Thank you for helping us build something genuinely useful.
+
+— MyRandWise team 🌱`
+  },
+  maintenance: {
+    subject: "Quick heads up — scheduled maintenance 🛠️",
+    body: `Hi {name},
+
+We're doing some scheduled maintenance on MyRandWise to improve speed and fix a few bugs.
+
+What this means for you:
+• The app may be briefly unavailable during the maintenance window
+• Your data is completely safe — nothing is lost
+• You'll be able to log back in as normal once it's done
+
+We'll send a follow-up email once everything is back to normal.
+
+Thanks for your patience — we're doing this to make the app better for you.
+
+— MyRandWise team 🌱`
   }
 };
+
+function toggleCustomEmailInput() {
+  const isCustom = document.getElementById('email-to').value === 'custom';
+  document.getElementById('email-custom-input').style.display = isCustom ? 'block' : 'none';
+  document.getElementById('email-custom-hint').style.display = isCustom ? 'block' : 'none';
+}
 
 function loadEmailTemplate(key) {
   const t = EMAIL_TEMPLATES[key];
@@ -1660,6 +2062,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(subjEl) subjEl.addEventListener('input', previewEmail);
 });
 
+// ── Branded HTML wrapper for campaign emails ────────────────────
+// Wraps plain campaign text in the same visual style as the OTP
+// and access-grant emails, so manual sends from this dashboard
+// don't look like raw plain text in the inbox.
+function wrapCampaignHtml(bodyText, ctaLink) {
+  // Convert plain text body into paragraphs, preserving line breaks
+  const paragraphs = bodyText
+    .split('\n\n')
+    .map(p => `<p style="font-size:14px;color:#333;line-height:1.7;margin:0 0 16px;white-space:pre-line">${p}</p>`)
+    .join('');
+
+  const ctaButton = ctaLink ? `
+    <a href="${ctaLink}" style="display:block;background:#1a5c35;color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700;margin-top:8px">
+      Open MyRandWise →
+    </a>` : '';
+
+  return `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:#1a5c35;border-radius:16px;padding:24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:32px;margin-bottom:6px">🌱</div>
+        <div style="font-size:18px;font-weight:900;color:#fff">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        ${paragraphs}
+        ${ctaButton}
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center;line-height:1.6;margin:0">
+        🇿🇦 Built in South Africa · POPIA Compliant<br>
+        © 2026 MyRandWise · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a>
+      </p>
+    </div>`;
+}
+
 async function sendEmailCampaign() {
   const to = document.getElementById('email-to').value;
   const subject = document.getElementById('email-subject').value.trim();
@@ -1672,8 +2107,38 @@ async function sendEmailCampaign() {
   if(!subject || !body) { alert('Please fill in subject and message body.'); return; }
 
   sendBtn.disabled = true;
-  sendBtn.textContent = '⏳ Fetching users...';
   statusEl.textContent = '';
+
+  // ── Custom email path — bypasses user fetch/segment filtering entirely ──
+  if (to === 'custom') {
+    const rawEmails = (document.getElementById('email-custom-input').value || '').trim();
+    const emails = rawEmails.split(',').map(e => e.trim()).filter(e => e.includes('@'));
+    if (!emails.length) {
+      showToast('Enter at least one email address', 'warn');
+      sendBtn.disabled = false;
+      return;
+    }
+    sendBtn.textContent = '⏳ Sending...';
+    let sent = 0, failed = 0;
+    for (const email of emails) {
+      const personalBody = body.replace(/\{name\}/g, 'there');
+      const html = wrapCampaignHtml(personalBody, link || null);
+      try {
+        await sendViaEdge({ from: fromName + ' <hello@myrandwise.co.za>', to: [email], subject, html });
+        sent++;
+      } catch(e) { failed++; }
+    }
+    statusEl.textContent = '✅ ' + sent + ' sent' + (failed > 0 ? ' · ' + failed + ' failed' : '') + ' to: ' + emails.join(', ');
+    statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
+    sendBtn.textContent = '📤 Send emails';
+    sendBtn.disabled = false;
+    showToast(`✅ Test email sent to ${emails.length} address${emails.length!==1?'es':''}`);
+    await logEmailSend(subject, sent, failed, 'custom: ' + emails.join(', '));
+    await loadEmailSendLog();
+    return;
+  }
+
+  sendBtn.textContent = '⏳ Fetching users...';
 
   try {
     const query = _usersTable + '?select=id,name,email,tier,created_at,last_active&order=created_at.desc';
@@ -1712,44 +2177,34 @@ async function sendEmailCampaign() {
     sendBtn.textContent = '⏳ Sending 0/' + targets.length + '...';
     let sent = 0, failed = 0;
 
-    const RESEND_KEY = 'Bearer re_G4nEVBHr_oVQovCPqcBCeUgtV5f6FknqS';
-
     for(const u of targets) {
       const name = (u.name || 'there').split(' ')[0];
-      const personalBody = body.replace(/\{name\}/g, name) + (link ? '\n\n👉 ' + link : '');
+      const personalBody = body.replace(/\{name\}/g, name);
       const personalSubject = subject.replace(/\{name\}/g, name);
+      const html = wrapCampaignHtml(personalBody, link || null);
 
       try {
-        const resp = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { 'Authorization': RESEND_KEY, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from: fromName + ' <hello@myrandwise.co.za>',
-            to: [u.email],
-            subject: personalSubject,
-            text: personalBody
-          })
+        await sendViaEdge({
+          from: fromName + ' <hello@myrandwise.co.za>',
+          to: [u.email],
+          subject: personalSubject,
+          html
         });
-        if (resp.ok) sent++; else failed++;
+        sent++;
       } catch(e) { failed++; }
 
       sendBtn.textContent = '⏳ Sending ' + sent + '/' + targets.length + '...';
       await new Promise(r => setTimeout(r, 200));
     }
 
-    const logEl = document.getElementById('email-log');
-    if(logEl) {
-      if(logEl.textContent.includes('No emails sent')) logEl.innerHTML = '';
-      const logEntry = document.createElement('div');
-      logEntry.style.cssText = 'padding:10px;background:#f7f6f2;border-radius:8px;margin-bottom:8px;font-size:12px';
-      logEntry.innerHTML = '<strong>' + new Date().toLocaleString('en-ZA') + '</strong> — "' + subject + '" → ' + sent + ' sent' + (failed > 0 ? ' (' + failed + ' failed)' : '') + ' · ' + to + ' segment';
-      logEl.insertBefore(logEntry, logEl.firstChild);
-    }
-
     statusEl.textContent = '✅ ' + sent + ' email' + (sent !== 1 ? 's' : '') + ' sent' + (failed > 0 ? ' · ' + failed + ' failed' : '');
     statusEl.style.color = failed > 0 ? '#ba7517' : '#1a7a4a';
     sendBtn.textContent = '📤 Send emails';
     sendBtn.disabled = false;
+
+    // Persist send log to Supabase
+    await logEmailSend(subject, sent, failed, to);
+    await loadEmailSendLog();
 
   } catch(e) {
     statusEl.textContent = 'Error: ' + (e.message || e);
@@ -1869,10 +2324,13 @@ function renderAll(users, expenses, consent) {
   renderReferrals(users);
   renderRevenue(users);
   renderAI(users);
-  renderBuildTracker();  // async, non-blocking
+  renderBuildTracker();
   renderAlerts();
   renderLegal(users, consent);
   renderReserves(users);
+  loadInvestReadiness();   // saveable investment readiness toggles
+  renderActiveGrants();    // account manager active grants table
+  renderRevokedHistory();  // account manager revoked history table
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────
@@ -1885,32 +2343,16 @@ function renderOverview(users, expenses) {
   const start = new Date('2026-04-07');
   const daysSince = Math.floor((Date.now() - start.getTime()) / 86400000);
 
-  const now = Date.now();
-  const activeToday = users.filter(u => u.last_active && Math.floor((now - new Date(u.last_active).getTime()) / 86400000) === 0).length;
-  const activeWeek = users.filter(u => u.last_active && Math.floor((now - new Date(u.last_active).getTime()) / 86400000) < 7).length;
-  const inactive7 = users.filter(u => !u.last_active || Math.floor((now - new Date(u.last_active).getTime()) / 86400000) >= 7).length;
-  const neverOpened = users.filter(u => !u.last_active).length;
-
   document.getElementById('overview-stats').innerHTML = `
     <div class="stat-card green">
       <div class="stat-label">Total Users</div>
       <div class="stat-value">${users.length}</div>
       <div class="stat-sub">All time</div>
     </div>
-    <div class="stat-card green">
-      <div class="stat-label">Active Today</div>
-      <div class="stat-value">${activeToday}</div>
-      <div class="stat-sub">${activeWeek} this week</div>
-    </div>
     <div class="stat-card purple">
       <div class="stat-label">Paid Users</div>
       <div class="stat-value">${paid}</div>
       <div class="stat-sub">${conv}% conversion</div>
-    </div>
-    <div class="stat-card red">
-      <div class="stat-label">Inactive 7d+</div>
-      <div class="stat-value">${inactive7}</div>
-      <div class="stat-sub">${neverOpened} never opened</div>
     </div>
     <div class="stat-card amber">
       <div class="stat-label">Expenses Logged</div>
@@ -1924,6 +2366,33 @@ function renderOverview(users, expenses) {
     </div>
   `;
 
+  // Sparkline — last 7 days
+  const days7 = Array.from({length:7}, (_,i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6-i)); return d;
+  });
+  const counts = days7.map(d =>
+    users.filter(u => {
+      const ud = new Date(u.created_at);
+      return ud.getDate()===d.getDate() && ud.getMonth()===d.getMonth() && ud.getFullYear()===d.getFullYear();
+    }).length
+  );
+  const maxC = Math.max(...counts, 1);
+  const barsEl = document.getElementById('sparkline-bars');
+  const labelsEl = document.getElementById('sparkline-labels');
+  if (barsEl) barsEl.innerHTML = counts.map((c,i) =>
+    `<div class="spark-bar" style="height:${Math.max(4,(c/maxC)*48)}px" title="${days7[i].toLocaleDateString('en-ZA',{weekday:'short'})}: ${c} signup${c!==1?'s':''}"></div>`
+  ).join('');
+  if (labelsEl) labelsEl.innerHTML = days7.map(d =>
+    `<div class="spark-label" style="flex:1">${d.toLocaleDateString('en-ZA',{weekday:'short'})}</div>`
+  ).join('');
+
+  // Last signup label
+  const lastEl = document.getElementById('last-signup-label');
+  if (lastEl && users.length) {
+    const newest = users.reduce((a,b) => new Date(a.created_at) > new Date(b.created_at) ? a : b);
+    lastEl.textContent = `Last signup: ${ago(newest.created_at)} · ${newest.name||newest.email||'Unknown'}`;
+  }
+
   // Recent users
   const tbody = document.getElementById('recent-users-body');
   tbody.innerHTML = users.slice(0,10).map(u => `
@@ -1932,9 +2401,8 @@ function renderOverview(users, expenses) {
       <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
       <td>${tierBadge(u.tier)}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
-      <td>${lastSeenBadge(u.last_active)}</td>
     </tr>
-  `).join('') || '<tr><td colspan="5" class="empty">No users yet</td></tr>';
+  `).join('') || '<tr><td colspan="4" class="empty">No users yet</td></tr>';
   document.getElementById('reg-count').textContent = `${users.length} total`;
 
   // Tier bars
@@ -1978,37 +2446,35 @@ function renderUsers(users) {
   filterUsers();
 }
 
-function lastSeenBadge(last_active) {
-  if (!last_active) return '<span style="font-size:11px;color:var(--muted)">Never opened</span>';
-  const days = Math.floor((Date.now() - new Date(last_active).getTime()) / 86400000);
-  if (days === 0) return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#1a7a4a">🟢 Today</span>';
-  if (days === 1) return '<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#1a7a4a">🟢 Yesterday</span>';
-  if (days <= 7)  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#ba7517">🟡 ${days}d ago</span>`;
-  if (days <= 30) return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#a32d2d">🔴 ${days}d ago</span>`;
-  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)">⚫ ${days}d ago</span>`;
-}
-
 function filterUsers() {
   const q = (document.getElementById('user-search').value||'').toLowerCase();
+  const days = parseInt(document.getElementById('user-date-filter')?.value||'all');
+  const cutoff = days !== 'all' && !isNaN(days) ? Date.now() - days*86400000 : 0;
+
   const filtered = allUsers.filter(u => {
-    const matchQ = !q || (u.name||'').toLowerCase().includes(q) || (u.life_stage||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q);
+    const matchQ = !q ||
+      (u.name||'').toLowerCase().includes(q) ||
+      (u.email||'').toLowerCase().includes(q) ||
+      (u.life_stage||'').toLowerCase().includes(q);
     const matchT = tierFilter === 'all' || (u.tier||'free') === tierFilter;
-    return matchQ && matchT;
+    const matchD = !cutoff || new Date(u.created_at).getTime() >= cutoff;
+    return matchQ && matchT && matchD;
   });
+
   document.getElementById('users-body').innerHTML = filtered.map(u => `
-    <tr>
-      <td>
-        <b>${u.name||'—'}</b>
-        <div style="font-size:10px;color:var(--muted)">${u.email||''}</div>
-      </td>
+    <tr onclick="openUserPanel('${u.id}')">
+      <td><b>${u.name||'—'}</b></td>
+      <td style="font-size:11px;color:var(--muted)">${u.email||'—'}</td>
       <td>${u.life_stage_emoji||''} ${u.life_stage||'—'}</td>
       <td style="font-family:'DM Mono',monospace">${u.income_amount ? fmt(u.income_amount) : '—'}</td>
       <td>${tierBadge(u.tier)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:11px">${u.referral_code||'—'}</td>
       <td style="color:var(--muted);font-size:11px">${ago(u.created_at)}</td>
-      <td>${lastSeenBadge(u.last_active)}</td>
     </tr>
   `).join('') || '<tr><td colspan="7" class="empty">No users match this filter</td></tr>';
+
+  const countEl = document.getElementById('users-count');
+  if (countEl) countEl.textContent = `Showing ${filtered.length} of ${allUsers.length} users`;
 }
 
 function setTierFilter(t, el) {
@@ -2066,6 +2532,40 @@ function showSegment(id) {
   });
 }
 
+// ── Referral reward formula: R10 upfront + R5 per CONSECUTIVE monthly
+// renewal, capped at 6 loyalty months (R40 max). A gap > 35 days between
+// consecutive purchase records breaks the streak — loyalty stops accruing
+// from that point, even if they resume paying later. This requires a new
+// `purchases` row to exist for EVERY successful renewal payment, not just
+// the first one — that's how skipped payments become detectable at all.
+// Verified with 7 test cases (including the skip scenario) before being
+// wired in here — see test_referral_skip_logic.js
+function calcReferralReward(userPurchases) {
+  if (!userPurchases || !userPurchases.length) {
+    return { reward: 0, converted: false, loyaltyMonths: 0, streakBroken: false };
+  }
+  const sorted = [...userPurchases].sort((a, b) => new Date(a.purchased_at) - new Date(b.purchased_at));
+  const GAP_TOLERANCE_MS = 35 * 86400000; // 35 days — a few days' grace beyond a calendar month
+
+  let reward = 10;
+  let loyaltyMonths = 0;
+  let streakBroken = false;
+
+  for (let i = 1; i < sorted.length; i++) {
+    if (loyaltyMonths >= 6) break;
+    const gap = new Date(sorted[i].purchased_at).getTime() - new Date(sorted[i - 1].purchased_at).getTime();
+    if (gap <= GAP_TOLERANCE_MS) {
+      loyaltyMonths++;
+      reward += 5;
+    } else {
+      streakBroken = true;
+      break;
+    }
+  }
+
+  return { reward, converted: true, loyaltyMonths, streakBroken };
+}
+
 // ── REFERRALS ─────────────────────────────────────────────────
 function renderReferrals(users) {
   // Kick off async load — referral data lives in its own table
@@ -2085,40 +2585,60 @@ async function loadReferralData(users) {
     if (u.referral_code) userByCode[u.referral_code.toLowerCase()] = u;
   });
 
-  // Try to find the referrals table
+  // Fetch REAL completed purchases — the only honest source of truth for
+  // "did this referral actually convert," separate from manually-granted tier.
+  let purchasesByUser = {};
+  try {
+    const purchaseRows = await sbGet('purchases?status=eq.completed&select=user_id,purchased_at,amount,tier');
+    purchaseRows.forEach(p => {
+      if (!purchasesByUser[p.user_id]) purchasesByUser[p.user_id] = [];
+      purchasesByUser[p.user_id].push(p);
+    });
+  } catch(e) { /* purchases table may not exist yet — everyone shows as not-converted, which is honest */ }
+
+  // Referral data lives on beta_testers (referred_by / referral_used columns).
+  // No dedicated referrals table exists — we don't probe for one anymore
+  // since failed requests show as red errors in DevTools regardless of
+  // try/catch. If you later create a real referrals table, set its name
+  // in app_config under key 'referrals_table_name' and this will use it.
   let refs = [];
-  const refTableCandidates = ['referrals', 'referral_events', 'referral_log', 'user_referrals'];
-  for (const t of refTableCandidates) {
-    try {
-      refs = await sbGet(t + '?select=*&order=created_at.desc&limit=500');
-      if (Array.isArray(refs)) break;
-    } catch(e) { refs = []; }
-  }
+  try {
+    const cfg = await sbGet("app_config?key=eq.referrals_table_name&select=value&limit=1");
+    if (cfg && cfg[0] && cfg[0].value) {
+      const customTable = cfg[0].value;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${customTable}?select=*&order=created_at.desc&limit=500`, {
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}` }
+      });
+      if (r.ok) refs = await r.json();
+    }
+  } catch(e) { /* no custom table configured — use column fallback below */ }
 
   // If no referrals table, fall back to referral_code + referred_by columns on users table
   if (!refs.length) {
     const referred = users.filter(u => u.referred_by || u.referral_used);
-    // Group by who referred them
+    // Group by who referred them, calculating real reward per referred user
     const byReferrer = {};
+    const unmatched = []; // codes that don't match any known referral_code — shown in diagnostic panel
     referred.forEach(u => {
       const code = (u.referred_by || u.referral_used || '').toLowerCase();
       const referrer = userByCode[code];
-      if (!referrer) return;
-      if (!byReferrer[referrer.id]) byReferrer[referrer.id] = { user: referrer, count: 0, converted: 0 };
+      if (!referrer) { unmatched.push({ referredUser: u, code }); return; }
+      if (!byReferrer[referrer.id]) byReferrer[referrer.id] = { user: referrer, count: 0, converted: 0, rewardTotal: 0 };
       byReferrer[referrer.id].count++;
-      if (u.tier !== 'free') byReferrer[referrer.id].converted++;
+      const { reward, converted } = calcReferralReward(purchasesByUser[u.id]);
+      if (converted) byReferrer[referrer.id].converted++;
+      byReferrer[referrer.id].rewardTotal += reward;
     });
 
     const rows = Object.values(byReferrer);
     document.getElementById('ref-total').textContent = rows.length;
-    // Commission: R15 per paid conversion
-    const pendingTotal = rows.reduce((s, r) => s + (r.converted * 15), 0);
+    const pendingTotal = rows.reduce((s, r) => s + Math.max(0, r.rewardTotal - (r.user.earnings_paid || 0)), 0);
     document.getElementById('ref-pending').textContent = fmt(pendingTotal);
     document.getElementById('ref-paid').textContent = fmt(users.reduce((s,u)=>(s+(u.earnings_paid||0)),0));
 
     refBodyEl.innerHTML = rows.length
       ? rows.map(r => {
-          const pending = r.converted * 15;
+          const pending = Math.max(0, r.rewardTotal - (r.user.earnings_paid || 0));
           const canPay = pending >= 50;
           return `<tr>
             <td><b>${r.user.name||'—'}</b><div style="font-size:10px;color:var(--muted)">${r.user.email||''}</div></td>
@@ -2129,12 +2649,15 @@ async function loadReferralData(users) {
             <td><button class="pay-btn" ${!canPay?'disabled':''} onclick="markPaid('${r.user.id}','${r.user.name}',${pending})">${canPay?'Pay R'+pending:'Below R50'}</button></td>
           </tr>`;
         }).join('')
-      : `<tr><td colspan="6" class="empty">
-          No referrals found. Columns checked on ${_usersTable}: referred_by, referral_used.<br>
-          <small style="color:var(--muted)">Your referral link signups should appear here once they register with your code.</small>
-        </td></tr>`;
+      : `<tr><td colspan="6" class="empty">No referrers yet</td></tr>`;
 
-    if (payBodyEl) payBodyEl.innerHTML = '<tr><td colspan="4" class="empty">Payout records from referrals table</td></tr>';
+    if (payBodyEl) payBodyEl.innerHTML = '<tr><td colspan="4" class="empty">No payouts yet</td></tr>';
+
+    // ── Self-diagnostic panel ──────────────────────────────────
+    // Instead of silently showing "No referrers yet" when matching fails,
+    // show exactly what codes exist vs what's being searched for, so the
+    // actual mismatch is visible instead of trusted on faith.
+    renderReferralDiagnostic(users, referred, unmatched, userByCode);
     return;
   }
 
@@ -2171,14 +2694,155 @@ async function loadReferralData(users) {
     : '<tr><td colspan="6" class="empty">No referrers yet</td></tr>';
 }
 
+// ── Self-diagnostic panel for referral matching ────────────────
+// Shows exactly which referred_by codes exist vs which referral_code
+// values are registered, so a mismatch is visible instead of just
+// producing a silent "No referrers yet".
+// ── Manual purchase logging ─────────────────────────────────────
+let _purchaseSelectedUser = null;
+
+function purchaseSearchUsers(q) {
+  const resultsEl = document.getElementById('purchase-search-results');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const matches = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 6);
+  if (!matches.length) { resultsEl.style.display = 'none'; return; }
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = matches.map(u => `
+    <div onclick="selectPurchaseUser('${u.id}')" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--bg2);font-size:12px"
+      onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background='#fff'">
+      <b>${u.name||'—'}</b> <span style="color:var(--muted)">${u.email||''}</span>
+    </div>`).join('');
+}
+
+function selectPurchaseUser(id) {
+  _purchaseSelectedUser = allUsers.find(u => u.id === id);
+  if (!_purchaseSelectedUser) return;
+  document.getElementById('purchase-user-search').value = _purchaseSelectedUser.name + ' — ' + (_purchaseSelectedUser.email||'');
+  document.getElementById('purchase-search-results').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#purchase-user-search') && !e.target.closest('#purchase-search-results')) {
+    const r = document.getElementById('purchase-search-results');
+    if (r) r.style.display = 'none';
+  }
+});
+
+async function logManualPurchase() {
+  const statusEl = document.getElementById('purchase-log-status');
+  if (!_purchaseSelectedUser) { showToast('Select a user first', 'warn'); return; }
+  const tier = document.getElementById('purchase-tier').value;
+  const amount = parseFloat(document.getElementById('purchase-amount').value);
+  const dateInput = document.getElementById('purchase-date').value;
+  if (!amount || amount <= 0) { showToast('Enter a real amount', 'warn'); return; }
+  if (!dateInput) { showToast('Select the date it was paid', 'warn'); return; }
+
+  if (!confirm(`Log a confirmed ${tier} purchase of R${amount} for ${_purchaseSelectedUser.name||_purchaseSelectedUser.email} on ${dateInput}?\n\nOnly do this for REAL, verified payments — this affects referral payouts.`)) return;
+
+  statusEl.textContent = 'Logging...'; statusEl.style.color = 'var(--muted)';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/purchases`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        user_id: _purchaseSelectedUser.id,
+        tier, amount,
+        payment_method: 'manual_verified',
+        status: 'completed',
+        purchased_at: new Date(dateInput).toISOString()
+      })
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.message || JSON.stringify(result));
+
+    statusEl.textContent = `✅ Logged R${amount} ${tier} purchase for ${_purchaseSelectedUser.name||_purchaseSelectedUser.email}`;
+    statusEl.style.color = 'var(--green)';
+    showToast('✅ Purchase logged — referral rewards will recalculate');
+    document.getElementById('purchase-user-search').value = '';
+    document.getElementById('purchase-amount').value = '';
+    document.getElementById('purchase-date').value = '';
+    _purchaseSelectedUser = null;
+    await loadAll();
+  } catch(e) {
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+function renderReferralDiagnostic(users, referred, unmatched, userByCode) {
+  const el = document.getElementById('referral-diagnostic');
+  if (!el) return;
+
+  const usersWithOwnCode = users.filter(u => u.referral_code);
+
+  if (!referred.length) {
+    // Nobody has referred_by set at all — genuinely no referral signups yet
+    el.innerHTML = '';
+    return;
+  }
+
+  if (!unmatched.length) {
+    // Everything matched correctly — no diagnostic needed
+    el.innerHTML = '';
+    return;
+  }
+
+  // There ARE referred_by values, but some/all failed to match a real referral_code.
+  // Show the actual data so the mismatch is self-evident.
+  el.innerHTML = `
+    <div class="card" style="border:1.5px solid var(--amber);background:#fffaf0;margin-top:16px">
+      <div class="card-title" style="color:var(--amber)">⚠️ ${unmatched.length} referral code${unmatched.length!==1?'s':''} couldn't be matched</div>
+      <p style="font-size:13px;color:var(--mid);margin:0 0 14px">
+        ${unmatched.length} user${unmatched.length!==1?'s have':' has'} a <code>referred_by</code> value that doesn't match anyone's <code>referral_code</code> in the database.
+        This is why they're not showing in the leaderboard above — not a bug, a genuine data mismatch. Compare the two lists below.
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">Codes being searched for (referred_by)</div>
+          ${unmatched.map(u => `
+            <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+              <span style="font-family:'DM Mono',monospace;font-weight:700">${u.code || '(empty)'}</span>
+              <span style="color:var(--muted)">${u.referredUser.name||u.referredUser.email||'—'}</span>
+            </div>`).join('')}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">
+            Codes that actually exist (referral_code) — ${usersWithOwnCode.length} user${usersWithOwnCode.length!==1?'s':''} have one
+          </div>
+          ${usersWithOwnCode.length
+            ? usersWithOwnCode.map(u => `
+                <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+                  <span style="font-family:'DM Mono',monospace;font-weight:700">${u.referral_code}</span>
+                  <span style="color:var(--muted)">${u.name||u.email||'—'}</span>
+                </div>`).join('')
+            : '<div style="padding:10px;background:#fff;border-radius:8px;font-size:12px;color:var(--red)">⚠️ Zero users have a referral_code set at all — this is likely the actual root cause. The referral_code column may need to be generated/backfilled for existing users.</div>'}
+        </div>
+      </div>
+    </div>`;
+}
+
 async function markPaid(id, name, amount) {
   if (!confirm(`Mark R${amount} as paid to ${name}?`)) return;
-  await sbPatch(`${_usersTable}?id=eq.${id}`, {
-    earnings_paid: amount, earnings_pending: 0,
-    last_payout_at: new Date().toISOString()
-  });
-  alert(`✅ Payment to ${name} marked as paid.`);
-  loadAll();
+  try {
+    await sbPatch(`${_usersTable}?id=eq.${id}`, {
+      earnings_paid: amount, earnings_pending: 0,
+      last_payout_at: new Date().toISOString()
+    });
+    // Log payout to app_config as a simple audit trail
+    const logKey = 'payout_' + Date.now();
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: logKey, value: JSON.stringify({ name, amount, paid_at: new Date().toISOString(), user_id: id }) })
+    }).catch(() => {}); // non-blocking
+    showToast(`✅ R${amount} paid to ${name} — marked`);
+    setTimeout(loadAll, 800);
+  } catch(e) {
+    showToast('❌ Mark paid failed: ' + e.message, 'error');
+  }
 }
 
 // ── REVENUE ───────────────────────────────────────────────────
@@ -2419,16 +3083,36 @@ function renderAlerts() {
   `).join('');
 }
 
-function saveWaNumber() {
-  const n = document.getElementById('wa-number').value;
-  localStorage.setItem('rw_wa_number', n);
-  alert('✅ WhatsApp number saved: ' + n);
+async function saveWaNumber() {
+  const n = document.getElementById('wa-number').value.trim();
+  if (!n) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'admin_wa_number', value: n })
+    });
+    showToast('✅ WhatsApp number saved: ' + n);
+  } catch(e) {
+    localStorage.setItem('rw_wa_number', n); // fallback
+    showToast('✅ Saved locally (app_config unavailable)');
+  }
 }
 
-function saveEmail() {
-  const e = document.getElementById('email-addr').value;
-  localStorage.setItem('rw_email', e);
-  alert('✅ Admin email saved: ' + e);
+async function saveEmail() {
+  const e = document.getElementById('email-addr').value.trim();
+  if (!e) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: 'admin_email', value: e })
+    });
+    showToast('✅ Admin email saved: ' + e);
+  } catch(e2) {
+    localStorage.setItem('rw_email', e);
+    showToast('✅ Saved locally (app_config unavailable)');
+  }
 }
 
 // ── LEGAL ─────────────────────────────────────────────────────
@@ -2679,72 +3363,52 @@ async function sendTestTip() {
   const btn = document.getElementById('nl-test-btn');
   const status = document.getElementById('nl-test-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Sending...'; }
-  if (status) { status.textContent = 'Connecting...'; status.style.color = 'var(--muted)'; }
+  if (status) { status.textContent = 'Sending test email...'; status.style.color = 'var(--muted)'; }
 
-  const adminEmail = localStorage.getItem('rw_admin_email') || 'nyanisokhoza@gmail.com';
-
-  // Build SQL command as fallback (uses pg_net inside Supabase — no CORS)
-  const SQL_CMD = `SELECT net.http_post(url:='${SUPABASE_URL}/functions/v1/send-weekly-tip',headers:='{"Content-Type":"application/json","Authorization":"Bearer ${SUPABASE_ANON}"}'::jsonb,body:='{"test_email":"${adminEmail}"}'::jsonb);`;
-
-  // Try calling the Edge Function directly using anon key (avoids CORS issues)
   try {
-    if (status) status.textContent = '⏳ Calling Edge Function...';
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-weekly-tip`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON}`,
-        'apikey': SUPABASE_ANON
-      },
-      body: JSON.stringify({ test_email: adminEmail })
-    });
+    const adminEmail = localStorage.getItem('rw_email') || 'nyanisokhoza@gmail.com';
 
-    let result = {};
-    try { result = await resp.json(); } catch(e) {}
+    // Get current week's tip directly from Supabase (no Edge Function needed)
+    const tips = await sbGet('weekly_tips?select=*&order=week_number.asc');
+    const wk = getWeekNumber();
+    const tip = tips.find(t => t.week_number === wk) || tips[0];
 
-    if (resp.ok) {
-      if (status) { status.textContent = '✅ Sent to ' + adminEmail + ' — check inbox!'; status.style.color = 'var(--green)'; }
+    if (!tip) {
+      if (status) { status.textContent = '❌ No tips in database yet — run weekly_tips_setup.sql first'; status.style.color = 'var(--red)'; }
       if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
       return;
     }
 
-    // If 401 or 403, the function requires service key — show SQL fallback
-    const errMsg = resp.status === 401 ? 'Function requires service key (use SQL fallback below)'
-      : resp.status === 403 ? 'Access denied — use SQL fallback below'
-      : resp.status === 404 ? 'Edge Function not found — is send-weekly-tip deployed?'
-      : `HTTP ${resp.status}: ${result?.error || result?.message || 'Unknown error'}`;
-    showSqlFallback(status, errMsg, SQL_CMD);
+    const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f7f9f4;font-family:sans-serif">
+      <div style="max-width:520px;margin:0 auto;padding:24px 16px">
+        <div style="background:linear-gradient(155deg,#0a3d20,#1a7a4a);border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:16px">
+          <div style="font-size:32px;margin-bottom:6px">🌱</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;font-weight:700">Weekly Money Tip — Week ${wk}</div>
+          <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.2">${tip.headline}</div>
+        </div>
+        <div style="background:#fff;border-radius:16px;padding:24px;border:1px solid #eef2e8">
+          <p style="font-size:15px;color:#2c2c2a;line-height:1.75;margin:0 0 22px">${tip.body.replace(/\n/g,'<br>')}</p>
+          <a href="${tip.cta_url || 'https://myrandwise.co.za'}" style="display:block;background:#1a7a4a;color:#fff;text-decoration:none;border-radius:12px;padding:15px;text-align:center;font-size:15px;font-weight:800">${tip.cta_text || 'Open MyRandWise →'}</a>
+        </div>
+        <p style="text-align:center;font-size:11px;color:#aaa;margin-top:12px">TEST EMAIL · MyRandWise Admin</p>
+      </div></body></html>`;
 
+    await sendViaEdge({
+      from: 'MyRandWise Tips <hello@myrandwise.co.za>',
+      to: [adminEmail],
+      subject: '[TEST] Week ' + wk + ': ' + tip.subject,
+      html: html
+    });
+
+    const result = { id: 'sent' }; // edge function throws on failure, so we're good here
+    if (status) {
+      status.textContent = '✅ Test sent to ' + adminEmail + ' — check inbox! (Tip: "' + tip.headline + '")';
+      status.style.color = 'var(--green)';
+    }
   } catch(e) {
-    // Network error — always show SQL fallback
-    showSqlFallback(status, 'Network error — use SQL fallback below (copy & run in Supabase SQL Editor)', SQL_CMD);
+    if (status) { status.textContent = '❌ Error: ' + e.message; status.style.color = 'var(--red)'; }
   }
   if (btn) { btn.disabled = false; btn.textContent = '📤 Send test to me'; }
-}
-
-function showSqlFallback(statusEl, errMsg, sql) {
-  if (!statusEl) return;
-  statusEl.innerHTML = `
-    <div style="margin-top:8px">
-      <span style="color:var(--amber);font-weight:600">⚠️ ${errMsg}</span>
-      <div style="margin-top:10px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px">
-        <div style="font-size:12px;font-weight:700;color:var(--mid);margin-bottom:8px">
-          📋 Run this in <a href="https://supabase.com/dashboard/project/mmezkseblafurjolkfkt/sql" target="_blank" style="color:var(--green)">Supabase SQL Editor</a> to send the test email:
-        </div>
-        <code id="sql-test-cmd" style="font-size:10px;color:#333;display:block;word-break:break-all;line-height:1.6;background:#f5f5f5;padding:10px;border-radius:6px;user-select:all">${sql}</code>
-        <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
-          <button onclick="navigator.clipboard.writeText(document.getElementById('sql-test-cmd').textContent).then(()=>{this.textContent='✅ Copied!';this.style.background='var(--green)';setTimeout(()=>{this.textContent='📋 Copy SQL';this.style.background='var(--green)'},2000)})"
-            style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">
-            📋 Copy SQL
-          </button>
-          <a href="https://supabase.com/dashboard/project/mmezkseblafurjolkfkt/sql" target="_blank"
-            style="padding:6px 14px;background:var(--bg2);color:var(--mid);border:1px solid var(--border);border-radius:6px;font-size:12px;text-decoration:none;font-family:'DM Sans',sans-serif">
-            Open SQL Editor →
-          </a>
-          <span style="font-size:11px;color:var(--muted)">Also make sure pg_net is enabled: Database → Extensions → pg_net</span>
-        </div>
-      </div>
-    </div>`;
 }
 
 // ── IMPORT USERS AS NEWSLETTER SUBSCRIBERS ────────────────────
@@ -2819,207 +3483,678 @@ async function importUsersAsSubscribers() {
   btn.textContent = '👥 Import all users';
 }
 
-// ══════════════════════════════════════════════════════════════
-// ACCOUNT MANAGER
-// ══════════════════════════════════════════════════════════════
-let _amAllUsers=[];
-let _amSelectedUser=null;
-
-async function loadAccountManager(){
-  await loadAmUsersTable();
-  await loadAmLog();
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const t = document.getElementById('admin-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
 }
 
-async function loadAmUsersTable(){
-  const tbody=document.getElementById('am-users-table');
-  if(!tbody)return;
-  try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?select=id,name,email,tier,access_expires_at,access_note,cancelled_at&order=created_at.desc`,{headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`}});
-    const users=await res.json();
-    _amAllUsers=Array.isArray(users)?users:[];
-    if(!_amAllUsers.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No users found</td></tr>';return;}
-    tbody.innerHTML=_amAllUsers.map(u=>{
-      const exp=u.access_expires_at?new Date(u.access_expires_at):null;
-      const expired=exp&&exp<new Date();
-      const expText=exp?`<span style="color:${expired?'#c0392b':'#1a7a4a'};font-weight:600">${expired?'⚠️ Expired ':'✅ '}${exp.toLocaleDateString('en-ZA')}</span>`:'<span style="color:var(--muted)">No expiry</span>';
-      const tb={free:'<span style="background:#f3f4f6;color:#374151;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">FREE</span>',pro:'<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">PRO</span>',premium:'<span style="background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700">PREMIUM</span>'}[u.tier||'free']||'';
-      return`<tr style="border-bottom:.5px solid var(--border)">
-        <td style="padding:10px 12px;font-size:13px;font-weight:600">${u.name||'—'}</td>
-        <td style="padding:10px 12px;font-size:12px;color:var(--muted)">${u.email||'—'}</td>
-        <td style="padding:10px 12px">${tb}</td>
-        <td style="padding:10px 12px;font-size:12px">${expText}</td>
-        <td style="padding:10px 12px;font-size:12px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.access_note||'—'}</td>
-        <td style="padding:10px 12px;display:flex;gap:6px">
-          <button onclick="quickGrant('${u.id}','${(u.name||u.email||'').replace(/'/g,"")}')" style="background:var(--green);color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">Grant</button>
-          <button onclick="quickCancel('${u.id}','${(u.name||u.email||'').replace(/'/g,"")}')" style="background:#fee2e2;color:#c0392b;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer">Cancel</button>
-        </td>
+// ── User Detail Panel ─────────────────────────────────────────
+let _panelUserId = null;
+function openUserPanel(userId) {
+  _panelUserId = userId;
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  document.getElementById('panel-name').textContent = u.name || u.email || '—';
+  document.getElementById('panel-meta').textContent =
+    `${tierBadge(u.tier)} · Joined ${ago(u.created_at)} · ${u.life_stage||'—'}`.replace(/<[^>]+>/g,'');
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('user-panel').classList.add('open');
+  renderPanelBody(u);
+}
+
+function closeUserPanel() {
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('user-panel').classList.remove('open');
+  _panelUserId = null;
+}
+
+function renderPanelBody(u) {
+  const userExpenses = allExpenses.filter(e => e.tester_id === u.id);
+  const totalSpend = userExpenses.reduce((s,e) => s+(e.amount||0), 0);
+  const expCount = userExpenses.length;
+  const lastExp = userExpenses[0];
+
+  // Category breakdown
+  const cats = {};
+  userExpenses.forEach(e => { cats[e.category||'Other'] = (cats[e.category||'Other']||0) + (e.amount||0); });
+  const topCats = Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,4);
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="panel-section">
+      <div class="panel-section-title">Overview</div>
+      <div class="panel-stat-row">
+        <div class="panel-stat">
+          <div class="panel-stat-label">Expenses logged</div>
+          <div class="panel-stat-value">${expCount}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Total spend tracked</div>
+          <div class="panel-stat-value">${fmt(totalSpend)}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Monthly income</div>
+          <div class="panel-stat-value">${u.income_amount ? fmt(u.income_amount) : '—'}</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-label">Pay day</div>
+          <div class="panel-stat-value">${u.pay_day ? u.pay_day + (u.pay_day===1?'st':u.pay_day===2?'nd':u.pay_day===3?'rd':'th') : '—'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-section-title">Account details</div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Email</span><span>${u.email||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Phone</span><span>${u.phone||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Referral code</span><span style="font-family:'DM Mono',monospace">${u.referral_code||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Referred by</span><span style="font-family:'DM Mono',monospace">${u.referred_by||u.referral_used||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Life stage</span><span>${u.life_stage_emoji||''} ${u.life_stage||'—'}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Tier</span><span>${tierBadge(u.tier)}</span></div>
+      <div class="panel-exp-row"><span style="color:var(--muted)">Goals</span><span>${(u.goals||[]).join(', ')||'—'}</span></div>
+    </div>
+
+    ${topCats.length ? `
+    <div class="panel-section">
+      <div class="panel-section-title">Top spending categories</div>
+      ${topCats.map(([cat, amt]) => `
+        <div class="panel-exp-row">
+          <span style="color:var(--mid)">${cat}</span>
+          <span style="font-weight:700;font-family:'DM Mono',monospace">${fmt(amt)}</span>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <div class="panel-section">
+      <div class="panel-section-title">Recent expenses (last 5)</div>
+      ${userExpenses.slice(0,5).map(e => `
+        <div class="panel-exp-row">
+          <span>${e.emoji||''} ${e.category||'—'} ${e.note ? '<span style="color:var(--muted);font-size:10px">· '+e.note+'</span>' : ''}</span>
+          <span style="font-family:'DM Mono',monospace;font-weight:700">${fmt(e.amount)}</span>
+        </div>`).join('') || '<div class="empty">No expenses logged yet</div>'}
+    </div>
+  `;
+}
+
+function emailPanelUser() {
+  if (!_panelUserId) return;
+  const u = allUsers.find(x => x.id === _panelUserId);
+  if (!u || !u.email) return showToast('No email address for this user', 'warn');
+  closeUserPanel();
+  // Switch to Email tab and pre-fill
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  showTab('email', document.querySelector('[onclick="showTab(\'email\',this)"]') || {classList:{add:()=>{}}});
+  setTimeout(() => {
+    const subEl = document.getElementById('email-subject');
+    if (subEl) subEl.focus();
+    showToast(`Ready to email ${u.name||u.email}`);
+  }, 300);
+}
+
+// ── Investment Readiness (saveable) ───────────────────────────
+const INVEST_ITEMS = [
+  { key:'invest_cipc',      label:'CIPC registration',              note:'cipc.co.za · R175 · Required before PayFast live' },
+  { key:'invest_trademark', label:'Trademark (Class 36 + 42)',      note:'R1,180 · File after CIPC confirmed' },
+  { key:'invest_payfast',   label:'PayFast account verified',       note:'Awaiting bank verification email' },
+  { key:'invest_tos',       label:'Terms of Service published',     note:'Required before Play Store submission' },
+  { key:'invest_privacy',   label:'Privacy Policy (POPIA) live',   note:'Required before Play Store submission' },
+  { key:'invest_founder',   label:'Co-Founder agreement signed',   note:'Sign before any equity decisions' },
+  { key:'invest_100users',  label:'100 paying users reached',      note:'Recommended minimum before approaching investors' },
+];
+
+async function loadInvestReadiness() {
+  const el = document.getElementById('invest-readiness-rows');
+  if (!el) return;
+  let states = {};
+  try {
+    const rows = await sbGet('app_config?key=like.invest_%25&select=key,value');
+    rows.forEach(r => { states[r.key] = r.value === 'true'; });
+  } catch(e) { /* use defaults */ }
+
+  el.innerHTML = INVEST_ITEMS.map(item => {
+    const done = !!states[item.key];
+    return `<div class="invest-row">
+      <div>
+        <div class="invest-label">${item.label}</div>
+        <div class="invest-note">${item.note}</div>
+      </div>
+      <button class="invest-status ${done?'done':'pending'}"
+        onclick="toggleInvest('${item.key}',this)">${done ? '✅ Done' : '⏳ Pending'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function toggleInvest(key, btn) {
+  const isDone = btn.classList.contains('done');
+  const newVal = !isDone;
+  btn.textContent = newVal ? '✅ Done' : '⏳ Pending';
+  btn.className = 'invest-status ' + (newVal ? 'done' : 'pending');
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value: String(newVal) })
+    });
+    showToast(newVal ? '✅ Marked as done' : 'Marked as pending');
+  } catch(e) { showToast('❌ Save failed', 'error'); }
+}
+
+// ── Email send log (Supabase persistent) ─────────────────────
+async function loadEmailSendLog() {
+  const logEl = document.getElementById('email-log');
+  if (!logEl) return;
+  try {
+    const rows = await sbGet('app_config?key=like.emaillog_%25&select=key,value&order=key.desc&limit=20');
+    if (!rows.length) { logEl.textContent = 'No send history yet.'; return; }
+    logEl.innerHTML = rows.map(r => {
+      let data; try { data = JSON.parse(r.value); } catch(e) { data = { subject: r.value }; }
+      return `<div style="padding:10px;background:var(--bg);border-radius:8px;margin-bottom:8px;font-size:12px">
+        <strong>${data.sent_at ? new Date(data.sent_at).toLocaleString('en-ZA') : '—'}</strong>
+        — "${data.subject||'—'}" → ${data.sent||'?'} sent${data.failed>0?' ('+data.failed+' failed)':''}
+        · <span style="color:var(--muted)">${data.segment||'all'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    logEl.textContent = 'No send history yet.';
+  }
+}
+
+async function logEmailSend(subject, sent, failed, segment) {
+  const key = 'emaillog_' + Date.now();
+  await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ key, value: JSON.stringify({ subject, sent, failed, segment, sent_at: new Date().toISOString() }) })
+  }).catch(() => {});
+}
+
+// ── Load admin config from Supabase on init ───────────────────
+async function loadAdminConfig() {
+  try {
+    const rows = await sbGet('app_config?key=in.(admin_wa_number,admin_email)&select=key,value');
+    rows.forEach(r => {
+      if (r.key === 'admin_wa_number') {
+        const el = document.getElementById('wa-number');
+        if (el && !el.value) el.value = r.value;
+      }
+      if (r.key === 'admin_email') {
+        const el = document.getElementById('email-addr');
+        if (el) el.value = r.value;
+      }
+    });
+  } catch(e) {
+    // fallback to localStorage
+    const wa = localStorage.getItem('rw_wa_number');
+    const em = localStorage.getItem('rw_email');
+    const waEl = document.getElementById('wa-number');
+    const emEl = document.getElementById('email-addr');
+    if (wa && waEl) waEl.value = wa;
+    if (em && emEl) emEl.value = em;
+  }
+}
+
+// ── ACCOUNT MANAGER ───────────────────────────────────────────
+let _acctSelectedUser = null;
+
+function acctSearchUsers(q) {
+  const resultsEl = document.getElementById('acct-results');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const matches = allUsers.filter(u =>
+    (u.name||'').toLowerCase().includes(q.toLowerCase()) ||
+    (u.email||'').toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 8);
+
+  if (!matches.length) { resultsEl.style.display = 'none'; return; }
+  resultsEl.style.display = 'block';
+  resultsEl.innerHTML = matches.map(u => `
+    <div onclick="selectAcctUser('${u.id}')"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--bg2);display:flex;justify-content:space-between;align-items:center"
+      onmouseenter="this.style.background='var(--bg)'" onmouseleave="this.style.background='#fff'">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${u.name||'—'}</div>
+        <div style="font-size:11px;color:var(--muted)">${u.email||'—'}</div>
+      </div>
+      ${tierBadge(u.tier)}
+    </div>`).join('');
+}
+
+function selectAcctUser(id) {
+  _acctSelectedUser = allUsers.find(u => u.id === id);
+  if (!_acctSelectedUser) return;
+  const u = _acctSelectedUser;
+  document.getElementById('acct-search').value = u.name + (u.email ? ' — ' + u.email : '');
+  document.getElementById('acct-results').style.display = 'none';
+  document.getElementById('acct-selected-preview').style.display = 'block';
+  document.getElementById('acct-sel-name').textContent = u.name || u.email || '—';
+  document.getElementById('acct-sel-meta').textContent =
+    `Joined ${ago(u.created_at)} · ${u.life_stage||'—'} · ${u.email||'no email'}`;
+  document.getElementById('acct-sel-badge').innerHTML = tierBadge(u.tier);
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (!e.target.closest('#acct-search') && !e.target.closest('#acct-results')) {
+    const r = document.getElementById('acct-results');
+    if (r) r.style.display = 'none';
+  }
+});
+
+async function applyAccess() {
+  if (!_acctSelectedUser) { showToast('Select a user first', 'warn'); return; }
+  const accessType = document.getElementById('acct-access-type').value;
+  const note = document.getElementById('acct-note').value.trim();
+  const statusEl = document.getElementById('acct-status');
+  const u = _acctSelectedUser;
+
+  // Derive tier and expiry from access type
+  let tier = 'free', accessUntil = null;
+  const now = new Date();
+  if (accessType.startsWith('trial_')) {
+    const days = parseInt(accessType.split('_')[1]);
+    tier = 'pro'; // A "free trial" is a trial of Pro — was incorrectly set to 'free' before, which silently reset any existing Pro grant
+    accessUntil = new Date(now.getTime() + days * 86400000).toISOString();
+  } else if (accessType.startsWith('pro_')) {
+    const months = parseInt(accessType.split('_')[1]);
+    tier = 'pro';
+    accessUntil = new Date(new Date().setMonth(new Date().getMonth() + months)).toISOString();
+  } else if (accessType.startsWith('premium_')) {
+    const months = parseInt(accessType.split('_')[1]);
+    tier = 'premium';
+    accessUntil = new Date(new Date().setMonth(new Date().getMonth() + months)).toISOString();
+  } else if (accessType === 'free') {
+    tier = 'free'; accessUntil = null;
+  } else if (accessType === 'revoke') {
+    tier = 'free'; accessUntil = new Date(0).toISOString();
+  }
+
+  const accessLabel = document.getElementById('acct-access-type').selectedOptions[0].text;
+  const expiryStr = accessUntil && accessType !== 'revoke'
+    ? `\nExpires: ${new Date(accessUntil).toLocaleDateString('en-ZA', {day:'numeric',month:'long',year:'numeric'})}`
+    : '';
+  const prevTier = u.tier || 'free';
+
+  const confirmMsg = `Apply to ${u.name || u.email}?\n\nFrom: ${prevTier.toUpperCase()} → To: ${accessLabel}${expiryStr}${note ? '\nNote: ' + note : ''}`;
+  if (!confirm(confirmMsg)) return;
+
+  statusEl.textContent = 'Applying...'; statusEl.style.color = 'var(--muted)';
+
+  try {
+    const patch = { tier };
+    if (accessUntil !== undefined && accessUntil !== null) patch.access_until = accessUntil;
+    if (note) patch.admin_note = note;
+    // Set converted_at the FIRST time this user moves from free → paid.
+    // Never overwrite it on subsequent renewals — that would reset their
+    // loyalty clock and break the R5/month reward calculation.
+    if (prevTier === 'free' && tier !== 'free' && !u.converted_at) {
+      patch.converted_at = new Date().toISOString();
+    }
+
+    await sbPatch(`${_usersTable}?id=eq.${u.id}`, patch);
+
+    // Log the change
+    const logKey = 'acctlog_' + Date.now();
+    await fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key: logKey, value: JSON.stringify({
+        user_name: u.name, user_email: u.email, user_id: u.id,
+        access_type: accessType, prev_tier: prevTier,
+        tier, note, access_until: accessUntil, changed_at: new Date().toISOString()
+      })})
+    }).catch(()=>{});
+
+    // Send notification email (non-blocking)
+    if (u.email && accessType !== 'free') {
+      sendAccessEmail(u, tier, accessType, accessUntil, accessLabel).catch(()=>{});
+    }
+
+    statusEl.textContent = `✅ ${u.name||u.email} → ${accessLabel} — refreshing...`;
+    statusEl.style.color = 'var(--green)';
+    showToast(`✅ ${u.name} upgraded to ${tier}`);
+    document.getElementById('acct-sel-badge').innerHTML = tierBadge(tier);
+
+    // Reset tier filter on Users tab so the upgraded user is guaranteed visible
+    tierFilter = 'all';
+    document.querySelectorAll('#tier-filters .filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('#tier-filters .filter-btn')?.classList.add('active');
+
+    document.getElementById('acct-search').value = '';
+    document.getElementById('acct-note').value = '';
+    _acctSelectedUser = null;
+    document.getElementById('acct-selected-preview').style.display = 'none';
+
+    // Properly wait for the full refetch before re-rendering Active Grants —
+    // this prevents the table from briefly showing stale data
+    await loadAll();
+    await loadAcctLog();
+    statusEl.textContent = `✅ ${u.name||u.email} → ${accessLabel}`;
+
+  } catch(e) {
+    statusEl.textContent = '❌ Failed: ' + e.message;
+    statusEl.style.color = 'var(--red)';
+    showToast('❌ Apply failed', 'error');
+  }
+}
+
+async function sendAccessEmail(u, tier, accessType, accessUntil, accessLabel) {
+  const isRevoke = accessType === 'revoke';
+  const name = (u.name || 'there').split(' ')[0];
+  const expiryDisplay = accessUntil && !isRevoke
+    ? new Date(accessUntil).toLocaleDateString('en-ZA', {day:'numeric', month:'long', year:'numeric'})
+    : null;
+
+  const tierEmoji = tier === 'premium' ? '👑' : tier === 'pro' ? '⭐' : '🌱';
+  const tierColour = tier === 'premium' ? '#7c3aed' : '#1a5c35';
+
+  const subject = isRevoke
+    ? 'Your MyRandWise access has been updated'
+    : `${tierEmoji} You've been upgraded to ${tier.charAt(0).toUpperCase()+tier.slice(1)}!`;
+
+  const html = isRevoke ? `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:#1a5c35;border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:36px;margin-bottom:8px">🌱</div>
+        <div style="font-size:20px;font-weight:900;color:#fff">Access update</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:4px">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 16px">Hi ${name} 👋</p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+          Your MyRandWise account has been updated to the <strong>Free tier</strong>.
+          You still have full access to core budgeting features.
+        </p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 20px">
+          If you have any questions, reply to this email — we're always happy to help.
+        </p>
+        <a href="https://myrandwise.co.za/app.html" style="display:block;background:#1a5c35;color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700">Open MyRandWise →</a>
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center">🇿🇦 Built in South Africa · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a></p>
+    </div>` : `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f9f9f9">
+      <div style="background:${tierColour};border-radius:16px;padding:28px 24px;text-align:center;margin-bottom:24px">
+        <div style="font-size:40px;margin-bottom:8px">${tierEmoji}</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px">You're on ${tier.charAt(0).toUpperCase()+tier.slice(1)}!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.65)">MyRandWise</div>
+      </div>
+      <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px">
+        <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 12px">Hi ${name} 👋</p>
+        <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 16px">
+          Your account has been upgraded to <strong>${accessLabel.replace(/[⭐👑🌱]/g,'').trim()}</strong>.
+          ${expiryDisplay ? `Your access runs until <strong>${expiryDisplay}</strong>.` : ''}
+        </p>
+        <div style="background:#f0faf4;border-radius:12px;padding:16px;margin-bottom:20px">
+          <div style="font-size:12px;font-weight:700;color:#1a5c35;margin-bottom:8px">What's unlocked:</div>
+          ${tier === 'pro' || tier === 'premium' ? `
+          <div style="font-size:13px;color:#333;line-height:1.8">
+            ✅ Full debt tracker &amp; payoff planner<br>
+            ✅ Goals &amp; savings tracker<br>
+            ✅ Bank statement import<br>
+            ✅ AI spending insights<br>
+            ✅ Debit order tracker<br>
+            ${tier === 'premium' ? '✅ Priority support<br>✅ All future features' : ''}
+          </div>` : ''}
+        </div>
+        <a href="https://myrandwise.co.za/app.html" style="display:block;background:${tierColour};color:#fff;text-decoration:none;border-radius:12px;padding:14px;text-align:center;font-size:15px;font-weight:700">Open MyRandWise →</a>
+      </div>
+      <p style="font-size:11px;color:#999;text-align:center">🇿🇦 Built in South Africa · <a href="mailto:hello@myrandwise.co.za" style="color:#1a5c35;text-decoration:none">hello@myrandwise.co.za</a></p>
+    </div>`;
+
+  await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: 'MyRandWise <hello@myrandwise.co.za>', to: [u.email], subject, html })
+  });
+}
+
+async function revokeAccess(userId) {
+  const u = allUsers.find(x => x.id === userId);
+  if (!u) return;
+  const hadTier = u.tier || 'free';
+  if (hadTier === 'free') { showToast('This user is already on Free tier — nothing to revoke', 'warn'); return; }
+  if (!confirm(`Revoke ${hadTier.toUpperCase()} access for ${u.name||u.email}?\n\nThis will set them back to Free tier immediately.`)) return;
+
+  try {
+    await sbPatch(`${_usersTable}?id=eq.${userId}`, { tier: 'free', access_until: new Date(0).toISOString() });
+
+    // Hard verification — re-fetch this exact row directly from Supabase
+    // (not from cached allUsers) so the confirmation is undeniable.
+    let verified = null;
+    try {
+      const check = await sbGet(`${_usersTable}?id=eq.${userId}&select=id,name,tier`);
+      verified = check && check[0] ? check[0] : null;
+    } catch(e) { /* verification fetch failed, but the PATCH above already succeeded */ }
+
+    sendAccessEmail(u, 'free', 'revoke', null, 'Revoked').catch(()=>{});
+
+    // Log to BOTH the general access-change log AND a dedicated revoked-history log
+    // (separate keys so Active Grants and Revoked History never show the same entry)
+    const now = new Date().toISOString();
+    const logKey = 'acctlog_' + Date.now();
+    const revokeLogKey = 'revokelog_' + Date.now();
+    await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key: logKey, value: JSON.stringify({ user_name: u.name, user_email: u.email, user_id: u.id, access_type: 'revoke', prev_tier: hadTier, tier: 'free', changed_at: now }) })
+      }).catch(()=>{}),
+      fetch(`${SUPABASE_URL}/rest/v1/app_config`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key: revokeLogKey, value: JSON.stringify({
+          user_name: u.name, user_email: u.email, user_id: u.id,
+          had_tier: hadTier, period_start: u.converted_at || u.created_at || null,
+          period_end: u.access_until || null, revoked_at: now
+        }) })
+      }).catch(()=>{})
+    ]);
+
+    if (verified && verified.tier === 'free') {
+      showToast(`✅ Revoked — Supabase confirms ${verified.name||u.email}'s tier is now: free`, 'warn');
+    } else if (verified) {
+      showToast(`⚠️ Revoke sent, but Supabase still shows tier: ${verified.tier} — check Supabase directly`, 'error');
+    } else {
+      showToast(`Access revoked for ${u.name||u.email} (verification check unavailable)`, 'warn');
+    }
+
+    await loadAll();
+    await loadAcctLog();
+    await renderRevokedHistory();
+  } catch(e) { showToast('❌ Revoke failed: ' + e.message, 'error'); }
+}
+
+async function renderRevokedHistory() {
+  const el = document.getElementById('revoked-history-body');
+  if (!el) return;
+  try {
+    const rows = await sbGet('app_config?key=like.revokelog_%25&select=key,value&order=key.desc&limit=20');
+    if (!rows.length) { el.innerHTML = '<tr><td colspan="4" class="empty">No revocations yet</td></tr>'; return; }
+    el.innerHTML = rows.map(r => {
+      let d; try { d = JSON.parse(r.value); } catch(e) { return ''; }
+      const start = d.period_start ? new Date(d.period_start).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const end = d.period_end ? new Date(d.period_end).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      return `<tr>
+        <td><b>${d.user_name||'—'}</b><div style="font-size:10px;color:var(--muted)">${d.user_email||''}</div></td>
+        <td>${tierBadge(d.had_tier)}</td>
+        <td style="font-size:11px;color:var(--mid)">${start} → ${end}</td>
+        <td style="font-size:11px;color:var(--muted)">${d.revoked_at ? ago(d.revoked_at) : '—'}</td>
       </tr>`;
     }).join('');
-  }catch(e){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:#c0392b">Error loading users: ${e.message}</td></tr>`;}
+  } catch(e) {
+    el.innerHTML = '<tr><td colspan="4" class="empty">Could not load revoked history</td></tr>';
+  }
 }
 
-async function loadAmLog(){
-  const el=document.getElementById('am-log');
-  if(!el)return;
-  try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log?select=*&order=created_at.desc&limit=50`,{headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`}});
-    if(res.status===404||res.status===400){
-      el.innerHTML=`<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;font-size:13px">
-        <strong>⚠️ admin_access_log table not created yet.</strong><br>
-        Run this SQL in Supabase → SQL Editor:<br>
-        <code style="display:block;margin-top:8px;background:#fff;padding:10px;border-radius:6px;font-size:11px;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS admin_access_log (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id text, user_name text, user_email text,
-  action_type text, access_type text,
-  expires_at timestamptz, note text, granted_by text,
-  created_at timestamptz DEFAULT now()
-);
-ALTER TABLE admin_access_log ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "admin_full" ON admin_access_log FOR ALL USING (true);</code>
-      </div>`;
-      return;
+function renderActiveGrants() {
+  const el = document.getElementById('active-grants-body');
+  if (!el) return;
+  const now = Date.now();
+  const granted = allUsers
+    .filter(u => u.tier && u.tier !== 'free')
+    .sort((a,b) => new Date(b.access_until||0) - new Date(a.access_until||0));
+
+  // Tier stats
+  const tierCounts = { free: 0, pro: 0, premium: 0 };
+  allUsers.forEach(u => { const t = u.tier||'free'; tierCounts[t] = (tierCounts[t]||0)+1; });
+  const statsEl = document.getElementById('acct-tier-stats');
+  if (statsEl) statsEl.innerHTML = `
+    <span style="color:var(--muted)">Free: <b>${tierCounts.free}</b></span>
+    <span style="color:var(--amber)">· Pro: <b>${tierCounts.pro}</b></span>
+    <span style="color:var(--purple)">· Premium: <b>${tierCounts.premium}</b></span>`;
+
+  const countEl = document.getElementById('active-grants-count');
+  if (countEl) countEl.textContent = granted.length ? `(${granted.length})` : '';
+
+  if (!granted.length) {
+    el.innerHTML = '<tr><td colspan="5" class="empty">No active grants — use Grant / Modify Access above to upgrade a user</td></tr>';
+    return;
+  }
+  el.innerHTML = granted.map(u => {
+    const expiry = u.access_until ? new Date(u.access_until) : null;
+    const expired = expiry && expiry.getTime() < now;
+    const expiring = expiry && !expired && (expiry.getTime() - now) < 7 * 86400000;
+    const expiryDisplay = !expiry ? 'No expiry set'
+      : expired ? '⚠️ Expired'
+      : expiring ? `⚠️ ${expiry.toLocaleDateString('en-ZA',{day:'numeric',month:'short'})}`
+      : expiry.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+    const expiryColor = expired ? 'var(--red)' : expiring ? 'var(--amber)' : 'var(--mid)';
+    return `<tr>
+      <td><b>${u.name||'—'}</b><div style="font-size:10px;color:var(--muted)">${u.email||''}</div></td>
+      <td>${tierBadge(u.tier)}</td>
+      <td style="font-size:12px;color:${expiryColor};font-weight:${expiring||expired?700:400}">${expiryDisplay}</td>
+      <td style="font-size:11px;color:var(--muted)">${u.admin_note||'—'}</td>
+      <td>
+        <button onclick="selectAcctUser('${u.id}')" style="padding:4px 10px;background:var(--green-l);color:var(--green);border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px">Edit</button>
+        <button onclick="revokeAccess('${u.id}')" style="padding:4px 10px;background:#fff0f0;color:var(--red);border:1px solid #fca5a5;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Revoke</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function addNewUser() {
+  const name = document.getElementById('new-user-name').value.trim();
+  const email = document.getElementById('new-user-email').value.trim();
+  const tier = document.getElementById('new-user-tier').value;
+  const months = parseInt(document.getElementById('new-user-months').value) || 0;
+  const statusEl = document.getElementById('new-user-status');
+
+  if (!name || !email) { showToast('Name and email required', 'warn'); return; }
+  if (!email.includes('@')) { showToast('Enter a valid email', 'warn'); return; }
+
+  statusEl.textContent = 'Adding...'; statusEl.style.color = 'var(--muted)';
+
+  const now = new Date();
+  const accessUntil = months > 0
+    ? new Date(now.setMonth(now.getMonth() + months)).toISOString()
+    : null;
+
+  try {
+    const payload = { name, email, tier, created_at: new Date().toISOString() };
+    if (accessUntil) payload.access_until = accessUntil;
+    // If added directly as Pro/Premium, start their loyalty clock immediately
+    if (tier !== 'free') payload.converted_at = new Date().toISOString();
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${_usersTable}`, {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': `Bearer ${SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok || res.status === 201) {
+      statusEl.textContent = `✅ ${name} added as ${tier}`;
+      statusEl.style.color = 'var(--green)';
+      showToast(`✅ ${name} added`);
+      document.getElementById('new-user-name').value = '';
+      document.getElementById('new-user-email').value = '';
+      // Reset tier filter on Users tab so the new user is guaranteed visible
+      tierFilter = 'all';
+      document.querySelectorAll('#tier-filters .filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('#tier-filters .filter-btn')?.classList.add('active');
+      statusEl.textContent = `✅ ${name} added — refreshing...`;
+      await loadAll();
+      statusEl.textContent = `✅ ${name} added as ${tier}`;
+    } else {
+      const err = await res.json();
+      statusEl.textContent = '❌ ' + (err.message || err.code || JSON.stringify(err)).substring(0, 80);
+      statusEl.style.color = 'var(--red)';
     }
-    const logs=await res.json();
-    if(!Array.isArray(logs)||!logs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">No actions logged yet</p>';return;}
-    el.innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+logs.map(l=>`
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 12px;background:var(--surface);border-radius:8px;border:.5px solid var(--border)">
+  } catch(e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = 'var(--red)';
+  }
+}
+
+async function bulkGrant() {
+  const emails = (document.getElementById('bulk-emails').value || '')
+    .split('\n').map(e => e.trim().toLowerCase()).filter(e => e.includes('@'));
+  const statusEl = document.getElementById('bulk-status');
+  if (!emails.length) { showToast('Paste at least one email', 'warn'); return; }
+
+  const accessType = document.getElementById('acct-access-type').value;
+  let tier = accessType.startsWith('pro') || accessType.startsWith('trial') ? 'pro' : accessType.startsWith('premium') ? 'premium' : 'free';
+
+  if (!confirm(`Apply "${document.getElementById('acct-access-type').selectedOptions[0].text}" to ${emails.length} email${emails.length!==1?'s':''}?`)) return;
+
+  statusEl.textContent = 'Processing...';
+  let done = 0, failed = 0;
+
+  for (const email of emails) {
+    const user = allUsers.find(u => (u.email||'').toLowerCase() === email);
+    if (user) {
+      try {
+        const patch = { tier };
+        if (user.tier === 'free' && tier !== 'free' && !user.converted_at) {
+          patch.converted_at = new Date().toISOString();
+        }
+        await sbPatch(`${_usersTable}?id=eq.${user.id}`, patch);
+        done++;
+      } catch(e) { failed++; }
+    } else {
+      failed++; // user not found
+    }
+    statusEl.textContent = `Processing ${done + failed}/${emails.length}...`;
+  }
+
+  statusEl.textContent = `✅ ${done} updated${failed > 0 ? ' · ' + failed + ' not found' : ''} — refreshing...`;
+  showToast(`✅ Bulk grant: ${done} users updated`);
+  document.getElementById('bulk-emails').value = '';
+  await loadAll();
+  statusEl.textContent = `✅ ${done} updated${failed > 0 ? ' · ' + failed + ' not found' : ''}`;
+}
+
+async function loadAcctLog() {
+  const el = document.getElementById('acct-log');
+  if (!el) return;
+  try {
+    const rows = await sbGet('app_config?key=like.acctlog_%25&select=key,value&order=key.desc&limit=15');
+    if (!rows.length) { el.innerHTML = '<div class="empty">No access changes recorded yet.</div>'; return; }
+    el.innerHTML = rows.map(r => {
+      let d; try { d = JSON.parse(r.value); } catch(e) { return ''; }
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bg2)">
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text)">${l.action_type||'grant'} → <strong>${l.user_name||l.user_email||l.user_id||'—'}</strong></div>
-          <div style="font-size:11px;color:var(--muted);margin-top:2px">${l.access_type||''} ${l.expires_at?'· expires '+new Date(l.expires_at).toLocaleDateString('en-ZA'):''} ${l.note?'· '+l.note:''}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${d.user_name||d.user_email||'—'}</div>
+          <div style="font-size:11px;color:var(--muted)">${d.access_type||'—'}${d.note?' · '+d.note:''}</div>
         </div>
-        <div style="font-size:11px;color:var(--muted);white-space:nowrap;margin-left:12px">${new Date(l.created_at).toLocaleString('en-ZA',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
-      </div>`).join('')+'</div>';
-  }catch(e){el.innerHTML=`<p style="color:#c0392b">Log error: ${e.message}</p>`;}
-}
-
-function filterAmUsers(){
-  const q=(document.getElementById('am-user-search')?.value||'').toLowerCase();
-  const dd=document.getElementById('am-user-dropdown');
-  if(!q||!_amAllUsers.length){if(dd)dd.style.display='none';return;}
-  const matches=_amAllUsers.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)).slice(0,8);
-  if(!matches.length){dd.style.display='none';return;}
-  dd.style.display='block';
-  dd.innerHTML=matches.map(u=>`<div onclick="selectAmUser('${u.id}')" style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:.5px solid var(--border)" onmouseover="this.style.background='#f0faf4'" onmouseout="this.style.background=''"><strong>${u.name||'—'}</strong> <span style="color:var(--muted);font-size:11px">${u.email||''}</span><span style="float:right;font-size:11px;background:#f3f4f6;padding:1px 6px;border-radius:4px">${u.tier||'free'}</span></div>`).join('');
-}
-
-function selectAmUser(id){
-  _amSelectedUser=_amAllUsers.find(u=>u.id===id);
-  if(!_amSelectedUser)return;
-  document.getElementById('am-user-search').value=_amSelectedUser.name||_amSelectedUser.email;
-  document.getElementById('am-user-dropdown').style.display='none';
-  const exp=_amSelectedUser.access_expires_at?new Date(_amSelectedUser.access_expires_at).toLocaleDateString('en-ZA'):'No expiry';
-  document.getElementById('am-selected-user').innerHTML=`<span style="color:var(--green);font-weight:600">✅ Selected: ${_amSelectedUser.name||'—'}</span> · ${_amSelectedUser.email} · Tier: <strong>${_amSelectedUser.tier||'free'}</strong> · Expiry: <strong>${exp}</strong>`;
-}
-
-async function _applyAccess(userId,userName,userEmail,accessType,note){
-  const now=new Date();
-  let tier='free',expiresAt=null;
-  if(accessType.startsWith('trial-')){
-    tier='pro'; // admin trial = pro access until expiry date
-    expiresAt=new Date(now.getTime()+parseInt(accessType.split('-')[1])*24*60*60*1000).toISOString();
-  } else if(accessType.startsWith('pro-')||accessType.startsWith('premium-')){
-    const parts=accessType.split('-');
-    tier=parts[0];
-    const exp=new Date(now);exp.setMonth(exp.getMonth()+parseInt(parts[1]));
-    expiresAt=exp.toISOString();
-  } else if(accessType==='cancel-soft'){
-    tier='free';
-    expiresAt=_amAllUsers.find(u=>u.id===userId)?.access_expires_at||null;
-  } else if(accessType==='cancel-immediate'){
-    tier='free';expiresAt=null;
+        <div style="text-align:right">
+          ${tierBadge(d.tier)}
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${d.changed_at ? ago(d.changed_at) : '—'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Could not load access log.</div>';
   }
-  const patch={tier,access_expires_at:expiresAt,access_note:note||null,admin_tier_override:true,cancelled_at:accessType.includes('cancel')?now.toISOString():null};
-  let r=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers?id=eq.${userId}`,{method:'PATCH',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(patch)});
-  if(!r.ok)throw new Error(`Patch failed: ${r.status}`);
-  // Log action — non-fatal if table doesn't exist yet
-  try{
-    await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_id:userId,user_name:userName,user_email:userEmail,action_type:accessType.includes('cancel')?'cancel':'grant',access_type:accessType,expires_at:expiresAt,note:note||null,granted_by:'admin'})});
-  }catch(logErr){console.warn('Access log insert failed (table may not exist yet):',logErr);}
 }
-
-async function applyAccountAccess(){
-  if(!_amSelectedUser){document.getElementById('am-result').innerHTML='<span style="color:#c0392b">⚠️ Select a user first</span>';return;}
-  const accessType=document.getElementById('am-access-type').value;
-  const note=document.getElementById('am-note').value;
-  const res=document.getElementById('am-result');
-  res.innerHTML='Applying...';
-  try{
-    await _applyAccess(_amSelectedUser.id,_amSelectedUser.name||_amSelectedUser.email,_amSelectedUser.email||'',accessType,note);
-    res.innerHTML=`<span style="color:var(--green)">✅ Access applied to ${_amSelectedUser.name||_amSelectedUser.email}</span>`;
-    await loadAmUsersTable();await loadAmLog();
-  }catch(e){res.innerHTML=`<span style="color:#c0392b">❌ ${e.message}</span>`;}
-}
-
-async function quickGrant(userId,userName){
-  const accessType=document.getElementById('am-access-type')?.value||'trial-14';
-  try{
-    const u=_amAllUsers.find(u=>u.id===userId);
-    await _applyAccess(userId,userName,u?.email||'',accessType,'Quick grant');
-    showAdminToast(`✅ ${accessType} granted to ${userName}`);
-    await loadAmUsersTable();await loadAmLog();
-  }catch(e){showAdminToast(`❌ ${e.message}`);}
-}
-
-async function quickCancel(userId,userName){
-  try{
-    const u=_amAllUsers.find(u=>u.id===userId);
-    await _applyAccess(userId,userName,u?.email||'','cancel-immediate','Quick cancel');
-    showAdminToast(`✅ ${userName} downgraded to free`);
-    await loadAmUsersTable();await loadAmLog();
-  }catch(e){showAdminToast(`❌ ${e.message}`);}
-}
-
-async function applyBulkAccess(){
-  const emails=(document.getElementById('am-bulk-emails')?.value||'').split('\n').map(e=>e.trim()).filter(Boolean);
-  const accessType=document.getElementById('am-access-type')?.value||'trial-14';
-  const note=document.getElementById('am-note')?.value||'Bulk grant';
-  const res=document.getElementById('am-bulk-result');
-  if(!emails.length){res.textContent='No emails entered';return;}
-  res.textContent=`Processing ${emails.length} emails...`;
-  let ok=0,notFound=[];
-  for(const email of emails){
-    const u=_amAllUsers.find(u=>(u.email||'').toLowerCase()===email.toLowerCase());
-    if(!u){notFound.push(email);continue;}
-    try{await _applyAccess(u.id,u.name||email,email,accessType,note);ok++;}catch{notFound.push(email);}
-  }
-  res.innerHTML=`<span style="color:var(--green)">✅ ${ok} updated</span>${notFound.length?` · <span style="color:#c0392b">Not found: ${notFound.join(', ')}</span>`:''}`;
-  await loadAmUsersTable();await loadAmLog();
-}
-
-async function addNewUser(){
-  const name=document.getElementById('am-new-name')?.value?.trim();
-  const email=document.getElementById('am-new-email')?.value?.trim();
-  const tier=document.getElementById('am-new-tier')?.value||'free';
-  const months=parseInt(document.getElementById('am-new-months')?.value)||0;
-  const res=document.getElementById('am-add-result');
-  if(!name||!email){res.innerHTML='<span style="color:#c0392b">Name and email required</span>';return;}
-  res.innerHTML='Creating...';
-  try{
-    const now=new Date();
-    const expiresAt=months>0?new Date(now.setMonth(now.getMonth()+months)).toISOString():null;
-    const refCode=name.slice(0,3).toUpperCase()+'-'+Math.random().toString(36).slice(2,6).toUpperCase();
-    let r=await fetch(`${SUPABASE_URL}/rest/v1/beta_testers`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({name,email,tier,access_expires_at:expiresAt,referral_code:refCode,admin_tier_override:true,access_note:'Added by admin'})});
-    if(!r.ok)throw new Error(`Insert failed: ${r.status}`);
-    await fetch(`${SUPABASE_URL}/rest/v1/admin_access_log`,{method:'POST',headers:{'apikey':SUPABASE_ANON,'Authorization':`Bearer ${SUPABASE_ANON}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({user_name:name,user_email:email,action_type:'add_user',access_type:tier+(months?`-${months}mo`:''),expires_at:expiresAt,note:'New user added from admin',granted_by:'admin'})});
-    res.innerHTML=`<span style="color:var(--green)">✅ ${name} added as ${tier}</span>`;
-    document.getElementById('am-new-name').value='';document.getElementById('am-new-email').value='';
-    await loadAmUsersTable();await loadAmLog();
-  }catch(e){res.innerHTML=`<span style="color:#c0392b">❌ ${e.message}</span>`;}
-}
-
-function showAdminToast(msg){
-  const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1a3d2b;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-  t.textContent=msg;document.body.appendChild(t);
-  setTimeout(()=>t.remove(),3000);
-}
-
-// Override showTab to load Account Manager data
-const _origShowTab=showTab;
-showTab=function(t,el){_origShowTab(t,el);if(t==='account')loadAccountManager();};
 
 // ── Init ──────────────────────────────────────────────────────
 loadAll();
+loadAdminConfig();
+loadEmailSendLog();
+loadAcctLog();
 setInterval(loadAll, 60000); // auto-refresh every 60s
 </script>
 </body>
