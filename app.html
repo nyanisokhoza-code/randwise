@@ -1191,58 +1191,7 @@
           </div><!-- /ai-nudge-card -->
 
           <!-- DEBT QUESTION OVERLAY -->
-          <div id="debt-question-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:20px">
-            <div style="background:#fff;border-radius:24px;width:100%;max-width:420px;padding:32px 24px;text-align:center">
-              <div style="font-size:40px;margin-bottom:12px">💳</div>
-              <div style="font-size:20px;font-weight:800;color:#111;margin-bottom:8px">Do you have any debt?</div>
-              <div style="font-size:14px;color:#666;margin-bottom:24px;line-height:1.5">Loans, store accounts, credit cards — adding them helps MyRandWise calculate your real budget.</div>
-              <button onclick="debtQuestionYes()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">Yes — I have debt to add</button>
-              <button onclick="debtQuestionNo()" style="width:100%;padding:13px;background:#f5f5f0;color:#666;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">No debt — I'm debt free 🎉</button>
-            </div>
-          </div><!-- /debt-question-overlay -->
-
-          <!-- DEBT INSTRUCTION OVERLAY -->
-          <div id="debt-instruction-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:20px">
-            <div style="background:#fff;border-radius:24px;width:100%;max-width:420px;padding:32px 24px;text-align:center">
-              <div style="font-size:40px;margin-bottom:12px">📋</div>
-              <div style="font-size:20px;font-weight:800;color:#111;margin-bottom:8px">Add your debts first</div>
-              <div style="font-size:14px;color:#666;margin-bottom:20px;line-height:1.5">Go to the <strong>Debt tab</strong> and add your loans, accounts or credit cards. Then come back to Budget Breakdown to confirm your debt payments.</div>
-              <div style="background:#f0faf4;border-radius:14px;padding:16px;margin-bottom:20px;text-align:left">
-                <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:8px">What to add:</div>
-                <div style="font-size:13px;color:#2c2c2a;line-height:1.8">
-                  ✓ Store accounts (Edgars, Mr Price, etc)<br>
-                  ✓ Personal loans<br>
-                  ✓ Credit cards<br>
-                  ✓ Vehicle finance<br>
-                  ✓ Home loans
-                </div>
-              </div>
-              <button onclick="goToDebtTab()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">Go to Debt tab →</button>
-              <button onclick="document.getElementById('debt-instruction-overlay').style.display='none'" style="width:100%;padding:13px;background:#f5f5f0;color:#666;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">I'll do this later</button>
-            </div>
-          </div><!-- /debt-instruction-overlay -->
-
-          <!-- WEEKLY INSIGHT POPUP OVERLAY -->
-          <div id="nudge-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-end;justify-content:center">
-            <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 32px;max-height:80vh;overflow-y:auto">
-              <div style="text-align:center;padding:12px 0 0"><div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto"></div></div>
-              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0">
-                <div style="font-size:16px;font-weight:800;color:#111">🤖 Weekly Insight</div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <button onclick="refreshAINudge()" id="nudge-refresh-btn" style="background:#f0faf4;border:none;color:#1a5c35;font-size:12px;cursor:pointer;font-weight:700;padding:6px 10px;border-radius:8px">↻ Refresh</button>
-                  <button onclick="minimizeNudgePopup()" style="background:#f5f5f0;border:none;color:#666;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center">−</button>
-                  <button onclick="closeNudgePopup()" style="background:#f5f5f0;border:none;color:#666;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center">×</button>
-                </div>
-              </div>
-              <div id="nudge-body" style="padding:16px 20px">
-                <div style="font-size:15px;color:#1a5c35;line-height:1.7;font-weight:500" id="ai-nudge-text">Analysing your spending patterns...</div>
-                <div style="font-size:11px;color:#5a8a6a;margin-top:12px" id="ai-nudge-date"></div>
-              </div>
-              <div style="padding:0 20px">
-                <button onclick="closeNudgePopup()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">Got it ✓</button>
-              </div>
-            </div>
-          </div><!-- /nudge-overlay -->
+          <!-- /nudge-overlay -->
 
           <!-- SPENDING INSIGHTS -->
           <div style="padding:14px 14px 0">
@@ -1282,7 +1231,7 @@
         </div>
         </div>
       </div>
-    </div>
+    
     <div class="tab-pane" id="tp-profile">
       <div style="padding:calc(var(--st) + 12px) 20px calc(var(--tb,80px) + var(--sb,24px) + 16px);overflow-y:auto;height:100%;-webkit-overflow-scrolling:touch">
         <div style="text-align:center;padding:20px 0 18px">
@@ -1663,7 +1612,56 @@
           </div>
         </div>
       </div>
-    </div>
+    </div></div>
+<div id="debt-question-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:20px">
+            <div style="background:#fff;border-radius:24px;width:100%;max-width:420px;padding:32px 24px;text-align:center">
+              <div style="font-size:40px;margin-bottom:12px">💳</div>
+              <div style="font-size:20px;font-weight:800;color:#111;margin-bottom:8px">Do you have any debt?</div>
+              <div style="font-size:14px;color:#666;margin-bottom:24px;line-height:1.5">Loans, store accounts, credit cards — adding them helps MyRandWise calculate your real budget.</div>
+              <button onclick="debtQuestionYes()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">Yes — I have debt to add</button>
+              <button onclick="debtQuestionNo()" style="width:100%;padding:13px;background:#f5f5f0;color:#666;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">No debt — I'm debt free 🎉</button>
+            </div>
+          </div>
+<div id="debt-instruction-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:8000;align-items:center;justify-content:center;padding:20px">
+            <div style="background:#fff;border-radius:24px;width:100%;max-width:420px;padding:32px 24px;text-align:center">
+              <div style="font-size:40px;margin-bottom:12px">📋</div>
+              <div style="font-size:20px;font-weight:800;color:#111;margin-bottom:8px">Add your debts first</div>
+              <div style="font-size:14px;color:#666;margin-bottom:20px;line-height:1.5">Go to the <strong>Debt tab</strong> and add your loans, accounts or credit cards. Then come back to Budget Breakdown to confirm your debt payments.</div>
+              <div style="background:#f0faf4;border-radius:14px;padding:16px;margin-bottom:20px;text-align:left">
+                <div style="font-size:13px;font-weight:700;color:#1a5c35;margin-bottom:8px">What to add:</div>
+                <div style="font-size:13px;color:#2c2c2a;line-height:1.8">
+                  ✓ Store accounts (Edgars, Mr Price, etc)<br>
+                  ✓ Personal loans<br>
+                  ✓ Credit cards<br>
+                  ✓ Vehicle finance<br>
+                  ✓ Home loans
+                </div>
+              </div>
+              <button onclick="goToDebtTab()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px">Go to Debt tab →</button>
+              <button onclick="document.getElementById('debt-instruction-overlay').style.display='none'" style="width:100%;padding:13px;background:#f5f5f0;color:#666;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit">I'll do this later</button>
+            </div>
+          </div>
+<div id="nudge-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-end;justify-content:center">
+            <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:480px;padding:0 0 32px;max-height:80vh;overflow-y:auto">
+              <div style="text-align:center;padding:12px 0 0"><div style="width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto"></div></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px 0">
+                <div style="font-size:16px;font-weight:800;color:#111">🤖 Weekly Insight</div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button onclick="refreshAINudge()" id="nudge-refresh-btn" style="background:#f0faf4;border:none;color:#1a5c35;font-size:12px;cursor:pointer;font-weight:700;padding:6px 10px;border-radius:8px">↻ Refresh</button>
+                  <button onclick="minimizeNudgePopup()" style="background:#f5f5f0;border:none;color:#666;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center">−</button>
+                  <button onclick="closeNudgePopup()" style="background:#f5f5f0;border:none;color:#666;font-size:18px;cursor:pointer;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center">×</button>
+                </div>
+              </div>
+              <div id="nudge-body" style="padding:16px 20px">
+                <div style="font-size:15px;color:#1a5c35;line-height:1.7;font-weight:500" id="ai-nudge-text">Analysing your spending patterns...</div>
+                <div style="font-size:11px;color:#5a8a6a;margin-top:12px" id="ai-nudge-date"></div>
+              </div>
+              <div style="padding:0 20px">
+                <button onclick="closeNudgePopup()" style="width:100%;padding:14px;background:#1a7a4a;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">Got it ✓</button>
+              </div>
+            </div>
+          </div>
+
 
   </div>
 </div>
