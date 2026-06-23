@@ -110,7 +110,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 .dash-g{font-size:18px;font-weight:800;color:#fff;letter-spacing:-.3px}
 .dash-s{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px}
 .avatar{width:38px;height:38px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
-.dash-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 calc(var(--tb,80px) + var(--sb,24px) + 16px)}
+.dash-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 0 calc(var(--tb,80px) + var(--sb,24px) + 16px)}
 .ring-card{background:var(--w);margin:16px;border-radius:18px;border:.5px solid var(--bd);padding:20px;display:flex;flex-direction:column;align-items:center}
 .ring-wrap{position:relative;width:180px;height:180px;margin-bottom:16px}
 .ring-wrap svg{transform:rotate(-90deg)}
@@ -240,7 +240,7 @@ html,body{height:100%;overflow:hidden;font-family:'Plus Jakarta Sans',sans-serif
 
 /* PC overlay centering */
 @media(min-width:769px){
-  .overlay{display:flex;align-items:center;justify-content:center}
+  .overlay.open{display:flex;align-items:center;justify-content:center}
   #nl-sheet{left:50%;right:auto;transform:translate(-50%,100%);width:100%;max-width:520px}
   #nl-sheet.open{transform:translate(-50%,0)}
 }
