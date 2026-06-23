@@ -1254,21 +1254,17 @@ function doSignOut(){
 }
 
 function confirmSignOut(btn){
-  // Clear all auth + cached data
-  ['rw_user','rw_token','rw_refresh','rw_nudge_dismissed','rw_nudge_cache',
-   'rw_nudge_date','rw_nudge_week','rw_intro_seen'].forEach(k=>localStorage.removeItem(k));
-  user=null; expenses=[]; debts=[];
-  // Remove the confirm dialog
+  // Remove the confirm dialog first
   btn.closest('[style*=fixed]').remove();
-  // Reset splash screen — hide content, show loader state
-  const sc=document.getElementById('splash-content');
-  const sl=document.getElementById('splash-loader');
-  if(sc){sc.style.display='none';sc.style.opacity='0';}
-  if(sl){sl.style.display='flex';}
-  // Stop any body scroll lock
-  document.body.style.overflow='';
-  // Navigate to splash
-  show('splash');
+  // Clear all auth + cached data from BOTH localStorage and sessionStorage
+  ['rw_user','rw_token','rw_refresh','rw_nudge_dismissed','rw_nudge_cache',
+   'rw_nudge_date','rw_nudge_week','rw_intro_seen','rw_pending_auth'].forEach(k=>{
+     localStorage.removeItem(k);
+     sessionStorage.removeItem(k);
+   });
+  user=null; expenses=[]; debts=[];
+  // Force full page reload to clear all DOM state and cached variables
+  window.location.href = window.location.pathname + '?signed_out=1';
 }
 
 // ══ SPENDING INSIGHTS ═══════════════════════════════════════
