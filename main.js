@@ -104,6 +104,60 @@ if(el){
 }
 function togglePass(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'Show':'Hide';}
 
+// ══ SILENT ERROR LOGGER ═════════════════════════════════════
+// Invisible to users. Access via console: getErrors()
+const ERR_KEY = 'rw_err_log';
+const ERR_MAX = 100;
+
+function logErr(src, err, ctx) {
+  const log = JSON.parse(localStorage.getItem(ERR_KEY) || '[]');
+  log.unshift({
+    t: new Date().toISOString(),
+    src: src,
+    msg: err?.message || String(err),
+    stack: err?.stack?.split('\n')?.slice(0,3)?.join(' | ') || '',
+    ctx: ctx || {},
+    url: location.href,
+    line: err?.lineNumber || err?.lineno || 0
+  });
+  if(log.length > ERR_MAX) log.length = ERR_MAX;
+  localStorage.setItem(ERR_KEY, JSON.stringify(log));
+  console.error(`[ERR:${src}]`, err, ctx);
+}
+
+// Wrap functions to auto-catch
+function wrap(fn, name) {
+  return function(...a) {
+    try { return fn.apply(this, a); }
+    catch(e) { logErr(name||fn.name, e, {args:a.length}); throw e; }
+  };
+}
+
+// Auto-wrap on load
+addEventListener('load', () => {
+  ['renderDash','loadExp','loadDebtsPWA','loadGoalsPWA','saveExp','doLogin','doRegister','openDash','switchTab','sbP','sbG']
+    .forEach(n => { if(window[n]) window[n] = wrap(window[n], n); });
+});
+
+// Global catchers
+addEventListener('error', e => logErr('uncaught', e.error||new Error(e.message), {l:e.lineno,c:e.colno}));
+addEventListener('unhandledrejection', e => logErr('promise', e.reason, {}));
+
+// Admin console commands — type in DevTools:
+window.getErrors = () => JSON.parse(localStorage.getItem(ERR_KEY)||'[]');
+window.clearErrors = () => localStorage.removeItem(ERR_KEY);
+window.sendErrors = async () => {
+  const errs = getErrors();
+  if(!errs.length) { console.log('No errors'); return; }
+  const body = errs.map(e => `[${e.t.slice(11,19)}] ${e.src}: ${e.msg}`).join('\n');
+  await sendOwnerAlert('error_dump', {count: errs.length, body, url: location.href});
+  console.log(`Sent ${errs.length} errors to owner`);
+  clearErrors();
+};
+// Usage: getErrors() → see all, sendErrors() → email to you, clearErrors() → wipe
+
+
+
 // ── Onboarding ────────────────────────────────────────────────
 function startOB(){step=1;ob={stage:'',stageEmoji:'',incomeType:'',income:'',incomeFreq:'Monthly',goals:[],name:'',email:'',password:'',referralCode:ob?.referralCode||''};renderStep();}
 function renderStep(){
