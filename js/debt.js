@@ -327,35 +327,7 @@ async function loadDebtsPWA(){
   } catch(e2) { console.error('Accelerator error:', e2); }
 }
 
-function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
 
-  const timelineEl=document.getElementById('debt-free-timeline');
-  const accEl=document.getElementById('payoff-accelerator');
-  const scenEl=document.getElementById('accelerator-scenarios');
-  const splitEl=document.getElementById('split-strategy-text');
-  const bondEl=document.getElementById('bond-score-debt-tab');
-  if(!timelineEl||!accEl||!scenEl)return;
-  if(!debts?.length){timelineEl.style.display='none';accEl.style.display='none';return;}
-
-  // Amortization helpers
-  function calcMonths(balance,minPay,extra,annualRate){
-    if(balance<=0)return 0;
-    const pay=minPay+extra;
-    if(pay<=0)return 600;
-    const r=annualRate/100/12;
-    let bal=balance,m=0;
-    while(bal>0.01&&m<600){bal=bal*(1+r)-pay;if(bal<0)bal=0;m++;}
-    return m;
-  }
-  function calcInterestTotal(balance,minPay,extra,annualRate){
-    if(balance<=0||annualRate<=0)return 0;
-    const pay=minPay+extra;const r=annualRate/100/12;
-    let bal=balance,total=0,m=0;
-    while(bal>0.01&&m<600){const i=bal*r;total+=i;bal=bal+i-pay;if(bal<0)bal=0;m++;}
-    return Math.round(total);
-  }
-  
-// ── Module-level snowball helpers (moved from inside functions to avoid duplicates) ──
 function snowballMonths(debtList,extra){
   const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
   let roll=extra,total=0;
@@ -380,7 +352,6 @@ function snowballInterest(debtList,extra){
     return s+Math.round(total);
   },0);
 }
-
 function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
 
   const timelineEl=document.getElementById('debt-free-timeline');
