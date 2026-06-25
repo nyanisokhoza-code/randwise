@@ -1,3 +1,55 @@
+// ══ SILENT ERROR LOGGER ═════════════════════════════════════
+// Invisible to users. Access via console: getErrors()
+const ERR_KEY = 'rw_err_log';
+const ERR_MAX = 100;
+
+function logErr(src, err, ctx) {
+  const log = JSON.parse(localStorage.getItem(ERR_KEY) || '[]');
+  log.unshift({
+    t: new Date().toISOString(),
+    src: src,
+    msg: err?.message || String(err),
+    stack: err?.stack?.split('\n')?.slice(0,3)?.join(' | ') || '',
+    ctx: ctx || {},
+    url: location.href,
+    line: err?.lineNumber || err?.lineno || 0
+  });
+  if(log.length > ERR_MAX) log.length = ERR_MAX;
+  localStorage.setItem(ERR_KEY, JSON.stringify(log));
+  console.error(`[ERR:${src}]`, err, ctx);
+}
+
+// Wrap functions to auto-catch
+function wrap(fn, name) {
+  return function(...a) {
+    try { return fn.apply(this, a); }
+    catch(e) { logErr(name||fn.name, e, {args:a.length}); throw e; }
+  };
+}
+
+// Auto-wrap on load
+addEventListener('load', () => {
+  ['loadDebtsPWA','renderPayoffAccelerator','openAddGoalPWA','closeAddGoalPWA','calcGoalMonthly','saveGoalPWA','loadGoalsPWA','openAddDebtPWA','saveDebtPWA','calcMashonisa','calcVehicle']
+    .forEach(n => { if(window[n]) window[n] = wrap(window[n], n); });
+});
+
+// Global catchers
+addEventListener('error', e => logErr('uncaught', e.error||new Error(e.message), {l:e.lineno,c:e.colno}));
+addEventListener('unhandledrejection', e => logErr('promise', e.reason, {}));
+
+// Admin console commands — type in DevTools:
+window.getErrors = () => JSON.parse(localStorage.getItem(ERR_KEY)||'[]');
+window.clearErrors = () => localStorage.removeItem(ERR_KEY);
+window.sendErrors = async () => {
+  const errs = getErrors();
+  if(!errs.length) { console.log('No errors'); return; }
+  const body = errs.map(e => `[${e.t.slice(11,19)}] ${e.src}: ${e.msg}`).join('\n');
+  await sendOwnerAlert('error_dump', {count: errs.length, body, url: location.href});
+  console.log(`Sent ${errs.length} errors to owner`);
+  clearErrors();
+};
+// Usage: getErrors() → see all, sendErrors() → email to you, clearErrors() → wipe
+
 
 function openDebitOrders(){
   document.getElementById('debit-orders-sheet').classList.add('open');
@@ -302,22 +354,61 @@ function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
     while(bal>0.01&&m<600){const i=bal*r;total+=i;bal=bal+i-pay;if(bal<0)bal=0;m++;}
     return Math.round(total);
   }
-  function snowballMonths(debtList,extra){
-    const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
-    let roll=extra,total=0;
-    for(const d of sorted){
-      const bal=Number(d.balance||0);
-      const min=Math.max(Number(d.min_payment||0),50);
-      const r=Number(d.interest_rate||0)/100/12;
-      let b=bal,pay=min+roll,m=0;
-      while(b>0.01&&m<600){b=b*(1+r)-pay;if(b<0)b=0;m++;}
-      total+=m;roll+=min;
-    }
-    return total;
+  
+// ── Module-level snowball helpers (moved from inside functions to avoid duplicates) ──
+function snowballMonths(debtList,extra){
+  const sorted=[...debtList].sort((a,b)=>Number(a.balance)-Number(b.balance));
+  let roll=extra,total=0;
+  for(const d of sorted){
+    const bal=Number(d.balance||0);
+    const min=Math.max(Number(d.min_payment||0),50);
+    const r=Number(d.interest_rate||0)/100/12;
+    let b=bal,pay=min+roll,m=0;
+    while(b>0.01&&m<600){b=b*(1+r)-pay;if(b<0)b=0;m++;}
+    total+=m;roll+=min;
   }
-  function snowballInterest(debtList,extra){
-    return debtList.reduce((s,d)=>s+calcInterestTotal(Number(d.balance||0),Math.max(Number(d.min_payment||0),50),extra,Number(d.interest_rate||0)),0);
+  return total;
+}
+function snowballInterest(debtList,extra){
+  return debtList.reduce((s,d)=>{
+    const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);
+    const rate=Number(d.interest_rate||0)||20;
+    const r=rate/100/12;
+    if(bal<=0)return s;
+    const pay=min+extra;let b=bal,total=0,m=0;
+    while(b>0.01&&m<600){const i=b*r;total+=i;b=b+i-pay;if(b<0)b=0;m++;}
+    return s+Math.round(total);
+  },0);
+}
+
+function renderPayoffAccelerator(debts, totalOwed, totalMin, inc){
+
+  const timelineEl=document.getElementById('debt-free-timeline');
+  const accEl=document.getElementById('payoff-accelerator');
+  const scenEl=document.getElementById('accelerator-scenarios');
+  const splitEl=document.getElementById('split-strategy-text');
+  const bondEl=document.getElementById('bond-score-debt-tab');
+  if(!timelineEl||!accEl||!scenEl)return;
+  if(!debts?.length){timelineEl.style.display='none';accEl.style.display='none';return;}
+
+  // Amortization helpers
+  function calcMonths(balance,minPay,extra,annualRate){
+    if(balance<=0)return 0;
+    const pay=minPay+extra;
+    if(pay<=0)return 600;
+    const r=annualRate/100/12;
+    let bal=balance,m=0;
+    while(bal>0.01&&m<600){bal=bal*(1+r)-pay;if(bal<0)bal=0;m++;}
+    return m;
   }
+  function calcInterestTotal(balance,minPay,extra,annualRate){
+    if(balance<=0||annualRate<=0)return 0;
+    const pay=minPay+extra;const r=annualRate/100/12;
+    let bal=balance,total=0,m=0;
+    while(bal>0.01&&m<600){const i=bal*r;total+=i;bal=bal+i-pay;if(bal<0)bal=0;m++;}
+    return Math.round(total);
+  }
+  
 
   // Split debts: asset-backed vs unsecured
   const ASSET_CATS=['Vehicle','vehicle','Bond/Home loan','bond','home loan','mortgage'];
@@ -493,28 +584,7 @@ function updateAccelerator(extra,debts){
     return Math.max(0,inc-totalMin-needsTotal);
   })();
 
-  function snowballMonths(dl,ex){
-    const sorted=[...dl].sort((a,b)=>Number(a.balance)-Number(b.balance));
-    let roll=ex,total=0;
-    for(const d of sorted){
-      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);const r=Number(d.interest_rate||0)/100/12;
-      let b=bal,pay=min+roll,m=0;
-      while(b>0.01&&m<600){b=b*(1+r)-pay;if(b<0)b=0;m++;}
-      total+=m;roll+=min;
-    }
-    return total;
-  }
-  function snowballInterest(dl,ex){
-    return dl.reduce((s,d)=>{
-      const bal=Number(d.balance||0);const min=Math.max(Number(d.min_payment||0),50);
-      const rate=Number(d.interest_rate||0)||20; // default 20% if no rate set
-      const r=rate/100/12;
-      if(bal<=0)return s;
-      const pay=min+ex;let b=bal,total=0,m=0;
-      while(b>0.01&&m<600){const i=b*r;total+=i;b=b+i-pay;if(b<0)b=0;m++;}
-      return s+Math.round(total);
-    },0);
-  }
+  
 
   const storeMonths=storeDebts.length?snowballMonths(storeDebts,extra):0;
   const storeMonthsBase=storeDebts.length?snowballMonths(storeDebts,0):0;
@@ -1003,20 +1073,28 @@ async function saveDebtPWA(){
 // ── Goals PWA ─────────────────────────────────────────────────
 // ── SAVINGS GOALS — missing functions ────────────────────────
 function openAddGoalPWA(){
-  // Clear form
-  document.getElementById('goal-target').value='';
-  document.getElementById('goal-date').value='';
-  document.getElementById('goal-saved').value='0';
-  document.getElementById('goal-monthly-hint').textContent='';
+  // Clear form — with null checks
+  const targetEl = document.getElementById('goal-target');
+  if(targetEl) targetEl.value='';
+  const dateEl = document.getElementById('goal-date');
+  if(dateEl) dateEl.value='';
+  const savedEl = document.getElementById('goal-saved');
+  if(savedEl) savedEl.value='0';
+  const hintEl = document.getElementById('goal-monthly-hint');
+  if(hintEl) hintEl.textContent='';
   // Reset chips — first chip active by default
   document.querySelectorAll('.goal-chip').forEach((c,i)=>c.classList.toggle('act',i===0));
-  document.getElementById('add-goal-sheet').classList.add('open');
-  document.getElementById('add-goal-ov').classList.add('open');
+  const sheet = document.getElementById('add-goal-sheet');
+  if(sheet) sheet.classList.add('open');
+  const ov = document.getElementById('add-goal-ov');
+  if(ov) ov.classList.add('open');
 }
 
 function closeAddGoalPWA(){
-  document.getElementById('add-goal-sheet').classList.remove('open');
-  document.getElementById('add-goal-ov').classList.remove('open');
+  const sheet = document.getElementById('add-goal-sheet');
+  if(sheet) sheet.classList.remove('open');
+  const ov = document.getElementById('add-goal-ov');
+  if(ov) ov.classList.remove('open');
 }
 
 function selectGoalChip(el, emoji, name){
