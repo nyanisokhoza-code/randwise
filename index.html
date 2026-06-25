@@ -52,6 +52,16 @@ nav.scrolled{box-shadow:0 2px 24px rgba(0,0,0,.09)}
 .nr a{text-decoration:none;color:var(--m);font-size:13px;font-weight:600;transition:color .2s}
 .nr a:hover{color:var(--g)}
 .nb{background:var(--g);color:var(--w)!important;padding:9px 20px;border-radius:10px;font-weight:700!important;font-size:13px!important;transition:all .2s!important}
+.ndd{position:relative;cursor:pointer}
+.ndd>span{display:flex;align-items:center;gap:4px;color:var(--m);font-size:13px;font-weight:600}
+.ndd>span:hover{color:var(--g)}
+.ndd-arrow{font-size:9px;transition:transform .2s}
+.ndd:hover .ndd-arrow{transform:rotate(180deg)}
+.ndd-menu{position:absolute;top:100%;left:50%;transform:translateX(-50%) translateY(6px);background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.12);padding:22px 8px 8px;margin-top:-8px;min-width:220px;opacity:0;visibility:hidden;transition:opacity .18s,transform .18s;z-index:200}
+.ndd:hover .ndd-menu{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.ndd-menu a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:var(--t)!important;font-size:13px!important;font-weight:600!important;text-decoration:none;transition:background .15s}
+.ndd-menu a:hover{background:var(--bg)}
+.ndi{font-size:16px;width:20px;text-align:center;flex-shrink:0}
 .nb:hover{background:var(--gd)!important;transform:translateY(-1px)}
 
 /* ── HERO ── */
@@ -359,12 +369,19 @@ footer{background:#061f0f;padding:36px 24px 20px}
   <div class="nr" id="nrm">
     <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
-    <a href="#referral">Referral</a>
+    <div class="ndd">
+      <span>Free tools <span class="ndd-arrow">▾</span></span>
+      <div class="ndd-menu">
+        <a href="pages/randwise-dashboard.html"><span class="ndi">📊</span> Spending demo</a>
+        <a href="pages/car-buffer.html"><span class="ndi">🚗</span> Car buffer calculator</a>
+        <a href="pages/randwise-tools-widget.html"><span class="ndi">🧮</span> Budget tools</a>
+        <a href="pages/randwise-referral.html"><span class="ndi">🎁</span> Refer &amp; earn</a>
+      </div>
+    </div>
     <a href="#faq">FAQ</a>
-    <a href="pages/randwise-tools-widget.html">Tools</a>
     <a href="pages/about.html">About</a>
     <a href="pages/partners.html">Partners</a>
-    <a href="app.html" class="nb">Open App →</a>
+    <a href="https://myrandwise.co.za/app.html" class="nb">Open App →</a>
   </div>
 </nav>
 
@@ -683,13 +700,8 @@ footer{background:#061f0f;padding:36px 24px 20px}
         <div class="ftag">Your money, your rules. 🇿🇦</div>
       </div>
       <div class="flinks">
-        <a href="app.html">Open App</a>
+        <a href="https://myrandwise.co.za/app.html">Open App</a>
         <a href="/MyRandWise.apk">Download APK</a>
-        <a href="pages/randwise-tools-widget.html">Tools</a>
-        <a href="pages/randwise-dashboard.html">Spending Demo</a>
-        <a href="pages/randwise-referral.html">Refer & Earn</a>
-        <a href="pages/randwise-blog-template.html">Blog</a>
-        <a href="pages/car-buffer.html">Car Buffer</a>
         <a href="pages/about.html">About</a>
         <a href="pages/partners.html">Partners</a>
         <a href="pages/terms.html">Terms</a>
@@ -716,7 +728,7 @@ function toggleMenu(){
   if(!mob){
     mob=document.createElement('div');
     mob.id='nmob';mob.className='nmob';
-    mob.innerHTML='<a href="#features" onclick="toggleMenu()">Features</a><a href="#pricing" onclick="toggleMenu()">Pricing</a><a href="#referral" onclick="toggleMenu()">Referral</a><a href="#faq" onclick="toggleMenu()">FAQ</a><a href="pages/randwise-tools-widget.html">Tools</a><a href="pages/about.html">About</a><a href="pages/partners.html">Partners</a><a href="app.html" class="nb">Open App →</a>';
+    mob.innerHTML='<a href="#features" onclick="toggleMenu()">Features</a><a href="#pricing" onclick="toggleMenu()">Pricing</a><a href="#faq" onclick="toggleMenu()">FAQ</a><div style="font-size:11px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 4px;">Free tools</div><a href="pages/randwise-dashboard.html">📊 Spending demo</a><a href="pages/car-buffer.html">🚗 Car buffer</a><a href="pages/randwise-tools-widget.html">🧮 Budget tools</a><a href="pages/randwise-referral.html">🎁 Refer &amp; earn</a><div style="height:1px;background:rgba(0,0,0,.06);margin:14px 0;"></div><a href="pages/about.html">About</a><a href="pages/partners.html">Partners</a><a href="https://myrandwise.co.za/app.html" class="nb">Open App →</a>';
     document.body.appendChild(mob);
   }
   btn.classList.toggle('open');
