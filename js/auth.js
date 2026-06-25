@@ -118,10 +118,15 @@ async function doRegister(){
       throw new Error(msg||'Sign up failed');
     }
     const authId=auth.user?.id;
-    // Store token immediately after signup so user is logged in right away
+    // DON'T store token yet — wait for OTP verification
+    // Store pending auth data only (sessionStorage = cleared on tab close)
     if(auth.access_token){
-      localStorage.setItem('rw_token',auth.access_token);
-      if(auth.refresh_token)localStorage.setItem('rw_refresh',auth.refresh_token);
+      sessionStorage.setItem('rw_pending_auth',JSON.stringify({
+        access_token:auth.access_token,
+        refresh_token:auth.refresh_token||null,
+        user_id:authId,
+        email:ob.email.trim().toLowerCase()
+      }));
     }
     // 2. Create profile
     const a=parseFloat(ob.income)||0;
@@ -302,3 +307,59 @@ async function handleForgot(){
 function showErr(id,msg){const el=document.getElementById(id);el.style.display='block';el.textContent=msg;}
 function hideErr(id){document.getElementById(id).style.display='none';}
 
+
+
+// ── OTP Verification Gate ─────────────────────────────────────
+// Prevents auto-login without email verification
+async function verifyOtpAndLogin(){
+  const pending = JSON.parse(sessionStorage.getItem('rw_pending_auth')||'null');
+  if(!pending){
+    showErr('otp-err','Session expired. Please sign up again.');
+    setTimeout(()=>show('splash'),2000);
+    return;
+  }
+  // Check if email is actually confirmed
+  try{
+    const { data: { user: u }, error } = await supabase.auth.getUser(pending.access_token);
+    if(error || !u){
+      showErr('otp-err','Invalid session. Please sign up again.');
+      return;
+    }
+    if(!u.email_confirmed_at){
+      showErr('otp-err','Email not verified yet. Check your inbox and click the confirmation link.');
+      return;
+    }
+    // NOW it's safe to store the token
+    localStorage.setItem('rw_token',pending.access_token);
+    if(pending.refresh_token) localStorage.setItem('rw_refresh',pending.refresh_token);
+    sessionStorage.removeItem('rw_pending_auth');
+
+    // Load user profile and proceed to dashboard
+    const rows = await sbG(`beta_testers?auth_id=eq.${u.id}&limit=1&select=*`);
+    if(rows?.length){
+      user = rows[0];
+      localStorage.setItem('rw_user',JSON.stringify(user));
+    }
+    show('main');
+    try{setTimeout(showIntro,400);}catch(ex){}
+    setTimeout(checkPhonePopup, 1500);
+  }catch(e){
+    showErr('otp-err','Verification failed: '+(e.message||'Please try again'));
+  }
+}
+
+function resendOtp(){
+  const pending = JSON.parse(sessionStorage.getItem('rw_pending_auth')||'null');
+  if(!pending?.email){
+    showErr('otp-err','No pending verification. Please sign up again.');
+    return;
+  }
+  supabase.auth.resend({
+    type: 'signup',
+    email: pending.email
+  }).then(()=>{
+    showToast('Verification email resent. Check your inbox.');
+  }).catch(err=>{
+    showErr('otp-err','Could not resend: '+(err.message||'Unknown error'));
+  });
+}
