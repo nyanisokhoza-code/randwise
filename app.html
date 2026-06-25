@@ -3,7 +3,7 @@
 <head>
   <!-- cache-bust v4: force fresh JS load -->
   <!-- ── Auth redirect: must run before page paint ── -->
-  <script src="js/auth-redirect.js?v=4"></script>
+  <script src="js/auth-redirect.js?v=5"></script>
 
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -23,10 +23,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- ── App styles ── -->
-  <link rel="stylesheet" href="css/app.css?v=4">
+  <link rel="stylesheet" href="css/app.css?v=5">
 
   <!-- ── Service worker registration ── -->
-  <script src="js/sw-init.js?v=4"></script>
+  <script src="js/sw-init.js?v=5"></script>
 </head>
 <body>
 <!-- ══ FORCED UPDATE SCREEN ══════════════════════════════════ -->
@@ -1932,6 +1932,7 @@
     <div style="font-size:12px;color:var(--gd);font-weight:600;margin-bottom:4px">💡 Your savings plan</div>
     <div style="font-size:15px;font-weight:800;color:var(--g)" id="goal-calc-amount">R0/mo</div>
     <div style="font-size:11px;color:var(--g);margin-top:3px" id="goal-calc-desc">to reach your goal</div>
+    <div style="font-size:11px;color:var(--mu);margin-top:6px" id="goal-monthly-hint"></div>
   </div>
   <button id="goal-save-btn" onclick="saveGoalPWA()" style="width:100%;background:var(--g);color:#fff;border:none;border-radius:14px;padding:16px;font-size:15px;font-weight:700;cursor:pointer">Save goal</button>
   <button onclick="closeAddGoalPWA()" style="width:100%;background:none;border:none;color:var(--mu);font-size:13px;margin-top:10px;cursor:pointer">Cancel</button>
@@ -2358,17 +2359,17 @@
 
 
 <!-- ══ App scripts — load order matters ══ -->
-<script src="js/supabase.js?v=4"></script>
-<script src="js/auth.js?v=4"></script>
-<script src="js/dashboard.js?v=4"></script>
-<script src="js/transactions.js?v=4"></script>
-<script src="js/debt.js?v=4"></script>
-<script src="js/notifications.js?v=4"></script>
-<script src="js/social.js?v=4"></script>
-<script src="js/lock.js?v=4"></script>
-<script src="js/planner.js?v=4"></script>
-<script src="js/features.js?v=4"></script>
-<script src="js/init.js?v=4"></script>
+<script src="js/supabase.js?v=5"></script>
+<script src="js/auth.js?v=5"></script>
+<script src="js/dashboard.js?v=5"></script>
+<script src="js/transactions.js?v=5"></script>
+<script src="js/debt.js?v=5"></script>
+<script src="js/notifications.js?v=5"></script>
+<script src="js/social.js?v=5"></script>
+<script src="js/lock.js?v=5"></script>
+<script src="js/planner.js?v=5"></script>
+<script src="js/features.js?v=5"></script>
+<script src="js/init.js?v=5"></script>
 
   <!-- Reset Password Screen -->
   
@@ -2456,5 +2457,3 @@
 
 </body>
 </html>
-
-<!-- force rebuild -->
