@@ -19,32 +19,30 @@
   <strong>Business Portal:</strong> This page contains company information for partners, insurers, investors, and regulatory bodies. <a href="about.html">General info →</a>
 </div>
 
-<nav class="navbar" id="navbar">
-  <div class="nav-container">
-    <a href="../index.html" class="logo">
-      <span class="logo-icon">🌱</span>
-      <span class="logo-text">MyRandWise</span>
-    </a>
-    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
-      <span></span><span></span><span></span>
-    </button>
-    <ul class="nav-menu" id="navMenu">
-      <li><a href="../index.html">Home</a></li>
-      <li><a href="about.html">About</a></li>
-      <li><a href="partners.html" class="active">Partners</a></li>
-            <li class="ndd" style="position:relative;">
-        <span style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;">Free tools <span style="font-size:9px;">▾</span></span>
-        <ul class="ndd-menu" style="position:absolute;top:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid rgba(0,0,0,.06);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.12);padding:20px 8px 8px;margin:-8px 0 0;min-width:210px;list-style:none;opacity:0;visibility:hidden;transition:opacity .18s;z-index:200;">
-          <li><a href="randwise-dashboard.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;">📊 Spending demo</a></li>
-          <li><a href="car-buffer.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;">🚗 Car buffer calculator</a></li>
-          <li><a href="randwise-tools-widget.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;">🧮 Budget tools</a></li>
-          <li><a href="randwise-referral.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;font-size:13px;font-weight:600;">🎁 Refer &amp; earn</a></li>
-        </ul>
-      </li>
-      <li><a href="../index.html#features">Features</a></li>
-      <li><a href="../index.html#pricing">Pricing</a></li>
-      <li><a href="../index.html#contact">Contact</a></li>
-    </ul>
+<nav id="nav">
+  <a href="../index.html" class="nl">
+    <div class="nli">🌱</div>
+    <span class="nlt">MyRandWise</span>
+  </a>
+  <button class="nh" id="nh" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="nr" id="nrm">
+    <a href="../index.html#features">Features</a>
+    <a href="../index.html#pricing">Pricing</a>
+    <div class="ndd">
+      <span>Free tools <span class="ndd-arrow">▾</span></span>
+      <div class="ndd-menu">
+        <a href="randwise-dashboard.html"><span class="ndi">📊</span> Spending demo</a>
+        <a href="car-buffer.html"><span class="ndi">🚗</span> Car buffer calculator</a>
+        <a href="randwise-tools-widget.html"><span class="ndi">🧮</span> Budget tools</a>
+        <a href="randwise-referral.html"><span class="ndi">🎁</span> Refer &amp; earn</a>
+      </div>
+    </div>
+    <a href="../index.html#faq">FAQ</a>
+    <a href="about.html">About</a>
+    <a href="partners.html">Partners</a>
+    <a href="https://myrandwise.co.za/app.html" class="nb">Open App →</a>
   </div>
 </nav>
 
@@ -338,32 +336,35 @@
 </footer>
 
 <script>
-const mobileToggle = document.getElementById('mobileToggle');
-const navMenu = document.getElementById('navMenu');
-if(mobileToggle && navMenu){
-  mobileToggle.addEventListener('click', function(){
-    navMenu.classList.toggle('active');
-    const spans = mobileToggle.querySelectorAll('span');
-    if(navMenu.classList.contains('active')){
-      spans[0].style.transform = 'rotate(45deg) translate(5px,5px)';
-      spans[1].style.opacity = '0';
-      spans[2].style.transform = 'rotate(-45deg) translate(5px,-5px)';
-    } else {
-      spans[0].style.transform = 'none';
-      spans[1].style.opacity = '1';
-      spans[2].style.transform = 'none';
-    }
-  });
-  navMenu.querySelectorAll('a').forEach(link => {
-    link.addEventListener('click', () => {
-      navMenu.classList.remove('active');
-      const spans = mobileToggle.querySelectorAll('span');
-      spans[0].style.transform = 'none';
-      spans[1].style.opacity = '1';
-      spans[2].style.transform = 'none';
-    });
-  });
+function toggleMenu(){
+  const btn=document.getElementById('nh');
+  let mob=document.getElementById('nmob');
+  if(!mob){
+    mob=document.createElement('div');
+    mob.id='nmob';mob.className='nmob';
+    mob.innerHTML='<a href="../index.html#features" onclick="toggleMenu()">Features</a><a href="../index.html#pricing" onclick="toggleMenu()">Pricing</a><a href="../index.html#faq" onclick="toggleMenu()">FAQ</a><div style="font-size:11px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin:14px 0 4px;">Free tools</div><a href="randwise-dashboard.html">📊 Spending demo</a><a href="car-buffer.html">🚗 Car buffer</a><a href="randwise-tools-widget.html">🧮 Budget tools</a><a href="randwise-referral.html">🎁 Refer &amp; earn</a><div style="height:1px;background:rgba(0,0,0,.06);margin:14px 0;"></div><a href="about.html">About</a><a href="partners.html">Partners</a><a href="https://myrandwise.co.za/app.html" class="nb">Open App →</a>';
+    document.body.appendChild(mob);
+  }
+  btn.classList.toggle('open');
+  mob.classList.toggle('open');
+  document.body.style.overflow=mob.classList.contains('open')?'hidden':'';
 }
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>600){
+    const mob=document.getElementById('nmob');
+    const btn=document.getElementById('nh');
+    if(mob&&mob.classList.contains('open')){
+      mob.classList.remove('open');
+      btn&&btn.classList.remove('open');
+      document.body.style.overflow='';
+    }
+  }
+});
+// Navbar scroll effect
+window.addEventListener('scroll',()=>{
+  const nav=document.getElementById('nav');
+  if(nav) nav.classList.toggle('scrolled',window.scrollY>30);
+});
 </script>
 
 </body>
