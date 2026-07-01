@@ -938,6 +938,35 @@
         </div>
         <div style="display:flex;gap:4px" id="sparkline-labels"></div>
       </div>
+      
+      <!-- ── PENDING DELETIONS ─────────────────────────────────────────────── -->
+      <div class="card" id="deletion-card" style="margin-bottom:20px;border:1.5px solid #fdecea;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="card-title" style="margin-bottom:2px;color:#a32d2d">⚠️ Pending Deletions <span id="deletion-count" style="font-size:12px;font-weight:600;background:#fdecea;color:#a32d2d;padding:2px 8px;border-radius:20px;margin-left:6px"></span></div>
+            <div style="font-size:12px;color:#888">Accounts scheduled for permanent deletion · 30-day grace period</div>
+          </div>
+          <button onclick="purgeExpiredAccounts()" id="purge-btn"
+            style="padding:8px 16px;background:#a32d2d;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer">
+            🗑️ Purge Expired
+          </button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Requested</th>
+              <th>Purge date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="deletion-table-body">
+            <tr><td colspan="5" style="text-align:center;color:#888;padding:16px">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="grid2">
         <div class="card">
           <div class="card-title">Recent Registrations <span id="reg-count"></span></div>
@@ -1629,11 +1658,11 @@
               <option value="pro">Pro users only</option>
               <option value="trial">Trial users (active)</option>
               <option value="inactive">Inactive (7+ days)</option>
-              <option value="custom">✏️ Custom email (testing)</option>
+              <option value="custom">✏️ Custom email</option>
             </select>
             <input id="email-custom-input" type="text" placeholder="your@email.com, another@email.com"
               style="display:none;width:100%;padding:10px;border:1px solid #1a7a4a;border-radius:8px;font-size:13px;background:#f0faf4;margin-top:8px;box-sizing:border-box">
-            <div id="email-custom-hint" style="display:none;font-size:11px;color:var(--muted);margin-top:4px">Comma-separate multiple addresses. Sends with your real name, not "Thandi".</div>
+            <div id="email-custom-hint" style="display:none;font-size:11px;color:var(--muted);margin-top:4px">Comma-separate multiple addresses. Sends with your real name. Use {name} in subject/body — replaced with "there" for custom addresses.</div>
           </div>
           <div>
             <label style="font-size:12px;font-weight:600;color:#666;display:block;margin-bottom:6px">From name</label>
@@ -2122,9 +2151,10 @@ async function sendEmailCampaign() {
     let sent = 0, failed = 0;
     for (const email of emails) {
       const personalBody = body.replace(/\{name\}/g, 'there');
+      const personalSubject = subject.replace(/\{name\}/g, 'there');
       const html = wrapCampaignHtml(personalBody, link || null);
       try {
-        await sendViaEdge({ from: fromName + ' <hello@myrandwise.co.za>', to: [email], subject, html });
+        await sendViaEdge({ from: fromName + ' <hello@myrandwise.co.za>', to: [email], subject: personalSubject, html });
         sent++;
       } catch(e) { failed++; }
     }
@@ -2231,6 +2261,7 @@ function tierBadge(t) {
 
 // ── Load all data ──────────────────────────────────────────────
 async function loadAll() {
+  loadPendingDeletions();
   const updEl = document.getElementById('last-updated');
   updEl.textContent = 'Loading...';
 
@@ -4156,6 +4187,101 @@ loadAdminConfig();
 loadEmailSendLog();
 loadAcctLog();
 setInterval(loadAll, 60000); // auto-refresh every 60s
+
+// ── Pending Deletions ────────────────────────────────────────────────────────
+async function loadPendingDeletions() {
+  try {
+    const rows = await sbFetch(
+      _usersTable + '?select=id,name,email,deletion_requested_at,status' +
+      '&status=eq.pending_deletion&order=deletion_requested_at.asc'
+    );
+    const card  = document.getElementById('deletion-card');
+    const tbody = document.getElementById('deletion-table-body');
+    const count = document.getElementById('deletion-count');
+
+    if (!rows || rows.length === 0) {
+      card.style.display = 'none';
+      return;
+    }
+
+    card.style.display = 'block';
+    count.textContent  = rows.length;
+
+    const now = new Date();
+    tbody.innerHTML = rows.map(u => {
+      const requested  = new Date(u.deletion_requested_at);
+      const purgeDate  = new Date(requested.getTime() + 30 * 86400000);
+      const daysLeft   = Math.ceil((purgeDate - now) / 86400000);
+      const expired    = daysLeft <= 0;
+      const urgentCol  = expired ? '#a32d2d' : daysLeft <= 7 ? '#ba7517' : '#1a7a4a';
+      const statusText = expired ? '🔴 Expired — ready to purge' : daysLeft <= 7 ? `⚠️ ${daysLeft}d left` : `🟡 ${daysLeft}d left`;
+      return \`<tr>
+        <td style="font-weight:600">\${u.name || '—'}</td>
+        <td style="color:#666;font-size:12px">\${u.email || '—'}</td>
+        <td style="font-size:12px;color:#888">\${requested.toLocaleDateString('en-ZA')}</td>
+        <td style="font-size:12px;font-weight:600;color:\${urgentCol}">\${purgeDate.toLocaleDateString('en-ZA')}</td>
+        <td style="font-size:12px;font-weight:600;color:\${urgentCol}">\${statusText}</td>
+      </tr>\`;
+    }).join('');
+  } catch(e) {
+    console.warn('loadPendingDeletions error:', e);
+  }
+}
+
+async function purgeExpiredAccounts() {
+  const btn = document.getElementById('purge-btn');
+  try {
+    // Find expired users (past 30-day grace period)
+    const rows = await sbFetch(
+      _usersTable + '?select=id,name,email,auth_id,deletion_requested_at' +
+      '&status=eq.pending_deletion'
+    );
+    if (!rows || !rows.length) { showToast('No pending deletions found', 'warn'); return; }
+
+    const now     = new Date();
+    const expired = rows.filter(u => {
+      const purgeDate = new Date(new Date(u.deletion_requested_at).getTime() + 30 * 86400000);
+      return purgeDate <= now;
+    });
+
+    if (!expired.length) {
+      showToast('No accounts have passed the 30-day grace period yet', 'warn');
+      return;
+    }
+
+    const ok = confirm(
+      \`Permanently delete \${expired.length} account\${expired.length !== 1 ? 's' : ''}?\n\n\` +
+      expired.map(u => \`• \${u.name || u.email}\`).join('\n') +
+      '\n\nThis CANNOT be undone.'
+    );
+    if (!ok) return;
+
+    btn.disabled    = true;
+    btn.textContent = '⏳ Purging...';
+
+    let purged = 0, failed = 0;
+    for (const u of expired) {
+      try {
+        // Hard-delete from beta_testers
+        await sbFetch(_usersTable + '?id=eq.' + u.id, { method: 'DELETE' });
+        purged++;
+      } catch(e) {
+        console.error('Failed to purge', u.email, e);
+        failed++;
+      }
+    }
+
+    showToast(\`✅ Purged \${purged} account\${purged !== 1 ? 's' : ''}\${failed ? ' · ' + failed + ' failed' : ''}\`);
+    await loadPendingDeletions();
+    await loadAll();
+  } catch(e) {
+    showToast('Purge error: ' + e.message, 'warn');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '🗑️ Purge Expired';
+  }
+}
+
 </script>
 </body>
 </html>
