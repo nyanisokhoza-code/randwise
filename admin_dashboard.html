@@ -4215,13 +4215,13 @@ async function loadPendingDeletions() {
       const expired    = daysLeft <= 0;
       const urgentCol  = expired ? '#a32d2d' : daysLeft <= 7 ? '#ba7517' : '#1a7a4a';
       const statusText = expired ? '🔴 Expired — ready to purge' : daysLeft <= 7 ? `⚠️ ${daysLeft}d left` : `🟡 ${daysLeft}d left`;
-      return \`<tr>
-        <td style="font-weight:600">\${u.name || '—'}</td>
-        <td style="color:#666;font-size:12px">\${u.email || '—'}</td>
-        <td style="font-size:12px;color:#888">\${requested.toLocaleDateString('en-ZA')}</td>
-        <td style="font-size:12px;font-weight:600;color:\${urgentCol}">\${purgeDate.toLocaleDateString('en-ZA')}</td>
-        <td style="font-size:12px;font-weight:600;color:\${urgentCol}">\${statusText}</td>
-      </tr>\`;
+      return `<tr>
+        <td style="font-weight:600">${u.name || '—'}</td>
+        <td style="color:#666;font-size:12px">${u.email || '—'}</td>
+        <td style="font-size:12px;color:#888">${requested.toLocaleDateString('en-ZA')}</td>
+        <td style="font-size:12px;font-weight:600;color:${urgentCol}">${purgeDate.toLocaleDateString('en-ZA')}</td>
+        <td style="font-size:12px;font-weight:600;color:${urgentCol}">${statusText}</td>
+      </tr>`;
     }).join('');
   } catch(e) {
     console.warn('loadPendingDeletions error:', e);
@@ -4250,8 +4250,8 @@ async function purgeExpiredAccounts() {
     }
 
     const ok = confirm(
-      \`Permanently delete \${expired.length} account\${expired.length !== 1 ? 's' : ''}?\n\n\` +
-      expired.map(u => \`• \${u.name || u.email}\`).join('\n') +
+      `Permanently delete ${expired.length} account${expired.length !== 1 ? 's' : ''}?\n\n` +
+      expired.map(u => `• ${u.name || u.email}`).join('\n') +
       '\n\nThis CANNOT be undone.'
     );
     if (!ok) return;
@@ -4271,7 +4271,7 @@ async function purgeExpiredAccounts() {
       }
     }
 
-    showToast(\`✅ Purged \${purged} account\${purged !== 1 ? 's' : ''}\${failed ? ' · ' + failed + ' failed' : ''}\`);
+    showToast(`✅ Purged ${purged} account${purged !== 1 ? 's' : ''}${failed ? ' · ' + failed + ' failed' : ''}`);
     await loadPendingDeletions();
     await loadAll();
   } catch(e) {
