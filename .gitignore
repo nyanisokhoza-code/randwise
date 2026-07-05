@@ -26,3 +26,5 @@ build/
 # Staging notes
 *.draft.*
 TODO_local.md
+.env.local.bak
+.env*

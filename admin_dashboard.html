@@ -201,6 +201,18 @@
   .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
   .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
 
+  /* Dark grey scrollbar used inside content cards (Pending Deletions, Referral diagnostic, etc) */
+  .dark-scroll { scrollbar-width: thin; scrollbar-color: #555 #eee; }
+  .dark-scroll::-webkit-scrollbar { width: 8px; }
+  .dark-scroll::-webkit-scrollbar-track { background: #eee; border-radius: 8px; }
+  .dark-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 8px; }
+  .dark-scroll::-webkit-scrollbar-thumb:hover { background: #333; }
+
+  /* Pagination controls: black Prev/Next buttons + page count label */
+  .pager { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:10px; font-size:12px; color: var(--muted); }
+  .pager-btn { padding:6px 14px; background:#000; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; }
+  .pager-btn:disabled { background:#ccc; cursor:not-allowed; }
+
   .sidebar-brand {
     padding: 24px 20px 20px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -951,20 +963,22 @@
             🗑️ Purge Expired
           </button>
         </div>
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Requested</th>
-              <th>Purge date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="deletion-table-body">
-            <tr><td colspan="5" style="text-align:center;color:#888;padding:16px">Loading...</td></tr>
-          </tbody>
-        </table>
+        <div class="dark-scroll" style="max-height:420px;overflow-y:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Requested</th>
+                <th>Purge date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="deletion-table-body">
+              <tr><td colspan="5" style="text-align:center;color:#888;padding:16px">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="grid2">
@@ -1017,7 +1031,11 @@
           <tbody id="users-body"></tbody>
         </table>
       </div>
-      <div id="users-count" style="font-size:11px;color:var(--muted);margin-top:8px;text-align:right"></div>
+      <div class="pager">
+        <span id="users-count"></span>
+        <button class="pager-btn" id="users-prev-btn" onclick="usersPrevPage()">Previous</button>
+        <button class="pager-btn" id="users-next-btn" onclick="usersNextPage()">Next</button>
+      </div>
     </div>
 
     <!-- ── SEGMENTS ───────────────────────── -->
@@ -1764,6 +1782,11 @@
           <input id="nl-tip-search" placeholder="🔍 Search tips..." oninput="filterTips()" style="padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;width:200px">
         </div>
         <div id="nl-tips-list"><div class="loading"><div class="spinner"></div> Loading tips...</div></div>
+        <div class="pager">
+          <span id="tips-count"></span>
+          <button class="pager-btn" id="tips-prev-btn" onclick="tipsPrevPage()">Previous</button>
+          <button class="pager-btn" id="tips-next-btn" onclick="tipsNextPage()">Next</button>
+        </div>
       </div>
     </div>
 
@@ -1790,6 +1813,47 @@ async function sbGet(path) {
 
 async function sbFetch(path) {
   try { return await sbGet(path); } catch(e) { console.error('sbFetch:', e); return []; }
+}
+
+// sbFetch(path, {method,...}) silently ignored the options object and always did a GET —
+// meaning any code that "called sbFetch with method: DELETE/POST" never actually did that.
+// These two do the real thing, and throw loudly instead of pretending to succeed.
+async function sbPost(path, body) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) { const t = await r.text(); throw new Error(`POST failed [${r.status}]: ${t}`); }
+  return await r.json();
+}
+
+async function sbDelete(path) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': `Bearer ${SUPABASE_ANON}`,
+      'Prefer': 'return=representation'
+    }
+  });
+  const text = await r.text();
+  if (!r.ok) throw new Error(`DELETE failed [${r.status}]: ${text}`);
+  let result = [];
+  try { result = JSON.parse(text); } catch(e) { /* empty body */ }
+  if (!Array.isArray(result) || result.length === 0) {
+    throw new Error(
+      `DELETE returned success but removed 0 rows. This usually means a Row Level Security ` +
+      `DELETE policy on this table is silently blocking the write — check Supabase → ` +
+      `Authentication → Policies → ${path.split('?')[0]} for a missing DELETE policy.`
+    );
+  }
+  return result;
 }
 
 async function sbPatch(path, body) {
@@ -2477,7 +2541,12 @@ function renderUsers(users) {
   filterUsers();
 }
 
-function filterUsers() {
+const USERS_PAGE_SIZE = 35;
+let usersCurrentPage = 1;
+
+function filterUsers(resetPage) {
+  if (resetPage !== false) usersCurrentPage = 1; // any new search/filter starts back at page 1
+
   const q = (document.getElementById('user-search').value||'').toLowerCase();
   const days = parseInt(document.getElementById('user-date-filter')?.value||'all');
   const cutoff = days !== 'all' && !isNaN(days) ? Date.now() - days*86400000 : 0;
@@ -2492,7 +2561,12 @@ function filterUsers() {
     return matchQ && matchT && matchD;
   });
 
-  document.getElementById('users-body').innerHTML = filtered.map(u => `
+  const totalPages = Math.max(1, Math.ceil(filtered.length / USERS_PAGE_SIZE));
+  if (usersCurrentPage > totalPages) usersCurrentPage = totalPages;
+  const start = (usersCurrentPage - 1) * USERS_PAGE_SIZE;
+  const pageRows = filtered.slice(start, start + USERS_PAGE_SIZE);
+
+  document.getElementById('users-body').innerHTML = pageRows.map(u => `
     <tr onclick="openUserPanel('${u.id}')">
       <td><b>${u.name||'—'}</b></td>
       <td style="font-size:11px;color:var(--muted)">${u.email||'—'}</td>
@@ -2505,7 +2579,23 @@ function filterUsers() {
   `).join('') || '<tr><td colspan="7" class="empty">No users match this filter</td></tr>';
 
   const countEl = document.getElementById('users-count');
-  if (countEl) countEl.textContent = `Showing ${filtered.length} of ${allUsers.length} users`;
+  if (countEl) {
+    const shownFrom = filtered.length ? start + 1 : 0;
+    const shownTo = start + pageRows.length;
+    countEl.textContent = `Showing ${shownFrom}–${shownTo} of ${filtered.length} users (page ${usersCurrentPage} of ${totalPages})`;
+  }
+
+  const prevBtn = document.getElementById('users-prev-btn');
+  const nextBtn = document.getElementById('users-next-btn');
+  if (prevBtn) prevBtn.disabled = usersCurrentPage <= 1;
+  if (nextBtn) nextBtn.disabled = usersCurrentPage >= totalPages;
+}
+
+function usersPrevPage() {
+  if (usersCurrentPage > 1) { usersCurrentPage--; filterUsers(false); }
+}
+function usersNextPage() {
+  usersCurrentPage++; filterUsers(false);
 }
 
 function setTierFilter(t, el) {
@@ -2833,23 +2923,27 @@ function renderReferralDiagnostic(users, referred, unmatched, userByCode) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">Codes being searched for (referred_by)</div>
-          ${unmatched.map(u => `
-            <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
-              <span style="font-family:'DM Mono',monospace;font-weight:700">${u.code || '(empty)'}</span>
-              <span style="color:var(--muted)">${u.referredUser.name||u.referredUser.email||'—'}</span>
-            </div>`).join('')}
+          <div class="dark-scroll" style="max-height:320px;overflow-y:auto;padding-right:4px">
+            ${unmatched.map(u => `
+              <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+                <span style="font-family:'DM Mono',monospace;font-weight:700">${u.code || '(empty)'}</span>
+                <span style="color:var(--muted)">${u.referredUser.name||u.referredUser.email||'—'}</span>
+              </div>`).join('')}
+          </div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px">
             Codes that actually exist (referral_code) — ${usersWithOwnCode.length} user${usersWithOwnCode.length!==1?'s':''} have one
           </div>
-          ${usersWithOwnCode.length
-            ? usersWithOwnCode.map(u => `
-                <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
-                  <span style="font-family:'DM Mono',monospace;font-weight:700">${u.referral_code}</span>
-                  <span style="color:var(--muted)">${u.name||u.email||'—'}</span>
-                </div>`).join('')
-            : '<div style="padding:10px;background:#fff;border-radius:8px;font-size:12px;color:var(--red)">⚠️ Zero users have a referral_code set at all — this is likely the actual root cause. The referral_code column may need to be generated/backfilled for existing users.</div>'}
+          <div class="dark-scroll" style="max-height:320px;overflow-y:auto;padding-right:4px">
+            ${usersWithOwnCode.length
+              ? usersWithOwnCode.map(u => `
+                  <div style="padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;font-size:12px;display:flex;justify-content:space-between">
+                    <span style="font-family:'DM Mono',monospace;font-weight:700">${u.referral_code}</span>
+                    <span style="color:var(--muted)">${u.name||u.email||'—'}</span>
+                  </div>`).join('')
+              : '<div style="padding:10px;background:#fff;border-radius:8px;font-size:12px;color:var(--red)">⚠️ Zero users have a referral_code set at all — this is likely the actual root cause. The referral_code column may need to be generated/backfilled for existing users.</div>'}
+          </div>
         </div>
       </div>
     </div>`;
@@ -3293,14 +3387,36 @@ CREATE POLICY "Allow anon read subscribers"
   }
 }
 
-function renderTipsList(tips) {
+const TIPS_PAGE_SIZE = 52;
+let tipsCurrentPage = 1;
+let tipsLastFiltered = [];
+
+function renderTipsList(tips, resetPage) {
   const el = document.getElementById('nl-tips-list');
   if (!el) return;
-  if (!tips.length) { el.innerHTML = '<div class="empty">No tips found</div>'; return; }
+  if (resetPage !== false) tipsCurrentPage = 1;
+  tipsLastFiltered = tips;
+
+  if (!tips.length) {
+    el.innerHTML = '<div class="empty">No tips found</div>';
+    const countEl = document.getElementById('tips-count');
+    if (countEl) countEl.textContent = '0 of 0';
+    const prevBtn = document.getElementById('tips-prev-btn');
+    const nextBtn = document.getElementById('tips-next-btn');
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(tips.length / TIPS_PAGE_SIZE));
+  if (tipsCurrentPage > totalPages) tipsCurrentPage = totalPages;
+  const start = (tipsCurrentPage - 1) * TIPS_PAGE_SIZE;
+  const pageTips = tips.slice(start, start + TIPS_PAGE_SIZE);
+
   el.innerHTML = `
     <table class="data-table">
       <thead><tr><th style="width:60px">Week</th><th>Subject</th><th>Headline</th><th style="width:80px">Action</th></tr></thead>
-      <tbody>${tips.map(t => `
+      <tbody>${pageTips.map(t => `
         <tr style="${t.week_number === currentWeekNum ? 'background:var(--green-l)' : ''}">
           <td>
             <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted)">W${String(t.week_number).padStart(2,'0')}</span>
@@ -3311,6 +3427,26 @@ function renderTipsList(tips) {
           <td><button onclick="editTip(${t.week_number})" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--mid);font-family:'DM Sans',sans-serif">Edit</button></td>
         </tr>`).join('')}</tbody>
     </table>`;
+
+  const countEl = document.getElementById('tips-count');
+  if (countEl) {
+    const shownFrom = start + 1;
+    const shownTo = start + pageTips.length;
+    countEl.textContent = tips.length === allTips.length
+      ? `${tips.length} of ${allTips.length}`
+      : `${shownFrom}–${shownTo} of ${tips.length} (filtered from ${allTips.length})`;
+  }
+  const prevBtn = document.getElementById('tips-prev-btn');
+  const nextBtn = document.getElementById('tips-next-btn');
+  if (prevBtn) prevBtn.disabled = tipsCurrentPage <= 1;
+  if (nextBtn) nextBtn.disabled = tipsCurrentPage >= totalPages;
+}
+
+function tipsPrevPage() {
+  if (tipsCurrentPage > 1) { tipsCurrentPage--; renderTipsList(tipsLastFiltered, false); }
+}
+function tipsNextPage() {
+  tipsCurrentPage++; renderTipsList(tipsLastFiltered, false);
 }
 
 function filterTips() {
@@ -4262,8 +4398,15 @@ async function purgeExpiredAccounts() {
     let purged = 0, failed = 0;
     for (const u of expired) {
       try {
+        // Write the permanent trail BEFORE the hard delete — if this insert fails,
+        // we skip the delete rather than lose the record of who existed.
+        await sbPost('audit_log', {
+          tester_id: u.id,
+          action: 'account_purged',
+          metadata: { name: u.name || null, email: u.email || null, deletion_requested_at: u.deletion_requested_at }
+        });
         // Hard-delete from beta_testers
-        await sbFetch(_usersTable + '?id=eq.' + u.id, { method: 'DELETE' });
+        await sbDelete(_usersTable + '?id=eq.' + u.id);
         purged++;
       } catch(e) {
         console.error('Failed to purge', u.email, e);

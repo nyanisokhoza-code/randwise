@@ -57,6 +57,21 @@ serve(async (req) => {
         .eq('id', user.id)
     }
 
+    // 2b. Permanent audit trail — logged regardless of what happens to the user row later
+    // (purge, manual undo, etc). This is the record that "Success. No rows returned"
+    // taught us we didn't have before: a durable log independent of the live user row.
+    await supabase.from('audit_log').insert({
+      tester_id: user.id,
+      action: 'deletion_requested',
+      metadata: {
+        email,
+        name: user.name || null,
+        already_pending: alreadyRequested,
+      },
+    }).then(({ error }) => {
+      if (error) console.error('audit_log insert failed (non-blocking):', error.message)
+    })
+
     const firstName = (user.name || 'there').split(' ')[0]
     const deletionDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       .toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' })
