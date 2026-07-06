@@ -1268,10 +1268,35 @@
 
     <!-- ── AI SUGGESTIONS ────────────────── -->
     <div id="tab-ai" class="tab-page">
-      <div style="margin-bottom:16px;font-size:13px;color:var(--mid)">
-        AI-generated feature suggestions based on user segment data. Review and approve to schedule rollout, or dismiss to hide.
+      <div id="ai-suggestions-grid">
+        <div style="margin-bottom:16px;font-size:13px;color:var(--mid)">
+          AI-generated feature suggestions based on user segment data. Click a card to see exactly which users it applies to, and message them directly.
+        </div>
+        <div id="ai-suggestions"></div>
       </div>
-      <div id="ai-suggestions"></div>
+
+      <div id="ai-suggestion-detail" class="card" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <button onclick="backToAISuggestions()" style="padding:6px 12px;background:#000;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">← Back</button>
+          <span style="font-size:12px;color:var(--muted)">AI Suggestions / <span id="ai-detail-breadcrumb" style="color:var(--text);font-weight:600"></span></span>
+        </div>
+        <div class="card-title" id="ai-detail-title" style="margin-top:10px">Segment detail</div>
+        <div id="ai-detail-desc" style="font-size:12px;color:var(--mid);margin-bottom:14px"></div>
+
+        <div style="display:flex;gap:8px;margin-bottom:14px" id="ai-detail-bulk-actions"></div>
+
+        <div class="dark-scroll" style="max-height:480px;overflow-y:auto">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Tier</th><th style="width:160px">Contact</th></tr></thead>
+            <tbody id="ai-detail-body"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="ai-detail-count"></span>
+          <button class="pager-btn" id="ai-detail-prev-btn" onclick="aiDetailPrevPage()">Previous</button>
+          <button class="pager-btn" id="ai-detail-next-btn" onclick="aiDetailNextPage()">Next</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── BUILD TRACKER ─────────────────── -->
@@ -3035,60 +3060,165 @@ function renderReserves(users) {
 }
 
 // ── AI SUGGESTIONS ────────────────────────────────────────────
-function renderAI(users) {
-  const students = users.filter(u=>u.life_stage?.toLowerCase().includes('student')).length;
-  const domestic = users.filter(u=>u.life_stage?.toLowerCase().includes('domestic')).length;
-  const noExpenses = users.filter(u=>{
-    return !allExpenses.find(e=>e.tester_id===u.id);
-  }).length;
+const AI_DETAIL_PAGE_SIZE = 35;
+let aiDetailCurrentPage = 1;
 
-  const suggestions = [
+function waLink(phone, message) {
+  if (!phone) return null;
+  // Normalise SA numbers to international format for wa.me: strip spaces/dashes,
+  // leading 0 -> 27. Assumes SA numbers; adjust if you support other countries.
+  let p = String(phone).replace(/[^\d+]/g, '');
+  if (p.startsWith('0')) p = '27' + p.slice(1);
+  if (p.startsWith('+')) p = p.slice(1);
+  return `https://wa.me/${p}?text=${encodeURIComponent(message)}`;
+}
+
+function renderAI(users) {
+  const noExpenseIds = new Set(allUsers.filter(u => !allExpenses.find(e => e.tester_id === u.id)).map(u => u.id));
+
+  // Each suggestion now carries a real `filter` (so the detail view shows the
+  // actual matching users, not just a count) and a suggested outreach message.
+  window._aiSuggDefs = [
     {
       emoji:'⚡', bg:'var(--amber-l)', color:'var(--amber)',
       title:'Launch Electricity Tracker to all users',
-      desc:`${users.length} users registered. Electricity is a top SA expense. The tracker (R10/mo add-on) would be relevant to nearly every user — especially domestic workers and students buying prepaid tokens.`,
-      meta:`Segment: All users · Estimated uptake: 15–30% · Revenue potential: R${Math.round(users.length*0.2*10)}/mo`,
+      metaLabel:'All users',
+      filter: () => true,
+      message: 'Hi! We just launched an Electricity Tracker on RandWise to help you track prepaid tokens and save more. Add it for R10/mo in Settings → Add-ons 🙂',
+      channel: 'whatsapp',
     },
     {
       emoji:'📊', bg:'var(--purple-l)', color:'var(--purple)',
       title:'Nudge inactive users to log first expense',
-      desc:`${noExpenses} user${noExpenses!==1?'s':''} registered but logged no expenses yet. A WhatsApp message saying "You're all set! Tap + to log your first spend — takes 5 seconds" could significantly improve activation.`,
-      meta:`Segment: No expenses logged · Action: WhatsApp nudge campaign`,
+      metaLabel:'No expenses logged',
+      filter: (u) => noExpenseIds.has(u.id),
+      message: "Hey! You're all set on RandWise 🎉 Tap + to log your first spend — takes 5 seconds and helps you see where your money goes.",
+      channel: 'whatsapp',
     },
     {
       emoji:'🎓', bg:'var(--green-l)', color:'var(--green)',
       title:'Student-specific budget templates',
-      desc:`${students} student${students!==1?'s':''} registered. Students have unique budgets (bursary income, NSFAS, transport to campus). A pre-filled student budget template on first open would improve retention for this group.`,
-      meta:`Segment: Students (${students} users) · Feature: Budget templates`,
+      metaLabel:'Students',
+      filter: (u) => (u.life_stage||'').toLowerCase().includes('student'),
+      message: 'Hi! We built student-specific budget templates on RandWise (bursary income, NSFAS, transport to campus). Check them out next time you open the app 📚',
+      channel: 'email',
     },
     {
       emoji:'🏠', bg:'var(--red-l)', color:'var(--red)',
       title:'Household feature campaign for domestic workers',
-      desc:`${domestic} domestic worker${domestic!==1?'s':''} on the platform. This segment often shares costs with family. A WhatsApp campaign showing the Household feature (R15/mo) could convert this group.`,
-      meta:`Segment: Domestic workers (${domestic} users) · Add-on: Household view R15/mo`,
+      metaLabel:'Domestic workers',
+      filter: (u) => (u.life_stage||'').toLowerCase().includes('domestic'),
+      message: 'Hi! RandWise now has a Household feature (R15/mo) to help you and your family track shared costs together. Want to try it?',
+      channel: 'whatsapp',
     },
     {
       emoji:'🤝', bg:'var(--purple-l)', color:'var(--purple)',
       title:'Activate referral programme for top users',
-      desc:'Users with more than 3 expenses logged are your most engaged. Send them their referral code via an in-app nudge: "Earn R10 for every friend you bring to RandWise — share your code now."',
-      meta:`Segment: Engaged users · Action: In-app referral nudge`,
+      metaLabel:'Engaged users (3+ expenses)',
+      filter: (u) => allExpenses.filter(e => e.tester_id === u.id).length > 3,
+      message: 'Hi! You\'re one of our most active RandWise users 🙌 Earn R10 for every friend you bring — share your referral code with them today.',
+      channel: 'email',
     },
   ];
 
-  document.getElementById('ai-suggestions').innerHTML = suggestions.map((s,i) => `
-    <div class="suggestion-card" id="sug-${i}">
+  document.getElementById('ai-suggestions').innerHTML = window._aiSuggDefs.map((s,i) => {
+    const count = allUsers.filter(s.filter).length;
+    return `
+    <div class="suggestion-card" id="sug-${i}" onclick="showAISuggestion(${i})" style="cursor:pointer">
       <div class="suggestion-icon" style="background:${s.bg};color:${s.color}">${s.emoji}</div>
       <div class="suggestion-body">
         <div class="suggestion-title">${s.title}</div>
-        <div class="suggestion-desc">${s.desc}</div>
-        <div class="suggestion-meta">${s.meta}</div>
+        <div class="suggestion-desc">Segment: ${s.metaLabel} — ${count} user${count!==1?'s':''} · Suggested channel: ${s.channel === 'whatsapp' ? 'WhatsApp' : 'Email'}</div>
         <div class="suggestion-actions">
-          <button class="btn-approve" onclick="approveSuggestion(${i})">✓ Approve rollout</button>
-          <button class="btn-dismiss" onclick="dismissSuggestion(${i})">Dismiss</button>
+          <button class="btn-approve" onclick="event.stopPropagation(); approveSuggestion(${i})">✓ Approve rollout</button>
+          <button class="btn-dismiss" onclick="event.stopPropagation(); dismissSuggestion(${i})">Dismiss</button>
         </div>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
+}
+
+function showAISuggestion(i) {
+  const def = window._aiSuggDefs[i];
+  if (!def) return;
+  aiDetailCurrentPage = 1;
+  window._aiDetailIndex = i;
+
+  document.getElementById('ai-suggestions-grid').style.display = 'none';
+  document.getElementById('ai-suggestion-detail').style.display = 'block';
+  document.getElementById('ai-detail-breadcrumb').textContent = def.title;
+  document.getElementById('ai-detail-title').textContent = `${def.emoji} ${def.title}`;
+  document.getElementById('ai-detail-desc').textContent = `Segment: ${def.metaLabel}`;
+
+  document.getElementById('ai-detail-bulk-actions').innerHTML = def.channel === 'email'
+    ? `<button class="pager-btn" onclick="sendEmailCampaign(${i})">📧 Send email to this whole segment</button>`
+    : `<span style="font-size:11px;color:var(--muted)">WhatsApp doesn't support one-click bulk send yet — use the WhatsApp button per user below, or set up the WhatsApp Business API for automated campaigns.</span>`;
+
+  renderAIDetailPage();
+}
+
+function backToAISuggestions() {
+  document.getElementById('ai-suggestion-detail').style.display = 'none';
+  document.getElementById('ai-suggestions-grid').style.display = 'block';
+}
+
+function renderAIDetailPage() {
+  const def = window._aiSuggDefs[window._aiDetailIndex];
+  const matched = allUsers.filter(def.filter);
+  const totalPages = Math.max(1, Math.ceil(matched.length / AI_DETAIL_PAGE_SIZE));
+  if (aiDetailCurrentPage > totalPages) aiDetailCurrentPage = totalPages;
+  const start = (aiDetailCurrentPage - 1) * AI_DETAIL_PAGE_SIZE;
+  const pageUsers = matched.slice(start, start + AI_DETAIL_PAGE_SIZE);
+
+  document.getElementById('ai-detail-body').innerHTML = pageUsers.map(u => {
+    const wa = waLink(u.phone, def.message);
+    return `
+    <tr>
+      <td><b>${u.name||'—'}</b></td>
+      <td style="font-size:11px;color:var(--muted)">${u.email||'—'}</td>
+      <td style="font-size:11px">${u.phone||'—'}</td>
+      <td>${tierBadge(u.tier)}</td>
+      <td>${wa ? `<a href="${wa}" target="_blank" style="padding:4px 10px;background:#25D366;color:#fff;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none">WhatsApp</a>` : '<span style="font-size:11px;color:var(--muted)">No phone</span>'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="empty">No users match this segment</td></tr>';
+
+  const countEl = document.getElementById('ai-detail-count');
+  const shownFrom = matched.length ? start + 1 : 0;
+  const shownTo = start + pageUsers.length;
+  countEl.textContent = `Showing ${shownFrom}–${shownTo} of ${matched.length} (page ${aiDetailCurrentPage} of ${totalPages})`;
+
+  document.getElementById('ai-detail-prev-btn').disabled = aiDetailCurrentPage <= 1;
+  document.getElementById('ai-detail-next-btn').disabled = aiDetailCurrentPage >= totalPages;
+}
+
+function aiDetailPrevPage() { if (aiDetailCurrentPage > 1) { aiDetailCurrentPage--; renderAIDetailPage(); } }
+function aiDetailNextPage() { aiDetailCurrentPage++; renderAIDetailPage(); }
+
+// Calls the send-campaign-email Edge Function (service-role + Resend key stay
+// server-side there — never put the Resend key in this client-side file).
+async function sendEmailCampaign(i) {
+  const def = window._aiSuggDefs[i];
+  const matched = allUsers.filter(def.filter).filter(u => u.email);
+  if (!matched.length) { showToast('No emails to send to in this segment'); return; }
+  if (!confirm(`Send this email to ${matched.length} user(s)?\n\n"${def.message}"`)) return;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/send-campaign-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON}` },
+      body: JSON.stringify({
+        subject: def.title,
+        message: def.message,
+        recipients: matched.map(u => ({ email: u.email, name: u.name, id: u.id })),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Send failed');
+    showToast(`✅ Email campaign sent to ${data.sent||matched.length} users`);
+  } catch (e) {
+    console.error(e);
+    showToast('❌ Failed to send campaign: ' + e.message);
+  }
 }
 
 function approveSuggestion(i) {
