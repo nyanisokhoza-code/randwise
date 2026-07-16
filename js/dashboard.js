@@ -22,6 +22,46 @@ async function loadExp(){
   if(!user?.id)return;
   try{const d=await sbG(`expenses?tester_id=eq.${user.id}&order=logged_at.desc&limit=200`);expenses=Array.isArray(d)?d:[];}catch{expenses=[];}
 }
+
+// ══ CROSS-DEVICE CONFIRMED DATA (Supabase-first, localStorage fallback) ══════
+// FIX (10 July 2026): dashboard was reading confirmation flags + monthly needs
+// straight from localStorage, so a new device/browser (or a cleared PWA cache)
+// always looked "unconfirmed" even though the account data was already correct
+// in Supabase. These helpers check the synced `user` object first and only
+// fall back to localStorage as a same-device fast cache.
+//
+// ⚠️ VERIFY FIELD NAMES: MRW_CODEBASE_MAP.md lists "salary_confirmed_month" in
+// one place and "salary_confirmed_key" in another (status log). This helper
+// checks both so it works either way — but confirm against auth.js/features.js
+// which one is actually being written, and delete the unused check once known.
+function _monthKey(d){ d=d||new Date(); return `${d.getFullYear()}_${d.getMonth()+1}`; }
+
+function isSalaryConfirmed(d){
+  const mk=_monthKey(d);
+  if(user && (user.salary_confirmed_month===mk || user.salary_confirmed_key===mk)) return true;
+  return (localStorage.getItem(`rw_salary_confirmed_${mk}`)||'').startsWith('confirmed:');
+}
+
+function isNeedsConfirmed(d){
+  const mk=_monthKey(d);
+  if(user && user.needs_confirmed_month===mk) return true;
+  return (localStorage.getItem(`rw_needs_confirmed_${mk}`)||'').startsWith('confirmed:');
+}
+
+function isDebtsCheckedIn(d){
+  const mk=_monthKey(d);
+  // NOT yet synced to Supabase — no beta_testers column exists for this yet.
+  // Cross-device debt check-in stays broken until one is added + written to
+  // on confirm (see RANDWISE_FIX_AND_DATA_TASKLIST.md).
+  return localStorage.getItem(`rw_payday_checkin_${mk}`)==='done';
+}
+
+function getMonthlyNeeds(){
+  if(user && user.monthly_needs && Object.keys(user.monthly_needs).length){
+    return user.monthly_needs;
+  }
+  try{ return JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}'); }catch{ return {}; }
+}
 // ══ STOKVEL TRACKER ══════════════════════════════════════════
 const STOKVEL_KEY = 'rw_stokvels';
 
@@ -294,8 +334,7 @@ function getSmartWeeklyBudget(){
   if(inc<=0) return {wb:0, disposable:0, fixed:0, breakdown:[]};
   // Don't show any weekly budget until salary is confirmed — prevents wrong numbers before debts load
   const _gn=new Date();
-  const _gSalKey=`rw_salary_confirmed_${_gn.getFullYear()}_${_gn.getMonth()+1}`;
-  if(!(localStorage.getItem(_gSalKey)||'').startsWith('confirmed:')) return {wb:0, disposable:0, fixed:0, breakdown:[]};
+  if(!isSalaryConfirmed(_gn)) return {wb:0, disposable:0, fixed:0, breakdown:[]};
 
   const breakdown = [];
 
@@ -311,15 +350,13 @@ function getSmartWeeklyBudget(){
   if(debtMin>0) breakdown.push({label:'Debt minimums', amount:debtMin});
 
   // Monthly needs (user-entered preset + custom)
-  const savedNeeds = JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+  const savedNeeds = getMonthlyNeeds();
   const customNeedsData = JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
   const needsPresetTotal = Object.values(savedNeeds).reduce((s,v)=>s+Number(v),0);
   const needsCustomTotal = customNeedsData.reduce((s,n)=>s+Number(n.amount||0),0);
   const needsTotal = needsPresetTotal + needsCustomTotal;
   // Include needs if user has confirmed them this month
-  const _needsNow=new Date();
-  const _needsKey=`rw_needs_confirmed_${_needsNow.getFullYear()}_${_needsNow.getMonth()+1}`;
-  const _needsConfirmed=(localStorage.getItem(_needsKey)||'').startsWith('confirmed:');
+  const _needsConfirmed=isNeedsConfirmed();
   if(needsTotal > 0 && _needsConfirmed){
     breakdown.push({label:'Monthly needs', amount:needsTotal});
   } else if(needsTotal > 0 && !_needsConfirmed){
@@ -475,9 +512,9 @@ async function renderDash(){
   // sp = confirmed disposable — only subtract what user has actually confirmed this cycle
   const _spNow=new Date();
   const _spY=_spNow.getFullYear(),_spM=_spNow.getMonth()+1;
-  const _spSal=(localStorage.getItem(`rw_salary_confirmed_${_spY}_${_spM}`)||'').startsWith('confirmed:');
-  const _spDebtDone=localStorage.getItem(`rw_payday_checkin_${_spY}_${_spM}`)==='done';
-  const _spNeeds=(localStorage.getItem(`rw_needs_confirmed_${_spY}_${_spM}`)||'').startsWith('confirmed:');
+  const _spSal=isSalaryConfirmed(_spNow);
+  const _spDebtDone=isDebtsCheckedIn(_spNow);
+  const _spNeeds=isNeedsConfirmed(_spNow);
   let sp=0;
   if(_spSal){
     // Start with income
@@ -508,7 +545,7 @@ async function renderDash(){
     sp=Math.max(0,sp-_confirmedDebtTotal);
     // Subtract monthly needs only if confirmed
     if(_spNeeds){
-      const _needs=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');
+      const _needs=getMonthlyNeeds();
       const _custom=JSON.parse(localStorage.getItem('rw_monthly_needs_custom')||'[]');
       const _needsTotal=Object.values(_needs).reduce((s,v)=>s+Number(v),0)+_custom.reduce((s,n)=>s+Number(n.amount||0),0);
       sp=Math.max(0,sp-_needsTotal);
@@ -790,10 +827,8 @@ async function renderDash(){
   // Ring = salary fuel gauge. Starts full. Depletes as commitments confirmed.
   // Empty ring = fully committed/spent. Full ring = untouched salary.
   const _cn=new Date();
-  const _cSal=(localStorage.getItem(`rw_salary_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
-  const _cAll=_cSal
-    && localStorage.getItem(`rw_payday_checkin_${_cn.getFullYear()}_${_cn.getMonth()+1}`)==='done'
-    && (localStorage.getItem(`rw_needs_confirmed_${_cn.getFullYear()}_${_cn.getMonth()+1}`)||'').startsWith('confirmed:');
+  const _cSal=isSalaryConfirmed(_cn);
+  const _cAll=_cSal && isDebtsCheckedIn(_cn) && isNeedsConfirmed(_cn);
   const circ=2*Math.PI*29;
   const rarcEl=document.getElementById('rarc');
   const ramtEl=document.getElementById('ramt');
@@ -828,10 +863,8 @@ async function renderDash(){
   const afterRow=document.getElementById('hdr-after-row');
   if(afterEl&&afterRow){
     const _an=new Date();
-    const _sSal=(localStorage.getItem(`rw_salary_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:');
-    const _c3=_sSal
-      && localStorage.getItem(`rw_payday_checkin_${_an.getFullYear()}_${_an.getMonth()+1}`)==='done'
-      && (localStorage.getItem(`rw_needs_confirmed_${_an.getFullYear()}_${_an.getMonth()+1}`)||'').startsWith('confirmed:');
+    const _sSal=isSalaryConfirmed(_an);
+    const _c3=_sSal && isDebtsCheckedIn(_an) && isNeedsConfirmed(_an);
     const msgEl=document.getElementById('hdr-after-msg');
     if(_c3 && sp>0){
       // All 3 confirmed — show real number, hide message
@@ -881,17 +914,16 @@ async function renderDash(){
   const {isPro:bbIsPro} = getTier();
   // Update breakdown header icon for needs — show checkmark if confirmed this month
   const _bbNow=new Date();
-  const _bbNeedsKey=`rw_needs_confirmed_${_bbNow.getFullYear()}_${_bbNow.getMonth()+1}`;
-  const _bbNeedsConfirmed=(localStorage.getItem(_bbNeedsKey)||'').startsWith('confirmed:');
+  const _bbNeedsConfirmed=isNeedsConfirmed(_bbNow);
   const _bbNeedsIcon=document.getElementById('bb-needs-icon');
   if(_bbNeedsIcon) _bbNeedsIcon.textContent=_bbNeedsConfirmed?'✅':'⏳';
   const _bn=new Date();
-  const _bSalary=(localStorage.getItem(`rw_salary_confirmed_${_bn.getFullYear()}_${_bn.getMonth()+1}`)||'').startsWith('confirmed:');
-  const _bDebts=localStorage.getItem(`rw_payday_checkin_${_bn.getFullYear()}_${_bn.getMonth()+1}`)==='done';
-  const _bNeeds=(localStorage.getItem(`rw_needs_confirmed_${_bn.getFullYear()}_${_bn.getMonth()+1}`)||'').startsWith('confirmed:');
+  const _bSalary=isSalaryConfirmed(_bn);
+  const _bDebts=isDebtsCheckedIn(_bn);
+  const _bNeeds=isNeedsConfirmed(_bn);
   const _bCount=[_bSalary,_bDebts,_bNeeds].filter(Boolean).length;
   const _bAll=_bSalary&&_bDebts&&_bNeeds&&debts&&debts.length>0;
-  const _bHasNeeds=(()=>{try{const n=JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}');return Object.values(n).some(v=>Number(v)>0);}catch{return false;}})();
+  const _bHasNeeds=(()=>{try{const n=getMonthlyNeeds();return Object.values(n).some(v=>Number(v)>0);}catch{return false;}})();
   if(bbCard && bbIsPro){
     bbCard.style.display='block';
     // Pulse when incomplete — calm when done
@@ -936,10 +968,9 @@ async function renderDash(){
         if(_bAcc&&_bAcc.extra>0&&_bAcc.committed_at) _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:#1a5c35">🎯 Extra (plan)</span><span style="font-size:12px;font-weight:700;color:#c62828">−R${Number(_bAcc.extra).toLocaleString('en-ZA')}</span></div>`;
         // Monthly needs line
         const _bbNeedsNow=new Date();
-        const _bbNeedsConfKey=`rw_needs_confirmed_${_bbNeedsNow.getFullYear()}_${_bbNeedsNow.getMonth()+1}`;
-        const _bbNeedsConf=(localStorage.getItem(_bbNeedsConfKey)||'').startsWith('confirmed:');
+        const _bbNeedsConf=isNeedsConfirmed(_bbNeedsNow);
         const _bbNeedsIcon=_bbNeedsConf?'✅':'⏳';
-        const _bbNeedsAmt=Object.values(JSON.parse(localStorage.getItem('rw_monthly_needs')||'{}')).reduce((s,v)=>s+Number(v),0);
+        const _bbNeedsAmt=Object.values(getMonthlyNeeds()).reduce((s,v)=>s+Number(v),0);
         const _bbNeedsDisplay=_bbNeedsAmt>0?'−R'+Math.round(_bbNeedsAmt/_bbDiv).toLocaleString('en-ZA')+_bbPeriod:'pending';
         _bHtml+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #e8f5ee"><span style="font-size:12px;color:${_bNeeds?'#2c2c2a':'#aaa'}">${_bbNeedsIcon} Monthly needs</span><span style="font-size:12px;font-weight:700;color:${_bNeeds?'#c62828':'#aaa'}">${_bNeeds?_bbNeedsDisplay:'pending'}</span></div>`;
         // Tap prompt
